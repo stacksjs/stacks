@@ -56,10 +56,10 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
-  public id: number
+  public id: number | undefined
   public title: string | undefined
   public body: string | undefined
 
@@ -67,17 +67,17 @@ export class PostModel {
   public updated_at: Date | undefined
 
   constructor(post: Partial<PostType> | null) {
-    this.user_id = post?.user_id
-    this.user = post?.user
-    this.id = post?.id || 1
-    this.title = post?.title
-    this.body = post?.body
-
-    this.created_at = post?.created_at
-
-    this.updated_at = post?.updated_at
-
     if (post) {
+      this.user_id = post?.user_id
+      this.user = post?.user
+      this.id = post?.id || 1
+      this.title = post?.title
+      this.body = post?.body
+
+      this.created_at = post?.created_at
+
+      this.updated_at = post?.updated_at
+
       Object.keys(post).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as PostJsonResponse)[key]
@@ -843,18 +843,18 @@ export class PostModel {
       Object.entries(post).filter(([key]) => this.fillable.includes(key)),
     ) as NewPost
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('posts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
@@ -867,9 +867,13 @@ export class PostModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

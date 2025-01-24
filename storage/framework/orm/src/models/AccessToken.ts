@@ -58,10 +58,10 @@ export class AccessTokenModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public team_id: number | undefined
   public team: TeamModel | undefined
-  public id: number
+  public id: number | undefined
   public name: string | undefined
   public token: string | undefined
   public plain_text_token: string | undefined
@@ -71,19 +71,19 @@ export class AccessTokenModel {
   public updated_at: Date | undefined
 
   constructor(accesstoken: Partial<AccessTokenType> | null) {
-    this.team_id = accesstoken?.team_id
-    this.team = accesstoken?.team
-    this.id = accesstoken?.id || 1
-    this.name = accesstoken?.name
-    this.token = accesstoken?.token
-    this.plain_text_token = accesstoken?.plain_text_token
-    this.abilities = accesstoken?.abilities
-
-    this.created_at = accesstoken?.created_at
-
-    this.updated_at = accesstoken?.updated_at
-
     if (accesstoken) {
+      this.team_id = accesstoken?.team_id
+      this.team = accesstoken?.team
+      this.id = accesstoken?.id || 1
+      this.name = accesstoken?.name
+      this.token = accesstoken?.token
+      this.plain_text_token = accesstoken?.plain_text_token
+      this.abilities = accesstoken?.abilities
+
+      this.created_at = accesstoken?.created_at
+
+      this.updated_at = accesstoken?.updated_at
+
       Object.keys(accesstoken).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as AccessTokenJsonResponse)[key]
@@ -865,18 +865,18 @@ export class AccessTokenModel {
       Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
     ) as NewAccessToken
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('personal_access_tokens')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
@@ -889,9 +889,13 @@ export class AccessTokenModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

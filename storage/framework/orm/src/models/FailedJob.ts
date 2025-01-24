@@ -54,8 +54,8 @@ export class FailedJobModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
-  public id: number
+  private customColumns: Record<string, unknown> = {}
+  public id: number | undefined
   public connection: string | undefined
   public queue: string | undefined
   public payload: string | undefined
@@ -66,18 +66,18 @@ export class FailedJobModel {
   public updated_at: Date | undefined
 
   constructor(failedjob: Partial<FailedJobType> | null) {
-    this.id = failedjob?.id || 1
-    this.connection = failedjob?.connection
-    this.queue = failedjob?.queue
-    this.payload = failedjob?.payload
-    this.exception = failedjob?.exception
-    this.failed_at = failedjob?.failed_at
-
-    this.created_at = failedjob?.created_at
-
-    this.updated_at = failedjob?.updated_at
-
     if (failedjob) {
+      this.id = failedjob?.id || 1
+      this.connection = failedjob?.connection
+      this.queue = failedjob?.queue
+      this.payload = failedjob?.payload
+      this.exception = failedjob?.exception
+      this.failed_at = failedjob?.failed_at
+
+      this.created_at = failedjob?.created_at
+
+      this.updated_at = failedjob?.updated_at
+
       Object.keys(failedjob).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as FailedJobJsonResponse)[key]
@@ -863,18 +863,18 @@ export class FailedJobModel {
       Object.entries(failedjob).filter(([key]) => this.fillable.includes(key)),
     ) as NewFailedJob
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('failed_jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(failedjob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
@@ -887,9 +887,13 @@ export class FailedJobModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

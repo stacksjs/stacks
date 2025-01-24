@@ -53,8 +53,8 @@ export class ProjectModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
-  public id: number
+  private customColumns: Record<string, unknown> = {}
+  public id: number | undefined
   public name: string | undefined
   public description: string | undefined
   public url: string | undefined
@@ -64,17 +64,17 @@ export class ProjectModel {
   public updated_at: Date | undefined
 
   constructor(project: Partial<ProjectType> | null) {
-    this.id = project?.id || 1
-    this.name = project?.name
-    this.description = project?.description
-    this.url = project?.url
-    this.status = project?.status
-
-    this.created_at = project?.created_at
-
-    this.updated_at = project?.updated_at
-
     if (project) {
+      this.id = project?.id || 1
+      this.name = project?.name
+      this.description = project?.description
+      this.url = project?.url
+      this.status = project?.status
+
+      this.created_at = project?.created_at
+
+      this.updated_at = project?.updated_at
+
       Object.keys(project).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as ProjectJsonResponse)[key]
@@ -852,18 +852,18 @@ export class ProjectModel {
       Object.entries(project).filter(([key]) => this.fillable.includes(key)),
     ) as NewProject
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('projects')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(project: ProjectUpdate): Promise<ProjectModel | undefined> {
@@ -876,9 +876,13 @@ export class ProjectModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

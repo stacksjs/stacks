@@ -63,10 +63,10 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
-  public id: number
+  public id: number | undefined
   public uuid: string | undefined
   public commit_sha: string | undefined
   public commit_message: string | undefined
@@ -80,23 +80,23 @@ export class DeploymentModel {
   public updated_at: Date | undefined
 
   constructor(deployment: Partial<DeploymentType> | null) {
-    this.user_id = deployment?.user_id
-    this.user = deployment?.user
-    this.id = deployment?.id || 1
-    this.uuid = deployment?.uuid
-    this.commit_sha = deployment?.commit_sha
-    this.commit_message = deployment?.commit_message
-    this.branch = deployment?.branch
-    this.status = deployment?.status
-    this.execution_time = deployment?.execution_time
-    this.deploy_script = deployment?.deploy_script
-    this.terminal_output = deployment?.terminal_output
-
-    this.created_at = deployment?.created_at
-
-    this.updated_at = deployment?.updated_at
-
     if (deployment) {
+      this.user_id = deployment?.user_id
+      this.user = deployment?.user
+      this.id = deployment?.id || 1
+      this.uuid = deployment?.uuid
+      this.commit_sha = deployment?.commit_sha
+      this.commit_message = deployment?.commit_message
+      this.branch = deployment?.branch
+      this.status = deployment?.status
+      this.execution_time = deployment?.execution_time
+      this.deploy_script = deployment?.deploy_script
+      this.terminal_output = deployment?.terminal_output
+
+      this.created_at = deployment?.created_at
+
+      this.updated_at = deployment?.updated_at
+
       Object.keys(deployment).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as DeploymentJsonResponse)[key]
@@ -908,18 +908,18 @@ export class DeploymentModel {
       Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
     ) as NewDeployment
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('deployments')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
@@ -932,9 +932,13 @@ export class DeploymentModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

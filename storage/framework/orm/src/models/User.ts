@@ -85,12 +85,12 @@ export class UserModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public deployments: DeploymentModel[] | undefined
   public subscriptions: SubscriptionModel[] | undefined
   public payment_methods: PaymentMethodModel[] | undefined
   public transactions: TransactionModel[] | undefined
-  public id: number
+  public id: number | undefined
   public stripe_id: string | undefined
   public uuid: string | undefined
   public public_passkey: string | undefined
@@ -103,24 +103,24 @@ export class UserModel {
   public updated_at: Date | undefined
 
   constructor(user: Partial<UserType> | null) {
-    this.deployments = user?.deployments
-    this.subscriptions = user?.subscriptions
-    this.payment_methods = user?.payment_methods
-    this.transactions = user?.transactions
-    this.id = user?.id || 1
-    this.stripe_id = user?.stripe_id
-    this.uuid = user?.uuid
-    this.public_passkey = user?.public_passkey
-    this.name = user?.name
-    this.email = user?.email
-    this.job_title = user?.job_title
-    this.password = user?.password
-
-    this.created_at = user?.created_at
-
-    this.updated_at = user?.updated_at
-
     if (user) {
+      this.deployments = user?.deployments
+      this.subscriptions = user?.subscriptions
+      this.payment_methods = user?.payment_methods
+      this.transactions = user?.transactions
+      this.id = user?.id || 1
+      this.stripe_id = user?.stripe_id
+      this.uuid = user?.uuid
+      this.public_passkey = user?.public_passkey
+      this.name = user?.name
+      this.email = user?.email
+      this.job_title = user?.job_title
+      this.password = user?.password
+
+      this.created_at = user?.created_at
+
+      this.updated_at = user?.updated_at
+
       Object.keys(user).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as UserJsonResponse)[key]
@@ -933,21 +933,21 @@ export class UserModel {
       Object.entries(user).filter(([key]) => this.fillable.includes(key)),
     ) as NewUser
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('users')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    if (model)
-      dispatch('user:updated', model)
+      if (model)
+        dispatch('user:updated', model)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(user: UserUpdate): Promise<UserModel | undefined> {
@@ -960,12 +960,16 @@ export class UserModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    if (model)
-      dispatch('user:updated', model)
+      if (model)
+        dispatch('user:updated', model)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

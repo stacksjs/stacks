@@ -66,10 +66,10 @@ export class SubscriptionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
-  public id: number
+  public id: number | undefined
   public uuid: string | undefined
   public type: string | undefined
   public provider_id: string | undefined
@@ -86,26 +86,26 @@ export class SubscriptionModel {
   public updated_at: Date | undefined
 
   constructor(subscription: Partial<SubscriptionType> | null) {
-    this.user_id = subscription?.user_id
-    this.user = subscription?.user
-    this.id = subscription?.id || 1
-    this.uuid = subscription?.uuid
-    this.type = subscription?.type
-    this.provider_id = subscription?.provider_id
-    this.provider_status = subscription?.provider_status
-    this.unit_price = subscription?.unit_price
-    this.provider_type = subscription?.provider_type
-    this.provider_price_id = subscription?.provider_price_id
-    this.quantity = subscription?.quantity
-    this.trial_ends_at = subscription?.trial_ends_at
-    this.ends_at = subscription?.ends_at
-    this.last_used_at = subscription?.last_used_at
-
-    this.created_at = subscription?.created_at
-
-    this.updated_at = subscription?.updated_at
-
     if (subscription) {
+      this.user_id = subscription?.user_id
+      this.user = subscription?.user
+      this.id = subscription?.id || 1
+      this.uuid = subscription?.uuid
+      this.type = subscription?.type
+      this.provider_id = subscription?.provider_id
+      this.provider_status = subscription?.provider_status
+      this.unit_price = subscription?.unit_price
+      this.provider_type = subscription?.provider_type
+      this.provider_price_id = subscription?.provider_price_id
+      this.quantity = subscription?.quantity
+      this.trial_ends_at = subscription?.trial_ends_at
+      this.ends_at = subscription?.ends_at
+      this.last_used_at = subscription?.last_used_at
+
+      this.created_at = subscription?.created_at
+
+      this.updated_at = subscription?.updated_at
+
       Object.keys(subscription).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as SubscriptionJsonResponse)[key]
@@ -941,18 +941,18 @@ export class SubscriptionModel {
       Object.entries(subscription).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscription
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('subscriptions')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(subscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
@@ -965,9 +965,13 @@ export class SubscriptionModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

@@ -50,22 +50,22 @@ export class SubscriberModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
-  public id: number
+  private customColumns: Record<string, unknown> = {}
+  public id: number | undefined
   public subscribed: boolean | undefined
 
   public created_at: Date | undefined
   public updated_at: Date | undefined
 
   constructor(subscriber: Partial<SubscriberType> | null) {
-    this.id = subscriber?.id || 1
-    this.subscribed = subscriber?.subscribed
-
-    this.created_at = subscriber?.created_at
-
-    this.updated_at = subscriber?.updated_at
-
     if (subscriber) {
+      this.id = subscriber?.id || 1
+      this.subscribed = subscriber?.subscribed
+
+      this.created_at = subscriber?.created_at
+
+      this.updated_at = subscriber?.updated_at
+
       Object.keys(subscriber).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as SubscriberJsonResponse)[key]
@@ -819,18 +819,18 @@ export class SubscriberModel {
       Object.entries(subscriber).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscriber
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('subscribers')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
@@ -843,9 +843,13 @@ export class SubscriberModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

@@ -280,7 +280,7 @@ export async function generateModelString(
     }
   }
 
-  declareFields += `public id: number \n   `
+  declareFields += `public id: number | undefined \n   `
 
   constructorFields += `this.id = ${formattedModelName}?.id || 1\n   `
 
@@ -736,12 +736,12 @@ export async function generateModelString(
         protected updateFromQuery: any
         protected deleteFromQuery: any
         protected hasSelect: boolean
-        private customColumns: Record<string, any> = {}
+        private customColumns: Record<string, unknown> = {}
         ${declareFields}
         constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
-          ${constructorFields}
-
           if (${formattedModelName}) {
+            ${constructorFields}
+
             Object.keys(${formattedModelName}).forEach(key => {
               if (!(key in this)) {
                  this.customColumns[key] = (user as ${modelName}JsonResponse)[key]
@@ -1524,21 +1524,21 @@ export async function generateModelString(
           const filteredValues = Object.fromEntries(
             Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
           ) as New${modelName}
-  
-          if (this.id === undefined) {
-            this.updateFromQuery.set(filteredValues).execute()
-          }
-  
+
           await db.updateTable('${tableName}')
             .set(filteredValues)
             .where('id', '=', this.id)
             .executeTakeFirst()
-  
-          const model = await this.find(this.id)
-  
-          ${mittUpdateStatement}
-  
-          return model
+
+          if (this.id) {
+            const model = await this.find(this.id)
+
+            ${mittUpdateStatement}
+    
+            return model
+          }
+
+          return undefined
         }
   
         async forceUpdate(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
@@ -1551,12 +1551,16 @@ export async function generateModelString(
             .where('id', '=', this.id)
             .executeTakeFirst()
   
-          const model = await this.find(this.id)
+          if (this.id) {
+            const model = await this.find(this.id)
   
   
             ${mittUpdateStatement}
   
-          return model
+            return model
+          }
+
+          return undefined
         }
   
         async save(): Promise<void> {

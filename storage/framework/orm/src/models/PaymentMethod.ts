@@ -67,11 +67,11 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
+  private customColumns: Record<string, unknown> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
   public transactions: TransactionModel[] | undefined
-  public id: number
+  public id: number | undefined
   public uuid: string | undefined
   public type: string | undefined
   public last_four: number | undefined
@@ -85,24 +85,24 @@ export class PaymentMethodModel {
   public updated_at: Date | undefined
 
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
-    this.user_id = paymentmethod?.user_id
-    this.user = paymentmethod?.user
-    this.transactions = paymentmethod?.transactions
-    this.id = paymentmethod?.id || 1
-    this.uuid = paymentmethod?.uuid
-    this.type = paymentmethod?.type
-    this.last_four = paymentmethod?.last_four
-    this.brand = paymentmethod?.brand
-    this.exp_month = paymentmethod?.exp_month
-    this.exp_year = paymentmethod?.exp_year
-    this.is_default = paymentmethod?.is_default
-    this.provider_id = paymentmethod?.provider_id
-
-    this.created_at = paymentmethod?.created_at
-
-    this.updated_at = paymentmethod?.updated_at
-
     if (paymentmethod) {
+      this.user_id = paymentmethod?.user_id
+      this.user = paymentmethod?.user
+      this.transactions = paymentmethod?.transactions
+      this.id = paymentmethod?.id || 1
+      this.uuid = paymentmethod?.uuid
+      this.type = paymentmethod?.type
+      this.last_four = paymentmethod?.last_four
+      this.brand = paymentmethod?.brand
+      this.exp_month = paymentmethod?.exp_month
+      this.exp_year = paymentmethod?.exp_year
+      this.is_default = paymentmethod?.is_default
+      this.provider_id = paymentmethod?.provider_id
+
+      this.created_at = paymentmethod?.created_at
+
+      this.updated_at = paymentmethod?.updated_at
+
       Object.keys(paymentmethod).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as PaymentMethodJsonResponse)[key]
@@ -918,18 +918,18 @@ export class PaymentMethodModel {
       Object.entries(paymentmethod).filter(([key]) => this.fillable.includes(key)),
     ) as NewPaymentMethod
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('payment_methods')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
@@ -942,9 +942,13 @@ export class PaymentMethodModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {

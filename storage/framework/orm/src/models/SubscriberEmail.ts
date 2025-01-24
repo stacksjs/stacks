@@ -52,8 +52,8 @@ export class SubscriberEmailModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private customColumns: Record<string, any> = {}
-  public id: number
+  private customColumns: Record<string, unknown> = {}
+  public id: number | undefined
   public email: string | undefined
 
   public created_at: Date | undefined
@@ -62,16 +62,16 @@ export class SubscriberEmailModel {
   public deleted_at: Date | undefined
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
-    this.id = subscriberemail?.id || 1
-    this.email = subscriberemail?.email
-
-    this.created_at = subscriberemail?.created_at
-
-    this.updated_at = subscriberemail?.updated_at
-
-    this.deleted_at = subscriberemail?.deleted_at
-
     if (subscriberemail) {
+      this.id = subscriberemail?.id || 1
+      this.email = subscriberemail?.email
+
+      this.created_at = subscriberemail?.created_at
+
+      this.updated_at = subscriberemail?.updated_at
+
+      this.deleted_at = subscriberemail?.deleted_at
+
       Object.keys(subscriberemail).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as SubscriberEmailJsonResponse)[key]
@@ -880,18 +880,18 @@ export class SubscriberEmailModel {
       Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
     ) as NewSubscriberEmail
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
     await db.updateTable('subscriber_emails')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
@@ -904,9 +904,13 @@ export class SubscriberEmailModel {
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {
