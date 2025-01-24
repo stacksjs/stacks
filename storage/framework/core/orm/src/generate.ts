@@ -192,7 +192,7 @@ export async function generateModelString(
         async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
-  
+          
           const results = await db.selectFrom('${tableRelation}')
             .where('${foreignKeyRelation}', '=', this.id)
             .limit(5)

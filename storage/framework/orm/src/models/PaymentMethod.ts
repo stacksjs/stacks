@@ -1040,7 +1040,7 @@ export class PaymentMethodModel {
       throw new HttpError(500, 'Relation Error!')
 
     const results = await db.selectFrom('transactions')
-      .where('transaction_id', '=', this.id)
+      .where('payment_method_id', '=', this.id)
       .limit(5)
       .selectAll()
       .execute()

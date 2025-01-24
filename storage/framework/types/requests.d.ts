@@ -312,13 +312,13 @@ interface RequestDataTransaction {
   type: string
   provider_id: string
   user_id: number
-  paymentmethod_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'paymentmethod_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'payment_method_id') => string)
 
   all: () => RequestDataTransaction
   id: number
@@ -328,7 +328,7 @@ export interface TransactionRequestType extends Request {
   type: string
   provider_id: string
   user_id: number
-  paymentmethod_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }

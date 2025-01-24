@@ -82,7 +82,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const table = getTableName(model, modelPath)
         const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
-        const formattedModelName = modelName.toLowerCase()
+        const formattedModelName = snakeCase(modelName)
 
         const relationshipData: RelationConfig = {
           relationship: relation,
