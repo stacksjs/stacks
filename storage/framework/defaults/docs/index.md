@@ -3,9 +3,9 @@
 layout: home
 
 hero:
-  name: "Reverse Proxy"
+  name: "Stacks.js"
   text: "A better developer environment."
-  tagline: My great project tagline
+  tagline: A rapid development environment for modern web applications & libraries.
   actions:
     - theme: brand
       text: Markdown Examples
