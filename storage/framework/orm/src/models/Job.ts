@@ -813,13 +813,27 @@ export class JobModel {
   static groupBy(column: keyof JobType): JobModel {
     const instance = new JobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof JobType, operator: string, value: any): JobModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

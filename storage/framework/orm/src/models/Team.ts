@@ -858,13 +858,27 @@ export class TeamModel {
   static groupBy(column: keyof TeamType): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof TeamType, operator: string, value: any): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

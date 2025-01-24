@@ -793,13 +793,27 @@ export class PostModel {
   static groupBy(column: keyof PostType): PostModel {
     const instance = new PostModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof PostType, operator: string, value: any): PostModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

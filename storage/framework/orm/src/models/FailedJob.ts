@@ -813,13 +813,27 @@ export class FailedJobModel {
   static groupBy(column: keyof FailedJobType): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

@@ -858,13 +858,27 @@ export class DeploymentModel {
   static groupBy(column: keyof DeploymentType): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

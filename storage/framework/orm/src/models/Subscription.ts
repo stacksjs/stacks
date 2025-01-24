@@ -891,13 +891,27 @@ export class SubscriptionModel {
   static groupBy(column: keyof SubscriptionType): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof SubscriptionType, order: 'asc' | 'desc'): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

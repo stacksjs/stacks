@@ -1477,7 +1477,15 @@ export async function generateModelString(
         static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+          instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+  
+          return instance
+        }
+
+        static having(column: keyof PaymentMethodType, operator: string, value: any): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+  
+          instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
   
           return instance
         }
@@ -1485,6 +1493,12 @@ export async function generateModelString(
         orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
   
+          return this
+        }
+
+        having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
           return this
         }
   

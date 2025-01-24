@@ -769,13 +769,27 @@ export class ReleaseModel {
   static groupBy(column: keyof ReleaseType): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }

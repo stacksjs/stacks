@@ -868,13 +868,27 @@ export class PaymentMethodModel {
   static groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column)
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  static having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
   orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
