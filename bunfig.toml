@@ -1,5 +1,5 @@
 # preload these modules before running bun
-preload = [ "./resources/plugins/preloader.ts" ]
+preload = [ "./storage/framework/defaults/plugins/preloader.ts" ]
 
 [test]
 preload = [ "./tests/setup.ts" ]

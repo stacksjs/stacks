@@ -110,7 +110,7 @@ async function submitEmail() {
       <div class="mx-auto mt-16 max-w-2xl flex lg:ml-10 lg:mr-0 lg:mt-0 sm:mt-24 xl:ml-32 lg:max-w-none lg:flex-none">
         <div class="max-w-3xl flex-none lg:max-w-none sm:max-w-5xl">
           <div class="rounded-xl bg-gray-900/5 p-2 ring-1 ring-gray-900/10 ring-inset -m-2 lg:rounded-2xl lg:p-4 lg:-m-4">
-            <img src="../../../public/images/screenshots/dashboard.png" alt="App screenshot" width="2432" height="1442" class="w-[76rem] rounded-md shadow-2xl ring-1 ring-gray-900/10">
+            <img src="../../../../../public/images/screenshots/dashboard.png" alt="App screenshot" width="2432" height="1442" class="w-[76rem] rounded-md shadow-2xl ring-1 ring-gray-900/10">
           </div>
         </div>
       </div>

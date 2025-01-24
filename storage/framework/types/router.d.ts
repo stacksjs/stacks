@@ -48,7 +48,6 @@ declare module 'vue-router/auto-routes' {
     '/dashboard/packages/': RouteRecordInfo<'/dashboard/packages/', '/dashboard/packages', Record<never, never>, Record<never, never>>,
     '/dashboard/releases/': RouteRecordInfo<'/dashboard/releases/', '/dashboard/releases', Record<never, never>, Record<never, never>>,
     '/dashboard/requests/': RouteRecordInfo<'/dashboard/requests/', '/dashboard/requests', Record<never, never>, Record<never, never>>,
-    '/dashboard/settings/[name]': RouteRecordInfo<'/dashboard/settings/[name]', '/dashboard/settings/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
     '/dashboard/settings/billing': RouteRecordInfo<'/dashboard/settings/billing', '/dashboard/settings/billing', Record<never, never>, Record<never, never>>,
     '/dashboard/settings/mail': RouteRecordInfo<'/dashboard/settings/mail', '/dashboard/settings/mail', Record<never, never>, Record<never, never>>,
     '/dashboard/teams/[id]': RouteRecordInfo<'/dashboard/teams/[id]', '/dashboard/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
