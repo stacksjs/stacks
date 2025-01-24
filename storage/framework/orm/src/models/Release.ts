@@ -54,6 +54,7 @@ export class ReleaseModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public version: string | undefined
 
@@ -67,6 +68,14 @@ export class ReleaseModel {
     this.created_at = release?.created_at
 
     this.updated_at = release?.updated_at
+
+    if (release) {
+      Object.keys(release).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as ReleaseJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('releases')
@@ -913,6 +922,7 @@ export class ReleaseModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

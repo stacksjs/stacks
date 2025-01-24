@@ -648,7 +648,7 @@ export async function generateModelString(
   }
 
   jsonFields += jsonRelations
-
+  jsonFields += `...this.customColumns,\n`
   jsonFields += '}'
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
@@ -740,9 +740,18 @@ export async function generateModelString(
         protected updateFromQuery: any
         protected deleteFromQuery: any
         protected hasSelect: boolean
+        private customColumns: Record<string, any> = {}
         ${declareFields}
         constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
           ${constructorFields}
+
+          if (${formattedModelName}) {
+            Object.keys(${formattedModelName}).forEach(key => {
+              if (!(key in this)) {
+                 this.customColumns[key] = (user as ${modelName}JsonResponse)[key]
+              }
+            })
+          }
   
           this.withRelations = []
           this.selectFromQuery = db.selectFrom('${tableName}')
@@ -1625,7 +1634,7 @@ export async function generateModelString(
   
         toJSON(): Partial<${modelName}JsonResponse> {
           const output: Partial<${modelName}JsonResponse> = ${jsonFields}
-  
+
           return output
         }
   

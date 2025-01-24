@@ -67,6 +67,7 @@ export class TeamModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public personal_access_tokens: AccessTokenModel[] | undefined
   public id: number
   public name: string | undefined
@@ -96,6 +97,14 @@ export class TeamModel {
     this.created_at = team?.created_at
 
     this.updated_at = team?.updated_at
+
+    if (team) {
+      Object.keys(team).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as TeamJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('teams')
@@ -1042,6 +1051,7 @@ export class TeamModel {
       updated_at: this.updated_at,
 
       personal_access_tokens: this.personal_access_tokens,
+      ...this.customColumns,
     }
 
     return output

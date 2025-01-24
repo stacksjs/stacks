@@ -58,6 +58,7 @@ export class FailedJobModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public connection: string | undefined
   public queue: string | undefined
@@ -79,6 +80,14 @@ export class FailedJobModel {
     this.created_at = failedjob?.created_at
 
     this.updated_at = failedjob?.updated_at
+
+    if (failedjob) {
+      Object.keys(failedjob).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as FailedJobJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('failed_jobs')
@@ -961,6 +970,7 @@ export class FailedJobModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

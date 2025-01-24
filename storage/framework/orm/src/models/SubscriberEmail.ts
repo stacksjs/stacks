@@ -56,6 +56,7 @@ export class SubscriberEmailModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public email: string | undefined
 
@@ -73,6 +74,14 @@ export class SubscriberEmailModel {
     this.updated_at = subscriberemail?.updated_at
 
     this.deleted_at = subscriberemail?.deleted_at
+
+    if (subscriberemail) {
+      Object.keys(subscriberemail).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as SubscriberEmailJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscriber_emails')
@@ -985,6 +994,7 @@ export class SubscriberEmailModel {
 
       deleted_at: this.deleted_at,
 
+      ...this.customColumns,
     }
 
     return output

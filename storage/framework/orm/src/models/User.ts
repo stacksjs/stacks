@@ -89,6 +89,7 @@ export class UserModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public deployments: DeploymentModel[] | undefined
   public subscriptions: SubscriptionModel[] | undefined
   public payment_methods: PaymentMethodModel[] | undefined
@@ -122,6 +123,14 @@ export class UserModel {
     this.created_at = user?.created_at
 
     this.updated_at = user?.updated_at
+
+    if (user) {
+      Object.keys(user).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as UserJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('users')
@@ -1394,6 +1403,7 @@ export class UserModel {
       subscriptions: this.subscriptions,
       payment_methods: this.payment_methods,
       transactions: this.transactions,
+      ...this.customColumns,
     }
 
     return output

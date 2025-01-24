@@ -60,6 +60,7 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
@@ -79,6 +80,14 @@ export class PostModel {
     this.created_at = post?.created_at
 
     this.updated_at = post?.updated_at
+
+    if (post) {
+      Object.keys(post).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as PostJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('posts')
@@ -954,6 +963,7 @@ export class PostModel {
 
       user_id: this.user_id,
       user: this.user,
+      ...this.customColumns,
     }
 
     return output

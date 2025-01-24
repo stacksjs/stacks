@@ -62,6 +62,7 @@ export class ProductModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public uuid: string | undefined
   public name: string | undefined
@@ -89,6 +90,14 @@ export class ProductModel {
     this.created_at = product?.created_at
 
     this.updated_at = product?.updated_at
+
+    if (product) {
+      Object.keys(product).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as ProductJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('products')
@@ -995,6 +1004,7 @@ export class ProductModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

@@ -57,6 +57,7 @@ export class ProjectModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public name: string | undefined
   public description: string | undefined
@@ -76,6 +77,14 @@ export class ProjectModel {
     this.created_at = project?.created_at
 
     this.updated_at = project?.updated_at
+
+    if (project) {
+      Object.keys(project).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as ProjectJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('projects')
@@ -949,6 +958,7 @@ export class ProjectModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

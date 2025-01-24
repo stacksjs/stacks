@@ -67,6 +67,7 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
   public id: number
@@ -98,6 +99,14 @@ export class DeploymentModel {
     this.created_at = deployment?.created_at
 
     this.updated_at = deployment?.updated_at
+
+    if (deployment) {
+      Object.keys(deployment).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as DeploymentJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('deployments')
@@ -1024,6 +1033,7 @@ export class DeploymentModel {
 
       user_id: this.user_id,
       user: this.user,
+      ...this.customColumns,
     }
 
     return output

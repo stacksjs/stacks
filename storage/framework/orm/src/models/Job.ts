@@ -58,6 +58,7 @@ export class JobModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public queue: string | undefined
   public payload: string | undefined
@@ -79,6 +80,14 @@ export class JobModel {
     this.created_at = job?.created_at
 
     this.updated_at = job?.updated_at
+
+    if (job) {
+      Object.keys(job).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as JobJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('jobs')
@@ -961,6 +970,7 @@ export class JobModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

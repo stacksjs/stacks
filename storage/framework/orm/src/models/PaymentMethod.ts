@@ -71,6 +71,7 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public user_id: number | undefined
   public user: UserModel | undefined
   public transactions: TransactionModel[] | undefined
@@ -104,6 +105,14 @@ export class PaymentMethodModel {
     this.created_at = paymentmethod?.created_at
 
     this.updated_at = paymentmethod?.updated_at
+
+    if (paymentmethod) {
+      Object.keys(paymentmethod).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as PaymentMethodJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('payment_methods')
@@ -1048,6 +1057,7 @@ export class PaymentMethodModel {
       user_id: this.user_id,
       user: this.user,
       transactions: this.transactions,
+      ...this.customColumns,
     }
 
     return output

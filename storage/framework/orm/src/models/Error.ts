@@ -58,6 +58,7 @@ export class ErrorModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public type: string | undefined
   public message: string | undefined
@@ -79,6 +80,14 @@ export class ErrorModel {
     this.created_at = error?.created_at
 
     this.updated_at = error?.updated_at
+
+    if (error) {
+      Object.keys(error).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as ErrorJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('errors')
@@ -961,6 +970,7 @@ export class ErrorModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

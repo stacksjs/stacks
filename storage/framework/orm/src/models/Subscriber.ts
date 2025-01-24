@@ -54,6 +54,7 @@ export class SubscriberModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public id: number
   public subscribed: boolean | undefined
 
@@ -67,6 +68,14 @@ export class SubscriberModel {
     this.created_at = subscriber?.created_at
 
     this.updated_at = subscriber?.updated_at
+
+    if (subscriber) {
+      Object.keys(subscriber).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as SubscriberJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('subscribers')
@@ -913,6 +922,7 @@ export class SubscriberModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
     return output

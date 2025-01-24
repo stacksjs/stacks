@@ -62,6 +62,7 @@ export class AccessTokenModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private customColumns: Record<string, any> = {}
   public team_id: number | undefined
   public team: TeamModel | undefined
   public id: number
@@ -85,6 +86,14 @@ export class AccessTokenModel {
     this.created_at = accesstoken?.created_at
 
     this.updated_at = accesstoken?.updated_at
+
+    if (accesstoken) {
+      Object.keys(accesstoken).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (user as AccessTokenJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
     this.selectFromQuery = db.selectFrom('personal_access_tokens')
@@ -978,6 +987,7 @@ export class AccessTokenModel {
 
       team_id: this.team_id,
       team: this.team,
+      ...this.customColumns,
     }
 
     return output
