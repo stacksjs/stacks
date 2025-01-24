@@ -728,8 +728,12 @@ export function langPath(path?: string): string {
  * @param options.relative - If true, returns the path relative to the current working directory.
  * @returns The absolute or relative path to the specified file or directory within the `layouts` directory.
  */
-export function layoutsPath(path?: string, options?: { relative?: boolean }): string {
-  const absolutePath = resourcesPath(`layouts/${path || ''}`)
+export function layoutsPath(path?: string, options?: { relative?: boolean, defaults?: boolean }): string {
+  let absolutePath
+  if (options?.defaults)
+    absolutePath = frameworkPath(`defaults/layouts/${path || ''}`)
+  else
+    absolutePath = resourcesPath(`layouts/${path || ''}`)
 
   if (options?.relative)
     return relative(process.cwd(), absolutePath)

@@ -63,7 +63,7 @@ onMounted(() => {
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
                   <a
-                    href="https://stacks.ow3.org/components"
+                    href="https://stacksjs.org/components"
                     class="text-gray-900 underline dark:text-white"
                   >
                     UI Engine
@@ -87,7 +87,7 @@ onMounted(() => {
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
                   <a
-                    href="https://stacks.ow3.org/functions"
+                    href="https://stacksjs.org/functions"
                     class="text-gray-900 underline dark:text-white"
                   >
                     FX Engine
@@ -110,7 +110,7 @@ onMounted(() => {
                 />
                 <div class="ml-4 text-lg text-gray-900 font-semibold leading-7 dark:text-white">
                   <a
-                    href="https://stacks.ow3.org/pages"
+                    href="https://stacksjs.org/pages"
                     class="text-gray-900 underline dark:text-white"
                   >
                     Stacks Engine
@@ -145,7 +145,7 @@ onMounted(() => {
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
                   <a
-                    href="https://stacks.ow3.org/"
+                    href="https://stacksjs.org/"
                     class="text-gray-900 underline dark:text-white"
                   >
                     Modern DX
