@@ -45,6 +45,7 @@ export async function generateModelString(
   let mittDeleteStatement = ''
   let mittDeleteStaticFindStatement = ''
   let mittDeleteFindStatement = ''
+  let privateSoftDeletes = ''
 
   const relations = await getRelations(model, modelName)
 
@@ -68,6 +69,7 @@ export async function generateModelString(
   }
 
   if (useSoftDeletes) {
+    privateSoftDeletes = `private softDeletes = false`
     instanceSoftDeleteStatements += `if (instance.softDeletes) {
         query = query.where('deleted_at', 'is', null)
       }`
@@ -84,7 +86,7 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
   
         if (instance.softDeletes) {
-          return await db.updateTable('transactions')
+          return await db.updateTable('${tableName}')
           .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP'),
           })
@@ -730,7 +732,7 @@ export async function generateModelString(
       export class ${modelName}Model {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
-        private softDeletes = ${useSoftDeletes}
+        ${privateSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]
         protected updateFromQuery: any
@@ -829,7 +831,7 @@ export async function generateModelString(
   
           const instance = new ${modelName}Model(null)
   
-          ${instanceSoftDeleteStatements}
+          ${instanceSoftDeleteStatementsSelectFrom}
   
           if (model === undefined)
             throw new HttpError(404, \`No ${modelName}Model results for \${id}\`)
@@ -880,11 +882,11 @@ export async function generateModelString(
           let models
         
           if (instance.hasSelect) {
-            ${instanceSoftDeleteStatements}
+            ${instanceSoftDeleteStatementsSelectFrom}
   
             models = await instance.selectFromQuery.execute()
           } else {
-            ${instanceSoftDeleteStatements}
+            ${instanceSoftDeleteStatementsSelectFrom}
   
             models = await instance.selectFromQuery.selectAll().execute()
           }

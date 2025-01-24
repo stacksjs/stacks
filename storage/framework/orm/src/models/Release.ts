@@ -44,7 +44,7 @@ interface QueryOptions {
 export class ReleaseModel {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

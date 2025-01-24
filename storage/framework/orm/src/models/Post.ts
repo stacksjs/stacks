@@ -50,7 +50,7 @@ interface QueryOptions {
 export class PostModel {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

@@ -60,7 +60,7 @@ interface QueryOptions {
 export class TransactionModel {
   private readonly hidden: Array<keyof TransactionJsonResponse> = []
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

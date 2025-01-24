@@ -46,7 +46,7 @@ interface QueryOptions {
 export class SubscriberEmailModel {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
-  private softDeletes = true
+  private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
@@ -157,7 +157,7 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     if (model === undefined)
@@ -214,14 +214,14 @@ export class SubscriberEmailModel {
 
     if (instance.hasSelect) {
       if (instance.softDeletes) {
-        query = query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
       models = await instance.selectFromQuery.execute()
     }
     else {
       if (instance.softDeletes) {
-        query = query.where('deleted_at', 'is', null)
+        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }
 
       models = await instance.selectFromQuery.selectAll().execute()
@@ -421,7 +421,7 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      return await db.updateTable('transactions')
+      return await db.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })

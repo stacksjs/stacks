@@ -61,7 +61,7 @@ interface QueryOptions {
 export class PaymentMethodModel {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

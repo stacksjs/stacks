@@ -57,7 +57,7 @@ interface QueryOptions {
 export class DeploymentModel {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

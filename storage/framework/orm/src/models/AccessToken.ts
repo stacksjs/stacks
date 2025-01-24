@@ -52,7 +52,7 @@ interface QueryOptions {
 export class AccessTokenModel {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

@@ -52,7 +52,7 @@ interface QueryOptions {
 export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any

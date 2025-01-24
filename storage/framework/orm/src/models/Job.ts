@@ -48,7 +48,7 @@ interface QueryOptions {
 export class JobModel {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
-  private softDeletes = false
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
