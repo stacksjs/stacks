@@ -42,8 +42,8 @@ interface QueryOptions {
 }
 
 export class ReleaseModel {
-  private hidden = []
-  private fillable = ['version', 'uuid']
+  private readonly hidden: Array<keyof ReleaseJsonResponse> = []
+  private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -68,7 +68,7 @@ export class ReleaseModel {
 
       Object.keys(release).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as ReleaseJsonResponse)[key]
+          this.customColumns[key] = (release as ReleaseJsonResponse)[key]
         }
       })
     }

@@ -50,8 +50,8 @@ interface QueryOptions {
 }
 
 export class AccessTokenModel {
-  private hidden = []
-  private fillable = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
+  private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
+  private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -86,7 +86,7 @@ export class AccessTokenModel {
 
       Object.keys(accesstoken).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as AccessTokenJsonResponse)[key]
+          this.customColumns[key] = (accesstoken as AccessTokenJsonResponse)[key]
         }
       })
     }

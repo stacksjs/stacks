@@ -55,8 +55,8 @@ interface QueryOptions {
 }
 
 export class DeploymentModel {
-  private hidden = []
-  private fillable = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
+  private readonly hidden: Array<keyof DeploymentJsonResponse> = []
+  private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -99,7 +99,7 @@ export class DeploymentModel {
 
       Object.keys(deployment).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as DeploymentJsonResponse)[key]
+          this.customColumns[key] = (deployment as DeploymentJsonResponse)[key]
         }
       })
     }

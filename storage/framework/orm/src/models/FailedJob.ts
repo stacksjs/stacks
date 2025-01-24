@@ -46,8 +46,8 @@ interface QueryOptions {
 }
 
 export class FailedJobModel {
-  private hidden = []
-  private fillable = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
+  private readonly hidden: Array<keyof FailedJobJsonResponse> = []
+  private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -80,7 +80,7 @@ export class FailedJobModel {
 
       Object.keys(failedjob).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as FailedJobJsonResponse)[key]
+          this.customColumns[key] = (failedjob as FailedJobJsonResponse)[key]
         }
       })
     }

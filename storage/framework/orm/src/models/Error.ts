@@ -46,8 +46,8 @@ interface QueryOptions {
 }
 
 export class ErrorModel {
-  private hidden = []
-  private fillable = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
+  private readonly hidden: Array<keyof ErrorJsonResponse> = []
+  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -80,7 +80,7 @@ export class ErrorModel {
 
       Object.keys(error).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as ErrorJsonResponse)[key]
+          this.customColumns[key] = (error as ErrorJsonResponse)[key]
         }
       })
     }

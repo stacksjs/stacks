@@ -58,8 +58,8 @@ interface QueryOptions {
 }
 
 export class TransactionModel {
-  private hidden = []
-  private fillable = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
+  private readonly hidden: Array<keyof TransactionJsonResponse> = []
+  private readonly fillable: Array<keyof TransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'paymentmethod_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -102,7 +102,7 @@ export class TransactionModel {
 
       Object.keys(transaction).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as TransactionJsonResponse)[key]
+          this.customColumns[key] = (transaction as TransactionJsonResponse)[key]
         }
       })
     }

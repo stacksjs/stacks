@@ -45,8 +45,8 @@ interface QueryOptions {
 }
 
 export class ProjectModel {
-  private hidden = []
-  private fillable = ['name', 'description', 'url', 'status', 'uuid']
+  private readonly hidden: Array<keyof ProjectJsonResponse> = []
+  private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -77,7 +77,7 @@ export class ProjectModel {
 
       Object.keys(project).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as ProjectJsonResponse)[key]
+          this.customColumns[key] = (project as ProjectJsonResponse)[key]
         }
       })
     }

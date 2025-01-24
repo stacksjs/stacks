@@ -55,8 +55,8 @@ interface QueryOptions {
 }
 
 export class TeamModel {
-  private hidden = []
-  private fillable = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
+  private readonly hidden: Array<keyof TeamJsonResponse> = []
+  private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -97,7 +97,7 @@ export class TeamModel {
 
       Object.keys(team).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as TeamJsonResponse)[key]
+          this.customColumns[key] = (team as TeamJsonResponse)[key]
         }
       })
     }

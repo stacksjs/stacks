@@ -77,8 +77,8 @@ interface QueryOptions {
 }
 
 export class UserModel {
-  private hidden = ['password']
-  private fillable = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
+  private readonly hidden: Array<keyof UserJsonResponse> = ['password']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]

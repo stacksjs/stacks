@@ -42,8 +42,8 @@ interface QueryOptions {
 }
 
 export class SubscriberModel {
-  private hidden = []
-  private fillable = ['subscribed', 'uuid', 'user_id']
+  private readonly hidden: Array<keyof SubscriberJsonResponse> = []
+  private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -68,7 +68,7 @@ export class SubscriberModel {
 
       Object.keys(subscriber).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as SubscriberJsonResponse)[key]
+          this.customColumns[key] = (subscriber as SubscriberJsonResponse)[key]
         }
       })
     }

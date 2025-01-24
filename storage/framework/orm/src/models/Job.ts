@@ -46,8 +46,8 @@ interface QueryOptions {
 }
 
 export class JobModel {
-  private hidden = []
-  private fillable = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
+  private readonly hidden: Array<keyof JobJsonResponse> = []
+  private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -80,7 +80,7 @@ export class JobModel {
 
       Object.keys(job).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as JobJsonResponse)[key]
+          this.customColumns[key] = (job as JobJsonResponse)[key]
         }
       })
     }

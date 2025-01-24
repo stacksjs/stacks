@@ -50,8 +50,8 @@ interface QueryOptions {
 }
 
 export class ProductModel {
-  private hidden = []
-  private fillable = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
+  private readonly hidden: Array<keyof ProductJsonResponse> = []
+  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -90,7 +90,7 @@ export class ProductModel {
 
       Object.keys(product).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as ProductJsonResponse)[key]
+          this.customColumns[key] = (product as ProductJsonResponse)[key]
         }
       })
     }

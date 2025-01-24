@@ -728,8 +728,8 @@ export async function generateModelString(
       }
   
       export class ${modelName}Model {
-        private hidden = ${hidden}
-        private fillable = ${fillable}
+        private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
+        private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private softDeletes = ${useSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]
@@ -744,7 +744,7 @@ export async function generateModelString(
 
             Object.keys(${formattedModelName}).forEach(key => {
               if (!(key in this)) {
-                 this.customColumns[key] = (user as ${modelName}JsonResponse)[key]
+                 this.customColumns[key] = (${formattedModelName} as ${modelName}JsonResponse)[key]
               }
             })
           }

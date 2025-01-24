@@ -48,8 +48,8 @@ interface QueryOptions {
 }
 
 export class PostModel {
-  private hidden = []
-  private fillable = ['title', 'body', 'uuid', 'user_id']
+  private readonly hidden: Array<keyof PostJsonResponse> = []
+  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -80,7 +80,7 @@ export class PostModel {
 
       Object.keys(post).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (user as PostJsonResponse)[key]
+          this.customColumns[key] = (post as PostJsonResponse)[key]
         }
       })
     }
