@@ -335,6 +335,23 @@ export class ErrorModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: ErrorModel) => ErrorModel,
+  ): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Error by criteria
   async get(): Promise<ErrorModel[]> {
     if (this.hasSelect) {

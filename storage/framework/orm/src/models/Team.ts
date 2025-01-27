@@ -356,6 +356,23 @@ export class TeamModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: TeamModel) => TeamModel,
+  ): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Team by criteria
   async get(): Promise<TeamModel[]> {
     if (this.hasSelect) {

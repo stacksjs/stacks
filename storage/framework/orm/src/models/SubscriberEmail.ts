@@ -349,6 +349,23 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
+  ): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a SubscriberEmail by criteria
   async get(): Promise<SubscriberEmailModel[]> {
     if (this.hasSelect) {

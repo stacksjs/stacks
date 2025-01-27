@@ -339,6 +339,23 @@ export class PostModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: PostModel) => PostModel,
+  ): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Post by criteria
   async get(): Promise<PostModel[]> {
     if (this.hasSelect) {

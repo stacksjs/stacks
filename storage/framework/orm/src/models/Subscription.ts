@@ -367,6 +367,23 @@ export class SubscriptionModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: SubscriptionModel) => SubscriptionModel,
+  ): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Subscription by criteria
   async get(): Promise<SubscriptionModel[]> {
     if (this.hasSelect) {

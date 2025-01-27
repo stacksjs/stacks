@@ -394,6 +394,23 @@ export class UserModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: UserModel) => UserModel,
+  ): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a User by criteria
   async get(): Promise<UserModel[]> {
     if (this.hasSelect) {

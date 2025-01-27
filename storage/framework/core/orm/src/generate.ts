@@ -1013,6 +1013,23 @@ export async function generateModelString(
           return instance
         }
 
+        static whereHas(
+          relation: string,
+          callback: (query: ${modelName}Model) => ${modelName}Model
+        ): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              callback(selectFrom(relation))
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id')
+            )
+          )
+
+          return instance
+        }
+
         // Method to get a ${modelName} by criteria
         async get(): Promise<${modelName}Model[]> {
           if (this.hasSelect) {

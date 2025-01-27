@@ -323,6 +323,23 @@ export class ReleaseModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: ReleaseModel) => ReleaseModel,
+  ): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Release by criteria
   async get(): Promise<ReleaseModel[]> {
     if (this.hasSelect) {

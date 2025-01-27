@@ -365,6 +365,23 @@ export class TransactionModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: TransactionModel) => TransactionModel,
+  ): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Transaction by criteria
   async get(): Promise<TransactionModel[]> {
     if (this.hasSelect) {

@@ -368,6 +368,23 @@ export class PaymentMethodModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: PaymentMethodModel) => PaymentMethodModel,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a PaymentMethod by criteria
   async get(): Promise<PaymentMethodModel[]> {
     if (this.hasSelect) {

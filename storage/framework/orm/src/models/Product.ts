@@ -345,6 +345,23 @@ export class ProductModel {
     return instance
   }
 
+  static whereHas(
+    relation: string,
+    callback: (query: ProductModel) => ProductModel,
+  ): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Product by criteria
   async get(): Promise<ProductModel[]> {
     if (this.hasSelect) {
