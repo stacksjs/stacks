@@ -313,6 +313,20 @@ export class FailedJobModel {
     return data
   }
 
+  static has(relation: string): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a FailedJob by criteria
   async get(): Promise<FailedJobModel[]> {
     if (this.hasSelect) {

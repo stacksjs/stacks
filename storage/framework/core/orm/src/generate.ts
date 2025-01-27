@@ -990,8 +990,21 @@ export async function generateModelString(
           
           return data
         }
-  
-  
+
+        static has(relation: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              selectFrom(relation)
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
+            ),
+          )
+
+          return instance
+        }
+
         // Method to get a ${modelName} by criteria
         async get(): Promise<${modelName}Model[]> {
           if (this.hasSelect) {

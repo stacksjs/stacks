@@ -336,6 +336,20 @@ export class DeploymentModel {
     return data
   }
 
+  static has(relation: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Deployment by criteria
   async get(): Promise<DeploymentModel[]> {
     if (this.hasSelect) {

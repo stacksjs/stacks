@@ -313,6 +313,20 @@ export class JobModel {
     return data
   }
 
+  static has(relation: string): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Job by criteria
   async get(): Promise<JobModel[]> {
     if (this.hasSelect) {

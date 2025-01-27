@@ -301,6 +301,20 @@ export class SubscriberModel {
     return data
   }
 
+  static has(relation: string): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Subscriber by criteria
   async get(): Promise<SubscriberModel[]> {
     if (this.hasSelect) {

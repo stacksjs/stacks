@@ -323,6 +323,20 @@ export class AccessTokenModel {
     return data
   }
 
+  static has(relation: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a AccessToken by criteria
   async get(): Promise<AccessTokenModel[]> {
     if (this.hasSelect) {

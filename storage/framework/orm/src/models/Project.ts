@@ -310,6 +310,20 @@ export class ProjectModel {
     return data
   }
 
+  static has(relation: string): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+      ),
+    )
+
+    return instance
+  }
+
   // Method to get a Project by criteria
   async get(): Promise<ProjectModel[]> {
     if (this.hasSelect) {
