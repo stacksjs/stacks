@@ -211,6 +211,34 @@ export class AccessTokenModel {
     return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
+  static skip(count: number): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

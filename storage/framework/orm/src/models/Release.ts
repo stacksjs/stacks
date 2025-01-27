@@ -189,6 +189,34 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
+  static skip(count: number): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

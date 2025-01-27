@@ -224,6 +224,34 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
+  static skip(count: number): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

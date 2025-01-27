@@ -201,6 +201,34 @@ export class FailedJobModel {
     return model.map(modelItem => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
+  static skip(count: number): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

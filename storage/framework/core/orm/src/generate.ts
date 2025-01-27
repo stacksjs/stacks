@@ -876,6 +876,34 @@ export async function generateModelString(
           return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
         }
 
+        static skip(count: number): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+          return instance
+        }
+          
+        skip(count: number): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.offset(count)
+
+          return this
+        }
+
+        static take(count: number): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+          return instance
+        }
+
+        take(count: number): this {
+          this.selectFromQuery = this.selectFromQuery.limit(count)
+
+          return this
+        }
+
         async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
           if (this.hasSelect) {
             const model = await this.selectFromQuery.execute()

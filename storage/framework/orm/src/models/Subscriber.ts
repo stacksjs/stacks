@@ -189,6 +189,34 @@ export class SubscriberModel {
     return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
+  static skip(count: number): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

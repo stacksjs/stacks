@@ -201,6 +201,34 @@ export class JobModel {
     return model.map(modelItem => instance.parseResult(new JobModel(modelItem)))
   }
 
+  static skip(count: number): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  skip(count: number): JobModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static take(count: number): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  take(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
   async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()
