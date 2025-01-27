@@ -1,5 +1,5 @@
 import { Middleware, request } from '@stacksjs/router'
-import { Team } from '../../storage/framework/orm/src'
+import { Team } from '../../orm/src'
 
 export default new Middleware({
   name: 'Team ',
