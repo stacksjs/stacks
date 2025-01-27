@@ -876,8 +876,16 @@ export class AccessTokenModel {
     return this
   }
 
-  inRandomOrder(): this {
-    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+  static inRandomOrder(): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  inRandomOrder(): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }

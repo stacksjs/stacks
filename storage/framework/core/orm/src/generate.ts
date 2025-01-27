@@ -1537,9 +1537,17 @@ export async function generateModelString(
   
           return this
         }
+        
+        static inRandomOrder(): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
 
-        inRandomOrder(): this {
-            this.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
+          instance.selectFromQuery = instance.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
+
+          return instance
+        }
+
+        inRandomOrder(): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
 
           return this
         }

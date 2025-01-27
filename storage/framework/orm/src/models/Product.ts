@@ -906,8 +906,16 @@ export class ProductModel {
     return this
   }
 
-  inRandomOrder(): this {
-    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+  static inRandomOrder(): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  inRandomOrder(): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }

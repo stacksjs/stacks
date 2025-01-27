@@ -854,8 +854,16 @@ export class PostModel {
     return this
   }
 
-  inRandomOrder(): this {
-    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+  static inRandomOrder(): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  inRandomOrder(): PostModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }

@@ -919,8 +919,16 @@ export class TeamModel {
     return this
   }
 
-  inRandomOrder(): this {
-    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+  static inRandomOrder(): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  inRandomOrder(): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }

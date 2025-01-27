@@ -830,8 +830,16 @@ export class SubscriberModel {
     return this
   }
 
-  inRandomOrder(): this {
-    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+  static inRandomOrder(): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  inRandomOrder(): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }
