@@ -875,6 +875,16 @@ export async function generateModelString(
   
           return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
         }
+
+        async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
+          if (this.hasSelect) {
+            const model = await this.selectFromQuery.execute()
+            return model.map((modelItem: ${modelName}Model) => modelItem[field])
+          }
+
+          const model = await this.selectFromQuery.selectAll().execute()
+          return model.map((modelItem: ${modelName}Model) => modelItem[field])
+        }
   
         static async get(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(null)
@@ -1514,7 +1524,7 @@ export async function generateModelString(
           return instance
         }
 
-        static having(column: keyof PaymentMethodType, operator: string, value: any): ${modelName}Model {
+        static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

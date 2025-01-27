@@ -72,7 +72,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
         const modelPath = path.userModelsPath(`${modelName}.ts`)
-        const coreModelRelationPath = path.storagePath(`framework/database/models/generated/${relationModel}.ts`)
+        const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
 
         if (fs.existsSync(modelRelationPath))
           modelRelation = (await import(modelRelationPath)).default as Model
@@ -192,7 +192,7 @@ export async function getPivotTables(
 
 export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   const allModelFiles = [...modelFiles, ...coreModelFiles]
 
@@ -272,7 +272,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
 
 export async function writeModelNames(): Promise<void> {
   const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < models.length; i++) {
@@ -313,7 +313,7 @@ export async function writeModelNames(): Promise<void> {
 
 export async function writeTableNames(): Promise<void> {
   const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   let fileString = `export type TableNames = `
 
@@ -362,7 +362,7 @@ export async function writeTableNames(): Promise<void> {
 
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
   const allModelFiles = [...modelFiles, ...coreModelFiles]
 
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
@@ -879,7 +879,7 @@ export async function deleteExistingOrmRoute(): Promise<void> {
 
 export async function generateKyselyTypes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   let text = ``
 
@@ -1045,7 +1045,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
 
     log.info('Generating API Routes...')
     const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
-    const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+    const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
     await generateApiRoutes(modelFiles)
     await generateApiRoutes(coreModelFiles)
     log.success('Generated API Routes')
