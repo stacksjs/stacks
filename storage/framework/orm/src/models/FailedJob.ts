@@ -201,6 +201,16 @@ export class FailedJobModel {
     return model.map(modelItem => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
+  async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: FailedJobModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: FailedJobModel) => modelItem[field])
+  }
+
   static async get(): Promise<FailedJobModel[]> {
     const instance = new FailedJobModel(null)
 
@@ -850,7 +860,7 @@ export class FailedJobModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): FailedJobModel {
+  static having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

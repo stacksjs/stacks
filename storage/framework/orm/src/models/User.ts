@@ -260,6 +260,16 @@ export class UserModel {
     return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
+  async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: UserModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: UserModel) => modelItem[field])
+  }
+
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 
@@ -920,7 +930,7 @@ export class UserModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): UserModel {
+  static having(column: keyof UserType, operator: string, value: any): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

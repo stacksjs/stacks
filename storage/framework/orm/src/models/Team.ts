@@ -222,6 +222,16 @@ export class TeamModel {
     return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
+  async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: TeamModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: TeamModel) => modelItem[field])
+  }
+
   static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 
@@ -895,7 +905,7 @@ export class TeamModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): TeamModel {
+  static having(column: keyof TeamType, operator: string, value: any): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

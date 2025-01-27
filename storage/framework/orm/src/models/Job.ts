@@ -201,6 +201,16 @@ export class JobModel {
     return model.map(modelItem => instance.parseResult(new JobModel(modelItem)))
   }
 
+  async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: JobModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: JobModel) => modelItem[field])
+  }
+
   static async get(): Promise<JobModel[]> {
     const instance = new JobModel(null)
 
@@ -850,7 +860,7 @@ export class JobModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): JobModel {
+  static having(column: keyof JobType, operator: string, value: any): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

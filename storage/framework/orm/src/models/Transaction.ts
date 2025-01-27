@@ -231,6 +231,16 @@ export class TransactionModel {
     return model.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
   }
 
+  async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: TransactionModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: TransactionModel) => modelItem[field])
+  }
+
   static async get(): Promise<TransactionModel[]> {
     const instance = new TransactionModel(null)
 
@@ -886,7 +896,7 @@ export class TransactionModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): TransactionModel {
+  static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

@@ -189,6 +189,16 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
+  async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: ReleaseModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: ReleaseModel) => modelItem[field])
+  }
+
   static async get(): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(null)
 
@@ -806,7 +816,7 @@ export class ReleaseModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): ReleaseModel {
+  static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

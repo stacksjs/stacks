@@ -233,6 +233,16 @@ export class SubscriptionModel {
     return model.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
+  async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: SubscriptionModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: SubscriptionModel) => modelItem[field])
+  }
+
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
@@ -928,7 +938,7 @@ export class SubscriptionModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): SubscriptionModel {
+  static having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

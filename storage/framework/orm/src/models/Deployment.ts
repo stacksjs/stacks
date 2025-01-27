@@ -224,6 +224,16 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
+  async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: DeploymentModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: DeploymentModel) => modelItem[field])
+  }
+
   static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 
@@ -895,7 +905,7 @@ export class DeploymentModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): DeploymentModel {
+  static having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

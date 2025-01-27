@@ -211,6 +211,16 @@ export class AccessTokenModel {
     return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
+  async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: AccessTokenModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: AccessTokenModel) => modelItem[field])
+  }
+
   static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 
@@ -852,7 +862,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): AccessTokenModel {
+  static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

@@ -207,6 +207,16 @@ export class SubscriberEmailModel {
     return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
+  async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
+  }
+
   static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 
@@ -867,7 +877,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): SubscriberEmailModel {
+  static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

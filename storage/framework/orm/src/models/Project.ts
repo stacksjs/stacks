@@ -198,6 +198,16 @@ export class ProjectModel {
     return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
+  async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: ProjectModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: ProjectModel) => modelItem[field])
+  }
+
   static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 
@@ -839,7 +849,7 @@ export class ProjectModel {
     return instance
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): ProjectModel {
+  static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
