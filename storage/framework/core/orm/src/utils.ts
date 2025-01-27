@@ -1,5 +1,6 @@
 import type {
   Attributes,
+  BaseRelation,
   FieldArrayElement,
   Model,
   ModelElement,
@@ -63,7 +64,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation]) {
+      for (const relationInstance of model[relation as keyof Model] as BaseRelation) {
         let relationModel = relationInstance.model
         let modelRelation: Model
         if (isString(relationInstance)) {

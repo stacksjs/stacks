@@ -910,6 +910,12 @@ export class TransactionModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

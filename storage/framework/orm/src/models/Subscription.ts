@@ -952,6 +952,12 @@ export class SubscriptionModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

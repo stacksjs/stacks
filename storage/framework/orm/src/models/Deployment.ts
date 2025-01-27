@@ -919,6 +919,12 @@ export class DeploymentModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

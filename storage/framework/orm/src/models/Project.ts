@@ -863,6 +863,12 @@ export class ProjectModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

@@ -906,6 +906,12 @@ export class ProductModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof ProductType, operator: string, value: any): ProductModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

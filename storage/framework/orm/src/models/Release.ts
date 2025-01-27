@@ -830,6 +830,12 @@ export class ReleaseModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

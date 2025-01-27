@@ -854,6 +854,12 @@ export class PostModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof PostType, operator: string, value: any): PostModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

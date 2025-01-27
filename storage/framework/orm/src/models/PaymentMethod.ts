@@ -929,6 +929,12 @@ export class PaymentMethodModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

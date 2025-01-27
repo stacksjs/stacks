@@ -874,6 +874,12 @@ export class FailedJobModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

@@ -876,6 +876,12 @@ export class AccessTokenModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

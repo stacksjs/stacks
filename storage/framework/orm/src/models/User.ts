@@ -944,6 +944,12 @@ export class UserModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof UserType, operator: string, value: any): UserModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 

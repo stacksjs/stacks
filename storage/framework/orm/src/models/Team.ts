@@ -919,6 +919,12 @@ export class TeamModel {
     return this
   }
 
+  inRandomOrder(): this {
+    this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
   having(column: keyof TeamType, operator: string, value: any): TeamModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
