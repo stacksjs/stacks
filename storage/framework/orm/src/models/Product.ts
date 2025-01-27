@@ -102,7 +102,15 @@ export class ProductModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof ProductType)[] | RawBuilder<string>): ProductModel {
+  select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
     const instance = new ProductModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -508,6 +516,47 @@ export class ProductModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): ProductModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new ProductModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): ProductModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -564,31 +613,14 @@ export class ProductModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): ProductModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: ProductModel) => ProductModel,
+  ): ProductModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new ProductModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -603,12 +635,14 @@ export class ProductModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: ProductModel) => ProductModel,
-  ): ProductModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -625,18 +659,6 @@ export class ProductModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereName(value: string): ProductModel {
@@ -717,6 +739,20 @@ export class ProductModel {
     return instance
   }
 
+  whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -733,6 +769,16 @@ export class ProductModel {
     return instance
   }
 
+  whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
     const instance = new ProductModel(null)
 
@@ -743,16 +789,6 @@ export class ProductModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<ProductModel | undefined> {

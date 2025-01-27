@@ -98,7 +98,15 @@ export class AccessTokenModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof AccessTokenType)[] | RawBuilder<string>): AccessTokenModel {
+  select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -502,6 +510,47 @@ export class AccessTokenModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): AccessTokenModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new AccessTokenModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): AccessTokenModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -558,31 +607,14 @@ export class AccessTokenModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): AccessTokenModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: AccessTokenModel) => AccessTokenModel,
+  ): AccessTokenModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new AccessTokenModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -597,12 +629,14 @@ export class AccessTokenModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: AccessTokenModel) => AccessTokenModel,
-  ): AccessTokenModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -619,18 +653,6 @@ export class AccessTokenModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereName(value: string): AccessTokenModel {
@@ -687,6 +709,20 @@ export class AccessTokenModel {
     return instance
   }
 
+  whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -703,6 +739,16 @@ export class AccessTokenModel {
     return instance
   }
 
+  whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -713,16 +759,6 @@ export class AccessTokenModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<AccessTokenModel | undefined> {

@@ -92,7 +92,15 @@ export class ErrorModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof ErrorType)[] | RawBuilder<string>): ErrorModel {
+  select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
     const instance = new ErrorModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -492,6 +500,47 @@ export class ErrorModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): ErrorModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new ErrorModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): ErrorModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -548,31 +597,14 @@ export class ErrorModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): ErrorModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: ErrorModel) => ErrorModel,
+  ): ErrorModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new ErrorModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -587,12 +619,14 @@ export class ErrorModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: ErrorModel) => ErrorModel,
-  ): ErrorModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -609,18 +643,6 @@ export class ErrorModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereType(value: string): ErrorModel {
@@ -685,6 +707,20 @@ export class ErrorModel {
     return instance
   }
 
+  whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -701,6 +737,16 @@ export class ErrorModel {
     return instance
   }
 
+  whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
@@ -711,16 +757,6 @@ export class ErrorModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<ErrorModel | undefined> {

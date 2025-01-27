@@ -135,7 +135,15 @@ export class UserModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof UserType)[] | RawBuilder<string>): UserModel {
+  select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
     const instance = new UserModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -570,6 +578,47 @@ export class UserModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): UserModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new UserModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): UserModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): UserModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -626,31 +675,14 @@ export class UserModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): UserModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: UserModel) => UserModel,
+  ): UserModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new UserModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -665,12 +697,14 @@ export class UserModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: UserModel) => UserModel,
-  ): UserModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -687,18 +721,6 @@ export class UserModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereName(value: string): UserModel {
@@ -755,6 +777,20 @@ export class UserModel {
     return instance
   }
 
+  whereBetween(column: keyof UserType, range: [any, any]): UserModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -771,6 +807,16 @@ export class UserModel {
     return instance
   }
 
+  whereNotIn(column: keyof UserType, values: any[]): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof UserType, values: any[]): UserModel {
     const instance = new UserModel(null)
 
@@ -781,16 +827,6 @@ export class UserModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof UserType, values: any[]): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<UserModel | undefined> {

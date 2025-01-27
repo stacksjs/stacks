@@ -109,7 +109,15 @@ export class TeamModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof TeamType)[] | RawBuilder<string>): TeamModel {
+  select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
     const instance = new TeamModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -513,6 +521,47 @@ export class TeamModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new TeamModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): TeamModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -569,31 +618,14 @@ export class TeamModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): TeamModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: TeamModel) => TeamModel,
+  ): TeamModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new TeamModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -608,12 +640,14 @@ export class TeamModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: TeamModel) => TeamModel,
-  ): TeamModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -630,18 +664,6 @@ export class TeamModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereName(value: string): TeamModel {
@@ -730,6 +752,20 @@ export class TeamModel {
     return instance
   }
 
+  whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -746,6 +782,16 @@ export class TeamModel {
     return instance
   }
 
+  whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
     const instance = new TeamModel(null)
 
@@ -756,16 +802,6 @@ export class TeamModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<TeamModel | undefined> {

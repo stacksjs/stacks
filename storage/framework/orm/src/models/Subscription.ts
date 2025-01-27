@@ -120,7 +120,15 @@ export class SubscriptionModel {
     this.hasSelect = false
   }
 
-  static select(params: (keyof SubscriptionType)[] | RawBuilder<string>): SubscriptionModel {
+  select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     // Initialize a query with the table name and selected fields
@@ -530,6 +538,47 @@ export class SubscriptionModel {
     return this
   }
 
+  static where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
+    let column: any
+    let operator: any
+    let value: any
+
+    const instance = new SubscriptionModel(null)
+
+    if (args.length === 2) {
+      [column, value] = args
+      operator = '='
+    }
+    else if (args.length === 3) {
+      [column, operator, value] = args
+    }
+    else {
+      throw new HttpError(500, 'Invalid number of arguments')
+    }
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+
+    return instance
+  }
+
+  whereRef(column: string, operator: string, value: string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+    return this
+  }
+
+  static whereRef(column: string, operator: string, value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
   orWhere(...args: Array<[string, string, any]>): SubscriptionModel {
     if (args.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
@@ -586,31 +635,14 @@ export class SubscriptionModel {
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
-    let column: any
-    let operator: any
-    let value: any
+  when(
+    condition: boolean,
+    callback: (query: SubscriptionModel) => SubscriptionModel,
+  ): SubscriptionModel {
+    if (condition)
+      callback(this.selectFromQuery)
 
-    const instance = new SubscriptionModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-
-    return instance
+    return this
   }
 
   static when(
@@ -625,12 +657,14 @@ export class SubscriptionModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: SubscriptionModel) => SubscriptionModel,
-  ): SubscriptionModel {
-    if (condition)
-      callback(this.selectFromQuery)
+  whereNull(column: string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
 
     return this
   }
@@ -647,18 +681,6 @@ export class SubscriptionModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereType(value: string): SubscriptionModel {
@@ -763,6 +785,20 @@ export class SubscriptionModel {
     return instance
   }
 
+  whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
+    if (range.length !== 2) {
+      throw new Error('Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   static whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
     if (range.length !== 2) {
       throw new Error('Range must have exactly two values: [min, max]')
@@ -779,6 +815,16 @@ export class SubscriptionModel {
     return instance
   }
 
+  whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   static whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -789,16 +835,6 @@ export class SubscriptionModel {
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
 
     return instance
-  }
-
-  whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
   }
 
   async first(): Promise<SubscriptionModel | undefined> {

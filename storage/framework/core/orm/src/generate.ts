@@ -758,7 +758,15 @@ export async function generateModelString(
           this.hasSelect = false
         }
   
-        static select(params: (keyof ${modelName}Type)[] | RawBuilder<string>): ${modelName}Model {
+        select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.select(params)
+  
+          this.hasSelect = true
+  
+          return this
+        }
+
+        static select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           // Initialize a query with the table name and selected fields
@@ -1191,6 +1199,45 @@ export async function generateModelString(
   
           return this
         }
+
+         static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
+          let column: any
+          let operator: any
+          let value: any
+  
+          const instance = new ${modelName}Model(null)
+  
+          if (args.length === 2) {
+            [column, value] = args
+            operator = '='
+          } else if (args.length === 3) {
+              [column, operator, value] = args
+          } else {
+            throw new HttpError(500, "Invalid number of arguments")
+          }
+  
+          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+  
+          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+  
+          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  
+          return instance
+        }
+
+        whereRef(column: string, operator: string, value: string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
+
+          return this
+        }
+
+        static whereRef(column: string, operator: string, value: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+          return instance
+        }
   
         orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
           if (args.length === 0) {
@@ -1247,30 +1294,15 @@ export async function generateModelString(
   
           return instance
         }
+
+        when(
+          condition: boolean,
+          callback: (query: ${modelName}Model) => ${modelName}Model,
+        ): ${modelName}Model {
+          if (condition)
+            callback(this.selectFromQuery)
   
-        static where(...args: (string | number | boolean | undefined | null)[]): ${modelName}Model {
-          let column: any
-          let operator: any
-          let value: any
-  
-          const instance = new ${modelName}Model(null)
-  
-          if (args.length === 2) {
-            [column, value] = args
-            operator = '='
-          } else if (args.length === 3) {
-              [column, operator, value] = args
-          } else {
-            throw new HttpError(500, "Invalid number of arguments")
-          }
-  
-          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-  
-          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
-  
-          return instance
+          return this
         }
   
         static when(
@@ -1284,13 +1316,15 @@ export async function generateModelString(
   
           return instance
         }
+
+        whereNull(column: string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
   
-        when(
-          condition: boolean,
-          callback: (query: ${modelName}Model) => ${modelName}Model,
-        ): ${modelName}Model {
-          if (condition)
-            callback(this.selectFromQuery)
+          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
   
           return this
         }
@@ -1309,19 +1343,8 @@ export async function generateModelString(
           return instance
         }
   
-        whereNull(column: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
   
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          return this
-        }
-  
-         ${whereStatements}
+        ${whereStatements}
   
         whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
@@ -1344,6 +1367,20 @@ export async function generateModelString(
   
           return instance
         }
+
+        whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+          if (range.length !== 2) {
+            throw new Error('Range must have exactly two values: [min, max]')
+          }
+  
+          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
+  
+          this.selectFromQuery = this.selectFromQuery.where(query)
+          this.updateFromQuery = this.updateFromQuery.where(query)
+          this.deleteFromQuery = this.deleteFromQuery.where(query)
+  
+          return this
+        }
   
         static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
@@ -1360,6 +1397,17 @@ export async function generateModelString(
   
           return instance
         }
+
+
+        whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+  
+          this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+  
+          this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+  
+          return this
+        }
   
         static whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
@@ -1371,16 +1419,6 @@ export async function generateModelString(
           instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
   
           return instance
-        }
-  
-        whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-  
-          this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-  
-          return this
         }
   
         async first(): Promise<${modelName}Model | undefined> {
