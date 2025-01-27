@@ -283,6 +283,18 @@ export class SubscriptionModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof SubscriptionModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof SubscriptionModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 

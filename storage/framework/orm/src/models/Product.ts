@@ -261,6 +261,18 @@ export class ProductModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof ProductModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof ProductModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ProductModel[]> {
     const instance = new ProductModel(null)
 

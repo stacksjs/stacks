@@ -248,6 +248,18 @@ export class ProjectModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof ProjectModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof ProjectModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 

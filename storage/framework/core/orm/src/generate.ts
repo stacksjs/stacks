@@ -925,7 +925,19 @@ export async function generateModelString(
             .select(sql\`MIN(\${sql.raw(field as string)}) \`)
             .executeTakeFirst()
         }
-            
+
+        async avg(field: keyof ${modelName}Model): Promise<number> {
+          return this.selectFromQuery
+            .select(sql\`AVG(\${sql.raw(field as string)})\`)
+            .executeTakeFirst()
+        }
+
+        async sum(field: keyof ${modelName}Model): Promise<number> {
+          return this.selectFromQuery
+            .select(sql\`SUM(\${sql.raw(field as string)})\`)
+            .executeTakeFirst()
+        }
+
         static async get(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(null)
   

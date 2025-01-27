@@ -284,6 +284,18 @@ export class PaymentMethodModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof PaymentMethodModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof PaymentMethodModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(null)
 

@@ -255,6 +255,18 @@ export class PostModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof PostModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof PostModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<PostModel[]> {
     const instance = new PostModel(null)
 

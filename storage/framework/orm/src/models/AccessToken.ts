@@ -261,6 +261,18 @@ export class AccessTokenModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof AccessTokenModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof AccessTokenModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 

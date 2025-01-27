@@ -274,6 +274,18 @@ export class DeploymentModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof DeploymentModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof DeploymentModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 

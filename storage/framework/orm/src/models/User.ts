@@ -310,6 +310,18 @@ export class UserModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof UserModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof UserModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 

@@ -281,6 +281,18 @@ export class TransactionModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof TransactionModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof TransactionModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<TransactionModel[]> {
     const instance = new TransactionModel(null)
 

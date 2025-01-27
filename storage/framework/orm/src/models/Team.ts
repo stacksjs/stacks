@@ -272,6 +272,18 @@ export class TeamModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof TeamModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof TeamModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 

@@ -251,6 +251,18 @@ export class ErrorModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof ErrorModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof ErrorModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ErrorModel[]> {
     const instance = new ErrorModel(null)
 

@@ -251,6 +251,18 @@ export class JobModel {
       .executeTakeFirst()
   }
 
+  async avg(field: keyof JobModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  async sum(field: keyof JobModel): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<JobModel[]> {
     const instance = new JobModel(null)
 
