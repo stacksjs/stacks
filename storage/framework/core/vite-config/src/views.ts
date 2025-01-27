@@ -1,5 +1,6 @@
 import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
+import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import {
@@ -64,7 +65,7 @@ export const viewsConfig: ViteConfig = {
 
   plugins: [
     Local({
-      domain: 'stacks.localhost', // default: stacks.localhost
+      domain: env.APP_URL ?? 'stacks.localhost',
       https: true, // Use default SSL config, pass TlsConfig options to customize
       cleanup: {
         hosts: true, // Clean up relating /etc/hosts entry
