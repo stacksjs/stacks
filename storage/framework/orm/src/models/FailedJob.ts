@@ -229,6 +229,19 @@ export class FailedJobModel {
     return this
   }
 
+  static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
+    const instance = new FailedJobModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: FailedJobModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: FailedJobModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

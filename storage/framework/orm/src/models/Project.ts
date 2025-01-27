@@ -226,6 +226,19 @@ export class ProjectModel {
     return this
   }
 
+  static async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
+    const instance = new ProjectModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: ProjectModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: ProjectModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

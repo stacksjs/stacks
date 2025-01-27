@@ -288,6 +288,19 @@ export class UserModel {
     return this
   }
 
+  static async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
+    const instance = new UserModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: UserModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: UserModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

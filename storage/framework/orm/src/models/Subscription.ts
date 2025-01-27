@@ -261,6 +261,19 @@ export class SubscriptionModel {
     return this
   }
 
+  static async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
+    const instance = new SubscriptionModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: SubscriptionModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: SubscriptionModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

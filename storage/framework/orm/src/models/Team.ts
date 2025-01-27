@@ -250,6 +250,19 @@ export class TeamModel {
     return this
   }
 
+  static async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
+    const instance = new TeamModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: TeamModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: TeamModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

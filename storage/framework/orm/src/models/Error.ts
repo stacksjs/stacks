@@ -229,6 +229,19 @@ export class ErrorModel {
     return this
   }
 
+  static async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
+    const instance = new ErrorModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: ErrorModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: ErrorModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

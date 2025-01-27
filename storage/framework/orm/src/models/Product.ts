@@ -239,6 +239,19 @@ export class ProductModel {
     return this
   }
 
+  static async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
+    const instance = new ProductModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: ProductModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: ProductModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

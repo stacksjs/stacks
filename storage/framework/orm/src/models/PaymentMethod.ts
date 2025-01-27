@@ -262,6 +262,19 @@ export class PaymentMethodModel {
     return this
   }
 
+  static async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
+    const instance = new PaymentMethodModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: PaymentMethodModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: PaymentMethodModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

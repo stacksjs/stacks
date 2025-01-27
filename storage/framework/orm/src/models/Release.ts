@@ -217,6 +217,19 @@ export class ReleaseModel {
     return this
   }
 
+  static async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
+    const instance = new ReleaseModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: ReleaseModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: ReleaseModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

@@ -252,6 +252,19 @@ export class DeploymentModel {
     return this
   }
 
+  static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
+    const instance = new DeploymentModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: DeploymentModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: DeploymentModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

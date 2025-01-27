@@ -235,6 +235,19 @@ export class SubscriberEmailModel {
     return this
   }
 
+  static async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
+    const instance = new SubscriberEmailModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

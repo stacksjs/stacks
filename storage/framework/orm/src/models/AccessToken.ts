@@ -239,6 +239,19 @@ export class AccessTokenModel {
     return this
   }
 
+  static async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
+    const instance = new AccessTokenModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: AccessTokenModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: AccessTokenModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

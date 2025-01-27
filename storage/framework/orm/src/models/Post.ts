@@ -233,6 +233,19 @@ export class PostModel {
     return this
   }
 
+  static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
+    const instance = new PostModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: PostModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: PostModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()

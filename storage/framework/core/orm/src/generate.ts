@@ -904,6 +904,19 @@ export async function generateModelString(
           return this
         }
 
+        static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
+         const instance = new ${modelName}Model(null)
+
+          if (instance.hasSelect) {
+            const model = await instance.selectFromQuery.execute()
+            return model.map((modelItem: ${modelName}Model) => modelItem[field])
+          }
+
+          const model = await instance.selectFromQuery.selectAll().execute()
+          
+          return model.map((modelItem: ${modelName}Model) => modelItem[field])
+        }
+
         async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
           if (this.hasSelect) {
             const model = await this.selectFromQuery.execute()

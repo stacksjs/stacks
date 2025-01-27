@@ -259,6 +259,19 @@ export class TransactionModel {
     return this
   }
 
+  static async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
+    const instance = new TransactionModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: TransactionModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: TransactionModel) => modelItem[field])
+  }
+
   async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()
