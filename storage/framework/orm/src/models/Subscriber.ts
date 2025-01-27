@@ -240,6 +240,20 @@ export class SubscriberModel {
     return model.map((modelItem: SubscriberModel) => modelItem[field])
   }
 
+  static async count(): Promise<number> {
+    const instance = new SubscriberModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+  }
+
+  async count(): Promise<number> {
+    return this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+  }
+
   async max(field: keyof SubscriberModel): Promise<number> {
     return await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) `)
@@ -298,26 +312,6 @@ export class SubscriberModel {
     const model = await this.selectFromQuery.selectAll().execute()
 
     return model.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
-  }
-
-  static async count(): Promise<number> {
-    const instance = new SubscriberModel(null)
-
-    const results = await instance.selectFromQuery.selectAll().execute()
-
-    return results.length
-  }
-
-  async count(): Promise<number> {
-    if (this.hasSelect) {
-      const results = await this.selectFromQuery.execute()
-
-      return results.length
-    }
-
-    const results = await this.selectFromQuery.execute()
-
-    return results.length
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
