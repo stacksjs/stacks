@@ -245,6 +245,18 @@ export class SubscriberEmailModel {
     return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
   }
 
+  async max(field: keyof SubscriberEmailModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof SubscriberEmailModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 

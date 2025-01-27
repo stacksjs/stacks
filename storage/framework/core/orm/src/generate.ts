@@ -913,7 +913,19 @@ export async function generateModelString(
           const model = await this.selectFromQuery.selectAll().execute()
           return model.map((modelItem: ${modelName}Model) => modelItem[field])
         }
-  
+
+        async max(field: keyof ${modelName}Model): Promise<number> {
+          return await this.selectFromQuery
+            .select(sql\`MAX(\${sql.raw(field as string)}) \`)
+            .executeTakeFirst()
+        }
+         
+        async min(field: keyof ${modelName}Model): Promise<number> {
+          return await this.selectFromQuery
+            .select(sql\`MIN(\${sql.raw(field as string)}) \`)
+            .executeTakeFirst()
+        }
+            
         static async get(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(null)
   

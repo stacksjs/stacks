@@ -249,6 +249,18 @@ export class AccessTokenModel {
     return model.map((modelItem: AccessTokenModel) => modelItem[field])
   }
 
+  async max(field: keyof AccessTokenModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof AccessTokenModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 

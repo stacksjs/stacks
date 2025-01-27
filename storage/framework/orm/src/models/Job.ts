@@ -239,6 +239,18 @@ export class JobModel {
     return model.map((modelItem: JobModel) => modelItem[field])
   }
 
+  async max(field: keyof JobModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof JobModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<JobModel[]> {
     const instance = new JobModel(null)
 

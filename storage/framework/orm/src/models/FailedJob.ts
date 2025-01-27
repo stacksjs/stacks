@@ -239,6 +239,18 @@ export class FailedJobModel {
     return model.map((modelItem: FailedJobModel) => modelItem[field])
   }
 
+  async max(field: keyof FailedJobModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof FailedJobModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<FailedJobModel[]> {
     const instance = new FailedJobModel(null)
 

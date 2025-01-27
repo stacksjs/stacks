@@ -227,6 +227,18 @@ export class ReleaseModel {
     return model.map((modelItem: ReleaseModel) => modelItem[field])
   }
 
+  async max(field: keyof ReleaseModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof ReleaseModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(null)
 

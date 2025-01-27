@@ -298,6 +298,18 @@ export class UserModel {
     return model.map((modelItem: UserModel) => modelItem[field])
   }
 
+  async max(field: keyof UserModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof UserModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 

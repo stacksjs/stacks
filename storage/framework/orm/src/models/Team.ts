@@ -260,6 +260,18 @@ export class TeamModel {
     return model.map((modelItem: TeamModel) => modelItem[field])
   }
 
+  async max(field: keyof TeamModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof TeamModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 

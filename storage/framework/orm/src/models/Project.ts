@@ -236,6 +236,18 @@ export class ProjectModel {
     return model.map((modelItem: ProjectModel) => modelItem[field])
   }
 
+  async max(field: keyof ProjectModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof ProjectModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 

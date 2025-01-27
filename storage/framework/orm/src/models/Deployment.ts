@@ -262,6 +262,18 @@ export class DeploymentModel {
     return model.map((modelItem: DeploymentModel) => modelItem[field])
   }
 
+  async max(field: keyof DeploymentModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof DeploymentModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 

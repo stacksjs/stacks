@@ -272,6 +272,18 @@ export class PaymentMethodModel {
     return model.map((modelItem: PaymentMethodModel) => modelItem[field])
   }
 
+  async max(field: keyof PaymentMethodModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof PaymentMethodModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(null)
 

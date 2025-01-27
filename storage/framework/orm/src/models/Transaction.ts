@@ -269,6 +269,18 @@ export class TransactionModel {
     return model.map((modelItem: TransactionModel) => modelItem[field])
   }
 
+  async max(field: keyof TransactionModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof TransactionModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<TransactionModel[]> {
     const instance = new TransactionModel(null)
 

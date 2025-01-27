@@ -243,6 +243,18 @@ export class PostModel {
     return model.map((modelItem: PostModel) => modelItem[field])
   }
 
+  async max(field: keyof PostModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof PostModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<PostModel[]> {
     const instance = new PostModel(null)
 

@@ -239,6 +239,18 @@ export class ErrorModel {
     return model.map((modelItem: ErrorModel) => modelItem[field])
   }
 
+  async max(field: keyof ErrorModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof ErrorModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ErrorModel[]> {
     const instance = new ErrorModel(null)
 

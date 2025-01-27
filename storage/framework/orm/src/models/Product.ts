@@ -249,6 +249,18 @@ export class ProductModel {
     return model.map((modelItem: ProductModel) => modelItem[field])
   }
 
+  async max(field: keyof ProductModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof ProductModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<ProductModel[]> {
     const instance = new ProductModel(null)
 

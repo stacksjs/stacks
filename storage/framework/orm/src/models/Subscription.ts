@@ -271,6 +271,18 @@ export class SubscriptionModel {
     return model.map((modelItem: SubscriptionModel) => modelItem[field])
   }
 
+  async max(field: keyof SubscriptionModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  async min(field: keyof SubscriptionModel): Promise<number> {
+    return await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
