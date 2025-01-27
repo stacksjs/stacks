@@ -39,7 +39,7 @@
     "changelogen": "^0.5.7",
     "commitizen": "^4.3.1",
     "cz-git": "^1.11.0",
-    "giget": "^1.2.3",
+    "giget": "^1.2.4",
     "simple-git-hooks": "^2.11.1"
   }
 }
