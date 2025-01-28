@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
   id?: number
@@ -376,19 +377,62 @@ export class SubscriberEmailModel {
     return this
   }
 
-  static whereHas(
-    relation: string,
-    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
-  ): SubscriberEmailModel {
+  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
+    const subqueryBuilder = new SubqueryBuilder()
 
-    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    instance.selectFromQuery = instance.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
-      ),
-    )
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
 
     return instance
   }

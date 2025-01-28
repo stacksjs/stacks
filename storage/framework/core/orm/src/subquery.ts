@@ -10,18 +10,18 @@ interface WhereCondition {
   callback?: (query: SubqueryBuilder) => void
 }
 
-class SubqueryBuilder {
+export class SubqueryBuilder {
   private conditions: WhereCondition[] = []
 
-  where(...args: (string | number | boolean | undefined | null)[]) {
+  where(...args: (string | number | boolean | undefined | null)[]): void {
     this.addCondition('and', 'where', ...args)
   }
 
-  orWhere(...args: (string | number | boolean | undefined | null)[]) {
+  orWhere(...args: (string | number | boolean | undefined | null)[]): void {
     this.addCondition('or', 'where', ...args)
   }
 
-  whereIn(column: string, values: any[]) {
+  whereIn(column: string, values: any[]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
@@ -30,7 +30,7 @@ class SubqueryBuilder {
     })
   }
 
-  whereNotIn(column: string, values: any[]) {
+  whereNotIn(column: string, values: any[]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
@@ -48,7 +48,7 @@ class SubqueryBuilder {
     })
   }
 
-  whereNotNull(column: string) {
+  whereNotNull(column: string): void {
     this.conditions.push({
       type: 'and',
       method: 'whereNotNull',
@@ -56,7 +56,7 @@ class SubqueryBuilder {
     })
   }
 
-  whereBetween(column: string, range: [any, any]) {
+  whereBetween(column: string, range: [any, any]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereBetween',
@@ -65,7 +65,7 @@ class SubqueryBuilder {
     })
   }
 
-  whereExists(callback: (query: SubqueryBuilder) => void) {
+  whereExists(callback: (query: SubqueryBuilder) => void): void {
     this.conditions.push({
       type: 'and',
       method: 'whereExists',
@@ -74,7 +74,7 @@ class SubqueryBuilder {
     })
   }
 
-  private addCondition(type: 'and' | 'or', method: 'where', ...args: (string | number | boolean | undefined | null)[]) {
+  private addCondition(type: 'and' | 'or', method: 'where', ...args: (string | number | boolean | undefined | null)[]): void {
     let column: any
     let operator: any
     let value: any
@@ -93,7 +93,7 @@ class SubqueryBuilder {
     this.conditions.push({ type, method, column, operator, value })
   }
 
-  getConditions() {
+  getConditions(): WhereCondition[] {
     return this.conditions
   }
 }
