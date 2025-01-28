@@ -14,5 +14,5 @@
 
 export * from '../../../orm/src/types'
 export * from './requests'
-
+export * from './subquery'
 export * from './utils'

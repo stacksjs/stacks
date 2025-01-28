@@ -749,7 +749,7 @@ export class PostModel {
 
   whereBetween(column: keyof PostType, range: [any, any]): PostModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
@@ -763,7 +763,7 @@ export class PostModel {
 
   static whereBetween(column: keyof PostType, range: [any, any]): PostModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const instance = new PostModel(null)
@@ -890,7 +890,7 @@ export class PostModel {
     const key = Object.keys(condition)[0] as keyof PostType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -919,7 +919,7 @@ export class PostModel {
     const key = Object.keys(condition)[0] as keyof PostType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -944,7 +944,7 @@ export class PostModel {
         .executeTakeFirst()
 
       if (!updatedPost) {
-        throw new Error('Failed to fetch updated record')
+        throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       const instance = new PostModel(null)

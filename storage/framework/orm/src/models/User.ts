@@ -839,7 +839,7 @@ export class UserModel {
 
   whereBetween(column: keyof UserType, range: [any, any]): UserModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
@@ -853,7 +853,7 @@ export class UserModel {
 
   static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const instance = new UserModel(null)
@@ -980,7 +980,7 @@ export class UserModel {
     const key = Object.keys(condition)[0] as keyof UserType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -1009,7 +1009,7 @@ export class UserModel {
     const key = Object.keys(condition)[0] as keyof UserType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -1034,7 +1034,7 @@ export class UserModel {
         .executeTakeFirst()
 
       if (!updatedUser) {
-        throw new Error('Failed to fetch updated record')
+        throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       const instance = new UserModel(null)
@@ -1445,7 +1445,7 @@ export class UserModel {
 
   async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     if (!this.hasStripeId()) {
-      throw new Error('Customer does not exist in Stripe')
+      throw new HttpError(404, 'Customer does not exist in Stripe')
     }
 
     const defaultOptions: Stripe.PaymentIntentCreateParams = {

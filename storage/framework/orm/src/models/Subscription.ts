@@ -847,7 +847,7 @@ export class SubscriptionModel {
 
   whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
@@ -861,7 +861,7 @@ export class SubscriptionModel {
 
   static whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
     if (range.length !== 2) {
-      throw new Error('Range must have exactly two values: [min, max]')
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
 
     const instance = new SubscriptionModel(null)
@@ -988,7 +988,7 @@ export class SubscriptionModel {
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -1017,7 +1017,7 @@ export class SubscriptionModel {
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
     if (!key) {
-      throw new Error('Condition must contain at least one key-value pair')
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
     }
 
     const value = condition[key]
@@ -1042,7 +1042,7 @@ export class SubscriptionModel {
         .executeTakeFirst()
 
       if (!updatedSubscription) {
-        throw new Error('Failed to fetch updated record')
+        throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       const instance = new SubscriptionModel(null)

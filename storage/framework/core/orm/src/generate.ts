@@ -409,7 +409,7 @@ export async function generateModelString(
   
       async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
         if (!this.hasStripeId()) {
-          throw new Error('Customer does not exist in Stripe')
+          throw new HttpError(404, 'Customer does not exist in Stripe')
         }
   
         const defaultOptions: Stripe.PaymentIntentCreateParams = {
@@ -1359,6 +1359,7 @@ export async function generateModelString(
           condition: boolean,
           callback: (query: ${modelName}Model) => ${modelName}Model,
         ): ${modelName}Model {
+        
           if (condition)
             callback(this.selectFromQuery)
   
@@ -1430,7 +1431,7 @@ export async function generateModelString(
 
         whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
-            throw new Error('Range must have exactly two values: [min, max]')
+            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
           }
   
           const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
@@ -1444,7 +1445,7 @@ export async function generateModelString(
   
         static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
-            throw new Error('Range must have exactly two values: [min, max]')
+            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
           }
   
           const instance = new ${modelName}Model(null)
@@ -1572,7 +1573,7 @@ export async function generateModelString(
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
           if (!key) {
-            throw new Error('Condition must contain at least one key-value pair')
+            throw new HttpError(500, 'Condition must contain at least one key-value pair')
           }
   
           const value = condition[key]
@@ -1601,7 +1602,7 @@ export async function generateModelString(
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
           if (!key) {
-            throw new Error('Condition must contain at least one key-value pair')
+            throw new HttpError(500, 'Condition must contain at least one key-value pair')
           }
   
           const value = condition[key]
@@ -1626,7 +1627,7 @@ export async function generateModelString(
               .executeTakeFirst()
   
             if (!updated${modelName}) {
-              throw new Error('Failed to fetch updated record')
+              throw new HttpError(500, 'Failed to fetch updated record')
             }
   
             const instance = new ${modelName}Model(null)
