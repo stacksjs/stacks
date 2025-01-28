@@ -112,22 +112,8 @@ export class PostModel {
     return instance
   }
 
-  // Method to find a Post by ID
   async find(id: number): Promise<PostModel | undefined> {
-    const query = db.selectFrom('posts').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    return data
+    return PostModel.find(id)
   }
 
   // Method to find a Post by ID
@@ -188,18 +174,7 @@ export class PostModel {
   }
 
   async findOrFail(id: number): Promise<PostModel> {
-    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PostModel results for ${id}`)
-
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    return data
+    return PostModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
@@ -214,6 +189,10 @@ export class PostModel {
     return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
   }
 
+  skip(count: number): PostModel {
+    return PostModel.skip(count)
+  }
+
   static skip(count: number): PostModel {
     const instance = new PostModel(null)
 
@@ -222,10 +201,8 @@ export class PostModel {
     return instance
   }
 
-  skip(count: number): PostModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return PostModel.take(count)
   }
 
   static take(count: number): PostModel {
@@ -234,12 +211,6 @@ export class PostModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
@@ -256,13 +227,7 @@ export class PostModel {
   }
 
   async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: PostModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: PostModel) => modelItem[field])
+    return PostModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -274,9 +239,7 @@ export class PostModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return PostModel.count()
   }
 
   async max(field: keyof PostModel): Promise<number> {
@@ -331,15 +294,7 @@ export class PostModel {
   }
 
   has(relation: string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
-      ),
-    )
-
-    return this
+    return PostModel.has(relation)
   }
 
   static has(relation: string): PostModel {
@@ -358,20 +313,15 @@ export class PostModel {
 
   whereHas(
     relation: string,
-    callback: (query: PostModel) => PostModel,
+    callback: (query: SubqueryBuilder) => void,
   ): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
-      ),
-    )
-
-    return this
+    return PostModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PostModel {
     const instance = new PostModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -575,7 +525,7 @@ export class PostModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: PostModel, column: string, operator: string, value: any): PostModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

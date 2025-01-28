@@ -140,22 +140,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  // Method to find a Subscription by ID
   async find(id: number): Promise<SubscriptionModel | undefined> {
-    const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
-
-    cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
-
-    return data
+    return SubscriptionModel.find(id)
   }
 
   // Method to find a Subscription by ID
@@ -216,18 +202,7 @@ export class SubscriptionModel {
   }
 
   async findOrFail(id: number): Promise<SubscriptionModel> {
-    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No SubscriptionModel results for ${id}`)
-
-    cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
-
-    return data
+    return SubscriptionModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
@@ -242,6 +217,10 @@ export class SubscriptionModel {
     return model.map(modelItem => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
+  skip(count: number): SubscriptionModel {
+    return SubscriptionModel.skip(count)
+  }
+
   static skip(count: number): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -250,10 +229,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  skip(count: number): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return SubscriptionModel.take(count)
   }
 
   static take(count: number): SubscriptionModel {
@@ -262,12 +239,6 @@ export class SubscriptionModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
@@ -284,13 +255,7 @@ export class SubscriptionModel {
   }
 
   async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: SubscriptionModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: SubscriptionModel) => modelItem[field])
+    return SubscriptionModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -302,9 +267,7 @@ export class SubscriptionModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return SubscriptionModel.count()
   }
 
   async max(field: keyof SubscriptionModel): Promise<number> {
@@ -359,15 +322,7 @@ export class SubscriptionModel {
   }
 
   has(relation: string): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
-      ),
-    )
-
-    return this
+    return SubscriptionModel.has(relation)
   }
 
   static has(relation: string): SubscriptionModel {
@@ -386,20 +341,15 @@ export class SubscriptionModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubscriptionModel) => SubscriptionModel,
+    callback: (query: SubqueryBuilder) => void,
   ): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
-      ),
-    )
-
-    return this
+    return SubscriptionModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriptionModel {
     const instance = new SubscriptionModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -609,7 +559,7 @@ export class SubscriptionModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: SubscriptionModel, column: string, operator: string, value: any): SubscriptionModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

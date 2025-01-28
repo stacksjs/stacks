@@ -109,22 +109,8 @@ export class ProjectModel {
     return instance
   }
 
-  // Method to find a Project by ID
   async find(id: number): Promise<ProjectModel | undefined> {
-    const query = db.selectFrom('projects').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    return data
+    return ProjectModel.find(id)
   }
 
   // Method to find a Project by ID
@@ -181,18 +167,7 @@ export class ProjectModel {
   }
 
   async findOrFail(id: number): Promise<ProjectModel> {
-    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
+    return ProjectModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
@@ -207,6 +182,10 @@ export class ProjectModel {
     return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
   }
 
+  skip(count: number): ProjectModel {
+    return ProjectModel.skip(count)
+  }
+
   static skip(count: number): ProjectModel {
     const instance = new ProjectModel(null)
 
@@ -215,10 +194,8 @@ export class ProjectModel {
     return instance
   }
 
-  skip(count: number): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return ProjectModel.take(count)
   }
 
   static take(count: number): ProjectModel {
@@ -227,12 +204,6 @@ export class ProjectModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
@@ -249,13 +220,7 @@ export class ProjectModel {
   }
 
   async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: ProjectModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: ProjectModel) => modelItem[field])
+    return ProjectModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -267,9 +232,7 @@ export class ProjectModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return ProjectModel.count()
   }
 
   async max(field: keyof ProjectModel): Promise<number> {
@@ -324,15 +287,7 @@ export class ProjectModel {
   }
 
   has(relation: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
-      ),
-    )
-
-    return this
+    return ProjectModel.has(relation)
   }
 
   static has(relation: string): ProjectModel {
@@ -351,20 +306,15 @@ export class ProjectModel {
 
   whereHas(
     relation: string,
-    callback: (query: ProjectModel) => ProjectModel,
+    callback: (query: SubqueryBuilder) => void,
   ): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
-      ),
-    )
-
-    return this
+    return ProjectModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProjectModel {
     const instance = new ProjectModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -568,7 +518,7 @@ export class ProjectModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: ProjectModel, column: string, operator: string, value: any): ProjectModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

@@ -112,22 +112,8 @@ export class ErrorModel {
     return instance
   }
 
-  // Method to find a Error by ID
   async find(id: number): Promise<ErrorModel | undefined> {
-    const query = db.selectFrom('errors').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    cache.getOrSet(`error:${id}`, JSON.stringify(model))
-
-    return data
+    return ErrorModel.find(id)
   }
 
   // Method to find a Error by ID
@@ -184,18 +170,7 @@ export class ErrorModel {
   }
 
   async findOrFail(id: number): Promise<ErrorModel> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ErrorModel results for ${id}`)
-
-    cache.getOrSet(`error:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
+    return ErrorModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
@@ -210,6 +185,10 @@ export class ErrorModel {
     return model.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
   }
 
+  skip(count: number): ErrorModel {
+    return ErrorModel.skip(count)
+  }
+
   static skip(count: number): ErrorModel {
     const instance = new ErrorModel(null)
 
@@ -218,10 +197,8 @@ export class ErrorModel {
     return instance
   }
 
-  skip(count: number): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return ErrorModel.take(count)
   }
 
   static take(count: number): ErrorModel {
@@ -230,12 +207,6 @@ export class ErrorModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
@@ -252,13 +223,7 @@ export class ErrorModel {
   }
 
   async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: ErrorModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: ErrorModel) => modelItem[field])
+    return ErrorModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -270,9 +235,7 @@ export class ErrorModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return ErrorModel.count()
   }
 
   async max(field: keyof ErrorModel): Promise<number> {
@@ -327,15 +290,7 @@ export class ErrorModel {
   }
 
   has(relation: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
-      ),
-    )
-
-    return this
+    return ErrorModel.has(relation)
   }
 
   static has(relation: string): ErrorModel {
@@ -354,20 +309,15 @@ export class ErrorModel {
 
   whereHas(
     relation: string,
-    callback: (query: ErrorModel) => ErrorModel,
+    callback: (query: SubqueryBuilder) => void,
   ): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
-      ),
-    )
-
-    return this
+    return ErrorModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
     const instance = new ErrorModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -571,7 +521,7 @@ export class ErrorModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: ErrorModel, column: string, operator: string, value: any): ErrorModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

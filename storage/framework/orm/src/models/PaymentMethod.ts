@@ -138,22 +138,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  // Method to find a PaymentMethod by ID
   async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
-
-    return data
+    return PaymentMethodModel.find(id)
   }
 
   // Method to find a PaymentMethod by ID
@@ -218,18 +204,7 @@ export class PaymentMethodModel {
   }
 
   async findOrFail(id: number): Promise<PaymentMethodModel> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentMethodModel results for ${id}`)
-
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
+    return PaymentMethodModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
@@ -244,6 +219,10 @@ export class PaymentMethodModel {
     return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
+  skip(count: number): PaymentMethodModel {
+    return PaymentMethodModel.skip(count)
+  }
+
   static skip(count: number): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -252,10 +231,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  skip(count: number): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return PaymentMethodModel.take(count)
   }
 
   static take(count: number): PaymentMethodModel {
@@ -264,12 +241,6 @@ export class PaymentMethodModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
@@ -286,13 +257,7 @@ export class PaymentMethodModel {
   }
 
   async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: PaymentMethodModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: PaymentMethodModel) => modelItem[field])
+    return PaymentMethodModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -304,9 +269,7 @@ export class PaymentMethodModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return PaymentMethodModel.count()
   }
 
   async max(field: keyof PaymentMethodModel): Promise<number> {
@@ -361,15 +324,7 @@ export class PaymentMethodModel {
   }
 
   has(relation: string): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
-      ),
-    )
-
-    return this
+    return PaymentMethodModel.has(relation)
   }
 
   static has(relation: string): PaymentMethodModel {
@@ -388,20 +343,15 @@ export class PaymentMethodModel {
 
   whereHas(
     relation: string,
-    callback: (query: PaymentMethodModel) => PaymentMethodModel,
+    callback: (query: SubqueryBuilder) => void,
   ): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
-      ),
-    )
-
-    return this
+    return PaymentMethodModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -611,7 +561,7 @@ export class PaymentMethodModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: PaymentMethodModel, column: string, operator: string, value: any): PaymentMethodModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

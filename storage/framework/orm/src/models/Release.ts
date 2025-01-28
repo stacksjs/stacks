@@ -100,22 +100,8 @@ export class ReleaseModel {
     return instance
   }
 
-  // Method to find a Release by ID
   async find(id: number): Promise<ReleaseModel | undefined> {
-    const query = db.selectFrom('releases').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    return data
+    return ReleaseModel.find(id)
   }
 
   // Method to find a Release by ID
@@ -172,18 +158,7 @@ export class ReleaseModel {
   }
 
   async findOrFail(id: number): Promise<ReleaseModel> {
-    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ReleaseModel results for ${id}`)
-
-    cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    return data
+    return ReleaseModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
@@ -198,6 +173,10 @@ export class ReleaseModel {
     return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
+  skip(count: number): ReleaseModel {
+    return ReleaseModel.skip(count)
+  }
+
   static skip(count: number): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -206,10 +185,8 @@ export class ReleaseModel {
     return instance
   }
 
-  skip(count: number): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return ReleaseModel.take(count)
   }
 
   static take(count: number): ReleaseModel {
@@ -218,12 +195,6 @@ export class ReleaseModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
@@ -240,13 +211,7 @@ export class ReleaseModel {
   }
 
   async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: ReleaseModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: ReleaseModel) => modelItem[field])
+    return ReleaseModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -258,9 +223,7 @@ export class ReleaseModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return ReleaseModel.count()
   }
 
   async max(field: keyof ReleaseModel): Promise<number> {
@@ -315,15 +278,7 @@ export class ReleaseModel {
   }
 
   has(relation: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
-      ),
-    )
-
-    return this
+    return ReleaseModel.has(relation)
   }
 
   static has(relation: string): ReleaseModel {
@@ -342,20 +297,15 @@ export class ReleaseModel {
 
   whereHas(
     relation: string,
-    callback: (query: ReleaseModel) => ReleaseModel,
+    callback: (query: SubqueryBuilder) => void,
   ): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
-      ),
-    )
-
-    return this
+    return ReleaseModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ReleaseModel {
     const instance = new ReleaseModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -559,7 +509,7 @@ export class ReleaseModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: ReleaseModel, column: string, operator: string, value: any): ReleaseModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

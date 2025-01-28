@@ -112,22 +112,8 @@ export class FailedJobModel {
     return instance
   }
 
-  // Method to find a FailedJob by ID
   async find(id: number): Promise<FailedJobModel | undefined> {
-    const query = db.selectFrom('failed_jobs').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
-
-    return data
+    return FailedJobModel.find(id)
   }
 
   // Method to find a FailedJob by ID
@@ -184,18 +170,7 @@ export class FailedJobModel {
   }
 
   async findOrFail(id: number): Promise<FailedJobModel> {
-    const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
-
-    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    return data
+    return FailedJobModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {
@@ -210,6 +185,10 @@ export class FailedJobModel {
     return model.map(modelItem => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
+  skip(count: number): FailedJobModel {
+    return FailedJobModel.skip(count)
+  }
+
   static skip(count: number): FailedJobModel {
     const instance = new FailedJobModel(null)
 
@@ -218,10 +197,8 @@ export class FailedJobModel {
     return instance
   }
 
-  skip(count: number): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return FailedJobModel.take(count)
   }
 
   static take(count: number): FailedJobModel {
@@ -230,12 +207,6 @@ export class FailedJobModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
@@ -252,13 +223,7 @@ export class FailedJobModel {
   }
 
   async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: FailedJobModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: FailedJobModel) => modelItem[field])
+    return FailedJobModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -270,9 +235,7 @@ export class FailedJobModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return FailedJobModel.count()
   }
 
   async max(field: keyof FailedJobModel): Promise<number> {
@@ -327,15 +290,7 @@ export class FailedJobModel {
   }
 
   has(relation: string): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
-      ),
-    )
-
-    return this
+    return FailedJobModel.has(relation)
   }
 
   static has(relation: string): FailedJobModel {
@@ -354,20 +309,15 @@ export class FailedJobModel {
 
   whereHas(
     relation: string,
-    callback: (query: FailedJobModel) => FailedJobModel,
+    callback: (query: SubqueryBuilder) => void,
   ): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
-      ),
-    )
-
-    return this
+    return FailedJobModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): FailedJobModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): FailedJobModel {
     const instance = new FailedJobModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -571,7 +521,7 @@ export class FailedJobModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: FailedJobModel, column: string, operator: string, value: any): FailedJobModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

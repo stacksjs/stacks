@@ -122,22 +122,8 @@ export class ProductModel {
     return instance
   }
 
-  // Method to find a Product by ID
   async find(id: number): Promise<ProductModel | undefined> {
-    const query = db.selectFrom('products').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    cache.getOrSet(`product:${id}`, JSON.stringify(model))
-
-    return data
+    return ProductModel.find(id)
   }
 
   // Method to find a Product by ID
@@ -194,18 +180,7 @@ export class ProductModel {
   }
 
   async findOrFail(id: number): Promise<ProductModel> {
-    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
-
-    cache.getOrSet(`product:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    return data
+    return ProductModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
@@ -220,6 +195,10 @@ export class ProductModel {
     return model.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
   }
 
+  skip(count: number): ProductModel {
+    return ProductModel.skip(count)
+  }
+
   static skip(count: number): ProductModel {
     const instance = new ProductModel(null)
 
@@ -228,10 +207,8 @@ export class ProductModel {
     return instance
   }
 
-  skip(count: number): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return ProductModel.take(count)
   }
 
   static take(count: number): ProductModel {
@@ -240,12 +217,6 @@ export class ProductModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
@@ -262,13 +233,7 @@ export class ProductModel {
   }
 
   async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: ProductModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: ProductModel) => modelItem[field])
+    return ProductModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -280,9 +245,7 @@ export class ProductModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return ProductModel.count()
   }
 
   async max(field: keyof ProductModel): Promise<number> {
@@ -337,15 +300,7 @@ export class ProductModel {
   }
 
   has(relation: string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id'),
-      ),
-    )
-
-    return this
+    return ProductModel.has(relation)
   }
 
   static has(relation: string): ProductModel {
@@ -364,20 +319,15 @@ export class ProductModel {
 
   whereHas(
     relation: string,
-    callback: (query: ProductModel) => ProductModel,
+    callback: (query: SubqueryBuilder) => void,
   ): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id'),
-      ),
-    )
-
-    return this
+    return ProductModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProductModel {
     const instance = new ProductModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -587,7 +537,7 @@ export class ProductModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: ProductModel, column: string, operator: string, value: any): ProductModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

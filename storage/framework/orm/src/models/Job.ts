@@ -112,22 +112,8 @@ export class JobModel {
     return instance
   }
 
-  // Method to find a Job by ID
   async find(id: number): Promise<JobModel | undefined> {
-    const query = db.selectFrom('jobs').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    return data
+    return JobModel.find(id)
   }
 
   // Method to find a Job by ID
@@ -184,18 +170,7 @@ export class JobModel {
   }
 
   async findOrFail(id: number): Promise<JobModel> {
-    const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No JobModel results for ${id}`)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
+    return JobModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
@@ -210,6 +185,10 @@ export class JobModel {
     return model.map(modelItem => instance.parseResult(new JobModel(modelItem)))
   }
 
+  skip(count: number): JobModel {
+    return JobModel.skip(count)
+  }
+
   static skip(count: number): JobModel {
     const instance = new JobModel(null)
 
@@ -218,10 +197,8 @@ export class JobModel {
     return instance
   }
 
-  skip(count: number): JobModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return JobModel.take(count)
   }
 
   static take(count: number): JobModel {
@@ -230,12 +207,6 @@ export class JobModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
@@ -252,13 +223,7 @@ export class JobModel {
   }
 
   async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: JobModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: JobModel) => modelItem[field])
+    return JobModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -270,9 +235,7 @@ export class JobModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return JobModel.count()
   }
 
   async max(field: keyof JobModel): Promise<number> {
@@ -327,15 +290,7 @@ export class JobModel {
   }
 
   has(relation: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
-      ),
-    )
-
-    return this
+    return JobModel.has(relation)
   }
 
   static has(relation: string): JobModel {
@@ -354,20 +309,15 @@ export class JobModel {
 
   whereHas(
     relation: string,
-    callback: (query: JobModel) => JobModel,
+    callback: (query: SubqueryBuilder) => void,
   ): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
-      ),
-    )
-
-    return this
+    return JobModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): JobModel {
     const instance = new JobModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -571,7 +521,7 @@ export class JobModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: JobModel, column: string, operator: string, value: any): JobModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

@@ -778,23 +778,10 @@ export async function generateModelString(
           return instance
         }
   
-        // Method to find a ${modelName} by ID
         async find(id: number): Promise<${modelName}Model | undefined> {
-          let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
-  
-          const model = await query.executeTakeFirst()
-  
-          if (!model)
-            return undefined
-  
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
-  
-          cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-  
-          return data
+          return ${modelName}Model.find(id)
         }
+
   
         // Method to find a ${modelName} by ID
         static async find(id: number): Promise<${modelName}Model | undefined> {
@@ -855,20 +842,7 @@ export async function generateModelString(
         }
   
         async findOrFail(id: number): Promise<${modelName}Model> {
-          const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
-  
-          ${thisSoftDeleteStatements}
-  
-          if (model === undefined)
-            throw new ModelNotFoundException(404, \`No ${modelName}Model results for \${id}\`)
-  
-          cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-  
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
-  
-          return data
+           return ${modelName}Model.findOrFail(id)
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
@@ -884,6 +858,10 @@ export async function generateModelString(
   
           return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
         }
+           
+        skip(count: number): ${modelName}Model {
+          return ${modelName}Model.skip(count)
+        }
 
         static skip(count: number): ${modelName}Model {
           const instance = new ${modelName}Model(null)
@@ -892,11 +870,9 @@ export async function generateModelString(
 
           return instance
         }
-          
-        skip(count: number): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.offset(count)
 
-          return this
+        take(count: number): this {
+          return ${modelName}Model.take(count)
         }
 
         static take(count: number): ${modelName}Model {
@@ -905,12 +881,6 @@ export async function generateModelString(
           instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
           return instance
-        }
-
-        take(count: number): this {
-          this.selectFromQuery = this.selectFromQuery.limit(count)
-
-          return this
         }
 
         static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
@@ -927,13 +897,7 @@ export async function generateModelString(
         }
 
         async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
-          if (this.hasSelect) {
-            const model = await this.selectFromQuery.execute()
-            return model.map((modelItem: ${modelName}Model) => modelItem[field])
-          }
-
-          const model = await this.selectFromQuery.selectAll().execute()
-          return model.map((modelItem: ${modelName}Model) => modelItem[field])
+          return ${modelName}Model.pluck(field)
         }
 
         static async count(): Promise<number> {
@@ -945,11 +909,9 @@ export async function generateModelString(
         }
 
         async count(): Promise<number> {
-          return this.selectFromQuery
-            .select(sql\`COUNT(*) as count\`)
-            .executeTakeFirst()
+          return ${modelName}Model.count()
         }
-
+        
         async max(field: keyof ${modelName}Model): Promise<number> {
           return await this.selectFromQuery
             .select(sql\`MAX(\${sql.raw(field as string)}) \`)
@@ -1005,15 +967,7 @@ export async function generateModelString(
         }
 
         has(relation: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-            exists(
-              selectFrom(relation)
-                .select('1')
-                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
-            ),
-          )
-
-          return this
+          return ${modelName}Model.has(relation)
         }
 
         static has(relation: string): ${modelName}Model {
@@ -1032,20 +986,15 @@ export async function generateModelString(
 
         whereHas(
           relation: string,
-          callback: (query: ${modelName}Model) => ${modelName}Model
+          callback: (query: SubqueryBuilder) => void
         ): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-            exists(
-              callback(selectFrom(relation))
-                .select('1')
-                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id')
-            )
-          )
-
-          return this
+          return ${modelName}Model.whereHas(relation, callback)
         }
 
-        static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+        static whereHas(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
           const instance = new ${modelName}Model(null)
           const subqueryBuilder = new SubqueryBuilder()
           
@@ -1265,7 +1214,7 @@ export async function generateModelString(
             .execute()
         }
   
-        private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+        private static applyWhere(instance: ${modelName}Model, column: string, operator: string, value: any): ${modelName}Model {
           instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
           instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
           instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

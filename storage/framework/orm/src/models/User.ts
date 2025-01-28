@@ -155,22 +155,8 @@ export class UserModel {
     return instance
   }
 
-  // Method to find a User by ID
   async find(id: number): Promise<UserModel | undefined> {
-    const query = db.selectFrom('users').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    cache.getOrSet(`user:${id}`, JSON.stringify(model))
-
-    return data
+    return UserModel.find(id)
   }
 
   // Method to find a User by ID
@@ -243,18 +229,7 @@ export class UserModel {
   }
 
   async findOrFail(id: number): Promise<UserModel> {
-    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
-
-    cache.getOrSet(`user:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    return data
+    return UserModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
@@ -269,6 +244,10 @@ export class UserModel {
     return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
   }
 
+  skip(count: number): UserModel {
+    return UserModel.skip(count)
+  }
+
   static skip(count: number): UserModel {
     const instance = new UserModel(null)
 
@@ -277,10 +256,8 @@ export class UserModel {
     return instance
   }
 
-  skip(count: number): UserModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return UserModel.take(count)
   }
 
   static take(count: number): UserModel {
@@ -289,12 +266,6 @@ export class UserModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
@@ -311,13 +282,7 @@ export class UserModel {
   }
 
   async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: UserModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: UserModel) => modelItem[field])
+    return UserModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -329,9 +294,7 @@ export class UserModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return UserModel.count()
   }
 
   async max(field: keyof UserModel): Promise<number> {
@@ -386,15 +349,7 @@ export class UserModel {
   }
 
   has(relation: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.user_id`, '=', 'users.id'),
-      ),
-    )
-
-    return this
+    return UserModel.has(relation)
   }
 
   static has(relation: string): UserModel {
@@ -413,20 +368,15 @@ export class UserModel {
 
   whereHas(
     relation: string,
-    callback: (query: UserModel) => UserModel,
+    callback: (query: SubqueryBuilder) => void,
   ): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.user_id`, '=', 'users.id'),
-      ),
-    )
-
-    return this
+    return UserModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
     const instance = new UserModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 

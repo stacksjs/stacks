@@ -131,22 +131,8 @@ export class DeploymentModel {
     return instance
   }
 
-  // Method to find a Deployment by ID
   async find(id: number): Promise<DeploymentModel | undefined> {
-    const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    return data
+    return DeploymentModel.find(id)
   }
 
   // Method to find a Deployment by ID
@@ -207,18 +193,7 @@ export class DeploymentModel {
   }
 
   async findOrFail(id: number): Promise<DeploymentModel> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
-
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
+    return DeploymentModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
@@ -233,6 +208,10 @@ export class DeploymentModel {
     return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
+  skip(count: number): DeploymentModel {
+    return DeploymentModel.skip(count)
+  }
+
   static skip(count: number): DeploymentModel {
     const instance = new DeploymentModel(null)
 
@@ -241,10 +220,8 @@ export class DeploymentModel {
     return instance
   }
 
-  skip(count: number): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return DeploymentModel.take(count)
   }
 
   static take(count: number): DeploymentModel {
@@ -253,12 +230,6 @@ export class DeploymentModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
@@ -275,13 +246,7 @@ export class DeploymentModel {
   }
 
   async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: DeploymentModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: DeploymentModel) => modelItem[field])
+    return DeploymentModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -293,9 +258,7 @@ export class DeploymentModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return DeploymentModel.count()
   }
 
   async max(field: keyof DeploymentModel): Promise<number> {
@@ -350,15 +313,7 @@ export class DeploymentModel {
   }
 
   has(relation: string): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
-      ),
-    )
-
-    return this
+    return DeploymentModel.has(relation)
   }
 
   static has(relation: string): DeploymentModel {
@@ -377,20 +332,15 @@ export class DeploymentModel {
 
   whereHas(
     relation: string,
-    callback: (query: DeploymentModel) => DeploymentModel,
+    callback: (query: SubqueryBuilder) => void,
   ): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
-      ),
-    )
-
-    return this
+    return DeploymentModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
     const instance = new DeploymentModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -600,7 +550,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: DeploymentModel, column: string, operator: string, value: any): DeploymentModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

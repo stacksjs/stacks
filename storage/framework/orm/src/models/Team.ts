@@ -1,10 +1,8 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
-import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import AccessToken from './AccessToken'
@@ -131,22 +129,8 @@ export class TeamModel {
     return instance
   }
 
-  // Method to find a Team by ID
   async find(id: number): Promise<TeamModel | undefined> {
-    const query = db.selectFrom('teams').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    cache.getOrSet(`team:${id}`, JSON.stringify(model))
-
-    return data
+    return TeamModel.find(id)
   }
 
   // Method to find a Team by ID
@@ -207,18 +191,7 @@ export class TeamModel {
   }
 
   async findOrFail(id: number): Promise<TeamModel> {
-    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No TeamModel results for ${id}`)
-
-    cache.getOrSet(`team:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    return data
+    return TeamModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {
@@ -233,6 +206,10 @@ export class TeamModel {
     return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
   }
 
+  skip(count: number): TeamModel {
+    return TeamModel.skip(count)
+  }
+
   static skip(count: number): TeamModel {
     const instance = new TeamModel(null)
 
@@ -241,10 +218,8 @@ export class TeamModel {
     return instance
   }
 
-  skip(count: number): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return TeamModel.take(count)
   }
 
   static take(count: number): TeamModel {
@@ -253,12 +228,6 @@ export class TeamModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
@@ -275,13 +244,7 @@ export class TeamModel {
   }
 
   async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: TeamModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: TeamModel) => modelItem[field])
+    return TeamModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -293,9 +256,7 @@ export class TeamModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return TeamModel.count()
   }
 
   async max(field: keyof TeamModel): Promise<number> {
@@ -350,15 +311,7 @@ export class TeamModel {
   }
 
   has(relation: string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
-      ),
-    )
-
-    return this
+    return TeamModel.has(relation)
   }
 
   static has(relation: string): TeamModel {
@@ -377,20 +330,15 @@ export class TeamModel {
 
   whereHas(
     relation: string,
-    callback: (query: TeamModel) => TeamModel,
+    callback: (query: SubqueryBuilder) => void,
   ): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
-      ),
-    )
-
-    return this
+    return TeamModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): TeamModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TeamModel {
     const instance = new TeamModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -594,7 +542,7 @@ export class TeamModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: TeamModel, column: string, operator: string, value: any): TeamModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

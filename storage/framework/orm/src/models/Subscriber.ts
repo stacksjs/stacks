@@ -100,22 +100,8 @@ export class SubscriberModel {
     return instance
   }
 
-  // Method to find a Subscriber by ID
   async find(id: number): Promise<SubscriberModel | undefined> {
-    const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
-
-    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    return data
+    return SubscriberModel.find(id)
   }
 
   // Method to find a Subscriber by ID
@@ -172,18 +158,7 @@ export class SubscriberModel {
   }
 
   async findOrFail(id: number): Promise<SubscriberModel> {
-    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
-
-    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
-
-    return data
+    return SubscriberModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
@@ -198,6 +173,10 @@ export class SubscriberModel {
     return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
+  skip(count: number): SubscriberModel {
+    return SubscriberModel.skip(count)
+  }
+
   static skip(count: number): SubscriberModel {
     const instance = new SubscriberModel(null)
 
@@ -206,10 +185,8 @@ export class SubscriberModel {
     return instance
   }
 
-  skip(count: number): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return SubscriberModel.take(count)
   }
 
   static take(count: number): SubscriberModel {
@@ -218,12 +195,6 @@ export class SubscriberModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {
@@ -240,13 +211,7 @@ export class SubscriberModel {
   }
 
   async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: SubscriberModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: SubscriberModel) => modelItem[field])
+    return SubscriberModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -258,9 +223,7 @@ export class SubscriberModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return SubscriberModel.count()
   }
 
   async max(field: keyof SubscriberModel): Promise<number> {
@@ -315,15 +278,7 @@ export class SubscriberModel {
   }
 
   has(relation: string): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id'),
-      ),
-    )
-
-    return this
+    return SubscriberModel.has(relation)
   }
 
   static has(relation: string): SubscriberModel {
@@ -342,20 +297,15 @@ export class SubscriberModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubscriberModel) => SubscriberModel,
+    callback: (query: SubqueryBuilder) => void,
   ): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id'),
-      ),
-    )
-
-    return this
+    return SubscriberModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberModel {
     const instance = new SubscriberModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -559,7 +509,7 @@ export class SubscriberModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: SubscriberModel, column: string, operator: string, value: any): SubscriberModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)

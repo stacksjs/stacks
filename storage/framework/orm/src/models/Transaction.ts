@@ -135,22 +135,8 @@ export class TransactionModel {
     return instance
   }
 
-  // Method to find a Transaction by ID
   async find(id: number): Promise<TransactionModel | undefined> {
-    const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
-
-    const model = await query.executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
-
-    return data
+    return TransactionModel.find(id)
   }
 
   // Method to find a Transaction by ID
@@ -215,18 +201,7 @@ export class TransactionModel {
   }
 
   async findOrFail(id: number): Promise<TransactionModel> {
-    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No TransactionModel results for ${id}`)
-
-    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    return data
+    return TransactionModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
@@ -241,6 +216,10 @@ export class TransactionModel {
     return model.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
   }
 
+  skip(count: number): TransactionModel {
+    return TransactionModel.skip(count)
+  }
+
   static skip(count: number): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -249,10 +228,8 @@ export class TransactionModel {
     return instance
   }
 
-  skip(count: number): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
+  take(count: number): this {
+    return TransactionModel.take(count)
   }
 
   static take(count: number): TransactionModel {
@@ -261,12 +238,6 @@ export class TransactionModel {
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
-  }
-
-  take(count: number): this {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
   }
 
   static async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
@@ -283,13 +254,7 @@ export class TransactionModel {
   }
 
   async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: TransactionModel) => modelItem[field])
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-    return model.map((modelItem: TransactionModel) => modelItem[field])
+    return TransactionModel.pluck(field)
   }
 
   static async count(): Promise<number> {
@@ -301,9 +266,7 @@ export class TransactionModel {
   }
 
   async count(): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
+    return TransactionModel.count()
   }
 
   async max(field: keyof TransactionModel): Promise<number> {
@@ -358,15 +321,7 @@ export class TransactionModel {
   }
 
   has(relation: string): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        selectFrom(relation)
-          .select('1')
-          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
-      ),
-    )
-
-    return this
+    return TransactionModel.has(relation)
   }
 
   static has(relation: string): TransactionModel {
@@ -385,20 +340,15 @@ export class TransactionModel {
 
   whereHas(
     relation: string,
-    callback: (query: TransactionModel) => TransactionModel,
+    callback: (query: SubqueryBuilder) => void,
   ): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
-      exists(
-        callback(selectFrom(relation))
-          .select('1')
-          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
-      ),
-    )
-
-    return this
+    return TransactionModel.whereHas(relation, callback)
   }
 
-  static whereHas(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TransactionModel {
     const instance = new TransactionModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -608,7 +558,7 @@ export class TransactionModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
+  private static applyWhere(instance: TransactionModel, column: string, operator: string, value: any): TransactionModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
