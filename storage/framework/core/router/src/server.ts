@@ -442,10 +442,10 @@ async function executeMiddleware(route: Route): Promise<any> {
   if (middleware && await middlewares() && isObjectNotEmpty(await middlewares())) {
     // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      let middlewarePath = path.storagePath(`framework/defaults/middleware/${middleware}.ts`)
+      let middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
 
       if (!fs.existsSync(middlewarePath)) {
-        middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+        middlewarePath = path.storagePath(`framework/defaults/middleware/${middleware}.ts`)
       }
 
       const middlewareInstance = (await import(middlewarePath)).default
@@ -459,10 +459,10 @@ async function executeMiddleware(route: Route): Promise<any> {
     }
     else {
       for (const middlewareElement of middleware) {
-        let middlewarePath = path.storagePath(`framework/defaults/middleware/${middlewareElement}.ts`)
+        let middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
 
         if (!fs.existsSync(middlewarePath)) {
-          middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+          middlewarePath = path.storagePath(`framework/defaults/middleware/${middlewareElement}.ts`)
         }
 
         const middlewareInstance = (await import(middlewarePath)).default
