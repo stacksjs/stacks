@@ -353,6 +353,18 @@ export class SubscriptionModel {
     return data
   }
 
+  has(relation: string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -367,6 +379,21 @@ export class SubscriptionModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: SubscriptionModel) => SubscriptionModel,
+  ): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: SubscriptionModel) => SubscriptionModel,
@@ -378,6 +405,22 @@ export class SubscriptionModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.subscription_id`, '=', 'subscriptions.id'),
+        ),
       ),
     )
 

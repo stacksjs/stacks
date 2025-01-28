@@ -344,6 +344,18 @@ export class DeploymentModel {
     return data
   }
 
+  has(relation: string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
@@ -358,6 +370,21 @@ export class DeploymentModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: DeploymentModel) => DeploymentModel,
+  ): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: DeploymentModel) => DeploymentModel,
@@ -369,6 +396,22 @@ export class DeploymentModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+        ),
       ),
     )
 

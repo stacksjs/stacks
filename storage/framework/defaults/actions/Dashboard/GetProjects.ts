@@ -7,7 +7,6 @@ export default new Action({
   path: '/projects',
 
   async handle() {
-    // eslint-disable-next-line no-console
     console.log('GetProjects called from Action')
     // return Project.take(3) // reuse the buddy list:projects command
   },

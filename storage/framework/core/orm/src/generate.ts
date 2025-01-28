@@ -999,6 +999,18 @@ export async function generateModelString(
           return data
         }
 
+        has(relation: string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              selectFrom(relation)
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
+            ),
+          )
+
+          return this
+        }
+
         static has(relation: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
@@ -1013,6 +1025,21 @@ export async function generateModelString(
           return instance
         }
 
+        whereHas(
+          relation: string,
+          callback: (query: ${modelName}Model) => ${modelName}Model
+        ): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              callback(selectFrom(relation))
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id')
+            )
+          )
+
+          return this
+        }
+
         static whereHas(
           relation: string,
           callback: (query: ${modelName}Model) => ${modelName}Model
@@ -1024,6 +1051,22 @@ export async function generateModelString(
               callback(selectFrom(relation))
                 .select('1')
                 .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id')
+            )
+          )
+
+          return instance
+        }
+
+        static doesntHave(relation: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+            not(
+              exists(
+                selectFrom(relation)
+                  .select('1')
+                  .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
+              ),
             )
           )
 

@@ -309,6 +309,18 @@ export class ReleaseModel {
     return data
   }
 
+  has(relation: string): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -323,6 +335,21 @@ export class ReleaseModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: ReleaseModel) => ReleaseModel,
+  ): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: ReleaseModel) => ReleaseModel,
@@ -334,6 +361,22 @@ export class ReleaseModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+        ),
       ),
     )
 

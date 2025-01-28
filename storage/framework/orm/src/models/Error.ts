@@ -321,6 +321,18 @@ export class ErrorModel {
     return data
   }
 
+  has(relation: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): ErrorModel {
     const instance = new ErrorModel(null)
 
@@ -335,6 +347,21 @@ export class ErrorModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: ErrorModel) => ErrorModel,
+  ): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: ErrorModel) => ErrorModel,
@@ -346,6 +373,22 @@ export class ErrorModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+        ),
       ),
     )
 

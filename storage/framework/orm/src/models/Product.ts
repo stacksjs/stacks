@@ -331,6 +331,18 @@ export class ProductModel {
     return data
   }
 
+  has(relation: string): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): ProductModel {
     const instance = new ProductModel(null)
 
@@ -345,6 +357,21 @@ export class ProductModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: ProductModel) => ProductModel,
+  ): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: ProductModel) => ProductModel,
@@ -356,6 +383,22 @@ export class ProductModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.product_id`, '=', 'products.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.product_id`, '=', 'products.id'),
+        ),
       ),
     )
 

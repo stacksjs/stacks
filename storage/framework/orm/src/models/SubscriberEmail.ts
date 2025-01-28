@@ -335,6 +335,18 @@ export class SubscriberEmailModel {
     return data
   }
 
+  has(relation: string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
@@ -349,6 +361,21 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
+  ): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
@@ -360,6 +387,22 @@ export class SubscriberEmailModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+        ),
       ),
     )
 

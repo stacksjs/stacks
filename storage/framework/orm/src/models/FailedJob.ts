@@ -321,6 +321,18 @@ export class FailedJobModel {
     return data
   }
 
+  has(relation: string): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): FailedJobModel {
     const instance = new FailedJobModel(null)
 
@@ -335,6 +347,21 @@ export class FailedJobModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: FailedJobModel) => FailedJobModel,
+  ): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: FailedJobModel) => FailedJobModel,
@@ -346,6 +373,22 @@ export class FailedJobModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+        ),
       ),
     )
 

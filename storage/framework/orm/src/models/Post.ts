@@ -325,6 +325,18 @@ export class PostModel {
     return data
   }
 
+  has(relation: string): PostModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): PostModel {
     const instance = new PostModel(null)
 
@@ -339,6 +351,21 @@ export class PostModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: PostModel) => PostModel,
+  ): PostModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: PostModel) => PostModel,
@@ -350,6 +377,22 @@ export class PostModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+        ),
       ),
     )
 

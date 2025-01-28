@@ -354,6 +354,18 @@ export class PaymentMethodModel {
     return data
   }
 
+  has(relation: string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -368,6 +380,21 @@ export class PaymentMethodModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: PaymentMethodModel) => PaymentMethodModel,
+  ): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: PaymentMethodModel) => PaymentMethodModel,
@@ -379,6 +406,22 @@ export class PaymentMethodModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+        ),
       ),
     )
 

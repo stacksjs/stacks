@@ -22,7 +22,7 @@ export default new Action({
   async handle(request: Request) {
     try {
       const question = request.question
-      // eslint-disable-next-line no-console
+
       console.log(`Question received: ${question}`)
 
       return {

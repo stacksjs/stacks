@@ -342,6 +342,18 @@ export class TeamModel {
     return data
   }
 
+  has(relation: string): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): TeamModel {
     const instance = new TeamModel(null)
 
@@ -356,6 +368,21 @@ export class TeamModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: TeamModel) => TeamModel,
+  ): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: TeamModel) => TeamModel,
@@ -367,6 +394,22 @@ export class TeamModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+        ),
       ),
     )
 

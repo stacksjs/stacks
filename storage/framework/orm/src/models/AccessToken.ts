@@ -331,6 +331,18 @@ export class AccessTokenModel {
     return data
   }
 
+  has(relation: string): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -345,6 +357,21 @@ export class AccessTokenModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: AccessTokenModel) => AccessTokenModel,
+  ): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: AccessTokenModel) => AccessTokenModel,
@@ -356,6 +383,22 @@ export class AccessTokenModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+        ),
       ),
     )
 

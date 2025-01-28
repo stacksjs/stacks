@@ -318,6 +318,18 @@ export class ProjectModel {
     return data
   }
 
+  has(relation: string): ProjectModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): ProjectModel {
     const instance = new ProjectModel(null)
 
@@ -332,6 +344,21 @@ export class ProjectModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: ProjectModel) => ProjectModel,
+  ): ProjectModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: ProjectModel) => ProjectModel,
@@ -343,6 +370,22 @@ export class ProjectModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+        ),
       ),
     )
 

@@ -27,7 +27,6 @@ export default new Action({
 
       await setCurrentRegistrationOptions(user, verification)
 
-      // eslint-disable-next-line no-console
       console.log(verification)
       return verification
     }

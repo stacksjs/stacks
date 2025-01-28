@@ -321,6 +321,18 @@ export class JobModel {
     return data
   }
 
+  has(relation: string): JobModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): JobModel {
     const instance = new JobModel(null)
 
@@ -335,6 +347,21 @@ export class JobModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: JobModel) => JobModel,
+  ): JobModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: JobModel) => JobModel,
@@ -346,6 +373,22 @@ export class JobModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+        ),
       ),
     )
 

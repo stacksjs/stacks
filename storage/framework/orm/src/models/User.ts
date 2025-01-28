@@ -380,6 +380,18 @@ export class UserModel {
     return data
   }
 
+  has(relation: string): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): UserModel {
     const instance = new UserModel(null)
 
@@ -394,6 +406,21 @@ export class UserModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: UserModel) => UserModel,
+  ): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: UserModel) => UserModel,
@@ -405,6 +432,22 @@ export class UserModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.user_id`, '=', 'users.id'),
+        ),
       ),
     )
 

@@ -351,6 +351,18 @@ export class TransactionModel {
     return data
   }
 
+  has(relation: string): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+      ),
+    )
+
+    return this
+  }
+
   static has(relation: string): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -365,6 +377,21 @@ export class TransactionModel {
     return instance
   }
 
+  whereHas(
+    relation: string,
+    callback: (query: TransactionModel) => TransactionModel,
+  ): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        callback(selectFrom(relation))
+          .select('1')
+          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+      ),
+    )
+
+    return this
+  }
+
   static whereHas(
     relation: string,
     callback: (query: TransactionModel) => TransactionModel,
@@ -376,6 +403,22 @@ export class TransactionModel {
         callback(selectFrom(relation))
           .select('1')
           .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static doesntHave(relation: string): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+        ),
       ),
     )
 
