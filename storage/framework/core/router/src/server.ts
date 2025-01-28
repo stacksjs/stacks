@@ -5,7 +5,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
-import { globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
 import { route } from '.'
 
@@ -442,7 +442,11 @@ async function executeMiddleware(route: Route): Promise<any> {
   if (middleware && await middlewares() && isObjectNotEmpty(await middlewares())) {
     // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      const middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+      let middlewarePath = path.storagePath(`framework/defaults/middleware/${middleware}.ts`)
+
+      if (!fs.existsSync(middlewarePath)) {
+        middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+      }
 
       const middlewareInstance = (await import(middlewarePath)).default
 
@@ -455,7 +459,11 @@ async function executeMiddleware(route: Route): Promise<any> {
     }
     else {
       for (const middlewareElement of middleware) {
-        const middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+        let middlewarePath = path.storagePath(`framework/defaults/middleware/${middlewareElement}.ts`)
+
+        if (!fs.existsSync(middlewarePath)) {
+          middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+        }
 
         const middlewareInstance = (await import(middlewarePath)).default
 
