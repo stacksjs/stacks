@@ -116,17 +116,26 @@ export class FailedJobModel {
     return FailedJobModel.find(id)
   }
 
-  async first(): Promise<FailedJobModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a FailedJob by ID
+  static async find(id: number): Promise<FailedJobModel | undefined> {
+    const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new FailedJobModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new FailedJobModel(result as FailedJobType)
 
+    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<FailedJobModel | undefined> {
+    return FailedJobModel.first()
   }
 
   static async first(): Promise<FailedJobType | undefined> {
@@ -165,24 +174,6 @@ export class FailedJobModel {
     return data
   }
 
-  // Method to find a FailedJob by ID
-  static async find(id: number): Promise<FailedJobModel | undefined> {
-    const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: FailedJobType): Promise<FailedJobType> {
     return model
   }
@@ -201,6 +192,10 @@ export class FailedJobModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<FailedJobModel> {
+    return FailedJobModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<FailedJobModel> {
     const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -216,10 +211,6 @@ export class FailedJobModel {
     const data = new FailedJobModel(result as FailedJobType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<FailedJobModel> {
-    return FailedJobModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {
@@ -443,52 +434,7 @@ export class FailedJobModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<FailedJobResponse> {
-    const totalRecordsResult = await db.selectFrom('failed_jobs')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const failed_jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (failed_jobsWithExtra.length > (options.limit ?? 10))
-        nextCursor = failed_jobsWithExtra.pop()?.id ?? null
-
-      return {
-        data: failed_jobsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const failed_jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (failed_jobsWithExtra.length > (options.limit ?? 10))
-      nextCursor = failed_jobsWithExtra.pop()?.id ?? null
-
-    return {
-      data: failed_jobsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return FailedJobModel.paginate(options)
   }
 
   // Method to get all failed_jobs
@@ -876,9 +822,7 @@ export class FailedJobModel {
   }
 
   with(relations: string[]): FailedJobModel {
-    this.withRelations = relations
-
-    return this
+    return FailedJobModel.with(relations)
   }
 
   static with(relations: string[]): FailedJobModel {
@@ -911,12 +855,20 @@ export class FailedJobModel {
     return data
   }
 
+  orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
+    return FailedJobModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof FailedJobType): FailedJobModel {
+    return FailedJobModel.groupBy(column)
   }
 
   static groupBy(column: keyof FailedJobType): FailedJobModel {
@@ -927,6 +879,10 @@ export class FailedJobModel {
     return instance
   }
 
+  having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
+    return FailedJobModel.having(column, operator)
+  }
+
   static having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
     const instance = new FailedJobModel(null)
 
@@ -935,10 +891,8 @@ export class FailedJobModel {
     return instance
   }
 
-  orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): FailedJobModel {
+    return FailedJobModel.inRandomOrder()
   }
 
   static inRandomOrder(): FailedJobModel {
@@ -949,22 +903,8 @@ export class FailedJobModel {
     return instance
   }
 
-  inRandomOrder(): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof FailedJobType): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof FailedJobType): FailedJobModel {
+    return FailedJobModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof FailedJobType): FailedJobModel {
@@ -975,10 +915,8 @@ export class FailedJobModel {
     return instance
   }
 
-  orderByDesc(column: keyof FailedJobType): FailedJobModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof FailedJobType): FailedJobModel {
+    return FailedJobModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof FailedJobType): FailedJobModel {
@@ -987,12 +925,6 @@ export class FailedJobModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof FailedJobType): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(failedjob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
@@ -1058,11 +990,7 @@ export class FailedJobModel {
   }
 
   distinct(column: keyof FailedJobType): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return FailedJobModel.distinct(column)
   }
 
   static distinct(column: keyof FailedJobType): FailedJobModel {
@@ -1076,9 +1004,7 @@ export class FailedJobModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return FailedJobModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): FailedJobModel {

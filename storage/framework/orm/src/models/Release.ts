@@ -104,17 +104,26 @@ export class ReleaseModel {
     return ReleaseModel.find(id)
   }
 
-  async first(): Promise<ReleaseModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Release by ID
+  static async find(id: number): Promise<ReleaseModel | undefined> {
+    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new ReleaseModel(result as ReleaseType)
 
+    cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<ReleaseModel | undefined> {
+    return ReleaseModel.first()
   }
 
   static async first(): Promise<ReleaseType | undefined> {
@@ -153,24 +162,6 @@ export class ReleaseModel {
     return data
   }
 
-  // Method to find a Release by ID
-  static async find(id: number): Promise<ReleaseModel | undefined> {
-    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ReleaseModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: ReleaseType): Promise<ReleaseType> {
     return model
   }
@@ -189,6 +180,10 @@ export class ReleaseModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<ReleaseModel> {
+    return ReleaseModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<ReleaseModel> {
     const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -204,10 +199,6 @@ export class ReleaseModel {
     const data = new ReleaseModel(result as ReleaseType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<ReleaseModel> {
-    return ReleaseModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
@@ -431,52 +422,7 @@ export class ReleaseModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
-    const totalRecordsResult = await db.selectFrom('releases')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const releasesWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (releasesWithExtra.length > (options.limit ?? 10))
-        nextCursor = releasesWithExtra.pop()?.id ?? null
-
-      return {
-        data: releasesWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const releasesWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (releasesWithExtra.length > (options.limit ?? 10))
-      nextCursor = releasesWithExtra.pop()?.id ?? null
-
-    return {
-      data: releasesWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return ReleaseModel.paginate(options)
   }
 
   // Method to get all releases
@@ -832,9 +778,7 @@ export class ReleaseModel {
   }
 
   with(relations: string[]): ReleaseModel {
-    this.withRelations = relations
-
-    return this
+    return ReleaseModel.with(relations)
   }
 
   static with(relations: string[]): ReleaseModel {
@@ -867,12 +811,20 @@ export class ReleaseModel {
     return data
   }
 
+  orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+    return ReleaseModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof ReleaseType): ReleaseModel {
+    return ReleaseModel.groupBy(column)
   }
 
   static groupBy(column: keyof ReleaseType): ReleaseModel {
@@ -883,6 +835,10 @@ export class ReleaseModel {
     return instance
   }
 
+  having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+    return ReleaseModel.having(column, operator)
+  }
+
   static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -891,10 +847,8 @@ export class ReleaseModel {
     return instance
   }
 
-  orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): ReleaseModel {
+    return ReleaseModel.inRandomOrder()
   }
 
   static inRandomOrder(): ReleaseModel {
@@ -905,22 +859,8 @@ export class ReleaseModel {
     return instance
   }
 
-  inRandomOrder(): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof ReleaseType): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof ReleaseType): ReleaseModel {
+    return ReleaseModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof ReleaseType): ReleaseModel {
@@ -931,10 +871,8 @@ export class ReleaseModel {
     return instance
   }
 
-  orderByDesc(column: keyof ReleaseType): ReleaseModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof ReleaseType): ReleaseModel {
+    return ReleaseModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof ReleaseType): ReleaseModel {
@@ -943,12 +881,6 @@ export class ReleaseModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof ReleaseType): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
@@ -1014,11 +946,7 @@ export class ReleaseModel {
   }
 
   distinct(column: keyof ReleaseType): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return ReleaseModel.distinct(column)
   }
 
   static distinct(column: keyof ReleaseType): ReleaseModel {
@@ -1032,9 +960,7 @@ export class ReleaseModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return ReleaseModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ReleaseModel {

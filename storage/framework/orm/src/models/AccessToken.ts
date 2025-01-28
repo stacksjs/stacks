@@ -122,17 +122,26 @@ export class AccessTokenModel {
     return AccessTokenModel.find(id)
   }
 
-  async first(): Promise<AccessTokenModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a AccessToken by ID
+  static async find(id: number): Promise<AccessTokenModel | undefined> {
+    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new AccessTokenModel(result as AccessTokenType)
 
+    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<AccessTokenModel | undefined> {
+    return AccessTokenModel.first()
   }
 
   static async first(): Promise<AccessTokenType | undefined> {
@@ -171,24 +180,6 @@ export class AccessTokenModel {
     return data
   }
 
-  // Method to find a AccessToken by ID
-  static async find(id: number): Promise<AccessTokenModel | undefined> {
-    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new AccessTokenModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
-
-    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: AccessTokenType): Promise<AccessTokenType> {
     if (this.withRelations.includes('team')) {
       model.team = await this.teamBelong()
@@ -211,6 +202,10 @@ export class AccessTokenModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<AccessTokenModel> {
+    return AccessTokenModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<AccessTokenModel> {
     const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -226,10 +221,6 @@ export class AccessTokenModel {
     const data = new AccessTokenModel(result as AccessTokenType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<AccessTokenModel> {
-    return AccessTokenModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
@@ -453,52 +444,7 @@ export class AccessTokenModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
-    const totalRecordsResult = await db.selectFrom('personal_access_tokens')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const personal_access_tokensWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-        nextCursor = personal_access_tokensWithExtra.pop()?.id ?? null
-
-      return {
-        data: personal_access_tokensWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const personal_access_tokensWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (personal_access_tokensWithExtra.length > (options.limit ?? 10))
-      nextCursor = personal_access_tokensWithExtra.pop()?.id ?? null
-
-    return {
-      data: personal_access_tokensWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return AccessTokenModel.paginate(options)
   }
 
   // Method to get all personal_access_tokens
@@ -878,9 +824,7 @@ export class AccessTokenModel {
   }
 
   with(relations: string[]): AccessTokenModel {
-    this.withRelations = relations
-
-    return this
+    return AccessTokenModel.with(relations)
   }
 
   static with(relations: string[]): AccessTokenModel {
@@ -913,12 +857,20 @@ export class AccessTokenModel {
     return data
   }
 
+  orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+    return AccessTokenModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof AccessTokenType): AccessTokenModel {
+    return AccessTokenModel.groupBy(column)
   }
 
   static groupBy(column: keyof AccessTokenType): AccessTokenModel {
@@ -929,6 +881,10 @@ export class AccessTokenModel {
     return instance
   }
 
+  having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
+    return AccessTokenModel.having(column, operator)
+  }
+
   static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -937,10 +893,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): AccessTokenModel {
+    return AccessTokenModel.inRandomOrder()
   }
 
   static inRandomOrder(): AccessTokenModel {
@@ -951,22 +905,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  inRandomOrder(): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof AccessTokenType): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+    return AccessTokenModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
@@ -977,10 +917,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+    return AccessTokenModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
@@ -989,12 +927,6 @@ export class AccessTokenModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
@@ -1074,11 +1006,7 @@ export class AccessTokenModel {
   }
 
   distinct(column: keyof AccessTokenType): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return AccessTokenModel.distinct(column)
   }
 
   static distinct(column: keyof AccessTokenType): AccessTokenModel {
@@ -1092,9 +1020,7 @@ export class AccessTokenModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return AccessTokenModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {

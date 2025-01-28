@@ -104,17 +104,26 @@ export class SubscriberModel {
     return SubscriberModel.find(id)
   }
 
-  async first(): Promise<SubscriberModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Subscriber by ID
+  static async find(id: number): Promise<SubscriberModel | undefined> {
+    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new SubscriberModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new SubscriberModel(result as SubscriberType)
 
+    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<SubscriberModel | undefined> {
+    return SubscriberModel.first()
   }
 
   static async first(): Promise<SubscriberType | undefined> {
@@ -153,24 +162,6 @@ export class SubscriberModel {
     return data
   }
 
-  // Method to find a Subscriber by ID
-  static async find(id: number): Promise<SubscriberModel | undefined> {
-    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new SubscriberModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
-
-    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: SubscriberType): Promise<SubscriberType> {
     return model
   }
@@ -189,6 +180,10 @@ export class SubscriberModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<SubscriberModel> {
+    return SubscriberModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<SubscriberModel> {
     const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -204,10 +199,6 @@ export class SubscriberModel {
     const data = new SubscriberModel(result as SubscriberType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<SubscriberModel> {
-    return SubscriberModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
@@ -431,52 +422,7 @@ export class SubscriberModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
-    const totalRecordsResult = await db.selectFrom('subscribers')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const subscribersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (subscribersWithExtra.length > (options.limit ?? 10))
-        nextCursor = subscribersWithExtra.pop()?.id ?? null
-
-      return {
-        data: subscribersWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const subscribersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (subscribersWithExtra.length > (options.limit ?? 10))
-      nextCursor = subscribersWithExtra.pop()?.id ?? null
-
-    return {
-      data: subscribersWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return SubscriberModel.paginate(options)
   }
 
   // Method to get all subscribers
@@ -832,9 +778,7 @@ export class SubscriberModel {
   }
 
   with(relations: string[]): SubscriberModel {
-    this.withRelations = relations
-
-    return this
+    return SubscriberModel.with(relations)
   }
 
   static with(relations: string[]): SubscriberModel {
@@ -867,12 +811,20 @@ export class SubscriberModel {
     return data
   }
 
+  orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+    return SubscriberModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof SubscriberType): SubscriberModel {
+    return SubscriberModel.groupBy(column)
   }
 
   static groupBy(column: keyof SubscriberType): SubscriberModel {
@@ -883,6 +835,10 @@ export class SubscriberModel {
     return instance
   }
 
+  having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
+    return SubscriberModel.having(column, operator)
+  }
+
   static having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
     const instance = new SubscriberModel(null)
 
@@ -891,10 +847,8 @@ export class SubscriberModel {
     return instance
   }
 
-  orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): SubscriberModel {
+    return SubscriberModel.inRandomOrder()
   }
 
   static inRandomOrder(): SubscriberModel {
@@ -905,22 +859,8 @@ export class SubscriberModel {
     return instance
   }
 
-  inRandomOrder(): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof SubscriberType): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof SubscriberType): SubscriberModel {
+    return SubscriberModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof SubscriberType): SubscriberModel {
@@ -931,10 +871,8 @@ export class SubscriberModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberType): SubscriberModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof SubscriberType): SubscriberModel {
+    return SubscriberModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof SubscriberType): SubscriberModel {
@@ -943,12 +881,6 @@ export class SubscriberModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof SubscriberType): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
@@ -1014,11 +946,7 @@ export class SubscriberModel {
   }
 
   distinct(column: keyof SubscriberType): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return SubscriberModel.distinct(column)
   }
 
   static distinct(column: keyof SubscriberType): SubscriberModel {
@@ -1032,9 +960,7 @@ export class SubscriberModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return SubscriberModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberModel {

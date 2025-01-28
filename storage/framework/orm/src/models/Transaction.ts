@@ -139,17 +139,26 @@ export class TransactionModel {
     return TransactionModel.find(id)
   }
 
-  async first(): Promise<TransactionModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Transaction by ID
+  static async find(id: number): Promise<TransactionModel | undefined> {
+    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new TransactionModel(result as TransactionType)
 
+    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<TransactionModel | undefined> {
+    return TransactionModel.first()
   }
 
   static async first(): Promise<TransactionType | undefined> {
@@ -188,24 +197,6 @@ export class TransactionModel {
     return data
   }
 
-  // Method to find a Transaction by ID
-  static async find(id: number): Promise<TransactionModel | undefined> {
-    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: TransactionType): Promise<TransactionType> {
     if (this.withRelations.includes('user')) {
       model.user = await this.userBelong()
@@ -232,6 +223,10 @@ export class TransactionModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<TransactionModel> {
+    return TransactionModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<TransactionModel> {
     const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -247,10 +242,6 @@ export class TransactionModel {
     const data = new TransactionModel(result as TransactionType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<TransactionModel> {
-    return TransactionModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
@@ -474,52 +465,7 @@ export class TransactionModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
-    const totalRecordsResult = await db.selectFrom('transactions')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const transactionsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (transactionsWithExtra.length > (options.limit ?? 10))
-        nextCursor = transactionsWithExtra.pop()?.id ?? null
-
-      return {
-        data: transactionsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const transactionsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (transactionsWithExtra.length > (options.limit ?? 10))
-      nextCursor = transactionsWithExtra.pop()?.id ?? null
-
-    return {
-      data: transactionsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return TransactionModel.paginate(options)
   }
 
   // Method to get all transactions
@@ -913,9 +859,7 @@ export class TransactionModel {
   }
 
   with(relations: string[]): TransactionModel {
-    this.withRelations = relations
-
-    return this
+    return TransactionModel.with(relations)
   }
 
   static with(relations: string[]): TransactionModel {
@@ -948,12 +892,20 @@ export class TransactionModel {
     return data
   }
 
+  orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
+    return TransactionModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof TransactionType): TransactionModel {
+    return TransactionModel.groupBy(column)
   }
 
   static groupBy(column: keyof TransactionType): TransactionModel {
@@ -964,6 +916,10 @@ export class TransactionModel {
     return instance
   }
 
+  having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
+    return TransactionModel.having(column, operator)
+  }
+
   static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -972,10 +928,8 @@ export class TransactionModel {
     return instance
   }
 
-  orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): TransactionModel {
+    return TransactionModel.inRandomOrder()
   }
 
   static inRandomOrder(): TransactionModel {
@@ -986,22 +940,8 @@ export class TransactionModel {
     return instance
   }
 
-  inRandomOrder(): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof TransactionType): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof TransactionType): TransactionModel {
+    return TransactionModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof TransactionType): TransactionModel {
@@ -1012,10 +952,8 @@ export class TransactionModel {
     return instance
   }
 
-  orderByDesc(column: keyof TransactionType): TransactionModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof TransactionType): TransactionModel {
+    return TransactionModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof TransactionType): TransactionModel {
@@ -1024,12 +962,6 @@ export class TransactionModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof TransactionType): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(transaction: TransactionUpdate): Promise<TransactionModel | undefined> {
@@ -1123,11 +1055,7 @@ export class TransactionModel {
   }
 
   distinct(column: keyof TransactionType): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return TransactionModel.distinct(column)
   }
 
   static distinct(column: keyof TransactionType): TransactionModel {
@@ -1141,9 +1069,7 @@ export class TransactionModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return TransactionModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): TransactionModel {

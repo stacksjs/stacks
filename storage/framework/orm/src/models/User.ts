@@ -159,17 +159,26 @@ export class UserModel {
     return UserModel.find(id)
   }
 
-  async first(): Promise<UserModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a User by ID
+  static async find(id: number): Promise<UserModel | undefined> {
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new UserModel(result as UserType)
 
+    cache.getOrSet(`user:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<UserModel | undefined> {
+    return UserModel.first()
   }
 
   static async first(): Promise<UserType | undefined> {
@@ -208,24 +217,6 @@ export class UserModel {
     return data
   }
 
-  // Method to find a User by ID
-  static async find(id: number): Promise<UserModel | undefined> {
-    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    cache.getOrSet(`user:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: UserType): Promise<UserType> {
     if (this.withRelations.includes('deployments')) {
       model.deployments = await this.deploymentsHasMany()
@@ -260,6 +251,10 @@ export class UserModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<UserModel> {
+    return UserModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<UserModel> {
     const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -275,10 +270,6 @@ export class UserModel {
     const data = new UserModel(result as UserType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<UserModel> {
-    return UserModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
@@ -502,52 +493,7 @@ export class UserModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
-    const totalRecordsResult = await db.selectFrom('users')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const usersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (usersWithExtra.length > (options.limit ?? 10))
-        nextCursor = usersWithExtra.pop()?.id ?? null
-
-      return {
-        data: usersWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const usersWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (usersWithExtra.length > (options.limit ?? 10))
-      nextCursor = usersWithExtra.pop()?.id ?? null
-
-    return {
-      data: usersWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return UserModel.paginate(options)
   }
 
   // Method to get all users
@@ -946,9 +892,7 @@ export class UserModel {
   }
 
   with(relations: string[]): UserModel {
-    this.withRelations = relations
-
-    return this
+    return UserModel.with(relations)
   }
 
   static with(relations: string[]): UserModel {
@@ -981,12 +925,20 @@ export class UserModel {
     return data
   }
 
+  orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
+    return UserModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof UserType): UserModel {
+    return UserModel.groupBy(column)
   }
 
   static groupBy(column: keyof UserType): UserModel {
@@ -997,6 +949,10 @@ export class UserModel {
     return instance
   }
 
+  having(column: keyof UserType, operator: string, value: any): UserModel {
+    return UserModel.having(column, operator)
+  }
+
   static having(column: keyof UserType, operator: string, value: any): UserModel {
     const instance = new UserModel(null)
 
@@ -1005,10 +961,8 @@ export class UserModel {
     return instance
   }
 
-  orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): UserModel {
+    return UserModel.inRandomOrder()
   }
 
   static inRandomOrder(): UserModel {
@@ -1019,22 +973,8 @@ export class UserModel {
     return instance
   }
 
-  inRandomOrder(): UserModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof UserType, operator: string, value: any): UserModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof UserType): UserModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof UserType): UserModel {
+    return UserModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof UserType): UserModel {
@@ -1045,10 +985,8 @@ export class UserModel {
     return instance
   }
 
-  orderByDesc(column: keyof UserType): UserModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof UserType): UserModel {
+    return UserModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof UserType): UserModel {
@@ -1057,12 +995,6 @@ export class UserModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof UserType): UserModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
@@ -1410,7 +1342,7 @@ export class UserModel {
   async newSubscription(
     type: string,
     lookupKey: string,
-    options: Partial<Stripe.SubscriptionCreateParams> = {},
+        options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
@@ -1423,7 +1355,7 @@ export class UserModel {
   async updateSubscription(
     type: string,
     lookupKey: string,
-    options: Partial<Stripe.SubscriptionUpdateParams> = {},
+        options: Partial<Stripe.SubscriptionUpdateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.update(this, type, lookupKey, options)
 
@@ -1488,11 +1420,7 @@ export class UserModel {
   }
 
   distinct(column: keyof UserType): UserModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return UserModel.distinct(column)
   }
 
   static distinct(column: keyof UserType): UserModel {
@@ -1506,9 +1434,7 @@ export class UserModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return UserModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): UserModel {

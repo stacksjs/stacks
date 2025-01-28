@@ -116,17 +116,26 @@ export class PostModel {
     return PostModel.find(id)
   }
 
-  async first(): Promise<PostModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Post by ID
+  static async find(id: number): Promise<PostModel | undefined> {
+    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new PostModel(result as PostType)
 
+    cache.getOrSet(`post:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<PostModel | undefined> {
+    return PostModel.first()
   }
 
   static async first(): Promise<PostType | undefined> {
@@ -165,24 +174,6 @@ export class PostModel {
     return data
   }
 
-  // Method to find a Post by ID
-  static async find(id: number): Promise<PostModel | undefined> {
-    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: PostType): Promise<PostType> {
     if (this.withRelations.includes('user')) {
       model.user = await this.userBelong()
@@ -205,6 +196,10 @@ export class PostModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<PostModel> {
+    return PostModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<PostModel> {
     const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -220,10 +215,6 @@ export class PostModel {
     const data = new PostModel(result as PostType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<PostModel> {
-    return PostModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
@@ -447,52 +438,7 @@ export class PostModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const totalRecordsResult = await db.selectFrom('posts')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const postsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (postsWithExtra.length > (options.limit ?? 10))
-        nextCursor = postsWithExtra.pop()?.id ?? null
-
-      return {
-        data: postsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const postsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10))
-      nextCursor = postsWithExtra.pop()?.id ?? null
-
-    return {
-      data: postsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return PostModel.paginate(options)
   }
 
   // Method to get all posts
@@ -856,9 +802,7 @@ export class PostModel {
   }
 
   with(relations: string[]): PostModel {
-    this.withRelations = relations
-
-    return this
+    return PostModel.with(relations)
   }
 
   static with(relations: string[]): PostModel {
@@ -891,12 +835,20 @@ export class PostModel {
     return data
   }
 
+  orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+    return PostModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof PostType): PostModel {
+    return PostModel.groupBy(column)
   }
 
   static groupBy(column: keyof PostType): PostModel {
@@ -907,6 +859,10 @@ export class PostModel {
     return instance
   }
 
+  having(column: keyof PostType, operator: string, value: any): PostModel {
+    return PostModel.having(column, operator)
+  }
+
   static having(column: keyof PostType, operator: string, value: any): PostModel {
     const instance = new PostModel(null)
 
@@ -915,10 +871,8 @@ export class PostModel {
     return instance
   }
 
-  orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): PostModel {
+    return PostModel.inRandomOrder()
   }
 
   static inRandomOrder(): PostModel {
@@ -929,22 +883,8 @@ export class PostModel {
     return instance
   }
 
-  inRandomOrder(): PostModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof PostType, operator: string, value: any): PostModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof PostType): PostModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof PostType): PostModel {
+    return PostModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof PostType): PostModel {
@@ -955,10 +895,8 @@ export class PostModel {
     return instance
   }
 
-  orderByDesc(column: keyof PostType): PostModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof PostType): PostModel {
+    return PostModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof PostType): PostModel {
@@ -967,12 +905,6 @@ export class PostModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof PostType): PostModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
@@ -1052,11 +984,7 @@ export class PostModel {
   }
 
   distinct(column: keyof PostType): PostModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return PostModel.distinct(column)
   }
 
   static distinct(column: keyof PostType): PostModel {
@@ -1070,9 +998,7 @@ export class PostModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return PostModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): PostModel {

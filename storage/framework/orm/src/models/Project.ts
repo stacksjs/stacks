@@ -113,17 +113,26 @@ export class ProjectModel {
     return ProjectModel.find(id)
   }
 
-  async first(): Promise<ProjectModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Project by ID
+  static async find(id: number): Promise<ProjectModel | undefined> {
+    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new ProjectModel(result as ProjectType)
 
+    cache.getOrSet(`project:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<ProjectModel | undefined> {
+    return ProjectModel.first()
   }
 
   static async first(): Promise<ProjectType | undefined> {
@@ -162,24 +171,6 @@ export class ProjectModel {
     return data
   }
 
-  // Method to find a Project by ID
-  static async find(id: number): Promise<ProjectModel | undefined> {
-    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: ProjectType): Promise<ProjectType> {
     return model
   }
@@ -198,6 +189,10 @@ export class ProjectModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<ProjectModel> {
+    return ProjectModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<ProjectModel> {
     const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -213,10 +208,6 @@ export class ProjectModel {
     const data = new ProjectModel(result as ProjectType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<ProjectModel> {
-    return ProjectModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
@@ -440,52 +431,7 @@ export class ProjectModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    const totalRecordsResult = await db.selectFrom('projects')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const projectsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (projectsWithExtra.length > (options.limit ?? 10))
-        nextCursor = projectsWithExtra.pop()?.id ?? null
-
-      return {
-        data: projectsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const projectsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (projectsWithExtra.length > (options.limit ?? 10))
-      nextCursor = projectsWithExtra.pop()?.id ?? null
-
-    return {
-      data: projectsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return ProjectModel.paginate(options)
   }
 
   // Method to get all projects
@@ -865,9 +811,7 @@ export class ProjectModel {
   }
 
   with(relations: string[]): ProjectModel {
-    this.withRelations = relations
-
-    return this
+    return ProjectModel.with(relations)
   }
 
   static with(relations: string[]): ProjectModel {
@@ -900,12 +844,20 @@ export class ProjectModel {
     return data
   }
 
+  orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
+    return ProjectModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof ProjectType): ProjectModel {
+    return ProjectModel.groupBy(column)
   }
 
   static groupBy(column: keyof ProjectType): ProjectModel {
@@ -916,6 +868,10 @@ export class ProjectModel {
     return instance
   }
 
+  having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
+    return ProjectModel.having(column, operator)
+  }
+
   static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
     const instance = new ProjectModel(null)
 
@@ -924,10 +880,8 @@ export class ProjectModel {
     return instance
   }
 
-  orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): ProjectModel {
+    return ProjectModel.inRandomOrder()
   }
 
   static inRandomOrder(): ProjectModel {
@@ -938,22 +892,8 @@ export class ProjectModel {
     return instance
   }
 
-  inRandomOrder(): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof ProjectType): ProjectModel {
+    return ProjectModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof ProjectType): ProjectModel {
@@ -964,10 +904,8 @@ export class ProjectModel {
     return instance
   }
 
-  orderByDesc(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof ProjectType): ProjectModel {
+    return ProjectModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof ProjectType): ProjectModel {
@@ -976,12 +914,6 @@ export class ProjectModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
@@ -1047,11 +979,7 @@ export class ProjectModel {
   }
 
   distinct(column: keyof ProjectType): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return ProjectModel.distinct(column)
   }
 
   static distinct(column: keyof ProjectType): ProjectModel {
@@ -1065,9 +993,7 @@ export class ProjectModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return ProjectModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProjectModel {

@@ -860,6 +860,11 @@ export async function generateModelString(
   
           return data
         }
+
+
+        async findOrFail(id: number): Promise<${modelName}Model> {
+          return ${modelName}Model.findOrFail(id)
+        }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {
           const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
@@ -878,10 +883,6 @@ export async function generateModelString(
           const data = new ${modelName}Model(result as ${modelName}Type)
   
           return data
-        }
-  
-        async findOrFail(id: number): Promise<${modelName}Model> {
-           return ${modelName}Model.findOrFail(id)
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
@@ -1108,54 +1109,7 @@ export async function generateModelString(
         }
 
         async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
-          const totalRecordsResult = await db.selectFrom('${tableName}')
-            .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-            .executeTakeFirst()
-  
-          const totalRecords = Number(totalRecordsResult?.total) || 0
-          const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-  
-          if (this.hasSelect) {
-            ${thisSoftDeleteStatements}
-  
-            const ${tableName}WithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-              .limit((options.limit ?? 10) + 1)
-              .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-              .execute()
-  
-            let nextCursor = null
-            if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
-  
-            return {
-              data: ${tableName}WithExtra,
-              paging: {
-                total_records: totalRecords,
-                page: options.page || 1,
-                total_pages: totalPages,
-              },
-              next_cursor: nextCursor,
-            }
-          }
-  
-          ${thisSoftDeleteStatements}
-  
-          const ${tableName}WithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-            .limit((options.limit ?? 10) + 1)
-            .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-            .execute()
-  
-          let nextCursor = null
-          if (${tableName}WithExtra.length > (options.limit ?? 10)) nextCursor = ${tableName}WithExtra.pop()?.id ?? null
-  
-          return {
-            data: ${tableName}WithExtra,
-            paging: {
-              total_records: totalRecords,
-              page: options.page || 1,
-              total_pages: totalPages,
-            },
-            next_cursor: nextCursor,
-          }
+          return ${modelName}Model.paginate(options)
         }
   
         // Method to get all ${tableName}
@@ -1295,13 +1249,13 @@ export async function generateModelString(
           }
   
           // Use the expression builder to append the OR conditions
-         instance.selectFromQuery =instance.selectFromQuery.where((eb: any) =>
+          instance.selectFromQuery =instance.selectFromQuery.where((eb: any) =>
             eb.or(
               args.map(([column, operator, value]) => eb(column, operator, value))
             )
           );
   
-         instance.updateFromQuery =instance.updateFromQuery.where((eb: any) =>
+          instance.updateFromQuery =instance.updateFromQuery.where((eb: any) =>
             eb.or(
               args.map(([column, operator, value]) => eb(column, operator, value))
             )
@@ -1521,9 +1475,7 @@ export async function generateModelString(
         }
   
         with(relations: string[]): ${modelName}Model {
-          this.withRelations = relations
-          
-          return this
+          return ${modelName}Model.with(relations)
         }
   
         static with(relations: string[]): ${modelName}Model {
@@ -1544,8 +1496,8 @@ export async function generateModelString(
         static async last(): Promise<${modelName}Type | undefined> {
           const model = await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
   
-            if (!model)
-              return undefined
+          if (!model)
+            return undefined
   
           const instance = new ${modelName}Model(null)
   
@@ -1555,6 +1507,10 @@ export async function generateModelString(
   
           return data
         }
+
+        orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+          return ${modelName}Model.orderBy(column, order)
+        }
   
         static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
           const instance = new ${modelName}Model(null)
@@ -1562,6 +1518,10 @@ export async function generateModelString(
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
   
           return instance
+        }
+
+        groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+          return ${modelName}Model.groupBy(column)
         }
   
         static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
@@ -1572,6 +1532,10 @@ export async function generateModelString(
           return instance
         }
 
+        having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+          return ${modelName}Model.having(column, operator)
+        }
+
         static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
@@ -1579,11 +1543,9 @@ export async function generateModelString(
   
           return instance
         }
-  
-        orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-  
-          return this
+
+        inRandomOrder(): ${modelName}Model {
+          return ${modelName}Model.inRandomOrder()
         }
         
         static inRandomOrder(): ${modelName}Model {
@@ -1594,24 +1556,10 @@ export async function generateModelString(
           return instance
         }
 
-        inRandomOrder(): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
-
-          return this
+        orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+          return ${modelName}Model.orderByDesc(column)
         }
 
-        having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-          return this
-        }
-  
-        groupBy(column: keyof ${modelName}Type): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.groupBy(column)
-  
-          return this
-        }
-  
         static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
@@ -1619,11 +1567,9 @@ export async function generateModelString(
   
           return instance
         }
-  
-        orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-          this.selectFromQuery = this.orderBy(column, 'desc')
-  
-          return this
+          
+        orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+          return ${modelName}Model.orderByAsc(column)
         }
   
         static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
@@ -1633,13 +1579,7 @@ export async function generateModelString(
   
           return instance
         }
-  
-        orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-  
-          return this
-        }
-  
+
         async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
           const filteredValues = Object.fromEntries(
             Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
@@ -1717,11 +1657,7 @@ export async function generateModelString(
         ${billableStatements}
   
         distinct(column: keyof ${modelName}Type): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-  
-          this.hasSelect = true
-  
-          return this
+          return ${modelName}Model.distinct(column)
         }
   
         static distinct(column: keyof ${modelName}Type): ${modelName}Model {
@@ -1735,9 +1671,7 @@ export async function generateModelString(
         }
   
         join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-  
-          return this
+          return ${modelName}Model.join(table, firstCol, secondCol)
         }
   
         static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
@@ -1758,13 +1692,13 @@ export async function generateModelString(
           return output
         }
   
-          parseResult(model: ${modelName}Model): ${modelName}Model {
-            for (const hiddenAttribute of this.hidden) {
-              delete model[hiddenAttribute as keyof ${modelName}Model]
-            }
-  
-            return model
+        parseResult(model: ${modelName}Model): ${modelName}Model {
+          for (const hiddenAttribute of this.hidden) {
+            delete model[hiddenAttribute as keyof ${modelName}Model]
           }
+
+          return model
+        }
   
         ${twoFactorStatements}
       }

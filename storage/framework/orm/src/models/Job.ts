@@ -116,17 +116,26 @@ export class JobModel {
     return JobModel.find(id)
   }
 
-  async first(): Promise<JobModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a Job by ID
+  static async find(id: number): Promise<JobModel | undefined> {
+    const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new JobModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new JobModel(result as JobType)
 
+    cache.getOrSet(`job:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<JobModel | undefined> {
+    return JobModel.first()
   }
 
   static async first(): Promise<JobType | undefined> {
@@ -165,24 +174,6 @@ export class JobModel {
     return data
   }
 
-  // Method to find a Job by ID
-  static async find(id: number): Promise<JobModel | undefined> {
-    const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: JobType): Promise<JobType> {
     return model
   }
@@ -201,6 +192,10 @@ export class JobModel {
     return data
   }
 
+  async findOrFail(id: number): Promise<JobModel> {
+    return JobModel.findOrFail(id)
+  }
+
   static async findOrFail(id: number): Promise<JobModel> {
     const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
@@ -216,10 +211,6 @@ export class JobModel {
     const data = new JobModel(result as JobType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<JobModel> {
-    return JobModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
@@ -443,52 +434,7 @@ export class JobModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    const totalRecordsResult = await db.selectFrom('jobs')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      const jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (jobsWithExtra.length > (options.limit ?? 10))
-        nextCursor = jobsWithExtra.pop()?.id ?? null
-
-      return {
-        data: jobsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const jobsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (jobsWithExtra.length > (options.limit ?? 10))
-      nextCursor = jobsWithExtra.pop()?.id ?? null
-
-    return {
-      data: jobsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return JobModel.paginate(options)
   }
 
   // Method to get all jobs
@@ -876,9 +822,7 @@ export class JobModel {
   }
 
   with(relations: string[]): JobModel {
-    this.withRelations = relations
-
-    return this
+    return JobModel.with(relations)
   }
 
   static with(relations: string[]): JobModel {
@@ -911,12 +855,20 @@ export class JobModel {
     return data
   }
 
+  orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
+    return JobModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof JobType): JobModel {
+    return JobModel.groupBy(column)
   }
 
   static groupBy(column: keyof JobType): JobModel {
@@ -927,6 +879,10 @@ export class JobModel {
     return instance
   }
 
+  having(column: keyof JobType, operator: string, value: any): JobModel {
+    return JobModel.having(column, operator)
+  }
+
   static having(column: keyof JobType, operator: string, value: any): JobModel {
     const instance = new JobModel(null)
 
@@ -935,10 +891,8 @@ export class JobModel {
     return instance
   }
 
-  orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): JobModel {
+    return JobModel.inRandomOrder()
   }
 
   static inRandomOrder(): JobModel {
@@ -949,22 +903,8 @@ export class JobModel {
     return instance
   }
 
-  inRandomOrder(): JobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof JobType, operator: string, value: any): JobModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof JobType): JobModel {
+    return JobModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof JobType): JobModel {
@@ -975,10 +915,8 @@ export class JobModel {
     return instance
   }
 
-  orderByDesc(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof JobType): JobModel {
+    return JobModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof JobType): JobModel {
@@ -987,12 +925,6 @@ export class JobModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(job: JobUpdate): Promise<JobModel | undefined> {
@@ -1058,11 +990,7 @@ export class JobModel {
   }
 
   distinct(column: keyof JobType): JobModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return JobModel.distinct(column)
   }
 
   static distinct(column: keyof JobType): JobModel {
@@ -1076,9 +1004,7 @@ export class JobModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return JobModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): JobModel {

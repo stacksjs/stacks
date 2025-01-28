@@ -110,17 +110,26 @@ export class SubscriberEmailModel {
     return SubscriberEmailModel.find(id)
   }
 
-  async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  // Method to find a SubscriberEmail by ID
+  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
 
     const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
+    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+
     return data
+  }
+
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    return SubscriberEmailModel.first()
   }
 
   static async first(): Promise<SubscriberEmailType | undefined> {
@@ -159,24 +168,6 @@ export class SubscriberEmailModel {
     return data
   }
 
-  // Method to find a SubscriberEmail by ID
-  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
   async mapWith(model: SubscriberEmailType): Promise<SubscriberEmailType> {
     return model
   }
@@ -193,6 +184,10 @@ export class SubscriberEmailModel {
     }))
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    return SubscriberEmailModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
@@ -214,10 +209,6 @@ export class SubscriberEmailModel {
     const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     return data
-  }
-
-  async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    return SubscriberEmailModel.findOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
@@ -453,60 +444,7 @@ export class SubscriberEmailModel {
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-    const totalRecordsResult = await db.selectFrom('subscriber_emails')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
-        nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
-
-      return {
-        data: subscriber_emailsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
-    const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
-      nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
-
-    return {
-      data: subscriber_emailsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
+    return SubscriberEmailModel.paginate(options)
   }
 
   // Method to get all subscriber_emails
@@ -873,9 +811,7 @@ export class SubscriberEmailModel {
   }
 
   with(relations: string[]): SubscriberEmailModel {
-    this.withRelations = relations
-
-    return this
+    return SubscriberEmailModel.with(relations)
   }
 
   static with(relations: string[]): SubscriberEmailModel {
@@ -908,12 +844,20 @@ export class SubscriberEmailModel {
     return data
   }
 
+  orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
+    return SubscriberEmailModel.orderBy(column, order)
+  }
+
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
+  }
+
+  groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    return SubscriberEmailModel.groupBy(column)
   }
 
   static groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -924,6 +868,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
+    return SubscriberEmailModel.having(column, operator)
+  }
+
   static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
@@ -932,10 +880,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
+  inRandomOrder(): SubscriberEmailModel {
+    return SubscriberEmailModel.inRandomOrder()
   }
 
   static inRandomOrder(): SubscriberEmailModel {
@@ -946,22 +892,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  inRandomOrder(): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
-  }
-
-  groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    return SubscriberEmailModel.orderByDesc(column)
   }
 
   static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -972,10 +904,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
-
-    return this
+  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    return SubscriberEmailModel.orderByAsc(column)
   }
 
   static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -984,12 +914,6 @@ export class SubscriberEmailModel {
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
-  }
-
-  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
   }
 
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
@@ -1064,11 +988,7 @@ export class SubscriberEmailModel {
   }
 
   distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
-
-    this.hasSelect = true
-
-    return this
+    return SubscriberEmailModel.distinct(column)
   }
 
   static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -1082,9 +1002,7 @@ export class SubscriberEmailModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
-
-    return this
+    return SubscriberEmailModel.join(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
