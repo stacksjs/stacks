@@ -427,6 +427,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  doesntHave(relation: string): SubscriberEmailModel {
+    return SubscriberEmailModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
@@ -441,6 +445,10 @@ export class SubscriberEmailModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): SubscriberEmailModel {
+    return SubscriberEmailModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

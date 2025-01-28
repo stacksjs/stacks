@@ -417,6 +417,10 @@ export class JobModel {
     return instance
   }
 
+  doesntHave(relation: string): JobModel {
+    return JobModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): JobModel {
     const instance = new JobModel(null)
 
@@ -431,6 +435,10 @@ export class JobModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): JobModel {
+    return JobModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

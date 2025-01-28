@@ -448,6 +448,10 @@ export class TransactionModel {
     return instance
   }
 
+  doesntHave(relation: string): TransactionModel {
+    return TransactionModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -462,6 +466,10 @@ export class TransactionModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): TransactionModel {
+    return TransactionModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

@@ -427,6 +427,10 @@ export class AccessTokenModel {
     return instance
   }
 
+  doesntHave(relation: string): AccessTokenModel {
+    return AccessTokenModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -441,6 +445,10 @@ export class AccessTokenModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): AccessTokenModel {
+    return AccessTokenModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

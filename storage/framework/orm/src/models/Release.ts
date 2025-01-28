@@ -405,6 +405,10 @@ export class ReleaseModel {
     return instance
   }
 
+  doesntHave(relation: string): ReleaseModel {
+    return ReleaseModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -419,6 +423,10 @@ export class ReleaseModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): ReleaseModel {
+    return ReleaseModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

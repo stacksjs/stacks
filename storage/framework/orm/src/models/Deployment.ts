@@ -440,6 +440,10 @@ export class DeploymentModel {
     return instance
   }
 
+  doesntHave(relation: string): DeploymentModel {
+    return DeploymentModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
@@ -454,6 +458,10 @@ export class DeploymentModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): DeploymentModel {
+    return DeploymentModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

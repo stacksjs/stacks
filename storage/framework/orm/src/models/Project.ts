@@ -414,6 +414,10 @@ export class ProjectModel {
     return instance
   }
 
+  doesntHave(relation: string): ProjectModel {
+    return ProjectModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): ProjectModel {
     const instance = new ProjectModel(null)
 
@@ -428,6 +432,10 @@ export class ProjectModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): ProjectModel {
+    return ProjectModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

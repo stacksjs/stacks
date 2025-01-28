@@ -476,6 +476,10 @@ export class UserModel {
     return instance
   }
 
+  doesntHave(relation: string): UserModel {
+    return UserModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): UserModel {
     const instance = new UserModel(null)
 
@@ -490,6 +494,10 @@ export class UserModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): UserModel {
+    return UserModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

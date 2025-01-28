@@ -451,6 +451,10 @@ export class PaymentMethodModel {
     return instance
   }
 
+  doesntHave(relation: string): PaymentMethodModel {
+    return PaymentMethodModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
@@ -465,6 +469,10 @@ export class PaymentMethodModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): PaymentMethodModel {
+    return PaymentMethodModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

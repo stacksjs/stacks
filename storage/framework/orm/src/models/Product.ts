@@ -427,6 +427,10 @@ export class ProductModel {
     return instance
   }
 
+  doesntHave(relation: string): ProductModel {
+    return ProductModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): ProductModel {
     const instance = new ProductModel(null)
 
@@ -441,6 +445,10 @@ export class ProductModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): ProductModel {
+    return ProductModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

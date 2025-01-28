@@ -421,6 +421,10 @@ export class PostModel {
     return instance
   }
 
+  doesntHave(relation: string): PostModel {
+    return PostModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): PostModel {
     const instance = new PostModel(null)
 
@@ -435,6 +439,10 @@ export class PostModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): PostModel {
+    return PostModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

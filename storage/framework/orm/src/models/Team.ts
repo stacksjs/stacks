@@ -438,6 +438,10 @@ export class TeamModel {
     return instance
   }
 
+  doesntHave(relation: string): TeamModel {
+    return TeamModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): TeamModel {
     const instance = new TeamModel(null)
 
@@ -452,6 +456,10 @@ export class TeamModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): TeamModel {
+    return TeamModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

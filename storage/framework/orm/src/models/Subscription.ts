@@ -449,6 +449,10 @@ export class SubscriptionModel {
     return instance
   }
 
+  doesntHave(relation: string): SubscriptionModel {
+    return SubscriptionModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
@@ -463,6 +467,10 @@ export class SubscriptionModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): SubscriptionModel {
+    return SubscriptionModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(

@@ -1092,6 +1092,10 @@ export async function generateModelString(
           return instance
         }
 
+        doesntHave(relation: string): ${modelName}Model {
+          return ${modelName}Model.doesntHave(relation)
+        }
+
         static doesntHave(relation: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
@@ -1106,6 +1110,10 @@ export async function generateModelString(
           )
 
           return instance
+        }
+
+        whereDoesntHave(relation: string): ${modelName}Model {
+          return ${modelName}Model.whereDoesntHave(relation)
         }
 
         static whereDoesntHave(

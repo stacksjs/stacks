@@ -417,6 +417,10 @@ export class ErrorModel {
     return instance
   }
 
+  doesntHave(relation: string): ErrorModel {
+    return ErrorModel.doesntHave(relation)
+  }
+
   static doesntHave(relation: string): ErrorModel {
     const instance = new ErrorModel(null)
 
@@ -431,6 +435,10 @@ export class ErrorModel {
     )
 
     return instance
+  }
+
+  whereDoesntHave(relation: string): ErrorModel {
+    return ErrorModel.whereDoesntHave(relation)
   }
 
   static whereDoesntHave(
