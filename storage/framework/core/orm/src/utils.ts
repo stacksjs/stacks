@@ -731,15 +731,15 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
                   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
                   if (apiRoute === 'index')
-                    routeString += `route.get('${uri}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
+                    routeString += `route.get('${uri}', '${modelName}${formattedApiRoute}OrmAction')\n\n`
                   if (apiRoute === 'show')
-                    routeString += `route.get('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
+                    routeString += `route.get('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction')\n\n`
                   if (apiRoute === 'store')
-                    routeString += `route.post('${uri}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
+                    routeString += `route.post('${uri}', '${modelName}${formattedApiRoute}OrmAction')\n\n`
                   if (apiRoute === 'update')
-                    routeString += `route.patch('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
+                    routeString += `route.patch('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction')\n\n`
                   if (apiRoute === 'destroy')
-                    routeString += `route.delete('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction').middleware(['Api'])\n\n`
+                    routeString += `route.delete('${uri}/{id}', '${modelName}${formattedApiRoute}OrmAction')\n\n`
                 }
               }
             }
@@ -786,15 +786,15 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
           })
 
           if (apiRoute === 'index')
-            routeString += `route.get('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+            routeString += `route.get('${uri}', '${pathAction}')\n\n`
           if (apiRoute === 'show')
-            routeString += `route.get('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+            routeString += `route.get('${uri}/{id}', '${pathAction}')\n\n`
           if (apiRoute === 'store')
-            routeString += `route.post('${uri}', '${pathAction}').middleware(['Api'])\n\n`
+            routeString += `route.post('${uri}', '${pathAction}')\n\n`
           if (apiRoute === 'update')
-            routeString += `route.patch('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+            routeString += `route.patch('${uri}/{id}', '${pathAction}')\n\n`
           if (apiRoute === 'destroy')
-            routeString += `route.delete('${uri}/{id}', '${pathAction}').middleware(['Api'])\n\n`
+            routeString += `route.delete('${uri}/{id}', '${pathAction}')\n\n`
         }
       }
     }

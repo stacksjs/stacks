@@ -76,7 +76,7 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = (await import(p.userActionsPath('HealthAction'))).default as Action
+    const healthModule = (await import(p.storagePath('framework/defaults/actions/HealthAction'))).default as Action
     const callback = healthModule.handle
     const path = healthModule.path ?? `/health`
 
