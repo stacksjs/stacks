@@ -46,7 +46,7 @@
     "@stacksjs/build": "workspace:*",
     "@stacksjs/lint": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/rpx": "^0.9.1",
+    "@stacksjs/rpx": "^0.10.0",
     "@stacksjs/testing": "workspace:*",
     "@stacksjs/tinker": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",

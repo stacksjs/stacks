@@ -35,7 +35,7 @@
     "@vue-macros/volar": "^0.30.13",
     "@vue/test-utils": "^2.4.6",
     "markdown-it-link-attributes": "^4.0.1",
-    "rollup": "^4.32.0",
+    "rollup": "^4.32.1",
     "shiki": "^2.1.0",
     "unocss": "65.4.3",
     "unplugin-auto-import": "^19.0.0",
