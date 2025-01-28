@@ -126,6 +126,55 @@ export class ProductModel {
     return ProductModel.find(id)
   }
 
+  async first(): Promise<ProductModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
+  static async first(): Promise<ProductType | undefined> {
+    const model = await db.selectFrom('products')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<ProductModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
     const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
@@ -207,7 +256,7 @@ export class ProductModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): ProductModel {
     return ProductModel.take(count)
   }
 
@@ -556,9 +605,7 @@ export class ProductModel {
   }
 
   whereRef(column: string, operator: string, value: string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return ProductModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): ProductModel {
@@ -570,30 +617,7 @@ export class ProductModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): ProductModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return ProductModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): ProductModel {
@@ -629,10 +653,7 @@ export class ProductModel {
     condition: boolean,
     callback: (query: ProductModel) => ProductModel,
   ): ProductModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return ProductModel.when(condition, callback)
   }
 
   static when(
@@ -648,15 +669,7 @@ export class ProductModel {
   }
 
   whereNull(column: string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return ProductModel.whereNull(column)
   }
 
   static whereNull(column: string): ProductModel {
@@ -730,13 +743,7 @@ export class ProductModel {
   }
 
   whereIn(column: keyof ProductType, values: any[]): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return ProductModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof ProductType, values: any[]): ProductModel {
@@ -752,17 +759,7 @@ export class ProductModel {
   }
 
   whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return ProductModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
@@ -782,13 +779,7 @@ export class ProductModel {
   }
 
   whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return ProductModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
@@ -803,55 +794,10 @@ export class ProductModel {
     return instance
   }
 
-  async first(): Promise<ProductModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<ProductModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
-
-    const instance = new ProductModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<ProductType | undefined> {
-    const model = await db.selectFrom('products')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProductModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    return data
   }
 
   static async latest(): Promise<ProductType | undefined> {

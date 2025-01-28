@@ -113,6 +113,55 @@ export class ProjectModel {
     return ProjectModel.find(id)
   }
 
+  async first(): Promise<ProjectModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
+  static async first(): Promise<ProjectType | undefined> {
+    const model = await db.selectFrom('projects')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProjectModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<ProjectModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
     const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
@@ -194,7 +243,7 @@ export class ProjectModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): ProjectModel {
     return ProjectModel.take(count)
   }
 
@@ -537,9 +586,7 @@ export class ProjectModel {
   }
 
   whereRef(column: string, operator: string, value: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return ProjectModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): ProjectModel {
@@ -551,30 +598,7 @@ export class ProjectModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): ProjectModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return ProjectModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): ProjectModel {
@@ -610,10 +634,7 @@ export class ProjectModel {
     condition: boolean,
     callback: (query: ProjectModel) => ProjectModel,
   ): ProjectModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return ProjectModel.when(condition, callback)
   }
 
   static when(
@@ -629,15 +650,7 @@ export class ProjectModel {
   }
 
   whereNull(column: string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return ProjectModel.whereNull(column)
   }
 
   static whereNull(column: string): ProjectModel {
@@ -687,13 +700,7 @@ export class ProjectModel {
   }
 
   whereIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return ProjectModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof ProjectType, values: any[]): ProjectModel {
@@ -709,17 +716,7 @@ export class ProjectModel {
   }
 
   whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return ProjectModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
@@ -739,13 +736,7 @@ export class ProjectModel {
   }
 
   whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return ProjectModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
@@ -760,55 +751,10 @@ export class ProjectModel {
     return instance
   }
 
-  async first(): Promise<ProjectModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<ProjectModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
-
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<ProjectType | undefined> {
-    const model = await db.selectFrom('projects')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
   }
 
   static async latest(): Promise<ProjectType | undefined> {

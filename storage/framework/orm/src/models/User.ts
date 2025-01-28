@@ -159,6 +159,55 @@ export class UserModel {
     return UserModel.find(id)
   }
 
+  async first(): Promise<UserModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
+  static async first(): Promise<UserType | undefined> {
+    const model = await db.selectFrom('users')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new UserModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<UserModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<UserModel | undefined> {
+    const instance = new UserModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No UserModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
     const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
@@ -256,7 +305,7 @@ export class UserModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): UserModel {
     return UserModel.take(count)
   }
 
@@ -618,9 +667,7 @@ export class UserModel {
   }
 
   whereRef(column: string, operator: string, value: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return UserModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): UserModel {
@@ -632,30 +679,7 @@ export class UserModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): UserModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return UserModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): UserModel {
@@ -691,10 +715,7 @@ export class UserModel {
     condition: boolean,
     callback: (query: UserModel) => UserModel,
   ): UserModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return UserModel.when(condition, callback)
   }
 
   static when(
@@ -710,15 +731,7 @@ export class UserModel {
   }
 
   whereNull(column: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return UserModel.whereNull(column)
   }
 
   static whereNull(column: string): UserModel {
@@ -768,13 +781,7 @@ export class UserModel {
   }
 
   whereIn(column: keyof UserType, values: any[]): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return UserModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof UserType, values: any[]): UserModel {
@@ -790,17 +797,7 @@ export class UserModel {
   }
 
   whereBetween(column: keyof UserType, range: [any, any]): UserModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return UserModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
@@ -820,13 +817,7 @@ export class UserModel {
   }
 
   whereNotIn(column: keyof UserType, values: any[]): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return UserModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof UserType, values: any[]): UserModel {
@@ -841,55 +832,10 @@ export class UserModel {
     return instance
   }
 
-  async first(): Promise<UserModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<UserModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No UserModel results found for query')
-
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<UserType | undefined> {
-    const model = await db.selectFrom('users')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    return data
   }
 
   static async latest(): Promise<UserType | undefined> {
@@ -1464,7 +1410,7 @@ export class UserModel {
   async newSubscription(
     type: string,
     lookupKey: string,
-        options: Partial<Stripe.SubscriptionCreateParams> = {},
+    options: Partial<Stripe.SubscriptionCreateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.create(this, type, lookupKey, options)
 
@@ -1477,7 +1423,7 @@ export class UserModel {
   async updateSubscription(
     type: string,
     lookupKey: string,
-        options: Partial<Stripe.SubscriptionUpdateParams> = {},
+    options: Partial<Stripe.SubscriptionUpdateParams> = {},
   ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
     const subscription = await manageSubscription.update(this, type, lookupKey, options)
 

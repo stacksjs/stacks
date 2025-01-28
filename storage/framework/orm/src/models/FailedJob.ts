@@ -116,6 +116,55 @@ export class FailedJobModel {
     return FailedJobModel.find(id)
   }
 
+  async first(): Promise<FailedJobModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
+  static async first(): Promise<FailedJobType | undefined> {
+    const model = await db.selectFrom('failed_jobs')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new FailedJobModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<FailedJobModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
   // Method to find a FailedJob by ID
   static async find(id: number): Promise<FailedJobModel | undefined> {
     const model = await db.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
@@ -197,7 +246,7 @@ export class FailedJobModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): FailedJobModel {
     return FailedJobModel.take(count)
   }
 
@@ -540,9 +589,7 @@ export class FailedJobModel {
   }
 
   whereRef(column: string, operator: string, value: string): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return FailedJobModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): FailedJobModel {
@@ -554,30 +601,7 @@ export class FailedJobModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): FailedJobModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return FailedJobModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): FailedJobModel {
@@ -613,10 +637,7 @@ export class FailedJobModel {
     condition: boolean,
     callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return FailedJobModel.when(condition, callback)
   }
 
   static when(
@@ -632,15 +653,7 @@ export class FailedJobModel {
   }
 
   whereNull(column: string): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return FailedJobModel.whereNull(column)
   }
 
   static whereNull(column: string): FailedJobModel {
@@ -698,13 +711,7 @@ export class FailedJobModel {
   }
 
   whereIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return FailedJobModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
@@ -720,17 +727,7 @@ export class FailedJobModel {
   }
 
   whereBetween(column: keyof FailedJobType, range: [any, any]): FailedJobModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return FailedJobModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof FailedJobType, range: [any, any]): FailedJobModel {
@@ -750,13 +747,7 @@ export class FailedJobModel {
   }
 
   whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return FailedJobModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
@@ -771,55 +762,10 @@ export class FailedJobModel {
     return instance
   }
 
-  async first(): Promise<FailedJobModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<FailedJobModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
-
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<FailedJobType | undefined> {
-    const model = await db.selectFrom('failed_jobs')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    return data
   }
 
   static async latest(): Promise<FailedJobType | undefined> {

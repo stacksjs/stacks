@@ -782,7 +782,6 @@ export async function generateModelString(
           return ${modelName}Model.find(id)
         }
 
-  
         // Method to find a ${modelName} by ID
         static async find(id: number): Promise<${modelName}Model | undefined> {
           const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
@@ -800,7 +799,47 @@ export async function generateModelString(
   
           return data
         }
+
+        async first(): Promise<${modelName}Model | undefined> {
+          return ${modelName}Model.first()
+        }
+        
+        static async first(): Promise<${modelName}Type | undefined> {
+          const model = await db.selectFrom('${tableName}')
+            .selectAll()
+            .executeTakeFirst()
   
+          if (! model)
+            return undefined
+  
+          const instance = new ${modelName}Model(null)
+  
+          const result = await instance.mapWith(model)
+  
+          const data = new ${modelName}Model(result as ${modelName}Type)
+  
+          return data
+        }
+  
+        async firstOrFail(): Promise<${modelName}Model | undefined> {
+          return this.firstOrFail()
+        }
+
+        static async firstOrFail(): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(null)
+
+          const model = await instance.selectFromQuery.executeTakeFirst()
+  
+          if (model === undefined)
+            throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
+  
+          const result = await instance.mapWith(model)
+  
+          const data = new ${modelName}Model(result as ${modelName}Type)
+  
+          return data
+        }
+
         async mapWith(model: ${modelName}Type): Promise<${modelName}Type> {
           ${relationStringThisMany}
           ${relationStringThisBelong}
@@ -871,7 +910,7 @@ export async function generateModelString(
           return instance
         }
 
-        take(count: number): this {
+        take(count: number): ${modelName}Model {
           return ${modelName}Model.take(count)
         }
 
@@ -1229,13 +1268,11 @@ export async function generateModelString(
         static where(column: string, operator: string, value: any): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-         return ${modelName}Model.applyWhere(instance, column, operator, value)
+          return ${modelName}Model.applyWhere(instance, column, operator, value)
         }
 
         whereRef(column: string, operator: string, value: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-          return this
+          return ${modelName}Model.whereRef(column, operator, value)
         }
 
         static whereRef(column: string, operator: string, value: string): ${modelName}Model {
@@ -1247,30 +1284,7 @@ export async function generateModelString(
         }
   
         orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
-          if (args.length === 0) {
-            throw new HttpError(500, "At least one condition must be provided");
-          }
-  
-          // Use the expression builder to append the OR conditions
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb.or(
-              args.map(([column, operator, value]) => eb(column, operator, value))
-            )
-          );
-  
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb.or(
-              args.map(([column, operator, value]) => eb(column, operator, value))
-            )
-          );
-  
-          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-            eb.or(
-              args.map(([column, operator, value]) => eb(column, operator, value))
-            )
-          )
-  
-          return this
+          return ${modelName}Model.orWhere(...args)
         }
   
         static orWhere(...args: Array<[string, string, any]>): ${modelName}Model {
@@ -1306,11 +1320,7 @@ export async function generateModelString(
           condition: boolean,
           callback: (query: ${modelName}Model) => ${modelName}Model,
         ): ${modelName}Model {
-        
-          if (condition)
-            callback(this.selectFromQuery)
-  
-          return this
+          return ${modelName}Model.when(condition, callback)
         }
   
         static when(
@@ -1326,15 +1336,7 @@ export async function generateModelString(
         }
 
         whereNull(column: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          return this
+          return ${modelName}Model.whereNull(column)
         }
   
         static whereNull(column: string): ${modelName}Model {
@@ -1355,13 +1357,7 @@ export async function generateModelString(
         ${whereStatements}
   
         whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-  
-          this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-  
-          return this
+          return ${modelName}Model.whereIn(column, values)
         }
   
         static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
@@ -1377,17 +1373,7 @@ export async function generateModelString(
         }
 
         whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
-          if (range.length !== 2) {
-            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-          }
-  
-          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
-  
-          this.selectFromQuery = this.selectFromQuery.where(query)
-          this.updateFromQuery = this.updateFromQuery.where(query)
-          this.deleteFromQuery = this.deleteFromQuery.where(query)
-  
-          return this
+          return ${modelName}Model.whereBetween(column, range)
         }
   
         static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
@@ -1406,15 +1392,8 @@ export async function generateModelString(
           return instance
         }
 
-
         whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-  
-          this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-  
-          return this
+          return ${modelName}Model.whereNotIn(column, values)
         }
   
         static whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
@@ -1429,55 +1408,10 @@ export async function generateModelString(
           return instance
         }
   
-        async first(): Promise<${modelName}Model | undefined> {
-          const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-  
-           if (! model)
-            return undefined
-  
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
-  
-          return data
-        }
-  
-        async firstOrFail(): Promise<${modelName}Model | undefined> {
-          const model = await this.selectFromQuery.executeTakeFirst()
-  
-          if (model === undefined)
-            throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
-  
-          const instance = new ${modelName}Model(null)
-  
-          const result = await instance.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
-  
-          return data
-        }
-  
         async exists(): Promise<boolean> {
           const model = await this.selectFromQuery.executeTakeFirst()
   
           return model !== null || model !== undefined
-        }
-  
-         static async first(): Promise<${modelName}Type | undefined> {
-          const model = await db.selectFrom('${tableName}')
-            .selectAll()
-            .executeTakeFirst()
-  
-          if (! model)
-            return undefined
-  
-          const instance = new ${modelName}Model(null)
-  
-          const result = await instance.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
-  
-          return data
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {

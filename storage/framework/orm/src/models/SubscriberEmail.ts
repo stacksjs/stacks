@@ -110,6 +110,55 @@ export class SubscriberEmailModel {
     return SubscriberEmailModel.find(id)
   }
 
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
+  static async first(): Promise<SubscriberEmailType | undefined> {
+    const model = await db.selectFrom('subscriber_emails')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
     const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
@@ -199,7 +248,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): SubscriberEmailModel {
     return SubscriberEmailModel.take(count)
   }
 
@@ -569,9 +618,7 @@ export class SubscriberEmailModel {
   }
 
   whereRef(column: string, operator: string, value: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return SubscriberEmailModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): SubscriberEmailModel {
@@ -583,30 +630,7 @@ export class SubscriberEmailModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): SubscriberEmailModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return SubscriberEmailModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): SubscriberEmailModel {
@@ -642,10 +666,7 @@ export class SubscriberEmailModel {
     condition: boolean,
     callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
   ): SubscriberEmailModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return SubscriberEmailModel.when(condition, callback)
   }
 
   static when(
@@ -661,15 +682,7 @@ export class SubscriberEmailModel {
   }
 
   whereNull(column: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return SubscriberEmailModel.whereNull(column)
   }
 
   static whereNull(column: string): SubscriberEmailModel {
@@ -695,13 +708,7 @@ export class SubscriberEmailModel {
   }
 
   whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return SubscriberEmailModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
@@ -717,17 +724,7 @@ export class SubscriberEmailModel {
   }
 
   whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return SubscriberEmailModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
@@ -747,13 +744,7 @@ export class SubscriberEmailModel {
   }
 
   whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return SubscriberEmailModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
@@ -768,55 +759,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
-
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
   }
 
   static async latest(): Promise<SubscriberEmailType | undefined> {

@@ -139,6 +139,55 @@ export class TransactionModel {
     return TransactionModel.find(id)
   }
 
+  async first(): Promise<TransactionModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
+  static async first(): Promise<TransactionType | undefined> {
+    const model = await db.selectFrom('transactions')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TransactionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<TransactionModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
     const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
@@ -228,7 +277,7 @@ export class TransactionModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): TransactionModel {
     return TransactionModel.take(count)
   }
 
@@ -577,9 +626,7 @@ export class TransactionModel {
   }
 
   whereRef(column: string, operator: string, value: string): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return TransactionModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): TransactionModel {
@@ -591,30 +638,7 @@ export class TransactionModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): TransactionModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return TransactionModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): TransactionModel {
@@ -650,10 +674,7 @@ export class TransactionModel {
     condition: boolean,
     callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return TransactionModel.when(condition, callback)
   }
 
   static when(
@@ -669,15 +690,7 @@ export class TransactionModel {
   }
 
   whereNull(column: string): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return TransactionModel.whereNull(column)
   }
 
   static whereNull(column: string): TransactionModel {
@@ -735,13 +748,7 @@ export class TransactionModel {
   }
 
   whereIn(column: keyof TransactionType, values: any[]): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return TransactionModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof TransactionType, values: any[]): TransactionModel {
@@ -757,17 +764,7 @@ export class TransactionModel {
   }
 
   whereBetween(column: keyof TransactionType, range: [any, any]): TransactionModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return TransactionModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof TransactionType, range: [any, any]): TransactionModel {
@@ -787,13 +784,7 @@ export class TransactionModel {
   }
 
   whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return TransactionModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
@@ -808,55 +799,10 @@ export class TransactionModel {
     return instance
   }
 
-  async first(): Promise<TransactionModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<TransactionModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
-
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<TransactionType | undefined> {
-    const model = await db.selectFrom('transactions')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    return data
   }
 
   static async latest(): Promise<TransactionType | undefined> {

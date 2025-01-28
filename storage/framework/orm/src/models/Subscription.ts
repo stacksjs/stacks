@@ -144,6 +144,55 @@ export class SubscriptionModel {
     return SubscriptionModel.find(id)
   }
 
+  async first(): Promise<SubscriptionModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
+  static async first(): Promise<SubscriptionType | undefined> {
+    const model = await db.selectFrom('subscriptions')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<SubscriptionModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new SubscriptionModel(result as SubscriptionType)
+
+    return data
+  }
+
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
     const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
@@ -229,7 +278,7 @@ export class SubscriptionModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): SubscriptionModel {
     return SubscriptionModel.take(count)
   }
 
@@ -578,9 +627,7 @@ export class SubscriptionModel {
   }
 
   whereRef(column: string, operator: string, value: string): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return SubscriptionModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): SubscriptionModel {
@@ -592,30 +639,7 @@ export class SubscriptionModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): SubscriptionModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return SubscriptionModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): SubscriptionModel {
@@ -651,10 +675,7 @@ export class SubscriptionModel {
     condition: boolean,
     callback: (query: SubscriptionModel) => SubscriptionModel,
   ): SubscriptionModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return SubscriptionModel.when(condition, callback)
   }
 
   static when(
@@ -670,15 +691,7 @@ export class SubscriptionModel {
   }
 
   whereNull(column: string): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return SubscriptionModel.whereNull(column)
   }
 
   static whereNull(column: string): SubscriptionModel {
@@ -776,13 +789,7 @@ export class SubscriptionModel {
   }
 
   whereIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return SubscriptionModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
@@ -798,17 +805,7 @@ export class SubscriptionModel {
   }
 
   whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return SubscriptionModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
@@ -828,13 +825,7 @@ export class SubscriptionModel {
   }
 
   whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return SubscriptionModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
@@ -849,55 +840,10 @@ export class SubscriptionModel {
     return instance
   }
 
-  async first(): Promise<SubscriptionModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<SubscriptionModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
-
-    const instance = new SubscriptionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<SubscriptionType | undefined> {
-    const model = await db.selectFrom('subscriptions')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new SubscriptionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
-
-    return data
   }
 
   static async latest(): Promise<SubscriptionType | undefined> {

@@ -116,6 +116,55 @@ export class ErrorModel {
     return ErrorModel.find(id)
   }
 
+  async first(): Promise<ErrorModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
+  static async first(): Promise<ErrorType | undefined> {
+    const model = await db.selectFrom('errors')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<ErrorModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
     const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
@@ -197,7 +246,7 @@ export class ErrorModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): ErrorModel {
     return ErrorModel.take(count)
   }
 
@@ -540,9 +589,7 @@ export class ErrorModel {
   }
 
   whereRef(column: string, operator: string, value: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return ErrorModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): ErrorModel {
@@ -554,30 +601,7 @@ export class ErrorModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): ErrorModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return ErrorModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): ErrorModel {
@@ -613,10 +637,7 @@ export class ErrorModel {
     condition: boolean,
     callback: (query: ErrorModel) => ErrorModel,
   ): ErrorModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return ErrorModel.when(condition, callback)
   }
 
   static when(
@@ -632,15 +653,7 @@ export class ErrorModel {
   }
 
   whereNull(column: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return ErrorModel.whereNull(column)
   }
 
   static whereNull(column: string): ErrorModel {
@@ -698,13 +711,7 @@ export class ErrorModel {
   }
 
   whereIn(column: keyof ErrorType, values: any[]): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return ErrorModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof ErrorType, values: any[]): ErrorModel {
@@ -720,17 +727,7 @@ export class ErrorModel {
   }
 
   whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return ErrorModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
@@ -750,13 +747,7 @@ export class ErrorModel {
   }
 
   whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return ErrorModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
@@ -771,55 +762,10 @@ export class ErrorModel {
     return instance
   }
 
-  async first(): Promise<ErrorModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<ErrorModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
-
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
   }
 
   static async latest(): Promise<ErrorType | undefined> {

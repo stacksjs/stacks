@@ -116,6 +116,55 @@ export class PostModel {
     return PostModel.find(id)
   }
 
+  async first(): Promise<PostModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
+  static async first(): Promise<PostType | undefined> {
+    const model = await db.selectFrom('posts')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<PostModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<PostModel | undefined> {
+    const instance = new PostModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No PostModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
     const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
@@ -201,7 +250,7 @@ export class PostModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): PostModel {
     return PostModel.take(count)
   }
 
@@ -544,9 +593,7 @@ export class PostModel {
   }
 
   whereRef(column: string, operator: string, value: string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return PostModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): PostModel {
@@ -558,30 +605,7 @@ export class PostModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): PostModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return PostModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): PostModel {
@@ -617,10 +641,7 @@ export class PostModel {
     condition: boolean,
     callback: (query: PostModel) => PostModel,
   ): PostModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return PostModel.when(condition, callback)
   }
 
   static when(
@@ -636,15 +657,7 @@ export class PostModel {
   }
 
   whereNull(column: string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return PostModel.whereNull(column)
   }
 
   static whereNull(column: string): PostModel {
@@ -678,13 +691,7 @@ export class PostModel {
   }
 
   whereIn(column: keyof PostType, values: any[]): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return PostModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof PostType, values: any[]): PostModel {
@@ -700,17 +707,7 @@ export class PostModel {
   }
 
   whereBetween(column: keyof PostType, range: [any, any]): PostModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return PostModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof PostType, range: [any, any]): PostModel {
@@ -730,13 +727,7 @@ export class PostModel {
   }
 
   whereNotIn(column: keyof PostType, values: any[]): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return PostModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof PostType, values: any[]): PostModel {
@@ -751,55 +742,10 @@ export class PostModel {
     return instance
   }
 
-  async first(): Promise<PostModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<PostModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PostModel results found for query')
-
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<PostType | undefined> {
-    const model = await db.selectFrom('posts')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    return data
   }
 
   static async latest(): Promise<PostType | undefined> {

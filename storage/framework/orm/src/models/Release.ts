@@ -104,6 +104,55 @@ export class ReleaseModel {
     return ReleaseModel.find(id)
   }
 
+  async first(): Promise<ReleaseModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
+  static async first(): Promise<ReleaseType | undefined> {
+    const model = await db.selectFrom('releases')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<ReleaseModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
     const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
@@ -185,7 +234,7 @@ export class ReleaseModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): ReleaseModel {
     return ReleaseModel.take(count)
   }
 
@@ -528,9 +577,7 @@ export class ReleaseModel {
   }
 
   whereRef(column: string, operator: string, value: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return ReleaseModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): ReleaseModel {
@@ -542,30 +589,7 @@ export class ReleaseModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): ReleaseModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return ReleaseModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): ReleaseModel {
@@ -601,10 +625,7 @@ export class ReleaseModel {
     condition: boolean,
     callback: (query: ReleaseModel) => ReleaseModel,
   ): ReleaseModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return ReleaseModel.when(condition, callback)
   }
 
   static when(
@@ -620,15 +641,7 @@ export class ReleaseModel {
   }
 
   whereNull(column: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return ReleaseModel.whereNull(column)
   }
 
   static whereNull(column: string): ReleaseModel {
@@ -654,13 +667,7 @@ export class ReleaseModel {
   }
 
   whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return ReleaseModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
@@ -676,17 +683,7 @@ export class ReleaseModel {
   }
 
   whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return ReleaseModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
@@ -706,13 +703,7 @@ export class ReleaseModel {
   }
 
   whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return ReleaseModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
@@ -727,55 +718,10 @@ export class ReleaseModel {
     return instance
   }
 
-  async first(): Promise<ReleaseModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<ReleaseModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
-
-    const instance = new ReleaseModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<ReleaseType | undefined> {
-    const model = await db.selectFrom('releases')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new ReleaseModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    return data
   }
 
   static async latest(): Promise<ReleaseType | undefined> {

@@ -122,6 +122,55 @@ export class AccessTokenModel {
     return AccessTokenModel.find(id)
   }
 
+  async first(): Promise<AccessTokenModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
+  static async first(): Promise<AccessTokenType | undefined> {
+    const model = await db.selectFrom('personal_access_tokens')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new AccessTokenModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<AccessTokenModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<AccessTokenModel | undefined> {
+    const instance = new AccessTokenModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
   // Method to find a AccessToken by ID
   static async find(id: number): Promise<AccessTokenModel | undefined> {
     const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
@@ -207,7 +256,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): AccessTokenModel {
     return AccessTokenModel.take(count)
   }
 
@@ -550,9 +599,7 @@ export class AccessTokenModel {
   }
 
   whereRef(column: string, operator: string, value: string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return AccessTokenModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): AccessTokenModel {
@@ -564,30 +611,7 @@ export class AccessTokenModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): AccessTokenModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return AccessTokenModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): AccessTokenModel {
@@ -623,10 +647,7 @@ export class AccessTokenModel {
     condition: boolean,
     callback: (query: AccessTokenModel) => AccessTokenModel,
   ): AccessTokenModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return AccessTokenModel.when(condition, callback)
   }
 
   static when(
@@ -642,15 +663,7 @@ export class AccessTokenModel {
   }
 
   whereNull(column: string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return AccessTokenModel.whereNull(column)
   }
 
   static whereNull(column: string): AccessTokenModel {
@@ -700,13 +713,7 @@ export class AccessTokenModel {
   }
 
   whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return AccessTokenModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
@@ -722,17 +729,7 @@ export class AccessTokenModel {
   }
 
   whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return AccessTokenModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
@@ -752,13 +749,7 @@ export class AccessTokenModel {
   }
 
   whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return AccessTokenModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
@@ -773,55 +764,10 @@ export class AccessTokenModel {
     return instance
   }
 
-  async first(): Promise<AccessTokenModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
-
-    const instance = new AccessTokenModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<AccessTokenType | undefined> {
-    const model = await db.selectFrom('personal_access_tokens')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new AccessTokenModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
-
-    return data
   }
 
   static async latest(): Promise<AccessTokenType | undefined> {

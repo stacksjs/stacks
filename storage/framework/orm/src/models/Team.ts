@@ -133,6 +133,55 @@ export class TeamModel {
     return TeamModel.find(id)
   }
 
+  async first(): Promise<TeamModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
+  static async first(): Promise<TeamType | undefined> {
+    const model = await db.selectFrom('teams')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<TeamModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
     const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
@@ -218,7 +267,7 @@ export class TeamModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): TeamModel {
     return TeamModel.take(count)
   }
 
@@ -561,9 +610,7 @@ export class TeamModel {
   }
 
   whereRef(column: string, operator: string, value: string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return TeamModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): TeamModel {
@@ -575,30 +622,7 @@ export class TeamModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): TeamModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return TeamModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): TeamModel {
@@ -634,10 +658,7 @@ export class TeamModel {
     condition: boolean,
     callback: (query: TeamModel) => TeamModel,
   ): TeamModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return TeamModel.when(condition, callback)
   }
 
   static when(
@@ -653,15 +674,7 @@ export class TeamModel {
   }
 
   whereNull(column: string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return TeamModel.whereNull(column)
   }
 
   static whereNull(column: string): TeamModel {
@@ -743,13 +756,7 @@ export class TeamModel {
   }
 
   whereIn(column: keyof TeamType, values: any[]): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return TeamModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof TeamType, values: any[]): TeamModel {
@@ -765,17 +772,7 @@ export class TeamModel {
   }
 
   whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return TeamModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
@@ -795,13 +792,7 @@ export class TeamModel {
   }
 
   whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return TeamModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
@@ -816,55 +807,10 @@ export class TeamModel {
     return instance
   }
 
-  async first(): Promise<TeamModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<TeamModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
-
-    const instance = new TeamModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<TeamType | undefined> {
-    const model = await db.selectFrom('teams')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new TeamModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    return data
   }
 
   static async latest(): Promise<TeamType | undefined> {

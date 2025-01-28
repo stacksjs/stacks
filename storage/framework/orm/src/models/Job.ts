@@ -116,6 +116,55 @@ export class JobModel {
     return JobModel.find(id)
   }
 
+  async first(): Promise<JobModel | undefined> {
+    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const result = await this.mapWith(model)
+
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
+  static async first(): Promise<JobType | undefined> {
+    const model = await db.selectFrom('jobs')
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new JobModel(null)
+
+    const result = await instance.mapWith(model)
+
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<JobModel | undefined> {
+    return this.firstOrFail()
+  }
+
+  static async firstOrFail(): Promise<JobModel | undefined> {
+    const instance = new JobModel(null)
+
+    const model = await instance.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No JobModel results found for query')
+
+    const result = await instance.mapWith(model)
+
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
     const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
@@ -197,7 +246,7 @@ export class JobModel {
     return instance
   }
 
-  take(count: number): this {
+  take(count: number): JobModel {
     return JobModel.take(count)
   }
 
@@ -540,9 +589,7 @@ export class JobModel {
   }
 
   whereRef(column: string, operator: string, value: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, value)
-
-    return this
+    return JobModel.whereRef(column, operator, value)
   }
 
   static whereRef(column: string, operator: string, value: string): JobModel {
@@ -554,30 +601,7 @@ export class JobModel {
   }
 
   orWhere(...args: Array<[string, string, any]>): JobModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
+    return JobModel.orWhere(...args)
   }
 
   static orWhere(...args: Array<[string, string, any]>): JobModel {
@@ -613,10 +637,7 @@ export class JobModel {
     condition: boolean,
     callback: (query: JobModel) => JobModel,
   ): JobModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+    return JobModel.when(condition, callback)
   }
 
   static when(
@@ -632,15 +653,7 @@ export class JobModel {
   }
 
   whereNull(column: string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return JobModel.whereNull(column)
   }
 
   static whereNull(column: string): JobModel {
@@ -698,13 +711,7 @@ export class JobModel {
   }
 
   whereIn(column: keyof JobType, values: any[]): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
+    return JobModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof JobType, values: any[]): JobModel {
@@ -720,17 +727,7 @@ export class JobModel {
   }
 
   whereBetween(column: keyof JobType, range: [any, any]): JobModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
+    return JobModel.whereBetween(column, range)
   }
 
   static whereBetween(column: keyof JobType, range: [any, any]): JobModel {
@@ -750,13 +747,7 @@ export class JobModel {
   }
 
   whereNotIn(column: keyof JobType, values: any[]): JobModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
+    return JobModel.whereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof JobType, values: any[]): JobModel {
@@ -771,55 +762,10 @@ export class JobModel {
     return instance
   }
 
-  async first(): Promise<JobModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
-  async firstOrFail(): Promise<JobModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No JobModel results found for query')
-
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
-  }
-
   async exists(): Promise<boolean> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     return model !== null || model !== undefined
-  }
-
-  static async first(): Promise<JobType | undefined> {
-    const model = await db.selectFrom('jobs')
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
   }
 
   static async latest(): Promise<JobType | undefined> {
