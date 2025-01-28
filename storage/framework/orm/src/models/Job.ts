@@ -299,6 +299,10 @@ export class JobModel {
       .executeTakeFirst()
   }
 
+  async get(): Promise<JobModel[]> {
+    return JobModel.get()
+  }
+
   static async get(): Promise<JobModel[]> {
     const instance = new JobModel(null)
 
@@ -439,19 +443,6 @@ export class JobModel {
     return instance
   }
 
-  // Method to get a Job by criteria
-  async get(): Promise<JobModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: JobModel) => new JobModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: JobModel) => new JobModel(modelItem))
-  }
-
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
     const totalRecordsResult = await db.selectFrom('jobs')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
@@ -580,55 +571,22 @@ export class JobModel {
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): JobModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  static where(...args: (string | number | boolean | undefined | null)[]): JobModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new JobModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  where(column: string, operator: string, value: any): JobModel {
+    return JobModel.applyWhere(this, column, operator, value)
+  }
+
+  static where(column: string, operator: string, value: any): JobModel {
+    const instance = new JobModel(null)
+
+    return JobModel.applyWhere(instance, column, operator, value)
   }
 
   whereRef(column: string, operator: string, value: string): JobModel {

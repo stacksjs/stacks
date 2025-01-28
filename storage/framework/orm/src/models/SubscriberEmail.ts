@@ -305,6 +305,10 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
   }
 
+  async get(): Promise<SubscriberEmailModel[]> {
+    return SubscriberEmailModel.get()
+  }
+
   static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 
@@ -451,27 +455,6 @@ export class SubscriberEmailModel {
     )
 
     return instance
-  }
-
-  // Method to get a SubscriberEmail by criteria
-  async get(): Promise<SubscriberEmailModel[]> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
@@ -621,55 +604,22 @@ export class SubscriberEmailModel {
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  static where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new SubscriberEmailModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  where(column: string, operator: string, value: any): SubscriberEmailModel {
+    return SubscriberEmailModel.applyWhere(this, column, operator, value)
+  }
+
+  static where(column: string, operator: string, value: any): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return SubscriberEmailModel.applyWhere(instance, column, operator, value)
   }
 
   whereRef(column: string, operator: string, value: string): SubscriberEmailModel {

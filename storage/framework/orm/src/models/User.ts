@@ -358,6 +358,10 @@ export class UserModel {
       .executeTakeFirst()
   }
 
+  async get(): Promise<UserModel[]> {
+    return UserModel.get()
+  }
+
   static async get(): Promise<UserModel[]> {
     const instance = new UserModel(null)
 
@@ -496,19 +500,6 @@ export class UserModel {
     )
 
     return instance
-  }
-
-  // Method to get a User by criteria
-  async get(): Promise<UserModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: UserModel) => new UserModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: UserModel) => new UserModel(modelItem))
   }
 
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
@@ -658,55 +649,22 @@ export class UserModel {
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): UserModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  static where(...args: (string | number | boolean | undefined | null)[]): UserModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new UserModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  where(column: string, operator: string, value: any): UserModel {
+    return UserModel.applyWhere(this, column, operator, value)
+  }
+
+  static where(column: string, operator: string, value: any): UserModel {
+    const instance = new UserModel(null)
+
+    return UserModel.applyWhere(instance, column, operator, value)
   }
 
   whereRef(column: string, operator: string, value: string): UserModel {

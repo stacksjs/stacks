@@ -309,6 +309,10 @@ export class ProductModel {
       .executeTakeFirst()
   }
 
+  async get(): Promise<ProductModel[]> {
+    return ProductModel.get()
+  }
+
   static async get(): Promise<ProductModel[]> {
     const instance = new ProductModel(null)
 
@@ -449,19 +453,6 @@ export class ProductModel {
     return instance
   }
 
-  // Method to get a Product by criteria
-  async get(): Promise<ProductModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: ProductModel) => new ProductModel(modelItem))
-  }
-
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
     const totalRecordsResult = await db.selectFrom('products')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
@@ -596,55 +587,22 @@ export class ProductModel {
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): ProductModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  static where(...args: (string | number | boolean | undefined | null)[]): ProductModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new ProductModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  where(column: string, operator: string, value: any): ProductModel {
+    return ProductModel.applyWhere(this, column, operator, value)
+  }
+
+  static where(column: string, operator: string, value: any): ProductModel {
+    const instance = new ProductModel(null)
+
+    return ProductModel.applyWhere(instance, column, operator, value)
   }
 
   whereRef(column: string, operator: string, value: string): ProductModel {

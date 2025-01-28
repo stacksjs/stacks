@@ -331,6 +331,10 @@ export class SubscriptionModel {
       .executeTakeFirst()
   }
 
+  async get(): Promise<SubscriptionModel[]> {
+    return SubscriptionModel.get()
+  }
+
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
@@ -471,19 +475,6 @@ export class SubscriptionModel {
     return instance
   }
 
-  // Method to get a Subscription by criteria
-  async get(): Promise<SubscriptionModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
-
-      return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-    }
-
-    const model = await this.selectFromQuery.selectAll().execute()
-
-    return model.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
-  }
-
   async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
     const totalRecordsResult = await db.selectFrom('subscriptions')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
@@ -618,55 +609,22 @@ export class SubscriptionModel {
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  static where(...args: (string | number | boolean | undefined | null)[]): SubscriptionModel {
-    let column: any
-    let operator: any
-    let value: any
-
-    const instance = new SubscriptionModel(null)
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
     instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-
     instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-
     instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
 
     return instance
+  }
+
+  where(column: string, operator: string, value: any): SubscriptionModel {
+    return SubscriptionModel.applyWhere(this, column, operator, value)
+  }
+
+  static where(column: string, operator: string, value: any): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    return SubscriptionModel.applyWhere(instance, column, operator, value)
   }
 
   whereRef(column: string, operator: string, value: string): SubscriptionModel {
