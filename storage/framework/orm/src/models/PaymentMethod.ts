@@ -7,7 +7,7 @@ import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Transaction from './Transaction'
 
@@ -115,7 +115,7 @@ export class PaymentMethodModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('payment_methods')
+    this.selectFromQuery = DB.instance.selectFrom('payment_methods')
     this.updateFromQuery = db.updateTable('payment_methods')
     this.deleteFromQuery = db.deleteFrom('payment_methods')
     this.hasSelect = false

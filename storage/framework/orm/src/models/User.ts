@@ -11,7 +11,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
 
@@ -131,7 +131,7 @@ export class UserModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('users')
+    this.selectFromQuery = DB.instance.selectFrom('users')
     this.updateFromQuery = db.updateTable('users')
     this.deleteFromQuery = db.deleteFrom('users')
     this.hasSelect = false

@@ -3,7 +3,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
   id?: number
@@ -83,7 +83,7 @@ export class SubscriberEmailModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('subscriber_emails')
+    this.selectFromQuery = DB.instance.selectFrom('subscriber_emails')
     this.updateFromQuery = db.updateTable('subscriber_emails')
     this.deleteFromQuery = db.deleteFrom('subscriber_emails')
     this.hasSelect = false

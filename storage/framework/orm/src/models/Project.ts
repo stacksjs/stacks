@@ -3,7 +3,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
   id?: number
@@ -86,7 +86,7 @@ export class ProjectModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('projects')
+    this.selectFromQuery = DB.instance.selectFrom('projects')
     this.updateFromQuery = db.updateTable('projects')
     this.deleteFromQuery = db.deleteFrom('projects')
     this.hasSelect = false

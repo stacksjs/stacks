@@ -681,8 +681,8 @@ export async function generateModelString(
 
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
-      import { db, DB, sql } from '@stacksjs/database'
-      import { SubqueryBuilder } from '@stacksjs/orm'
+      import { db, sql } from '@stacksjs/database'
+      import { DB, SubqueryBuilder } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
@@ -750,7 +750,7 @@ export async function generateModelString(
           }
   
           this.withRelations = []
-          this.selectFromQuery = db.selectFrom('${tableName}')
+          this.selectFromQuery = DB.instance.selectFrom('${tableName}')
           this.updateFromQuery = db.updateTable('${tableName}')
           this.deleteFromQuery = db.deleteFrom('${tableName}')
           this.hasSelect = false

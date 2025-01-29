@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductsTable {
   id?: number
@@ -99,7 +99,7 @@ export class ProductModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('products')
+    this.selectFromQuery = DB.instance.selectFrom('products')
     this.updateFromQuery = db.updateTable('products')
     this.deleteFromQuery = db.deleteFrom('products')
     this.hasSelect = false

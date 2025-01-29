@@ -5,7 +5,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -108,7 +108,7 @@ export class DeploymentModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('deployments')
+    this.selectFromQuery = DB.instance.selectFrom('deployments')
     this.updateFromQuery = db.updateTable('deployments')
     this.deleteFromQuery = db.deleteFrom('deployments')
     this.hasSelect = false

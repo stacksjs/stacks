@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Team from './Team'
 
@@ -95,7 +95,7 @@ export class AccessTokenModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('personal_access_tokens')
+    this.selectFromQuery = DB.instance.selectFrom('personal_access_tokens')
     this.updateFromQuery = db.updateTable('personal_access_tokens')
     this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
     this.hasSelect = false

@@ -1,21 +1,21 @@
 import { db } from '@stacksjs/database'
 
 export class DB {
-  private static instance: any = null
+  private static dbInstance: any = null
+
+  static get instance(): DB | any {
+    if (!this.dbInstance) {
+      this.dbInstance = db
+    }
+
+    return this.dbInstance
+  }
 
   static setTransaction(transaction: any): void {
-    this.instance = transaction
+    this.dbInstance = transaction
   }
 
   static clearTransaction(): void {
-    this.instance = db
-  }
-
-  static get current(): any {
-    if (!this.instance) {
-      this.instance = db
-    }
-
-    return this.instance
+    this.dbInstance = db
   }
 }

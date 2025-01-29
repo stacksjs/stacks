@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -89,7 +89,7 @@ export class PostModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('posts')
+    this.selectFromQuery = DB.instance.selectFrom('posts')
     this.updateFromQuery = db.updateTable('posts')
     this.deleteFromQuery = db.deleteFrom('posts')
     this.hasSelect = false

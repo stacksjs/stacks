@@ -3,7 +3,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
   id?: number
@@ -89,7 +89,7 @@ export class ErrorModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('errors')
+    this.selectFromQuery = DB.instance.selectFrom('errors')
     this.updateFromQuery = db.updateTable('errors')
     this.deleteFromQuery = db.deleteFrom('errors')
     this.hasSelect = false

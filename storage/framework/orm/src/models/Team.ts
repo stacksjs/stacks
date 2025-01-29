@@ -4,7 +4,7 @@ import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { SubqueryBuilder } from '@stacksjs/orm'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import AccessToken from './AccessToken'
 
@@ -106,7 +106,7 @@ export class TeamModel {
     }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('teams')
+    this.selectFromQuery = DB.instance.selectFrom('teams')
     this.updateFromQuery = db.updateTable('teams')
     this.deleteFromQuery = db.deleteFrom('teams')
     this.hasSelect = false
