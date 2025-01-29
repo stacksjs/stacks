@@ -1,7 +1,7 @@
 import { db } from '@stacksjs/database'
 
 export class DB {
-  private static instance: any = db
+  private static instance: any = null
 
   static setTransaction(transaction: any): void {
     this.instance = transaction
@@ -12,6 +12,10 @@ export class DB {
   }
 
   static get current(): any {
+    if (!this.instance) {
+      this.instance = db
+    }
+
     return this.instance
   }
 }

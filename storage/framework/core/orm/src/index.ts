@@ -13,6 +13,8 @@
 // }
 
 export * from '../../../orm/src/types'
+export * from './db'
 export * from './requests'
 export * from './subquery'
+export * from './transaction'
 export * from './utils'

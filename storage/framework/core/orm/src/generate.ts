@@ -19,7 +19,6 @@ export async function generateModelString(
   let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
-  const thisSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
   let instanceSoftDeleteStatementsUpdateFrom = ''
   let thisSoftDeleteStatementsUpdateFrom = ''
@@ -682,7 +681,7 @@ export async function generateModelString(
 
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
-      import { db, sql } from '@stacksjs/database'
+      import { db, DB, sql } from '@stacksjs/database'
       import { SubqueryBuilder } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
