@@ -234,6 +234,22 @@ export function getHiddenAttributes(attributes: Attributes | undefined): string[
   })
 }
 
+export function getGuardedAttributes(model: Model): string[] {
+  const attributes = model.attributes
+
+  if (attributes === undefined)
+    return []
+
+  return Object.keys(attributes)
+    .filter((key) => {
+      if (attributes === undefined)
+        return false
+
+      return attributes[key]?.guarded === true
+    })
+    .map(attribute => snakeCase(attribute))
+}
+
 export function getFillableAttributes(model: Model, otherModelRelations: RelationConfig[]): string[] {
   const attributes = model.attributes
 

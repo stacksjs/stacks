@@ -47,6 +47,7 @@ interface QueryOptions {
 export class SubscriberEmailModel {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
+  private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]

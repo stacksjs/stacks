@@ -49,6 +49,7 @@ interface QueryOptions {
 export class FailedJobModel {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
+  private readonly guarded: Array<keyof FailedJobJsonResponse> = []
 
   protected selectFromQuery: any
   protected withRelations: string[]

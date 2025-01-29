@@ -49,6 +49,7 @@ interface QueryOptions {
 export class ErrorModel {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
+  private readonly guarded: Array<keyof ErrorJsonResponse> = []
 
   protected selectFromQuery: any
   protected withRelations: string[]

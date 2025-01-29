@@ -58,6 +58,7 @@ interface QueryOptions {
 export class TeamModel {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
+  private readonly guarded: Array<keyof TeamJsonResponse> = []
 
   protected selectFromQuery: any
   protected withRelations: string[]

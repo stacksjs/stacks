@@ -170,6 +170,7 @@ export interface Attribute {
   required?: boolean
   hidden?: boolean
   fillable?: boolean
+  guarded?: boolean
   factory?: () => any
   validation?: {
     rule: VineType

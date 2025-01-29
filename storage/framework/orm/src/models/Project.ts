@@ -48,6 +48,7 @@ interface QueryOptions {
 export class ProjectModel {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
+  private readonly guarded: Array<keyof ProjectJsonResponse> = []
 
   protected selectFromQuery: any
   protected withRelations: string[]

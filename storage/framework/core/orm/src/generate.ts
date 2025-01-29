@@ -3,7 +3,7 @@ import type {
   ModelElement,
 } from '@stacksjs/types'
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
-import { fetchOtherModelRelations, getFillableAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
+import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
 export async function generateModelString(
   tableName: string,
@@ -682,6 +682,7 @@ export async function generateModelString(
 
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
+  const guarded = JSON.stringify(getGuardedAttributes(model))
 
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
@@ -733,6 +734,7 @@ export async function generateModelString(
       export class ${modelName}Model {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
+        private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
         ${privateSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]

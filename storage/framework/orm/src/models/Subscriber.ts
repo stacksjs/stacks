@@ -45,6 +45,7 @@ interface QueryOptions {
 export class SubscriberModel {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
+  private readonly guarded: Array<keyof SubscriberJsonResponse> = []
 
   protected selectFromQuery: any
   protected withRelations: string[]
