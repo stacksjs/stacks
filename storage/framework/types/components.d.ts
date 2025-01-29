@@ -81,7 +81,6 @@ declare module 'vue' {
     SettingsHeader: typeof import('./../defaults/components/Dashboard/SettingsHeader.vue')['default']
     SettingsSidebar: typeof import('./../defaults/components/Dashboard/SettingsSidebar.vue')['default']
     Sidebar: typeof import('./../defaults/components/Dashboard/Sidebar.vue')['default']
-    SlimLayout: typeof import('./../defaults/components/Marketing/SlimLayout.vue')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     StorageForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/StorageForm.vue')['default']
