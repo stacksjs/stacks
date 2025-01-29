@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
@@ -550,12 +551,13 @@ export class SubscriberEmailModel {
     }
   }
 
-  // Method to create a new subscriberemail
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const instance = new SubscriberEmailModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newSubscriberEmail).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscriberEmail
 
     const result = await db.insertInto('subscriber_emails')
@@ -564,17 +566,20 @@ export class SubscriberEmailModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
 
+    if (model)
+      dispatch('SubscriberEmails:created', model)
+
     return model
   }
 
   static async createMany(newSubscriberEmails: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
-    const filteredValues = newSubscriberEmails.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewSubscriberEmail,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewSubscriberEmail
 
     await db.insertInto('subscriber_emails')
       .values(filteredValues)
@@ -832,7 +837,6 @@ export class SubscriberEmailModel {
       return new SubscriberEmailModel(result as SubscriberEmailType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newSubscriberEmail)
     }
   }
@@ -990,7 +994,9 @@ export class SubscriberEmailModel {
 
   async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscriberEmail
 
     await db.updateTable('subscriber_emails')

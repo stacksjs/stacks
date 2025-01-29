@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
@@ -540,12 +541,13 @@ export class FailedJobModel {
     }
   }
 
-  // Method to create a new failedjob
   static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
     const instance = new FailedJobModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newFailedJob).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newFailedJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewFailedJob
 
     const result = await db.insertInto('failed_jobs')
@@ -554,17 +556,20 @@ export class FailedJobModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
 
+    if (model)
+      dispatch('FailedJobs:created', model)
+
     return model
   }
 
   static async createMany(newFailedJobs: NewFailedJob[]): Promise<void> {
     const instance = new FailedJobModel(null)
 
-    const filteredValues = newFailedJobs.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewFailedJob,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newFailedJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewFailedJob
 
     await db.insertInto('failed_jobs')
       .values(filteredValues)
@@ -843,7 +848,6 @@ export class FailedJobModel {
       return new FailedJobModel(result as FailedJobType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newFailedJob)
     }
   }
@@ -1001,7 +1005,9 @@ export class FailedJobModel {
 
   async update(failedjob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(failedjob).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newFailedJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewFailedJob
 
     await db.updateTable('failed_jobs')

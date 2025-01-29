@@ -599,12 +599,13 @@ export class UserModel {
     }
   }
 
-  // Method to create a new user
   static async create(newUser: NewUser): Promise<UserModel> {
     const instance = new UserModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newUser).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewUser
 
     filteredValues.uuid = randomUUIDv7()
@@ -616,7 +617,7 @@ export class UserModel {
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
-      dispatch('user:created', model)
+      dispatch('Users:created', model)
 
     return model
   }
@@ -624,11 +625,11 @@ export class UserModel {
   static async createMany(newUsers: NewUser[]): Promise<void> {
     const instance = new UserModel(null)
 
-    const filteredValues = newUsers.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewUser,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewUser
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -913,7 +914,6 @@ export class UserModel {
       return new UserModel(result as UserType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newUser)
     }
   }
@@ -1071,7 +1071,9 @@ export class UserModel {
 
   async update(user: UserUpdate): Promise<UserModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(user).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newUser).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewUser
 
     await db.updateTable('users')

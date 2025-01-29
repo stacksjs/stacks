@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
@@ -528,12 +529,13 @@ export class ReleaseModel {
     }
   }
 
-  // Method to create a new release
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {
     const instance = new ReleaseModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newRelease).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newRelease).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewRelease
 
     const result = await db.insertInto('releases')
@@ -542,17 +544,20 @@ export class ReleaseModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
+    if (model)
+      dispatch('Releases:created', model)
+
     return model
   }
 
   static async createMany(newReleases: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(null)
 
-    const filteredValues = newReleases.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewRelease,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newRelease).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewRelease
 
     await db.insertInto('releases')
       .values(filteredValues)
@@ -799,7 +804,6 @@ export class ReleaseModel {
       return new ReleaseModel(result as ReleaseType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newRelease)
     }
   }
@@ -957,7 +961,9 @@ export class ReleaseModel {
 
   async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(release).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newRelease).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewRelease
 
     await db.updateTable('releases')

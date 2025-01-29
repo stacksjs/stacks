@@ -3,6 +3,7 @@ import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -544,12 +545,13 @@ export class PostModel {
     }
   }
 
-  // Method to create a new post
   static async create(newPost: NewPost): Promise<PostModel> {
     const instance = new PostModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newPost).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newPost).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewPost
 
     const result = await db.insertInto('posts')
@@ -558,17 +560,20 @@ export class PostModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 
+    if (model)
+      dispatch('Posts:created', model)
+
     return model
   }
 
   static async createMany(newPosts: NewPost[]): Promise<void> {
     const instance = new PostModel(null)
 
-    const filteredValues = newPosts.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewPost,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPost).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewPost
 
     await db.insertInto('posts')
       .values(filteredValues)
@@ -823,7 +828,6 @@ export class PostModel {
       return new PostModel(result as PostType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newPost)
     }
   }
@@ -981,7 +985,9 @@ export class PostModel {
 
   async update(post: PostUpdate): Promise<PostModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(post).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newPost).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewPost
 
     await db.updateTable('posts')

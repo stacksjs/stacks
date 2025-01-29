@@ -3,6 +3,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductsTable {
@@ -550,12 +551,13 @@ export class ProductModel {
     }
   }
 
-  // Method to create a new product
   static async create(newProduct: NewProduct): Promise<ProductModel> {
     const instance = new ProductModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newProduct).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newProduct).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewProduct
 
     filteredValues.uuid = randomUUIDv7()
@@ -566,17 +568,20 @@ export class ProductModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
+    if (model)
+      dispatch('Products:created', model)
+
     return model
   }
 
   static async createMany(newProducts: NewProduct[]): Promise<void> {
     const instance = new ProductModel(null)
 
-    const filteredValues = newProducts.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewProduct,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProduct).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewProduct
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -875,7 +880,6 @@ export class ProductModel {
       return new ProductModel(result as ProductType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newProduct)
     }
   }
@@ -1033,7 +1037,9 @@ export class ProductModel {
 
   async update(product: ProductUpdate): Promise<ProductModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(product).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newProduct).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewProduct
 
     await db.updateTable('products')

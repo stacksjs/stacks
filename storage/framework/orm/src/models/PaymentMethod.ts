@@ -5,6 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 
 import { SubqueryBuilder } from '@stacksjs/orm'
 
@@ -574,12 +575,13 @@ export class PaymentMethodModel {
     }
   }
 
-  // Method to create a new paymentmethod
   static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
     const instance = new PaymentMethodModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newPaymentMethod).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewPaymentMethod
 
     filteredValues.uuid = randomUUIDv7()
@@ -590,17 +592,20 @@ export class PaymentMethodModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 
+    if (model)
+      dispatch('PaymentMethods:created', model)
+
     return model
   }
 
   static async createMany(newPaymentMethods: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
-    const filteredValues = newPaymentMethods.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewPaymentMethod,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewPaymentMethod
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -899,7 +904,6 @@ export class PaymentMethodModel {
       return new PaymentMethodModel(result as PaymentMethodType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newPaymentMethod)
     }
   }
@@ -1057,7 +1061,9 @@ export class PaymentMethodModel {
 
   async update(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(paymentmethod).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewPaymentMethod
 
     await db.updateTable('payment_methods')

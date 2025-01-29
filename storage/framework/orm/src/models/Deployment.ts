@@ -4,6 +4,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -563,12 +564,13 @@ export class DeploymentModel {
     }
   }
 
-  // Method to create a new deployment
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const instance = new DeploymentModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newDeployment).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newDeployment).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewDeployment
 
     filteredValues.uuid = randomUUIDv7()
@@ -579,17 +581,20 @@ export class DeploymentModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
+    if (model)
+      dispatch('Deployments:created', model)
+
     return model
   }
 
   static async createMany(newDeployments: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
-    const filteredValues = newDeployments.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewDeployment,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newDeployment).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewDeployment
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -888,7 +893,6 @@ export class DeploymentModel {
       return new DeploymentModel(result as DeploymentType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newDeployment)
     }
   }
@@ -1046,7 +1050,9 @@ export class DeploymentModel {
 
   async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(deployment).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newDeployment).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewDeployment
 
     await db.updateTable('deployments')

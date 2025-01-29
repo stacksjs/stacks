@@ -3,6 +3,7 @@ import type { TeamModel } from './Team'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import Team from './Team'
@@ -550,12 +551,13 @@ export class AccessTokenModel {
     }
   }
 
-  // Method to create a new accesstoken
   static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const instance = new AccessTokenModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newAccessToken).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newAccessToken).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewAccessToken
 
     const result = await db.insertInto('personal_access_tokens')
@@ -564,17 +566,20 @@ export class AccessTokenModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
+    if (model)
+      dispatch('PersonalAccessTokens:created', model)
+
     return model
   }
 
   static async createMany(newPersonalAccessTokens: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(null)
 
-    const filteredValues = newPersonalAccessTokens.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewAccessToken,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newAccessToken).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewAccessToken
 
     await db.insertInto('personal_access_tokens')
       .values(filteredValues)
@@ -845,7 +850,6 @@ export class AccessTokenModel {
       return new AccessTokenModel(result as AccessTokenType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newAccessToken)
     }
   }
@@ -1003,7 +1007,9 @@ export class AccessTokenModel {
 
   async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(accesstoken).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newAccessToken).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewAccessToken
 
     await db.updateTable('personal_access_tokens')

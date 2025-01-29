@@ -4,6 +4,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -572,12 +573,13 @@ export class SubscriptionModel {
     }
   }
 
-  // Method to create a new subscription
   static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
     const instance = new SubscriptionModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newSubscription).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newSubscription).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscription
 
     filteredValues.uuid = randomUUIDv7()
@@ -588,17 +590,20 @@ export class SubscriptionModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 
+    if (model)
+      dispatch('Subscriptions:created', model)
+
     return model
   }
 
   static async createMany(newSubscriptions: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(null)
 
-    const filteredValues = newSubscriptions.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewSubscription,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscription).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewSubscription
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -921,7 +926,6 @@ export class SubscriptionModel {
       return new SubscriptionModel(result as SubscriptionType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newSubscription)
     }
   }
@@ -1079,7 +1083,9 @@ export class SubscriptionModel {
 
   async update(subscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(subscription).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newSubscription).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscription
 
     await db.updateTable('subscriptions')

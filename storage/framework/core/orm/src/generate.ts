@@ -19,7 +19,7 @@ export async function generateModelString(
   let relationStringThisMany = ''
 
   let instanceSoftDeleteStatements = ''
-  let thisSoftDeleteStatements = ''
+  const thisSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
   let instanceSoftDeleteStatementsUpdateFrom = ''
   let thisSoftDeleteStatementsUpdateFrom = ''
@@ -72,10 +72,6 @@ export async function generateModelString(
     privateSoftDeletes = `private softDeletes = false`
     instanceSoftDeleteStatements += `if (instance.softDeletes) {
         query = query.where('deleted_at', 'is', null)
-      }`
-
-    thisSoftDeleteStatements += ` if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
       }`
 
     instanceSoftDeleteStatementsSelectFrom += ` if (instance.softDeletes) {
@@ -1214,35 +1210,37 @@ export async function generateModelString(
           }
         }
   
-        // Method to create a new ${formattedModelName}
         static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const instance = new ${modelName}Model(null)
-  
-           let filteredValues = Object.fromEntries(
-            Object.entries(new${modelName}).filter(([key]) => instance.fillable.includes(key)),
+
+          const filteredValues = Object.fromEntries(
+            Object.entries(new${modelName}).filter(([key]) => 
+              !instance.guarded.includes(key) && instance.fillable.includes(key)
+            ),
           ) as New${modelName}
-  
+
           ${uuidQuery}
-  
+
           const result = await db.insertInto('${tableName}')
             .values(filteredValues)
             .executeTakeFirst()
-  
+
           const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
-  
-          ${mittCreateStatement}
-  
+
+          if (model)
+            dispatch('${formattedTableName}:created', model)
+
           return model
         }
   
         static async createMany(new${formattedTableName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(null)
   
-          const filteredValues = new${formattedTableName}.map(newUser =>
-              Object.fromEntries(
-                  Object.entries(newUser).filter(([key]) => instance.fillable.includes(key))
-              ) as New${modelName}
-          )
+          const filteredValues = Object.fromEntries(
+            Object.entries(new${modelName}).filter(([key]) => 
+              !instance.guarded.includes(key) && instance.fillable.includes(key)
+            ),
+          ) as New${modelName}
   
           ${uuidQueryMany}
           
@@ -1496,7 +1494,6 @@ export async function generateModelString(
             return new ${modelName}Model(result as ${modelName}Type)
           }
           else {
-            // If not found, create a new user
             return await this.create(new${modelName})
           }
         }
@@ -1653,7 +1650,9 @@ export async function generateModelString(
 
         async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
           const filteredValues = Object.fromEntries(
-            Object.entries(${formattedModelName}).filter(([key]) => this.fillable.includes(key)),
+            Object.entries(new${modelName}).filter(([key]) => 
+              !instance.guarded.includes(key) && instance.fillable.includes(key)
+            ),
           ) as New${modelName}
 
           await db.updateTable('${tableName}')

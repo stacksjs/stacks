@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
@@ -540,12 +541,13 @@ export class ErrorModel {
     }
   }
 
-  // Method to create a new error
   static async create(newError: NewError): Promise<ErrorModel> {
     const instance = new ErrorModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newError).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newError).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewError
 
     const result = await db.insertInto('errors')
@@ -554,17 +556,20 @@ export class ErrorModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
+    if (model)
+      dispatch('Errors:created', model)
+
     return model
   }
 
   static async createMany(newErrors: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
-    const filteredValues = newErrors.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewError,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newError).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewError
 
     await db.insertInto('errors')
       .values(filteredValues)
@@ -843,7 +848,6 @@ export class ErrorModel {
       return new ErrorModel(result as ErrorType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newError)
     }
   }
@@ -1001,7 +1005,9 @@ export class ErrorModel {
 
   async update(error: ErrorUpdate): Promise<ErrorModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(error).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newError).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewError
 
     await db.updateTable('errors')

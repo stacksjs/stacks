@@ -5,6 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 
 import { SubqueryBuilder } from '@stacksjs/orm'
 
@@ -571,12 +572,13 @@ export class TransactionModel {
     }
   }
 
-  // Method to create a new transaction
   static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
     const instance = new TransactionModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newTransaction).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newTransaction).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewTransaction
 
     filteredValues.uuid = randomUUIDv7()
@@ -587,17 +589,20 @@ export class TransactionModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
+    if (model)
+      dispatch('Transactions:created', model)
+
     return model
   }
 
   static async createMany(newTransactions: NewTransaction[]): Promise<void> {
     const instance = new TransactionModel(null)
 
-    const filteredValues = newTransactions.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewTransaction,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newTransaction).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewTransaction
 
     filteredValues.forEach((model) => {
       model.uuid = randomUUIDv7()
@@ -880,7 +885,6 @@ export class TransactionModel {
       return new TransactionModel(result as TransactionType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newTransaction)
     }
   }
@@ -1038,7 +1042,9 @@ export class TransactionModel {
 
   async update(transaction: TransactionUpdate): Promise<TransactionModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(transaction).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newTransaction).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewTransaction
 
     await db.updateTable('transactions')

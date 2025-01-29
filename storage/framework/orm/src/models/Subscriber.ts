@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscribersTable {
@@ -528,12 +529,13 @@ export class SubscriberModel {
     }
   }
 
-  // Method to create a new subscriber
   static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const instance = new SubscriberModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newSubscriber).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newSubscriber).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscriber
 
     const result = await db.insertInto('subscribers')
@@ -542,17 +544,20 @@ export class SubscriberModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
+    if (model)
+      dispatch('Subscribers:created', model)
+
     return model
   }
 
   static async createMany(newSubscribers: NewSubscriber[]): Promise<void> {
     const instance = new SubscriberModel(null)
 
-    const filteredValues = newSubscribers.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewSubscriber,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscriber).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewSubscriber
 
     await db.insertInto('subscribers')
       .values(filteredValues)
@@ -799,7 +804,6 @@ export class SubscriberModel {
       return new SubscriberModel(result as SubscriberType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newSubscriber)
     }
   }
@@ -957,7 +961,9 @@ export class SubscriberModel {
 
   async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(subscriber).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newSubscriber).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscriber
 
     await db.updateTable('subscribers')

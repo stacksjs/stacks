@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface JobsTable {
@@ -540,12 +541,13 @@ export class JobModel {
     }
   }
 
-  // Method to create a new job
   static async create(newJob: NewJob): Promise<JobModel> {
     const instance = new JobModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newJob).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewJob
 
     const result = await db.insertInto('jobs')
@@ -554,17 +556,20 @@ export class JobModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
 
+    if (model)
+      dispatch('Jobs:created', model)
+
     return model
   }
 
   static async createMany(newJobs: NewJob[]): Promise<void> {
     const instance = new JobModel(null)
 
-    const filteredValues = newJobs.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewJob,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewJob
 
     await db.insertInto('jobs')
       .values(filteredValues)
@@ -843,7 +848,6 @@ export class JobModel {
       return new JobModel(result as JobType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newJob)
     }
   }
@@ -1001,7 +1005,9 @@ export class JobModel {
 
   async update(job: JobUpdate): Promise<JobModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(job).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newJob).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewJob
 
     await db.updateTable('jobs')

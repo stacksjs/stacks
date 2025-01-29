@@ -2,6 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
@@ -537,12 +538,13 @@ export class ProjectModel {
     }
   }
 
-  // Method to create a new project
   static async create(newProject: NewProject): Promise<ProjectModel> {
     const instance = new ProjectModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newProject).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newProject).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewProject
 
     const result = await db.insertInto('projects')
@@ -551,17 +553,20 @@ export class ProjectModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
+    if (model)
+      dispatch('Projects:created', model)
+
     return model
   }
 
   static async createMany(newProjects: NewProject[]): Promise<void> {
     const instance = new ProjectModel(null)
 
-    const filteredValues = newProjects.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewProject,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProject).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewProject
 
     await db.insertInto('projects')
       .values(filteredValues)
@@ -832,7 +837,6 @@ export class ProjectModel {
       return new ProjectModel(result as ProjectType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newProject)
     }
   }
@@ -990,7 +994,9 @@ export class ProjectModel {
 
   async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(project).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newProject).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewProject
 
     await db.updateTable('projects')

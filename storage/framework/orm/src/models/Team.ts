@@ -3,6 +3,7 @@ import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
 import { SubqueryBuilder } from '@stacksjs/orm'
 
 import AccessToken from './AccessToken'
@@ -561,12 +562,13 @@ export class TeamModel {
     }
   }
 
-  // Method to create a new team
   static async create(newTeam: NewTeam): Promise<TeamModel> {
     const instance = new TeamModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newTeam).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newTeam).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewTeam
 
     const result = await db.insertInto('teams')
@@ -575,17 +577,20 @@ export class TeamModel {
 
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
+    if (model)
+      dispatch('Teams:created', model)
+
     return model
   }
 
   static async createMany(newTeams: NewTeam[]): Promise<void> {
     const instance = new TeamModel(null)
 
-    const filteredValues = newTeams.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewTeam,
-    )
+    const filteredValues = Object.fromEntries(
+      Object.entries(newTeam).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
+    ) as NewTeam
 
     await db.insertInto('teams')
       .values(filteredValues)
@@ -888,7 +893,6 @@ export class TeamModel {
       return new TeamModel(result as TeamType)
     }
     else {
-      // If not found, create a new user
       return await this.create(newTeam)
     }
   }
@@ -1046,7 +1050,9 @@ export class TeamModel {
 
   async update(team: TeamUpdate): Promise<TeamModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(team).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newTeam).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewTeam
 
     await db.updateTable('teams')
