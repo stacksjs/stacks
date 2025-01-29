@@ -24,7 +24,7 @@ declare module 'vue' {
     CLIForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/CLIForm.vue')['default']
     CloudForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/CloudForm.vue')['default']
     CodeEditor: typeof import('./../defaults/components/Dashboard/CodeEditor.vue')['default']
-    ComingSoon: typeof import('./../../../resources/components/ComingSoon.vue')['default']
+    ComingSoon: typeof import('./../defaults/components/Marketing/ComingSoon.vue')['default']
     Container: typeof import('./../../../resources/components/Container.vue')['default']
     Counter: typeof import('./../defaults/components/Buttons/Counter.vue')['default']
     DatabaseForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DatabaseForm.vue')['default']
