@@ -45,7 +45,7 @@ export const dashboardConfig: ViteConfig = {
 
     layouts({
       extensions: ['vue', 'stx'],
-      layoutsDirs: p.layoutsPath('dashboard', { relative: true }),
+      layoutsDirs: [p.layoutsPath('dashboard', { relative: true }), p.frameworkPath('defaults/layouts/dashboard')],
     }),
 
     autoImports(),

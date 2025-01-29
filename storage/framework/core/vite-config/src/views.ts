@@ -82,7 +82,7 @@ export const viewsConfig: ViteConfig = {
 
     layouts({
       extensions: ['stx', 'vue'],
-      layoutsDirs: p.layoutsPath('', { relative: true }),
+      layoutsDirs: [p.layoutsPath('', { relative: true }), p.frameworkPath('defaults/layouts')],
     }),
 
     autoImports(),
