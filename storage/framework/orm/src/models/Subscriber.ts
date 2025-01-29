@@ -78,8 +78,8 @@ export class SubscriberModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('subscribers')
-    this.updateFromQuery = db.updateTable('subscribers')
-    this.deleteFromQuery = db.deleteFrom('subscribers')
+    this.updateFromQuery = DB.instance.updateTable('subscribers')
+    this.deleteFromQuery = DB.instance.deleteFrom('subscribers')
     this.hasSelect = false
   }
 

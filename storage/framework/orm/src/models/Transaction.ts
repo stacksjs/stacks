@@ -113,8 +113,8 @@ export class TransactionModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('transactions')
-    this.updateFromQuery = db.updateTable('transactions')
-    this.deleteFromQuery = db.deleteFrom('transactions')
+    this.updateFromQuery = DB.instance.updateTable('transactions')
+    this.deleteFromQuery = DB.instance.deleteFrom('transactions')
     this.hasSelect = false
   }
 

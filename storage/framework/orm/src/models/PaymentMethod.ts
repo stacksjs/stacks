@@ -116,8 +116,8 @@ export class PaymentMethodModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('payment_methods')
-    this.updateFromQuery = db.updateTable('payment_methods')
-    this.deleteFromQuery = db.deleteFrom('payment_methods')
+    this.updateFromQuery = DB.instance.updateTable('payment_methods')
+    this.deleteFromQuery = DB.instance.deleteFrom('payment_methods')
     this.hasSelect = false
   }
 

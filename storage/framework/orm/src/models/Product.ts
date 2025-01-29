@@ -100,8 +100,8 @@ export class ProductModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('products')
-    this.updateFromQuery = db.updateTable('products')
-    this.deleteFromQuery = db.deleteFrom('products')
+    this.updateFromQuery = DB.instance.updateTable('products')
+    this.deleteFromQuery = DB.instance.deleteFrom('products')
     this.hasSelect = false
   }
 

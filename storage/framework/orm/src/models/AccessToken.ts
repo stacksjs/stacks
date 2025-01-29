@@ -96,8 +96,8 @@ export class AccessTokenModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('personal_access_tokens')
-    this.updateFromQuery = db.updateTable('personal_access_tokens')
-    this.deleteFromQuery = db.deleteFrom('personal_access_tokens')
+    this.updateFromQuery = DB.instance.updateTable('personal_access_tokens')
+    this.deleteFromQuery = DB.instance.deleteFrom('personal_access_tokens')
     this.hasSelect = false
   }
 

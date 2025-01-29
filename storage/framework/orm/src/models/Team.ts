@@ -107,8 +107,8 @@ export class TeamModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('teams')
-    this.updateFromQuery = db.updateTable('teams')
-    this.deleteFromQuery = db.deleteFrom('teams')
+    this.updateFromQuery = DB.instance.updateTable('teams')
+    this.deleteFromQuery = DB.instance.deleteFrom('teams')
     this.hasSelect = false
   }
 

@@ -132,8 +132,8 @@ export class UserModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('users')
-    this.updateFromQuery = db.updateTable('users')
-    this.deleteFromQuery = db.deleteFrom('users')
+    this.updateFromQuery = DB.instance.updateTable('users')
+    this.deleteFromQuery = DB.instance.deleteFrom('users')
     this.hasSelect = false
   }
 

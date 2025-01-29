@@ -90,8 +90,8 @@ export class PostModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('posts')
-    this.updateFromQuery = db.updateTable('posts')
-    this.deleteFromQuery = db.deleteFrom('posts')
+    this.updateFromQuery = DB.instance.updateTable('posts')
+    this.deleteFromQuery = DB.instance.deleteFrom('posts')
     this.hasSelect = false
   }
 

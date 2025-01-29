@@ -90,8 +90,8 @@ export class JobModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('jobs')
-    this.updateFromQuery = db.updateTable('jobs')
-    this.deleteFromQuery = db.deleteFrom('jobs')
+    this.updateFromQuery = DB.instance.updateTable('jobs')
+    this.deleteFromQuery = DB.instance.deleteFrom('jobs')
     this.hasSelect = false
   }
 

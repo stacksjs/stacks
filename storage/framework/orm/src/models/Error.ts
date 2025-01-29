@@ -90,8 +90,8 @@ export class ErrorModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('errors')
-    this.updateFromQuery = db.updateTable('errors')
-    this.deleteFromQuery = db.deleteFrom('errors')
+    this.updateFromQuery = DB.instance.updateTable('errors')
+    this.deleteFromQuery = DB.instance.deleteFrom('errors')
     this.hasSelect = false
   }
 

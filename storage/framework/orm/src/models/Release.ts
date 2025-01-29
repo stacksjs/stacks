@@ -78,8 +78,8 @@ export class ReleaseModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('releases')
-    this.updateFromQuery = db.updateTable('releases')
-    this.deleteFromQuery = db.deleteFrom('releases')
+    this.updateFromQuery = DB.instance.updateTable('releases')
+    this.deleteFromQuery = DB.instance.deleteFrom('releases')
     this.hasSelect = false
   }
 

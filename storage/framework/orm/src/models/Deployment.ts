@@ -109,8 +109,8 @@ export class DeploymentModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('deployments')
-    this.updateFromQuery = db.updateTable('deployments')
-    this.deleteFromQuery = db.deleteFrom('deployments')
+    this.updateFromQuery = DB.instance.updateTable('deployments')
+    this.deleteFromQuery = DB.instance.deleteFrom('deployments')
     this.hasSelect = false
   }
 

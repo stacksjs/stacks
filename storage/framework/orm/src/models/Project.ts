@@ -87,8 +87,8 @@ export class ProjectModel {
 
     this.withRelations = []
     this.selectFromQuery = DB.instance.selectFrom('projects')
-    this.updateFromQuery = db.updateTable('projects')
-    this.deleteFromQuery = db.deleteFrom('projects')
+    this.updateFromQuery = DB.instance.updateTable('projects')
+    this.deleteFromQuery = DB.instance.deleteFrom('projects')
     this.hasSelect = false
   }
 

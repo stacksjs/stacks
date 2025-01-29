@@ -751,8 +751,8 @@ export async function generateModelString(
   
           this.withRelations = []
           this.selectFromQuery = DB.instance.selectFrom('${tableName}')
-          this.updateFromQuery = db.updateTable('${tableName}')
-          this.deleteFromQuery = db.deleteFrom('${tableName}')
+          this.updateFromQuery = DB.instance.updateTable('${tableName}')
+          this.deleteFromQuery = DB.instance.deleteFrom('${tableName}')
           this.hasSelect = false
         }
   
