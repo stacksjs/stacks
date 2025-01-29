@@ -90,11 +90,7 @@ export class SubscriberEmailModel {
   }
 
   select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return SubscriberEmailModel.select(params)
   }
 
   static select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
@@ -109,7 +105,7 @@ export class SubscriberEmailModel {
   }
 
   async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    return SubscriberEmailModel.find(id)
+    return await SubscriberEmailModel.find(id)
   }
 
   // Method to find a SubscriberEmail by ID
@@ -131,10 +127,10 @@ export class SubscriberEmailModel {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    return SubscriberEmailModel.first()
+    return await SubscriberEmailModel.first()
   }
 
-  static async first(): Promise<SubscriberEmailType | undefined> {
+  static async first(): Promise<SubscriberEmailModel | undefined> {
     const model = await db.selectFrom('subscriber_emails')
       .selectAll()
       .executeTakeFirst()
@@ -152,7 +148,7 @@ export class SubscriberEmailModel {
   }
 
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    return this.firstOrFail()
+    return await SubscriberEmailModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
@@ -189,7 +185,7 @@ export class SubscriberEmailModel {
   }
 
   async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    return SubscriberEmailModel.findOrFail(id)
+    return await SubscriberEmailModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
@@ -449,8 +445,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): SubscriberEmailModel {
-    return SubscriberEmailModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberEmailModel {
+    return SubscriberEmailModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -572,7 +568,7 @@ export class SubscriberEmailModel {
     return model
   }
 
-  static async createMany(newSubscriberEmails: NewSubscriberEmail[]): Promise<void> {
+  static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -945,7 +941,7 @@ export class SubscriberEmailModel {
   }
 
   having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
-    return SubscriberEmailModel.having(column, operator)
+    return SubscriberEmailModel.having(column, operator, value)
   }
 
   static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
@@ -992,10 +988,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+  async update(newSubscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscriberEmail).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriberEmail
 

@@ -124,11 +124,7 @@ export class SubscriptionModel {
   }
 
   select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return SubscriptionModel.select(params)
   }
 
   static select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
@@ -143,7 +139,7 @@ export class SubscriptionModel {
   }
 
   async find(id: number): Promise<SubscriptionModel | undefined> {
-    return SubscriptionModel.find(id)
+    return await SubscriptionModel.find(id)
   }
 
   // Method to find a Subscription by ID
@@ -165,10 +161,10 @@ export class SubscriptionModel {
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    return SubscriptionModel.first()
+    return await SubscriptionModel.first()
   }
 
-  static async first(): Promise<SubscriptionType | undefined> {
+  static async first(): Promise<SubscriptionModel | undefined> {
     const model = await db.selectFrom('subscriptions')
       .selectAll()
       .executeTakeFirst()
@@ -186,7 +182,7 @@ export class SubscriptionModel {
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {
-    return this.firstOrFail()
+    return await SubscriptionModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<SubscriptionModel | undefined> {
@@ -227,7 +223,7 @@ export class SubscriptionModel {
   }
 
   async findOrFail(id: number): Promise<SubscriptionModel> {
-    return SubscriptionModel.findOrFail(id)
+    return await SubscriptionModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
@@ -471,8 +467,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): SubscriptionModel {
-    return SubscriptionModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {
+    return SubscriptionModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -596,7 +592,7 @@ export class SubscriptionModel {
     return model
   }
 
-  static async createMany(newSubscriptions: NewSubscription[]): Promise<void> {
+  static async createMany(newSubscription: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -1034,7 +1030,7 @@ export class SubscriptionModel {
   }
 
   having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
-    return SubscriptionModel.having(column, operator)
+    return SubscriptionModel.having(column, operator, value)
   }
 
   static having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
@@ -1081,10 +1077,10 @@ export class SubscriptionModel {
     return instance
   }
 
-  async update(subscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
+  async update(newSubscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscription).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscription
 

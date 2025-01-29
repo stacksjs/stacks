@@ -93,11 +93,7 @@ export class ProjectModel {
   }
 
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return ProjectModel.select(params)
   }
 
   static select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
@@ -112,7 +108,7 @@ export class ProjectModel {
   }
 
   async find(id: number): Promise<ProjectModel | undefined> {
-    return ProjectModel.find(id)
+    return await ProjectModel.find(id)
   }
 
   // Method to find a Project by ID
@@ -134,10 +130,10 @@ export class ProjectModel {
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    return ProjectModel.first()
+    return await ProjectModel.first()
   }
 
-  static async first(): Promise<ProjectType | undefined> {
+  static async first(): Promise<ProjectModel | undefined> {
     const model = await db.selectFrom('projects')
       .selectAll()
       .executeTakeFirst()
@@ -155,7 +151,7 @@ export class ProjectModel {
   }
 
   async firstOrFail(): Promise<ProjectModel | undefined> {
-    return this.firstOrFail()
+    return await ProjectModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<ProjectModel | undefined> {
@@ -192,7 +188,7 @@ export class ProjectModel {
   }
 
   async findOrFail(id: number): Promise<ProjectModel> {
-    return ProjectModel.findOrFail(id)
+    return await ProjectModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
@@ -436,8 +432,8 @@ export class ProjectModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): ProjectModel {
-    return ProjectModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
+    return ProjectModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -559,7 +555,7 @@ export class ProjectModel {
     return model
   }
 
-  static async createMany(newProjects: NewProject[]): Promise<void> {
+  static async createMany(newProject: NewProject[]): Promise<void> {
     const instance = new ProjectModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -945,7 +941,7 @@ export class ProjectModel {
   }
 
   having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
-    return ProjectModel.having(column, operator)
+    return ProjectModel.having(column, operator, value)
   }
 
   static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
@@ -992,10 +988,10 @@ export class ProjectModel {
     return instance
   }
 
-  async update(project: ProjectUpdate): Promise<ProjectModel | undefined> {
+  async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProject).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProject
 

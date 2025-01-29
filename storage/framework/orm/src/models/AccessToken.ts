@@ -102,11 +102,7 @@ export class AccessTokenModel {
   }
 
   select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return AccessTokenModel.select(params)
   }
 
   static select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
@@ -121,7 +117,7 @@ export class AccessTokenModel {
   }
 
   async find(id: number): Promise<AccessTokenModel | undefined> {
-    return AccessTokenModel.find(id)
+    return await AccessTokenModel.find(id)
   }
 
   // Method to find a AccessToken by ID
@@ -143,10 +139,10 @@ export class AccessTokenModel {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    return AccessTokenModel.first()
+    return await AccessTokenModel.first()
   }
 
-  static async first(): Promise<AccessTokenType | undefined> {
+  static async first(): Promise<AccessTokenModel | undefined> {
     const model = await db.selectFrom('personal_access_tokens')
       .selectAll()
       .executeTakeFirst()
@@ -164,7 +160,7 @@ export class AccessTokenModel {
   }
 
   async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    return this.firstOrFail()
+    return await AccessTokenModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<AccessTokenModel | undefined> {
@@ -205,7 +201,7 @@ export class AccessTokenModel {
   }
 
   async findOrFail(id: number): Promise<AccessTokenModel> {
-    return AccessTokenModel.findOrFail(id)
+    return await AccessTokenModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {
@@ -449,8 +445,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): AccessTokenModel {
-    return AccessTokenModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
+    return AccessTokenModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -572,7 +568,7 @@ export class AccessTokenModel {
     return model
   }
 
-  static async createMany(newPersonalAccessTokens: NewAccessToken[]): Promise<void> {
+  static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -958,7 +954,7 @@ export class AccessTokenModel {
   }
 
   having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
-    return AccessTokenModel.having(column, operator)
+    return AccessTokenModel.having(column, operator, value)
   }
 
   static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
@@ -1005,10 +1001,10 @@ export class AccessTokenModel {
     return instance
   }
 
-  async update(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+  async update(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newAccessToken).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewAccessToken
 

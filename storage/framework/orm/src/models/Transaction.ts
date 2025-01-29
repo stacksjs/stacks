@@ -119,11 +119,7 @@ export class TransactionModel {
   }
 
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return TransactionModel.select(params)
   }
 
   static select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
@@ -138,7 +134,7 @@ export class TransactionModel {
   }
 
   async find(id: number): Promise<TransactionModel | undefined> {
-    return TransactionModel.find(id)
+    return await TransactionModel.find(id)
   }
 
   // Method to find a Transaction by ID
@@ -160,10 +156,10 @@ export class TransactionModel {
   }
 
   async first(): Promise<TransactionModel | undefined> {
-    return TransactionModel.first()
+    return await TransactionModel.first()
   }
 
-  static async first(): Promise<TransactionType | undefined> {
+  static async first(): Promise<TransactionModel | undefined> {
     const model = await db.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
@@ -181,7 +177,7 @@ export class TransactionModel {
   }
 
   async firstOrFail(): Promise<TransactionModel | undefined> {
-    return this.firstOrFail()
+    return await TransactionModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<TransactionModel | undefined> {
@@ -226,7 +222,7 @@ export class TransactionModel {
   }
 
   async findOrFail(id: number): Promise<TransactionModel> {
-    return TransactionModel.findOrFail(id)
+    return await TransactionModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
@@ -470,8 +466,8 @@ export class TransactionModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): TransactionModel {
-    return TransactionModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+    return TransactionModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -595,7 +591,7 @@ export class TransactionModel {
     return model
   }
 
-  static async createMany(newTransactions: NewTransaction[]): Promise<void> {
+  static async createMany(newTransaction: NewTransaction[]): Promise<void> {
     const instance = new TransactionModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -993,7 +989,7 @@ export class TransactionModel {
   }
 
   having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
-    return TransactionModel.having(column, operator)
+    return TransactionModel.having(column, operator, value)
   }
 
   static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
@@ -1040,10 +1036,10 @@ export class TransactionModel {
     return instance
   }
 
-  async update(transaction: TransactionUpdate): Promise<TransactionModel | undefined> {
+  async update(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
 

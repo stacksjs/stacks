@@ -122,11 +122,7 @@ export class PaymentMethodModel {
   }
 
   select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return PaymentMethodModel.select(params)
   }
 
   static select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
@@ -141,7 +137,7 @@ export class PaymentMethodModel {
   }
 
   async find(id: number): Promise<PaymentMethodModel | undefined> {
-    return PaymentMethodModel.find(id)
+    return await PaymentMethodModel.find(id)
   }
 
   // Method to find a PaymentMethod by ID
@@ -163,10 +159,10 @@ export class PaymentMethodModel {
   }
 
   async first(): Promise<PaymentMethodModel | undefined> {
-    return PaymentMethodModel.first()
+    return await PaymentMethodModel.first()
   }
 
-  static async first(): Promise<PaymentMethodType | undefined> {
+  static async first(): Promise<PaymentMethodModel | undefined> {
     const model = await db.selectFrom('payment_methods')
       .selectAll()
       .executeTakeFirst()
@@ -184,7 +180,7 @@ export class PaymentMethodModel {
   }
 
   async firstOrFail(): Promise<PaymentMethodModel | undefined> {
-    return this.firstOrFail()
+    return await PaymentMethodModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<PaymentMethodModel | undefined> {
@@ -229,7 +225,7 @@ export class PaymentMethodModel {
   }
 
   async findOrFail(id: number): Promise<PaymentMethodModel> {
-    return PaymentMethodModel.findOrFail(id)
+    return await PaymentMethodModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
@@ -473,8 +469,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): PaymentMethodModel {
-    return PaymentMethodModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+    return PaymentMethodModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -598,7 +594,7 @@ export class PaymentMethodModel {
     return model
   }
 
-  static async createMany(newPaymentMethods: NewPaymentMethod[]): Promise<void> {
+  static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -1012,7 +1008,7 @@ export class PaymentMethodModel {
   }
 
   having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
-    return PaymentMethodModel.having(column, operator)
+    return PaymentMethodModel.having(column, operator, value)
   }
 
   static having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
@@ -1059,10 +1055,10 @@ export class PaymentMethodModel {
     return instance
   }
 
-  async update(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
+  async update(newPaymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPaymentMethod).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPaymentMethod
 

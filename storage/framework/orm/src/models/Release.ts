@@ -84,11 +84,7 @@ export class ReleaseModel {
   }
 
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return ReleaseModel.select(params)
   }
 
   static select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
@@ -103,7 +99,7 @@ export class ReleaseModel {
   }
 
   async find(id: number): Promise<ReleaseModel | undefined> {
-    return ReleaseModel.find(id)
+    return await ReleaseModel.find(id)
   }
 
   // Method to find a Release by ID
@@ -125,10 +121,10 @@ export class ReleaseModel {
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    return ReleaseModel.first()
+    return await ReleaseModel.first()
   }
 
-  static async first(): Promise<ReleaseType | undefined> {
+  static async first(): Promise<ReleaseModel | undefined> {
     const model = await db.selectFrom('releases')
       .selectAll()
       .executeTakeFirst()
@@ -146,7 +142,7 @@ export class ReleaseModel {
   }
 
   async firstOrFail(): Promise<ReleaseModel | undefined> {
-    return this.firstOrFail()
+    return await ReleaseModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<ReleaseModel | undefined> {
@@ -183,7 +179,7 @@ export class ReleaseModel {
   }
 
   async findOrFail(id: number): Promise<ReleaseModel> {
-    return ReleaseModel.findOrFail(id)
+    return await ReleaseModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
@@ -427,8 +423,8 @@ export class ReleaseModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): ReleaseModel {
-    return ReleaseModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+    return ReleaseModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -550,7 +546,7 @@ export class ReleaseModel {
     return model
   }
 
-  static async createMany(newReleases: NewRelease[]): Promise<void> {
+  static async createMany(newRelease: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -912,7 +908,7 @@ export class ReleaseModel {
   }
 
   having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
-    return ReleaseModel.having(column, operator)
+    return ReleaseModel.having(column, operator, value)
   }
 
   static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
@@ -959,10 +955,10 @@ export class ReleaseModel {
     return instance
   }
 
-  async update(release: ReleaseUpdate): Promise<ReleaseModel | undefined> {
+  async update(newRelease: ReleaseUpdate): Promise<ReleaseModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newRelease).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewRelease
 

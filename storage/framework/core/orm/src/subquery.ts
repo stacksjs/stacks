@@ -40,7 +40,7 @@ export class SubqueryBuilder {
     })
   }
 
-  whereNull(column: string) {
+  whereNull(column: string): void {
     this.conditions.push({
       type: 'and',
       method: 'whereNull',

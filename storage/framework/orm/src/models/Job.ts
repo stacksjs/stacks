@@ -96,11 +96,7 @@ export class JobModel {
   }
 
   select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return JobModel.select(params)
   }
 
   static select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
@@ -115,7 +111,7 @@ export class JobModel {
   }
 
   async find(id: number): Promise<JobModel | undefined> {
-    return JobModel.find(id)
+    return await JobModel.find(id)
   }
 
   // Method to find a Job by ID
@@ -137,10 +133,10 @@ export class JobModel {
   }
 
   async first(): Promise<JobModel | undefined> {
-    return JobModel.first()
+    return await JobModel.first()
   }
 
-  static async first(): Promise<JobType | undefined> {
+  static async first(): Promise<JobModel | undefined> {
     const model = await db.selectFrom('jobs')
       .selectAll()
       .executeTakeFirst()
@@ -158,7 +154,7 @@ export class JobModel {
   }
 
   async firstOrFail(): Promise<JobModel | undefined> {
-    return this.firstOrFail()
+    return await JobModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<JobModel | undefined> {
@@ -195,7 +191,7 @@ export class JobModel {
   }
 
   async findOrFail(id: number): Promise<JobModel> {
-    return JobModel.findOrFail(id)
+    return await JobModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<JobModel> {
@@ -439,8 +435,8 @@ export class JobModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): JobModel {
-    return JobModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
+    return JobModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -562,7 +558,7 @@ export class JobModel {
     return model
   }
 
-  static async createMany(newJobs: NewJob[]): Promise<void> {
+  static async createMany(newJob: NewJob[]): Promise<void> {
     const instance = new JobModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -956,7 +952,7 @@ export class JobModel {
   }
 
   having(column: keyof JobType, operator: string, value: any): JobModel {
-    return JobModel.having(column, operator)
+    return JobModel.having(column, operator, value)
   }
 
   static having(column: keyof JobType, operator: string, value: any): JobModel {
@@ -1003,10 +999,10 @@ export class JobModel {
     return instance
   }
 
-  async update(job: JobUpdate): Promise<JobModel | undefined> {
+  async update(newJob: JobUpdate): Promise<JobModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewJob
 

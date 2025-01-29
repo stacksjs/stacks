@@ -96,11 +96,7 @@ export class PostModel {
   }
 
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return PostModel.select(params)
   }
 
   static select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
@@ -115,7 +111,7 @@ export class PostModel {
   }
 
   async find(id: number): Promise<PostModel | undefined> {
-    return PostModel.find(id)
+    return await PostModel.find(id)
   }
 
   // Method to find a Post by ID
@@ -137,10 +133,10 @@ export class PostModel {
   }
 
   async first(): Promise<PostModel | undefined> {
-    return PostModel.first()
+    return await PostModel.first()
   }
 
-  static async first(): Promise<PostType | undefined> {
+  static async first(): Promise<PostModel | undefined> {
     const model = await db.selectFrom('posts')
       .selectAll()
       .executeTakeFirst()
@@ -158,7 +154,7 @@ export class PostModel {
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {
-    return this.firstOrFail()
+    return await PostModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<PostModel | undefined> {
@@ -199,7 +195,7 @@ export class PostModel {
   }
 
   async findOrFail(id: number): Promise<PostModel> {
-    return PostModel.findOrFail(id)
+    return await PostModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
@@ -443,8 +439,8 @@ export class PostModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): PostModel {
-    return PostModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+    return PostModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -566,7 +562,7 @@ export class PostModel {
     return model
   }
 
-  static async createMany(newPosts: NewPost[]): Promise<void> {
+  static async createMany(newPost: NewPost[]): Promise<void> {
     const instance = new PostModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -936,7 +932,7 @@ export class PostModel {
   }
 
   having(column: keyof PostType, operator: string, value: any): PostModel {
-    return PostModel.having(column, operator)
+    return PostModel.having(column, operator, value)
   }
 
   static having(column: keyof PostType, operator: string, value: any): PostModel {
@@ -983,10 +979,10 @@ export class PostModel {
     return instance
   }
 
-  async update(post: PostUpdate): Promise<PostModel | undefined> {
+  async update(newPost: PostUpdate): Promise<PostModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPost).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPost
 

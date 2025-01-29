@@ -106,11 +106,7 @@ export class ProductModel {
   }
 
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return ProductModel.select(params)
   }
 
   static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
@@ -125,7 +121,7 @@ export class ProductModel {
   }
 
   async find(id: number): Promise<ProductModel | undefined> {
-    return ProductModel.find(id)
+    return await ProductModel.find(id)
   }
 
   // Method to find a Product by ID
@@ -147,10 +143,10 @@ export class ProductModel {
   }
 
   async first(): Promise<ProductModel | undefined> {
-    return ProductModel.first()
+    return await ProductModel.first()
   }
 
-  static async first(): Promise<ProductType | undefined> {
+  static async first(): Promise<ProductModel | undefined> {
     const model = await db.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
@@ -168,7 +164,7 @@ export class ProductModel {
   }
 
   async firstOrFail(): Promise<ProductModel | undefined> {
-    return this.firstOrFail()
+    return await ProductModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<ProductModel | undefined> {
@@ -205,7 +201,7 @@ export class ProductModel {
   }
 
   async findOrFail(id: number): Promise<ProductModel> {
-    return ProductModel.findOrFail(id)
+    return await ProductModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {
@@ -449,8 +445,8 @@ export class ProductModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): ProductModel {
-    return ProductModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+    return ProductModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -574,7 +570,7 @@ export class ProductModel {
     return model
   }
 
-  static async createMany(newProducts: NewProduct[]): Promise<void> {
+  static async createMany(newProduct: NewProduct[]): Promise<void> {
     const instance = new ProductModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -988,7 +984,7 @@ export class ProductModel {
   }
 
   having(column: keyof ProductType, operator: string, value: any): ProductModel {
-    return ProductModel.having(column, operator)
+    return ProductModel.having(column, operator, value)
   }
 
   static having(column: keyof ProductType, operator: string, value: any): ProductModel {
@@ -1035,10 +1031,10 @@ export class ProductModel {
     return instance
   }
 
-  async update(product: ProductUpdate): Promise<ProductModel | undefined> {
+  async update(newProduct: ProductUpdate): Promise<ProductModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProduct).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProduct
 

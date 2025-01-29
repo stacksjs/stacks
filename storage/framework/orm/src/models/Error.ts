@@ -96,11 +96,7 @@ export class ErrorModel {
   }
 
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return ErrorModel.select(params)
   }
 
   static select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
@@ -115,7 +111,7 @@ export class ErrorModel {
   }
 
   async find(id: number): Promise<ErrorModel | undefined> {
-    return ErrorModel.find(id)
+    return await ErrorModel.find(id)
   }
 
   // Method to find a Error by ID
@@ -137,10 +133,10 @@ export class ErrorModel {
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    return ErrorModel.first()
+    return await ErrorModel.first()
   }
 
-  static async first(): Promise<ErrorType | undefined> {
+  static async first(): Promise<ErrorModel | undefined> {
     const model = await db.selectFrom('errors')
       .selectAll()
       .executeTakeFirst()
@@ -158,7 +154,7 @@ export class ErrorModel {
   }
 
   async firstOrFail(): Promise<ErrorModel | undefined> {
-    return this.firstOrFail()
+    return await ErrorModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<ErrorModel | undefined> {
@@ -195,7 +191,7 @@ export class ErrorModel {
   }
 
   async findOrFail(id: number): Promise<ErrorModel> {
-    return ErrorModel.findOrFail(id)
+    return await ErrorModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ErrorModel> {
@@ -439,8 +435,8 @@ export class ErrorModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): ErrorModel {
-    return ErrorModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+    return ErrorModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -562,7 +558,7 @@ export class ErrorModel {
     return model
   }
 
-  static async createMany(newErrors: NewError[]): Promise<void> {
+  static async createMany(newError: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -956,7 +952,7 @@ export class ErrorModel {
   }
 
   having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
-    return ErrorModel.having(column, operator)
+    return ErrorModel.having(column, operator, value)
   }
 
   static having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
@@ -1003,10 +999,10 @@ export class ErrorModel {
     return instance
   }
 
-  async update(error: ErrorUpdate): Promise<ErrorModel | undefined> {
+  async update(newError: ErrorUpdate): Promise<ErrorModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newError).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewError
 

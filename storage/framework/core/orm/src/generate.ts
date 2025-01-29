@@ -758,11 +758,7 @@ export async function generateModelString(
         }
   
         select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.select(params)
-  
-          this.hasSelect = true
-  
-          return this
+          return ${modelName}Model.select(params)
         }
 
         static select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
@@ -777,7 +773,7 @@ export async function generateModelString(
         }
   
         async find(id: number): Promise<${modelName}Model | undefined> {
-          return ${modelName}Model.find(id)
+          return await ${modelName}Model.find(id)
         }
 
         // Method to find a ${modelName} by ID
@@ -799,10 +795,10 @@ export async function generateModelString(
         }
 
         async first(): Promise<${modelName}Model | undefined> {
-          return ${modelName}Model.first()
+          return await ${modelName}Model.first()
         }
         
-        static async first(): Promise<${modelName}Type | undefined> {
+        static async first(): Promise<${modelName}Model | undefined> {
           const model = await db.selectFrom('${tableName}')
             .selectAll()
             .executeTakeFirst()
@@ -820,7 +816,7 @@ export async function generateModelString(
         }
   
         async firstOrFail(): Promise<${modelName}Model | undefined> {
-          return this.firstOrFail()
+          return await ${modelName}Model.firstOrFail()
         }
 
         static async firstOrFail(): Promise<${modelName}Model | undefined> {
@@ -861,7 +857,7 @@ export async function generateModelString(
 
 
         async findOrFail(id: number): Promise<${modelName}Model> {
-          return ${modelName}Model.findOrFail(id)
+          return await ${modelName}Model.findOrFail(id)
         }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {
@@ -1110,8 +1106,8 @@ export async function generateModelString(
           return instance
         }
 
-        whereDoesntHave(relation: string): ${modelName}Model {
-          return ${modelName}Model.whereDoesntHave(relation)
+        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+          return ${modelName}Model.whereDoesntHave(relation, callback)
         }
 
         static whereDoesntHave(
@@ -1233,7 +1229,7 @@ export async function generateModelString(
           return model
         }
   
-        static async createMany(new${formattedTableName}: New${modelName}[]): Promise<void> {
+        static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(null)
   
           const filteredValues = Object.fromEntries(
@@ -1601,7 +1597,7 @@ export async function generateModelString(
         }
 
         having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
-          return ${modelName}Model.having(column, operator)
+          return ${modelName}Model.having(column, operator, value)
         }
 
         static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
@@ -1648,10 +1644,10 @@ export async function generateModelString(
           return instance
         }
 
-        async update(${formattedModelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
+        async update(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
           const filteredValues = Object.fromEntries(
             Object.entries(new${modelName}).filter(([key]) => 
-              !instance.guarded.includes(key) && instance.fillable.includes(key)
+              !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
 

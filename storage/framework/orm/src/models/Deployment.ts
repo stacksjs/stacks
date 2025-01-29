@@ -115,11 +115,7 @@ export class DeploymentModel {
   }
 
   select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return DeploymentModel.select(params)
   }
 
   static select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
@@ -134,7 +130,7 @@ export class DeploymentModel {
   }
 
   async find(id: number): Promise<DeploymentModel | undefined> {
-    return DeploymentModel.find(id)
+    return await DeploymentModel.find(id)
   }
 
   // Method to find a Deployment by ID
@@ -156,10 +152,10 @@ export class DeploymentModel {
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    return DeploymentModel.first()
+    return await DeploymentModel.first()
   }
 
-  static async first(): Promise<DeploymentType | undefined> {
+  static async first(): Promise<DeploymentModel | undefined> {
     const model = await db.selectFrom('deployments')
       .selectAll()
       .executeTakeFirst()
@@ -177,7 +173,7 @@ export class DeploymentModel {
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {
-    return this.firstOrFail()
+    return await DeploymentModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<DeploymentModel | undefined> {
@@ -218,7 +214,7 @@ export class DeploymentModel {
   }
 
   async findOrFail(id: number): Promise<DeploymentModel> {
-    return DeploymentModel.findOrFail(id)
+    return await DeploymentModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
@@ -462,8 +458,8 @@ export class DeploymentModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): DeploymentModel {
-    return DeploymentModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+    return DeploymentModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -587,7 +583,7 @@ export class DeploymentModel {
     return model
   }
 
-  static async createMany(newDeployments: NewDeployment[]): Promise<void> {
+  static async createMany(newDeployment: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -1001,7 +997,7 @@ export class DeploymentModel {
   }
 
   having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
-    return DeploymentModel.having(column, operator)
+    return DeploymentModel.having(column, operator, value)
   }
 
   static having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
@@ -1048,10 +1044,10 @@ export class DeploymentModel {
     return instance
   }
 
-  async update(deployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+  async update(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDeployment).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewDeployment
 

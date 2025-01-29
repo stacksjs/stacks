@@ -84,11 +84,7 @@ export class SubscriberModel {
   }
 
   select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return SubscriberModel.select(params)
   }
 
   static select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
@@ -103,7 +99,7 @@ export class SubscriberModel {
   }
 
   async find(id: number): Promise<SubscriberModel | undefined> {
-    return SubscriberModel.find(id)
+    return await SubscriberModel.find(id)
   }
 
   // Method to find a Subscriber by ID
@@ -125,10 +121,10 @@ export class SubscriberModel {
   }
 
   async first(): Promise<SubscriberModel | undefined> {
-    return SubscriberModel.first()
+    return await SubscriberModel.first()
   }
 
-  static async first(): Promise<SubscriberType | undefined> {
+  static async first(): Promise<SubscriberModel | undefined> {
     const model = await db.selectFrom('subscribers')
       .selectAll()
       .executeTakeFirst()
@@ -146,7 +142,7 @@ export class SubscriberModel {
   }
 
   async firstOrFail(): Promise<SubscriberModel | undefined> {
-    return this.firstOrFail()
+    return await SubscriberModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<SubscriberModel | undefined> {
@@ -183,7 +179,7 @@ export class SubscriberModel {
   }
 
   async findOrFail(id: number): Promise<SubscriberModel> {
-    return SubscriberModel.findOrFail(id)
+    return await SubscriberModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
@@ -427,8 +423,8 @@ export class SubscriberModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): SubscriberModel {
-    return SubscriberModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+    return SubscriberModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -550,7 +546,7 @@ export class SubscriberModel {
     return model
   }
 
-  static async createMany(newSubscribers: NewSubscriber[]): Promise<void> {
+  static async createMany(newSubscriber: NewSubscriber[]): Promise<void> {
     const instance = new SubscriberModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -912,7 +908,7 @@ export class SubscriberModel {
   }
 
   having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
-    return SubscriberModel.having(column, operator)
+    return SubscriberModel.having(column, operator, value)
   }
 
   static having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
@@ -959,10 +955,10 @@ export class SubscriberModel {
     return instance
   }
 
-  async update(subscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
+  async update(newSubscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscriber).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriber
 

@@ -138,11 +138,7 @@ export class UserModel {
   }
 
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return UserModel.select(params)
   }
 
   static select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
@@ -157,7 +153,7 @@ export class UserModel {
   }
 
   async find(id: number): Promise<UserModel | undefined> {
-    return UserModel.find(id)
+    return await UserModel.find(id)
   }
 
   // Method to find a User by ID
@@ -179,10 +175,10 @@ export class UserModel {
   }
 
   async first(): Promise<UserModel | undefined> {
-    return UserModel.first()
+    return await UserModel.first()
   }
 
-  static async first(): Promise<UserType | undefined> {
+  static async first(): Promise<UserModel | undefined> {
     const model = await db.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
@@ -200,7 +196,7 @@ export class UserModel {
   }
 
   async firstOrFail(): Promise<UserModel | undefined> {
-    return this.firstOrFail()
+    return await UserModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<UserModel | undefined> {
@@ -253,7 +249,7 @@ export class UserModel {
   }
 
   async findOrFail(id: number): Promise<UserModel> {
-    return UserModel.findOrFail(id)
+    return await UserModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
@@ -497,8 +493,8 @@ export class UserModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): UserModel {
-    return UserModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+    return UserModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -622,7 +618,7 @@ export class UserModel {
     return model
   }
 
-  static async createMany(newUsers: NewUser[]): Promise<void> {
+  static async createMany(newUser: NewUser[]): Promise<void> {
     const instance = new UserModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -1022,7 +1018,7 @@ export class UserModel {
   }
 
   having(column: keyof UserType, operator: string, value: any): UserModel {
-    return UserModel.having(column, operator)
+    return UserModel.having(column, operator, value)
   }
 
   static having(column: keyof UserType, operator: string, value: any): UserModel {
@@ -1069,10 +1065,10 @@ export class UserModel {
     return instance
   }
 
-  async update(user: UserUpdate): Promise<UserModel | undefined> {
+  async update(newUser: UserUpdate): Promise<UserModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newUser).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewUser
 

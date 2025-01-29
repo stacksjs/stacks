@@ -113,11 +113,7 @@ export class TeamModel {
   }
 
   select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return TeamModel.select(params)
   }
 
   static select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
@@ -132,7 +128,7 @@ export class TeamModel {
   }
 
   async find(id: number): Promise<TeamModel | undefined> {
-    return TeamModel.find(id)
+    return await TeamModel.find(id)
   }
 
   // Method to find a Team by ID
@@ -154,10 +150,10 @@ export class TeamModel {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    return TeamModel.first()
+    return await TeamModel.first()
   }
 
-  static async first(): Promise<TeamType | undefined> {
+  static async first(): Promise<TeamModel | undefined> {
     const model = await db.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
@@ -175,7 +171,7 @@ export class TeamModel {
   }
 
   async firstOrFail(): Promise<TeamModel | undefined> {
-    return this.firstOrFail()
+    return await TeamModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<TeamModel | undefined> {
@@ -216,7 +212,7 @@ export class TeamModel {
   }
 
   async findOrFail(id: number): Promise<TeamModel> {
-    return TeamModel.findOrFail(id)
+    return await TeamModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
@@ -460,8 +456,8 @@ export class TeamModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): TeamModel {
-    return TeamModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TeamModel {
+    return TeamModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -583,7 +579,7 @@ export class TeamModel {
     return model
   }
 
-  static async createMany(newTeams: NewTeam[]): Promise<void> {
+  static async createMany(newTeam: NewTeam[]): Promise<void> {
     const instance = new TeamModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -1001,7 +997,7 @@ export class TeamModel {
   }
 
   having(column: keyof TeamType, operator: string, value: any): TeamModel {
-    return TeamModel.having(column, operator)
+    return TeamModel.having(column, operator, value)
   }
 
   static having(column: keyof TeamType, operator: string, value: any): TeamModel {
@@ -1048,10 +1044,10 @@ export class TeamModel {
     return instance
   }
 
-  async update(team: TeamUpdate): Promise<TeamModel | undefined> {
+  async update(newTeam: TeamUpdate): Promise<TeamModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTeam
 

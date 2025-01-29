@@ -96,11 +96,7 @@ export class FailedJobModel {
   }
 
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
+    return FailedJobModel.select(params)
   }
 
   static select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
@@ -115,7 +111,7 @@ export class FailedJobModel {
   }
 
   async find(id: number): Promise<FailedJobModel | undefined> {
-    return FailedJobModel.find(id)
+    return await FailedJobModel.find(id)
   }
 
   // Method to find a FailedJob by ID
@@ -137,10 +133,10 @@ export class FailedJobModel {
   }
 
   async first(): Promise<FailedJobModel | undefined> {
-    return FailedJobModel.first()
+    return await FailedJobModel.first()
   }
 
-  static async first(): Promise<FailedJobType | undefined> {
+  static async first(): Promise<FailedJobModel | undefined> {
     const model = await db.selectFrom('failed_jobs')
       .selectAll()
       .executeTakeFirst()
@@ -158,7 +154,7 @@ export class FailedJobModel {
   }
 
   async firstOrFail(): Promise<FailedJobModel | undefined> {
-    return this.firstOrFail()
+    return await FailedJobModel.firstOrFail()
   }
 
   static async firstOrFail(): Promise<FailedJobModel | undefined> {
@@ -195,7 +191,7 @@ export class FailedJobModel {
   }
 
   async findOrFail(id: number): Promise<FailedJobModel> {
-    return FailedJobModel.findOrFail(id)
+    return await FailedJobModel.findOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<FailedJobModel> {
@@ -439,8 +435,8 @@ export class FailedJobModel {
     return instance
   }
 
-  whereDoesntHave(relation: string): FailedJobModel {
-    return FailedJobModel.whereDoesntHave(relation)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): FailedJobModel {
+    return FailedJobModel.whereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
@@ -562,7 +558,7 @@ export class FailedJobModel {
     return model
   }
 
-  static async createMany(newFailedJobs: NewFailedJob[]): Promise<void> {
+  static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {
     const instance = new FailedJobModel(null)
 
     const filteredValues = Object.fromEntries(
@@ -956,7 +952,7 @@ export class FailedJobModel {
   }
 
   having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
-    return FailedJobModel.having(column, operator)
+    return FailedJobModel.having(column, operator, value)
   }
 
   static having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
@@ -1003,10 +999,10 @@ export class FailedJobModel {
     return instance
   }
 
-  async update(failedjob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
+  async update(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
     const filteredValues = Object.fromEntries(
       Object.entries(newFailedJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewFailedJob
 
