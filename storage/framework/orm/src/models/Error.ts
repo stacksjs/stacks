@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -546,11 +547,11 @@ export class ErrorModel {
       ),
     ) as NewError
 
-    const result = await db.insertInto('errors')
+    const result = await DB.instance.insertInto('errors')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
     if (model)
       dispatch('Errors:created', model)
@@ -561,19 +562,24 @@ export class ErrorModel {
   static async createMany(newError: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newError).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewError
+    const filteredValues = newError.map((newError: NewError) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newError).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewError
 
-    await db.insertInto('errors')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('errors')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newError: NewError): Promise<ErrorModel> {
-    const result = await db.insertInto('errors')
+    const result = await DB.instance.insertInto('errors')
       .values(newError)
       .executeTakeFirst()
 
@@ -1044,7 +1050,7 @@ export class ErrorModel {
       throw new HttpError(500, 'Error data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('errors')
+      await DB.instance.insertInto('errors')
         .values(this as NewError)
         .executeTakeFirstOrThrow()
     }
@@ -1140,7 +1146,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newError: NewError): Promise<ErrorModel> {
-  const result = await db.insertInto('errors')
+  const result = await DB.instance.insertInto('errors')
     .values(newError)
     .executeTakeFirstOrThrow()
 

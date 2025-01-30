@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -543,11 +544,11 @@ export class ProjectModel {
       ),
     ) as NewProject
 
-    const result = await db.insertInto('projects')
+    const result = await DB.instance.insertInto('projects')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
     if (model)
       dispatch('Projects:created', model)
@@ -558,19 +559,24 @@ export class ProjectModel {
   static async createMany(newProject: NewProject[]): Promise<void> {
     const instance = new ProjectModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newProject).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewProject
+    const filteredValues = newProject.map((newProject: NewProject) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newProject).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewProject
 
-    await db.insertInto('projects')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('projects')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newProject: NewProject): Promise<ProjectModel> {
-    const result = await db.insertInto('projects')
+    const result = await DB.instance.insertInto('projects')
       .values(newProject)
       .executeTakeFirst()
 
@@ -1033,7 +1039,7 @@ export class ProjectModel {
       throw new HttpError(500, 'Project data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('projects')
+      await DB.instance.insertInto('projects')
         .values(this as NewProject)
         .executeTakeFirstOrThrow()
     }
@@ -1128,7 +1134,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProject: NewProject): Promise<ProjectModel> {
-  const result = await db.insertInto('projects')
+  const result = await DB.instance.insertInto('projects')
     .values(newProject)
     .executeTakeFirstOrThrow()
 

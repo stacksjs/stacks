@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -556,11 +557,11 @@ export class SubscriberEmailModel {
       ),
     ) as NewSubscriberEmail
 
-    const result = await db.insertInto('subscriber_emails')
+    const result = await DB.instance.insertInto('subscriber_emails')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
 
     if (model)
       dispatch('SubscriberEmails:created', model)
@@ -571,19 +572,24 @@ export class SubscriberEmailModel {
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newSubscriberEmail).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewSubscriberEmail
+    const filteredValues = newSubscriberEmail.map((newSubscriberEmail: NewSubscriberEmail) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newSubscriberEmail).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewSubscriberEmail
 
-    await db.insertInto('subscriber_emails')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('subscriber_emails')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-    const result = await db.insertInto('subscriber_emails')
+    const result = await DB.instance.insertInto('subscriber_emails')
       .values(newSubscriberEmail)
       .executeTakeFirst()
 
@@ -1033,7 +1039,7 @@ export class SubscriberEmailModel {
       throw new HttpError(500, 'SubscriberEmail data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('subscriber_emails')
+      await DB.instance.insertInto('subscriber_emails')
         .values(this as NewSubscriberEmail)
         .executeTakeFirstOrThrow()
     }
@@ -1136,7 +1142,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-  const result = await db.insertInto('subscriber_emails')
+  const result = await DB.instance.insertInto('subscriber_emails')
     .values(newSubscriberEmail)
     .executeTakeFirstOrThrow()
 

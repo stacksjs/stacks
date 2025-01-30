@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -534,11 +535,11 @@ export class ReleaseModel {
       ),
     ) as NewRelease
 
-    const result = await db.insertInto('releases')
+    const result = await DB.instance.insertInto('releases')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     if (model)
       dispatch('Releases:created', model)
@@ -549,19 +550,24 @@ export class ReleaseModel {
   static async createMany(newRelease: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newRelease).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewRelease
+    const filteredValues = newRelease.map((newRelease: NewRelease) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newRelease).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewRelease
 
-    await db.insertInto('releases')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('releases')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newRelease: NewRelease): Promise<ReleaseModel> {
-    const result = await db.insertInto('releases')
+    const result = await DB.instance.insertInto('releases')
       .values(newRelease)
       .executeTakeFirst()
 
@@ -1000,7 +1006,7 @@ export class ReleaseModel {
       throw new HttpError(500, 'Release data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('releases')
+      await DB.instance.insertInto('releases')
         .values(this as NewRelease)
         .executeTakeFirstOrThrow()
     }
@@ -1092,7 +1098,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
-  const result = await db.insertInto('releases')
+  const result = await DB.instance.insertInto('releases')
     .values(newRelease)
     .executeTakeFirstOrThrow()
 

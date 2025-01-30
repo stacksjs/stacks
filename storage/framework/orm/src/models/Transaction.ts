@@ -579,11 +579,11 @@ export class TransactionModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('transactions')
+    const result = await DB.instance.insertInto('transactions')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
     if (model)
       dispatch('Transactions:created', model)
@@ -594,23 +594,24 @@ export class TransactionModel {
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {
     const instance = new TransactionModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newTransaction).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewTransaction
+    const filteredValues = newTransaction.map((newTransaction: NewTransaction) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newTransaction).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewTransaction
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
-    await db.insertInto('transactions')
+    await DB.instance.insertInto('transactions')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newTransaction: NewTransaction): Promise<TransactionModel> {
-    const result = await db.insertInto('transactions')
+    const result = await DB.instance.insertInto('transactions')
       .values(newTransaction)
       .executeTakeFirst()
 
@@ -1081,7 +1082,7 @@ export class TransactionModel {
       throw new HttpError(500, 'Transaction data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('transactions')
+      await DB.instance.insertInto('transactions')
         .values(this as NewTransaction)
         .executeTakeFirstOrThrow()
     }
@@ -1209,7 +1210,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newTransaction: NewTransaction): Promise<TransactionModel> {
-  const result = await db.insertInto('transactions')
+  const result = await DB.instance.insertInto('transactions')
     .values(newTransaction)
     .executeTakeFirstOrThrow()
 

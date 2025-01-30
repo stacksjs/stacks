@@ -558,11 +558,11 @@ export class ProductModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('products')
+    const result = await DB.instance.insertInto('products')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     if (model)
       dispatch('Products:created', model)
@@ -573,23 +573,24 @@ export class ProductModel {
   static async createMany(newProduct: NewProduct[]): Promise<void> {
     const instance = new ProductModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newProduct).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewProduct
+    const filteredValues = newProduct.map((newProduct: NewProduct) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newProduct).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewProduct
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
-    await db.insertInto('products')
+    await DB.instance.insertInto('products')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newProduct: NewProduct): Promise<ProductModel> {
-    const result = await db.insertInto('products')
+    const result = await DB.instance.insertInto('products')
       .values(newProduct)
       .executeTakeFirst()
 
@@ -1076,7 +1077,7 @@ export class ProductModel {
       throw new HttpError(500, 'Product data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('products')
+      await DB.instance.insertInto('products')
         .values(this as NewProduct)
         .executeTakeFirstOrThrow()
     }
@@ -1174,7 +1175,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProduct: NewProduct): Promise<ProductModel> {
-  const result = await db.insertInto('products')
+  const result = await DB.instance.insertInto('products')
     .values(newProduct)
     .executeTakeFirstOrThrow()
 

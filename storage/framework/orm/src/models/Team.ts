@@ -1,5 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -567,11 +568,11 @@ export class TeamModel {
       ),
     ) as NewTeam
 
-    const result = await db.insertInto('teams')
+    const result = await DB.instance.insertInto('teams')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     if (model)
       dispatch('Teams:created', model)
@@ -582,19 +583,24 @@ export class TeamModel {
   static async createMany(newTeam: NewTeam[]): Promise<void> {
     const instance = new TeamModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newTeam).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewTeam
+    const filteredValues = newTeam.map((newTeam: NewTeam) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newTeam).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewTeam
 
-    await db.insertInto('teams')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('teams')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newTeam: NewTeam): Promise<TeamModel> {
-    const result = await db.insertInto('teams')
+    const result = await DB.instance.insertInto('teams')
       .values(newTeam)
       .executeTakeFirst()
 
@@ -1089,7 +1095,7 @@ export class TeamModel {
       throw new HttpError(500, 'Team data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('teams')
+      await DB.instance.insertInto('teams')
         .values(this as NewTeam)
         .executeTakeFirstOrThrow()
     }
@@ -1221,7 +1227,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newTeam: NewTeam): Promise<TeamModel> {
-  const result = await db.insertInto('teams')
+  const result = await DB.instance.insertInto('teams')
     .values(newTeam)
     .executeTakeFirstOrThrow()
 

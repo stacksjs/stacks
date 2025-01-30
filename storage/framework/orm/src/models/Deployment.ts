@@ -571,11 +571,11 @@ export class DeploymentModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('deployments')
+    const result = await DB.instance.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
     if (model)
       dispatch('Deployments:created', model)
@@ -586,23 +586,24 @@ export class DeploymentModel {
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newDeployment).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewDeployment
+    const filteredValues = newDeployment.map((newDeployment: NewDeployment) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newDeployment).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewDeployment
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
-    await db.insertInto('deployments')
+    await DB.instance.insertInto('deployments')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const result = await db.insertInto('deployments')
+    const result = await DB.instance.insertInto('deployments')
       .values(newDeployment)
       .executeTakeFirst()
 
@@ -1089,7 +1090,7 @@ export class DeploymentModel {
       throw new HttpError(500, 'Deployment data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('deployments')
+      await DB.instance.insertInto('deployments')
         .values(this as NewDeployment)
         .executeTakeFirstOrThrow()
     }
@@ -1203,7 +1204,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-  const result = await db.insertInto('deployments')
+  const result = await DB.instance.insertInto('deployments')
     .values(newDeployment)
     .executeTakeFirstOrThrow()
 

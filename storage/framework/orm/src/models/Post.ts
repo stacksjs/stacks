@@ -1,5 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -550,11 +551,11 @@ export class PostModel {
       ),
     ) as NewPost
 
-    const result = await db.insertInto('posts')
+    const result = await DB.instance.insertInto('posts')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 
     if (model)
       dispatch('Posts:created', model)
@@ -565,19 +566,24 @@ export class PostModel {
   static async createMany(newPost: NewPost[]): Promise<void> {
     const instance = new PostModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newPost).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewPost
+    const filteredValues = newPost.map((newPost: NewPost) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newPost).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewPost
 
-    await db.insertInto('posts')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('posts')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPost: NewPost): Promise<PostModel> {
-    const result = await db.insertInto('posts')
+    const result = await DB.instance.insertInto('posts')
       .values(newPost)
       .executeTakeFirst()
 
@@ -1024,7 +1030,7 @@ export class PostModel {
       throw new HttpError(500, 'Post data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('posts')
+      await DB.instance.insertInto('posts')
         .values(this as NewPost)
         .executeTakeFirstOrThrow()
     }
@@ -1133,7 +1139,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newPost: NewPost): Promise<PostModel> {
-  const result = await db.insertInto('posts')
+  const result = await DB.instance.insertInto('posts')
     .values(newPost)
     .executeTakeFirstOrThrow()
 

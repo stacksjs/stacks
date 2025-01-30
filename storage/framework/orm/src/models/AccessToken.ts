@@ -1,5 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { TeamModel } from './Team'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -556,11 +557,11 @@ export class AccessTokenModel {
       ),
     ) as NewAccessToken
 
-    const result = await db.insertInto('personal_access_tokens')
+    const result = await DB.instance.insertInto('personal_access_tokens')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     if (model)
       dispatch('PersonalAccessTokens:created', model)
@@ -571,19 +572,24 @@ export class AccessTokenModel {
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newAccessToken).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewAccessToken
+    const filteredValues = newAccessToken.map((newAccessToken: NewAccessToken) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newAccessToken).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewAccessToken
 
-    await db.insertInto('personal_access_tokens')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('personal_access_tokens')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    const result = await db.insertInto('personal_access_tokens')
+    const result = await DB.instance.insertInto('personal_access_tokens')
       .values(newAccessToken)
       .executeTakeFirst()
 
@@ -1046,7 +1052,7 @@ export class AccessTokenModel {
       throw new HttpError(500, 'AccessToken data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('personal_access_tokens')
+      await DB.instance.insertInto('personal_access_tokens')
         .values(this as NewAccessToken)
         .executeTakeFirstOrThrow()
     }
@@ -1157,7 +1163,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-  const result = await db.insertInto('personal_access_tokens')
+  const result = await DB.instance.insertInto('personal_access_tokens')
     .values(newAccessToken)
     .executeTakeFirstOrThrow()
 

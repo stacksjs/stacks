@@ -582,11 +582,11 @@ export class PaymentMethodModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('payment_methods')
+    const result = await DB.instance.insertInto('payment_methods')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 
     if (model)
       dispatch('PaymentMethods:created', model)
@@ -597,23 +597,24 @@ export class PaymentMethodModel {
   static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newPaymentMethod).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewPaymentMethod
+    const filteredValues = newPaymentMethod.map((newPaymentMethod: NewPaymentMethod) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newPaymentMethod).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewPaymentMethod
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
-    await db.insertInto('payment_methods')
+    await DB.instance.insertInto('payment_methods')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-    const result = await db.insertInto('payment_methods')
+    const result = await DB.instance.insertInto('payment_methods')
       .values(newPaymentMethod)
       .executeTakeFirst()
 
@@ -1100,7 +1101,7 @@ export class PaymentMethodModel {
       throw new HttpError(500, 'PaymentMethod data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('payment_methods')
+      await DB.instance.insertInto('payment_methods')
         .values(this as NewPaymentMethod)
         .executeTakeFirstOrThrow()
     }
@@ -1228,7 +1229,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-  const result = await db.insertInto('payment_methods')
+  const result = await DB.instance.insertInto('payment_methods')
     .values(newPaymentMethod)
     .executeTakeFirstOrThrow()
 

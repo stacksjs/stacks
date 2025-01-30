@@ -158,7 +158,7 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -612,6 +612,9 @@ export class UserModel {
 
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
+    if (model)
+      dispatch('Users:created', model)
+
     return model
   }
 
@@ -624,18 +627,18 @@ export class UserModel {
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewUser
-  
+
       filtered.uuid = randomUUIDv7()
       return filtered
     })
 
-    await db.insertInto('users')
+    await DB.instance.insertInto('users')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newUser: NewUser): Promise<UserModel> {
-    const result = await db.insertInto('users')
+    const result = await DB.instance.insertInto('users')
       .values(newUser)
       .executeTakeFirst()
 
@@ -1114,7 +1117,7 @@ export class UserModel {
       throw new HttpError(500, 'User data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('users')
+      await DB.instance.insertInto('users')
         .values(this as NewUser)
         .executeTakeFirstOrThrow()
     }
@@ -1567,7 +1570,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newUser: NewUser): Promise<UserModel> {
-  const result = await db.insertInto('users')
+  const result = await DB.instance.insertInto('users')
     .values(newUser)
     .executeTakeFirstOrThrow()
 

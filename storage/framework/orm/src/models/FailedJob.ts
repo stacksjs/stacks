@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -546,11 +547,11 @@ export class FailedJobModel {
       ),
     ) as NewFailedJob
 
-    const result = await db.insertInto('failed_jobs')
+    const result = await DB.instance.insertInto('failed_jobs')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
 
     if (model)
       dispatch('FailedJobs:created', model)
@@ -561,19 +562,24 @@ export class FailedJobModel {
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {
     const instance = new FailedJobModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newFailedJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewFailedJob
+    const filteredValues = newFailedJob.map((newFailedJob: NewFailedJob) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newFailedJob).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewFailedJob
 
-    await db.insertInto('failed_jobs')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('failed_jobs')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-    const result = await db.insertInto('failed_jobs')
+    const result = await DB.instance.insertInto('failed_jobs')
       .values(newFailedJob)
       .executeTakeFirst()
 
@@ -1044,7 +1050,7 @@ export class FailedJobModel {
       throw new HttpError(500, 'FailedJob data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('failed_jobs')
+      await DB.instance.insertInto('failed_jobs')
         .values(this as NewFailedJob)
         .executeTakeFirstOrThrow()
     }
@@ -1140,7 +1146,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-  const result = await db.insertInto('failed_jobs')
+  const result = await DB.instance.insertInto('failed_jobs')
     .values(newFailedJob)
     .executeTakeFirstOrThrow()
 

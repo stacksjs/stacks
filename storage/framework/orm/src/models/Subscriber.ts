@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -534,11 +535,11 @@ export class SubscriberModel {
       ),
     ) as NewSubscriber
 
-    const result = await db.insertInto('subscribers')
+    const result = await DB.instance.insertInto('subscribers')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
     if (model)
       dispatch('Subscribers:created', model)
@@ -549,19 +550,24 @@ export class SubscriberModel {
   static async createMany(newSubscriber: NewSubscriber[]): Promise<void> {
     const instance = new SubscriberModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newSubscriber).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewSubscriber
+    const filteredValues = newSubscriber.map((newSubscriber: NewSubscriber) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newSubscriber).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewSubscriber
 
-    await db.insertInto('subscribers')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('subscribers')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-    const result = await db.insertInto('subscribers')
+    const result = await DB.instance.insertInto('subscribers')
       .values(newSubscriber)
       .executeTakeFirst()
 
@@ -1000,7 +1006,7 @@ export class SubscriberModel {
       throw new HttpError(500, 'Subscriber data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('subscribers')
+      await DB.instance.insertInto('subscribers')
         .values(this as NewSubscriber)
         .executeTakeFirstOrThrow()
     }
@@ -1092,7 +1098,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-  const result = await db.insertInto('subscribers')
+  const result = await DB.instance.insertInto('subscribers')
     .values(newSubscriber)
     .executeTakeFirstOrThrow()
 

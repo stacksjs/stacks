@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { db, sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -546,11 +547,11 @@ export class JobModel {
       ),
     ) as NewJob
 
-    const result = await db.insertInto('jobs')
+    const result = await DB.instance.insertInto('jobs')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
 
     if (model)
       dispatch('Jobs:created', model)
@@ -561,19 +562,24 @@ export class JobModel {
   static async createMany(newJob: NewJob[]): Promise<void> {
     const instance = new JobModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewJob
+    const filteredValues = newJob.map((newJob: NewJob) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newJob).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewJob
 
-    await db.insertInto('jobs')
+      filtered.uuid = randomUUIDv7()
+      return filtered
+    })
+
+    await DB.instance.insertInto('jobs')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newJob: NewJob): Promise<JobModel> {
-    const result = await db.insertInto('jobs')
+    const result = await DB.instance.insertInto('jobs')
       .values(newJob)
       .executeTakeFirst()
 
@@ -1044,7 +1050,7 @@ export class JobModel {
       throw new HttpError(500, 'Job data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('jobs')
+      await DB.instance.insertInto('jobs')
         .values(this as NewJob)
         .executeTakeFirstOrThrow()
     }
@@ -1140,7 +1146,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newJob: NewJob): Promise<JobModel> {
-  const result = await db.insertInto('jobs')
+  const result = await DB.instance.insertInto('jobs')
     .values(newJob)
     .executeTakeFirstOrThrow()
 

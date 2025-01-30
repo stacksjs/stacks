@@ -580,11 +580,11 @@ export class SubscriptionModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('subscriptions')
+    const result = await DB.instance.insertInto('subscriptions')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 
     if (model)
       dispatch('Subscriptions:created', model)
@@ -595,23 +595,24 @@ export class SubscriptionModel {
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newSubscription).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewSubscription
+    const filteredValues = newSubscription.map((newSubscription: NewSubscription) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newSubscription).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewSubscription
 
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
-    await db.insertInto('subscriptions')
+    await DB.instance.insertInto('subscriptions')
       .values(filteredValues)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-    const result = await db.insertInto('subscriptions')
+    const result = await DB.instance.insertInto('subscriptions')
       .values(newSubscription)
       .executeTakeFirst()
 
@@ -1122,7 +1123,7 @@ export class SubscriptionModel {
       throw new HttpError(500, 'Subscription data is undefined')
 
     if (this.id === undefined) {
-      await db.insertInto('subscriptions')
+      await DB.instance.insertInto('subscriptions')
         .values(this as NewSubscription)
         .executeTakeFirstOrThrow()
     }
@@ -1239,7 +1240,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-  const result = await db.insertInto('subscriptions')
+  const result = await DB.instance.insertInto('subscriptions')
     .values(newSubscription)
     .executeTakeFirstOrThrow()
 
