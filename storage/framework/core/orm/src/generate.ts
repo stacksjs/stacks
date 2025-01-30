@@ -24,6 +24,7 @@ export async function generateModelString(
   let thisSoftDeleteStatementsUpdateFrom = ''
 
   let fieldString = ''
+  let getFields = ''
   let constructorFields = ''
   let jsonFields = '{\n'
   let jsonRelations = ''
@@ -166,6 +167,9 @@ export async function generateModelString(
       const relationName = camelCase(relation.relationName || tableRelation)
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
+      getFields += `get ${snakeCase(relationName)}():${modelRelation}Model[] | undefined {
+        return this.attributes.${snakeCase(relationName)}
+      }`
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
 
@@ -213,10 +217,20 @@ export async function generateModelString(
 
       fieldString += ` ${relation.modelKey}?: number \n`
       declareFields += `public ${relation.modelKey}: number | undefined \n   `
+
+      getFields += `get ${relation.modelKey}(): number | undefined {
+        return this.attributes.${relation.modelKey}
+      }`
+
       constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
       jsonRelations += `${relation.modelKey}: this.${relation.modelKey},\n   `
 
       declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
+
+      getFields += `get ${snakeCase(relationName)}(): ${modelRelation}Model | undefined {
+        return this.attributes.${snakeCase(relationName)}
+      }`
+
       constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
 
@@ -271,6 +285,10 @@ export async function generateModelString(
   }
 
   declareFields += `public id: number | undefined \n   `
+
+  getFields += `get id(): number | undefined {
+    return this.attributes.id
+  }`
 
   constructorFields += `this.id = ${formattedModelName}?.id || 1\n   `
 
@@ -544,11 +562,20 @@ export async function generateModelString(
 
     declareFields += `public stripe_id: string | undefined\n`
 
+    getFields += `get stripe_id(): string | undefined {
+      return this.attributes.stripe_id
+    }`
+
     constructorFields += `this.stripe_id = ${formattedModelName}?.stripe_id\n   `
   }
 
   if (useTwoFactor) {
     declareFields += `public two_factor_secret: string | undefined \n`
+
+    getFields += `get two_factor_secret(): string | undefined {
+      return this.attributes.two_factor_secret
+    }`
+
     constructorFields += `this.two_factor_secret = ${formattedModelName}?.two_factor_secret\n   `
 
     twoFactorStatements += `
@@ -573,11 +600,17 @@ export async function generateModelString(
 
   if (useUuid) {
     declareFields += 'public uuid: string | undefined \n'
+    getFields += `get uuid(): string | undefined {
+      return this.attributes.uuid
+    }`
     constructorFields += `this.uuid = ${formattedModelName}?.uuid\n   `
   }
 
   if (usePasskey) {
     declareFields += 'public public_passkey: string | undefined \n'
+    getFields += `get public_passkey(): string | undefined {
+      return this.attributes.public_passkey
+    }`
     constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
   }
 
@@ -587,6 +620,9 @@ export async function generateModelString(
 
     fieldString += ` ${snakeCase(attribute.field)}?: ${entity}\n     `
     declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
+    getFields += `get ${snakeCase(attribute.field)}(): ${entity} | undefined {
+      return this.attributes.${snakeCase(attribute.field)}
+    }`
     constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
@@ -612,6 +648,14 @@ export async function generateModelString(
         public updated_at: Date | undefined
       `
 
+    getFields += `get created_at(): Date | undefined {
+      return this.attributes.created_at
+    }\n\n
+
+    get updated_at(): Date | undefined {
+      return this.attributes.updated_at
+    }`
+
     constructorFields += `
         this.created_at = ${formattedModelName}?.created_at\n
         this.updated_at = ${formattedModelName}?.updated_at\n
@@ -625,8 +669,11 @@ export async function generateModelString(
 
   if (useSoftDeletes) {
     declareFields += `
-        public deleted_at: Date | undefined
-      `
+      public deleted_at: Date | undefined
+    `
+    getFields += `get deleted_at(): Date | undefined {
+      return this.attributes.deleted_at
+    }`
 
     constructorFields += `
         this.deleted_at = ${formattedModelName}?.deleted_at\n
