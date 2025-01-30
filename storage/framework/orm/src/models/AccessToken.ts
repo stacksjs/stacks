@@ -876,7 +876,7 @@ export class AccessTokenModel {
 
     if (existingAccessToken) {
       // If found, update the existing record
-      await db.updateTable('personal_access_tokens')
+      await DB.instance.updateTable('personal_access_tokens')
         .set(newAccessToken)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1014,7 +1014,7 @@ export class AccessTokenModel {
       ),
     ) as NewAccessToken
 
-    await db.updateTable('personal_access_tokens')
+    await DB.instance.updateTable('personal_access_tokens')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1033,7 +1033,7 @@ export class AccessTokenModel {
       this.updateFromQuery.set(accesstoken).execute()
     }
 
-    await db.updateTable('personal_access_tokens')
+    await DB.instance.updateTable('personal_access_tokens')
       .set(accesstoken)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1184,28 +1184,28 @@ export async function whereName(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
 }
 
 export async function whereToken(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
 }
 
 export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
 }
 
 export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
 }
 
 export const AccessToken = AccessTokenModel

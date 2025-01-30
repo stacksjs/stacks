@@ -830,7 +830,7 @@ export class SubscriberModel {
 
     if (existingSubscriber) {
       // If found, update the existing record
-      await db.updateTable('subscribers')
+      await DB.instance.updateTable('subscribers')
         .set(newSubscriber)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -968,7 +968,7 @@ export class SubscriberModel {
       ),
     ) as NewSubscriber
 
-    await db.updateTable('subscribers')
+    await DB.instance.updateTable('subscribers')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -987,7 +987,7 @@ export class SubscriberModel {
       this.updateFromQuery.set(subscriber).execute()
     }
 
-    await db.updateTable('subscribers')
+    await DB.instance.updateTable('subscribers')
       .set(subscriber)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1119,7 +1119,7 @@ export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]
   const query = DB.instance.selectFrom('subscribers').where('subscribed', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new SubscriberModel(modelItem))
+  return results.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
 }
 
 export const Subscriber = SubscriberModel

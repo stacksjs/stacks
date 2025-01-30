@@ -874,7 +874,7 @@ export class ErrorModel {
 
     if (existingError) {
       // If found, update the existing record
-      await db.updateTable('errors')
+      await DB.instance.updateTable('errors')
         .set(newError)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1012,7 +1012,7 @@ export class ErrorModel {
       ),
     ) as NewError
 
-    await db.updateTable('errors')
+    await DB.instance.updateTable('errors')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1031,7 +1031,7 @@ export class ErrorModel {
       this.updateFromQuery.set(error).execute()
     }
 
-    await db.updateTable('errors')
+    await DB.instance.updateTable('errors')
       .set(error)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1167,35 +1167,35 @@ export async function whereType(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereMessage(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('message', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereStack(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('stack', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereStatus(value: number): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereAdditionalInfo(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('additional_info', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export const Error = ErrorModel

@@ -863,7 +863,7 @@ export class ProjectModel {
 
     if (existingProject) {
       // If found, update the existing record
-      await db.updateTable('projects')
+      await DB.instance.updateTable('projects')
         .set(newProject)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1001,7 +1001,7 @@ export class ProjectModel {
       ),
     ) as NewProject
 
-    await db.updateTable('projects')
+    await DB.instance.updateTable('projects')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1020,7 +1020,7 @@ export class ProjectModel {
       this.updateFromQuery.set(project).execute()
     }
 
-    await db.updateTable('projects')
+    await DB.instance.updateTable('projects')
       .set(project)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1155,28 +1155,28 @@ export async function whereName(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
 }
 
 export async function whereUrl(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('url', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
 }
 
 export const Project = ProjectModel

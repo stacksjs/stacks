@@ -935,7 +935,7 @@ export class UserModel {
 
     if (existingUser) {
       // If found, update the existing record
-      await db.updateTable('users')
+      await DB.instance.updateTable('users')
         .set(newUser)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1073,7 +1073,7 @@ export class UserModel {
       ),
     ) as NewUser
 
-    await db.updateTable('users')
+    await DB.instance.updateTable('users')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1095,7 +1095,7 @@ export class UserModel {
       this.updateFromQuery.set(user).execute()
     }
 
-    await db.updateTable('users')
+    await DB.instance.updateTable('users')
       .set(user)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1591,28 +1591,28 @@ export async function whereName(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new UserModel(modelItem))
+  return results.map((modelItem: UserModel) => new UserModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new UserModel(modelItem))
+  return results.map((modelItem: UserModel) => new UserModel(modelItem))
 }
 
 export async function whereJobTitle(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('job_title', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new UserModel(modelItem))
+  return results.map((modelItem: UserModel) => new UserModel(modelItem))
 }
 
 export async function wherePassword(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('password', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new UserModel(modelItem))
+  return results.map((modelItem: UserModel) => new UserModel(modelItem))
 }
 
 export const User = UserModel

@@ -901,7 +901,7 @@ export class ProductModel {
 
     if (existingProduct) {
       // If found, update the existing record
-      await db.updateTable('products')
+      await DB.instance.updateTable('products')
         .set(newProduct)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1039,7 +1039,7 @@ export class ProductModel {
       ),
     ) as NewProduct
 
-    await db.updateTable('products')
+    await DB.instance.updateTable('products')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1058,7 +1058,7 @@ export class ProductModel {
       this.updateFromQuery.set(product).execute()
     }
 
-    await db.updateTable('products')
+    await DB.instance.updateTable('products')
       .set(product)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1196,49 +1196,49 @@ export async function whereName(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereDescription(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereKey(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('key', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereUnitPrice(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('unit_price', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereImage(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('image', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('provider_id', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ProductModel(modelItem))
+  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
 }
 
 export const Product = ProductModel

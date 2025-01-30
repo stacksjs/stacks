@@ -81,7 +81,7 @@ export async function generateModelString(
         const instance = new ${modelName}Model(null)
   
         if (instance.softDeletes) {
-          return await db.updateTable('${tableName}')
+          return await DB.instance.updateTable('${tableName}')
           .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP'),
           })
@@ -91,7 +91,7 @@ export async function generateModelString(
       `
 
     thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
-        return await db.updateTable('${tableName}')
+        return await DB.instance.updateTable('${tableName}')
         .set({
             deleted_at: sql.raw('CURRENT_TIMESTAMP')
         })
@@ -609,7 +609,7 @@ export async function generateModelString(
           const query = DB.instance.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
           const results = await query.execute()
   
-          return results.map(modelItem => new ${modelName}Model(modelItem))
+          return results.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
         } \n\n`
   }
 
@@ -1516,7 +1516,7 @@ export async function generateModelString(
   
           if (existing${modelName}) {
             // If found, update the existing record
-            await db.updateTable('${tableName}')
+            await DB.instance.updateTable('${tableName}')
               .set(new${modelName})
               .where(key, '=', value)
               .executeTakeFirstOrThrow()
@@ -1653,7 +1653,7 @@ export async function generateModelString(
             ),
           ) as New${modelName}
 
-          await db.updateTable('${tableName}')
+          await DB.instance.updateTable('${tableName}')
             .set(filteredValues)
             .where('id', '=', this.id)
             .executeTakeFirst()
@@ -1674,7 +1674,7 @@ export async function generateModelString(
             this.updateFromQuery.set(${formattedModelName}).execute()
           }
   
-          await db.updateTable('${tableName}')
+          await DB.instance.updateTable('${tableName}')
             .set(${formattedModelName})
             .where('id', '=', this.id)
             .executeTakeFirst()

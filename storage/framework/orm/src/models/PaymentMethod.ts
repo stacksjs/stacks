@@ -925,7 +925,7 @@ export class PaymentMethodModel {
 
     if (existingPaymentMethod) {
       // If found, update the existing record
-      await db.updateTable('payment_methods')
+      await DB.instance.updateTable('payment_methods')
         .set(newPaymentMethod)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1063,7 +1063,7 @@ export class PaymentMethodModel {
       ),
     ) as NewPaymentMethod
 
-    await db.updateTable('payment_methods')
+    await DB.instance.updateTable('payment_methods')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1082,7 +1082,7 @@ export class PaymentMethodModel {
       this.updateFromQuery.set(paymentmethod).execute()
     }
 
-    await db.updateTable('payment_methods')
+    await DB.instance.updateTable('payment_methods')
       .set(paymentmethod)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1250,49 +1250,49 @@ export async function whereType(value: string): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereLastFour(value: number): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('last_four', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('brand', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('exp_month', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('exp_year', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereIsDefault(value: boolean): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('is_default', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<PaymentMethodModel[]> {
   const query = DB.instance.selectFrom('payment_methods').where('provider_id', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PaymentMethodModel(modelItem))
+  return results.map((modelItem: PaymentMethodModel) => new PaymentMethodModel(modelItem))
 }
 
 export const PaymentMethod = PaymentMethodModel

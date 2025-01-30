@@ -874,7 +874,7 @@ export class FailedJobModel {
 
     if (existingFailedJob) {
       // If found, update the existing record
-      await db.updateTable('failed_jobs')
+      await DB.instance.updateTable('failed_jobs')
         .set(newFailedJob)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1012,7 +1012,7 @@ export class FailedJobModel {
       ),
     ) as NewFailedJob
 
-    await db.updateTable('failed_jobs')
+    await DB.instance.updateTable('failed_jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1031,7 +1031,7 @@ export class FailedJobModel {
       this.updateFromQuery.set(failedjob).execute()
     }
 
-    await db.updateTable('failed_jobs')
+    await DB.instance.updateTable('failed_jobs')
       .set(failedjob)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1167,35 +1167,35 @@ export async function whereConnection(value: string): Promise<FailedJobModel[]> 
   const query = DB.instance.selectFrom('failed_jobs').where('connection', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new FailedJobModel(modelItem))
+  return results.map((modelItem: FailedJobModel) => new FailedJobModel(modelItem))
 }
 
 export async function whereQueue(value: string): Promise<FailedJobModel[]> {
   const query = DB.instance.selectFrom('failed_jobs').where('queue', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new FailedJobModel(modelItem))
+  return results.map((modelItem: FailedJobModel) => new FailedJobModel(modelItem))
 }
 
 export async function wherePayload(value: string): Promise<FailedJobModel[]> {
   const query = DB.instance.selectFrom('failed_jobs').where('payload', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new FailedJobModel(modelItem))
+  return results.map((modelItem: FailedJobModel) => new FailedJobModel(modelItem))
 }
 
 export async function whereException(value: string): Promise<FailedJobModel[]> {
   const query = DB.instance.selectFrom('failed_jobs').where('exception', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new FailedJobModel(modelItem))
+  return results.map((modelItem: FailedJobModel) => new FailedJobModel(modelItem))
 }
 
 export async function whereFailedAt(value: Date | string): Promise<FailedJobModel[]> {
   const query = DB.instance.selectFrom('failed_jobs').where('failed_at', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new FailedJobModel(modelItem))
+  return results.map((modelItem: FailedJobModel) => new FailedJobModel(modelItem))
 }
 
 export const FailedJob = FailedJobModel

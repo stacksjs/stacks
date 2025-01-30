@@ -603,7 +603,7 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      return await db.updateTable('subscriber_emails')
+      return await DB.instance.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
@@ -863,7 +863,7 @@ export class SubscriberEmailModel {
 
     if (existingSubscriberEmail) {
       // If found, update the existing record
-      await db.updateTable('subscriber_emails')
+      await DB.instance.updateTable('subscriber_emails')
         .set(newSubscriberEmail)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1001,7 +1001,7 @@ export class SubscriberEmailModel {
       ),
     ) as NewSubscriberEmail
 
-    await db.updateTable('subscriber_emails')
+    await DB.instance.updateTable('subscriber_emails')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1020,7 +1020,7 @@ export class SubscriberEmailModel {
       this.updateFromQuery.set(subscriberemail).execute()
     }
 
-    await db.updateTable('subscriber_emails')
+    await DB.instance.updateTable('subscriber_emails')
       .set(subscriberemail)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1054,7 +1054,7 @@ export class SubscriberEmailModel {
       this.deleteFromQuery.execute()
 
     if (this.softDeletes) {
-      return await db.updateTable('subscriber_emails')
+      return await DB.instance.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
@@ -1163,7 +1163,7 @@ export async function whereEmail(value: string): Promise<SubscriberEmailModel[]>
   const query = DB.instance.selectFrom('subscriber_emails').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new SubscriberEmailModel(modelItem))
+  return results.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
 }
 
 export const SubscriberEmail = SubscriberEmailModel

@@ -906,7 +906,7 @@ export class TransactionModel {
 
     if (existingTransaction) {
       // If found, update the existing record
-      await db.updateTable('transactions')
+      await DB.instance.updateTable('transactions')
         .set(newTransaction)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -1044,7 +1044,7 @@ export class TransactionModel {
       ),
     ) as NewTransaction
 
-    await db.updateTable('transactions')
+    await DB.instance.updateTable('transactions')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1063,7 +1063,7 @@ export class TransactionModel {
       this.updateFromQuery.set(transaction).execute()
     }
 
-    await db.updateTable('transactions')
+    await DB.instance.updateTable('transactions')
       .set(transaction)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1231,35 +1231,35 @@ export async function whereName(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
 }
 
 export async function whereAmount(value: number): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('amount', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
 }
 
 export async function whereType(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('provider_id', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
 }
 
 export const Transaction = TransactionModel

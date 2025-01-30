@@ -830,7 +830,7 @@ export class ReleaseModel {
 
     if (existingRelease) {
       // If found, update the existing record
-      await db.updateTable('releases')
+      await DB.instance.updateTable('releases')
         .set(newRelease)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -968,7 +968,7 @@ export class ReleaseModel {
       ),
     ) as NewRelease
 
-    await db.updateTable('releases')
+    await DB.instance.updateTable('releases')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -987,7 +987,7 @@ export class ReleaseModel {
       this.updateFromQuery.set(release).execute()
     }
 
-    await db.updateTable('releases')
+    await DB.instance.updateTable('releases')
       .set(release)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1119,7 +1119,7 @@ export async function whereVersion(value: string): Promise<ReleaseModel[]> {
   const query = DB.instance.selectFrom('releases').where('version', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ReleaseModel(modelItem))
+  return results.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
 }
 
 export const Release = ReleaseModel

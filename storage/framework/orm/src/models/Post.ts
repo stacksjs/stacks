@@ -854,7 +854,7 @@ export class PostModel {
 
     if (existingPost) {
       // If found, update the existing record
-      await db.updateTable('posts')
+      await DB.instance.updateTable('posts')
         .set(newPost)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
@@ -992,7 +992,7 @@ export class PostModel {
       ),
     ) as NewPost
 
-    await db.updateTable('posts')
+    await DB.instance.updateTable('posts')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1011,7 +1011,7 @@ export class PostModel {
       this.updateFromQuery.set(post).execute()
     }
 
-    await db.updateTable('posts')
+    await DB.instance.updateTable('posts')
       .set(post)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1160,14 +1160,14 @@ export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('title', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PostModel(modelItem))
+  return results.map((modelItem: PostModel) => new PostModel(modelItem))
 }
 
 export async function whereBody(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('body', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new PostModel(modelItem))
+  return results.map((modelItem: PostModel) => new PostModel(modelItem))
 }
 
 export const Post = PostModel
