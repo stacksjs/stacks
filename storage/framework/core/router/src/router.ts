@@ -79,7 +79,7 @@ export class Router implements RouterInterface {
   public async health(): Promise<this> {
     let healthPath = p.userActionsPath('HealthAction')
 
-    if (fs.existsSync(healthPath))
+    if (!fs.existsSync(healthPath))
       healthPath = p.storagePath('framework/defaults/actions/HealthAction')
 
     const healthModule = (await import(healthPath)).default as Action
