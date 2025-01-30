@@ -92,6 +92,14 @@ export class SubscriberModel {
     return this.attributes.updated_at
   }
 
+  set subscribed(value: boolean) {
+    this.attributes.subscribed = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
     return SubscriberModel.select(params)
   }

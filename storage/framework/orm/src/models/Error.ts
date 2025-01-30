@@ -112,6 +112,30 @@ export class ErrorModel {
     return this.attributes.updated_at
   }
 
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set message(value: string) {
+    this.attributes.message = value
+  }
+
+  set stack(value: string) {
+    this.attributes.stack = value
+  }
+
+  set status(value: number) {
+    this.attributes.status = value
+  }
+
+  set additional_info(value: string) {
+    this.attributes.additional_info = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
     return ErrorModel.select(params)
   }

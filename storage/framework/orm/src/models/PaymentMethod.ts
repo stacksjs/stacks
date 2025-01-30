@@ -149,6 +149,42 @@ export class PaymentMethodModel {
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set last_four(value: number) {
+    this.attributes.last_four = value
+  }
+
+  set brand(value: string) {
+    this.attributes.brand = value
+  }
+
+  set exp_month(value: number) {
+    this.attributes.exp_month = value
+  }
+
+  set exp_year(value: number) {
+    this.attributes.exp_year = value
+  }
+
+  set is_default(value: boolean) {
+    this.attributes.is_default = value
+  }
+
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
     return PaymentMethodModel.select(params)
   }

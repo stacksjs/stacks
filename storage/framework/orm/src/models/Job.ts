@@ -112,6 +112,30 @@ export class JobModel {
     return this.attributes.updated_at
   }
 
+  set queue(value: string) {
+    this.attributes.queue = value
+  }
+
+  set payload(value: string) {
+    this.attributes.payload = value
+  }
+
+  set attempts(value: number) {
+    this.attributes.attempts = value
+  }
+
+  set available_at(value: number) {
+    this.attributes.available_at = value
+  }
+
+  set reserved_at(value: Date | string) {
+    this.attributes.reserved_at = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
     return JobModel.select(params)
   }

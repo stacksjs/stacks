@@ -112,6 +112,30 @@ export class FailedJobModel {
     return this.attributes.updated_at
   }
 
+  set connection(value: string) {
+    this.attributes.connection = value
+  }
+
+  set queue(value: string) {
+    this.attributes.queue = value
+  }
+
+  set payload(value: string) {
+    this.attributes.payload = value
+  }
+
+  set exception(value: string) {
+    this.attributes.exception = value
+  }
+
+  set failed_at(value: Date | string) {
+    this.attributes.failed_at = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
     return FailedJobModel.select(params)
   }

@@ -137,6 +137,42 @@ export class TeamModel {
     return this.attributes.updated_at
   }
 
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set company_name(value: string) {
+    this.attributes.company_name = value
+  }
+
+  set email(value: string) {
+    this.attributes.email = value
+  }
+
+  set billing_email(value: string) {
+    this.attributes.billing_email = value
+  }
+
+  set status(value: string) {
+    this.attributes.status = value
+  }
+
+  set description(value: string) {
+    this.attributes.description = value
+  }
+
+  set path(value: string) {
+    this.attributes.path = value
+  }
+
+  set is_personal(value: boolean) {
+    this.attributes.is_personal = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
     return TeamModel.select(params)
   }

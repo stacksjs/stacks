@@ -92,6 +92,14 @@ export class ReleaseModel {
     return this.attributes.updated_at
   }
 
+  set version(value: string) {
+    this.attributes.version = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
     return ReleaseModel.select(params)
   }

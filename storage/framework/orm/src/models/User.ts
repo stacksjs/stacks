@@ -165,6 +165,38 @@ export class UserModel {
     return this.attributes.updated_at
   }
 
+  set stripe_id(value: string) {
+    this.attributes.stripe_id = value
+  }
+
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set public_passkey(value: string) {
+    this.attributes.public_passkey = value
+  }
+
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set email(value: string) {
+    this.attributes.email = value
+  }
+
+  set job_title(value: string) {
+    this.attributes.job_title = value
+  }
+
+  set password(value: string) {
+    this.attributes.password = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
     return UserModel.select(params)
   }

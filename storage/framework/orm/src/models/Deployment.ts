@@ -140,6 +140,42 @@ export class DeploymentModel {
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set commit_sha(value: string) {
+    this.attributes.commit_sha = value
+  }
+
+  set commit_message(value: string) {
+    this.attributes.commit_message = value
+  }
+
+  set branch(value: string) {
+    this.attributes.branch = value
+  }
+
+  set status(value: string) {
+    this.attributes.status = value
+  }
+
+  set execution_time(value: number) {
+    this.attributes.execution_time = value
+  }
+
+  set deploy_script(value: string) {
+    this.attributes.deploy_script = value
+  }
+
+  set terminal_output(value: string) {
+    this.attributes.terminal_output = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
     return DeploymentModel.select(params)
   }

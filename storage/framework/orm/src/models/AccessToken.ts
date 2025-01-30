@@ -120,6 +120,26 @@ export class AccessTokenModel {
     return this.attributes.updated_at
   }
 
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set token(value: string) {
+    this.attributes.token = value
+  }
+
+  set plain_text_token(value: string) {
+    this.attributes.plain_text_token = value
+  }
+
+  set abilities(value: string[]) {
+    this.attributes.abilities = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
     return AccessTokenModel.select(params)
   }

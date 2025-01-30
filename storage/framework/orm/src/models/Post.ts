@@ -110,6 +110,18 @@ export class PostModel {
     return this.attributes.updated_at
   }
 
+  set title(value: string) {
+    this.attributes.title = value
+  }
+
+  set body(value: string) {
+    this.attributes.body = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
     return PostModel.select(params)
   }

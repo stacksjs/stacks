@@ -25,6 +25,7 @@ export async function generateModelString(
 
   let fieldString = ''
   let getFields = ''
+  let setFields = ''
   // const constructorFields = ''
   let jsonFields = '{\n'
   let jsonRelations = ''
@@ -170,6 +171,7 @@ export async function generateModelString(
       getFields += `get ${snakeCase(relationName)}():${modelRelation}Model[] | undefined {
         return this.attributes.${snakeCase(relationName)}
       }\n\n`
+
       // constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
 
@@ -566,6 +568,10 @@ export async function generateModelString(
       return this.attributes.stripe_id
     }\n\n`
 
+    setFields += `set stripe_id(value: string) {
+      this.attributes.stripe_id = value
+    }\n\n`
+
     // constructorFields += `this.stripe_id = ${formattedModelName}?.stripe_id\n   `
   }
 
@@ -574,6 +580,10 @@ export async function generateModelString(
 
     getFields += `get two_factor_secret(): string | undefined {
       return this.attributes.two_factor_secret
+    }\n\n`
+
+    setFields += `set two_factor_secret(value: string) {
+      this.attributes.two_factor_secret = value
     }\n\n`
 
     // constructorFields += `this.two_factor_secret = ${formattedModelName}?.two_factor_secret\n   `
@@ -603,6 +613,10 @@ export async function generateModelString(
     getFields += `get uuid(): string | undefined {
       return this.attributes.uuid
     }\n\n`
+
+    setFields += `set uuid(value: string) {
+      this.attributes.uuid = value
+    }\n\n`
     // constructorFields += `this.uuid = ${formattedModelName}?.uuid\n   `
   }
 
@@ -610,6 +624,10 @@ export async function generateModelString(
     // declareFields += 'public public_passkey: string | undefined \n'
     getFields += `get public_passkey(): string | undefined {
       return this.attributes.public_passkey
+    }\n\n`
+
+    setFields += `set public_passkey(value: string) {
+      this.attributes.public_passkey = value
     }\n\n`
     // constructorFields += `this.public_passkey = ${formattedModelName}?.public_passkey\n   `
   }
@@ -622,6 +640,10 @@ export async function generateModelString(
     // declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
     getFields += `get ${snakeCase(attribute.field)}(): ${entity} | undefined {
       return this.attributes.${snakeCase(attribute.field)}
+    }\n\n`
+
+    setFields += `set ${snakeCase(attribute.field)}(value: ${entity}) {
+      this.attributes.${snakeCase(attribute.field)} = value
     }\n\n`
     // constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
@@ -650,11 +672,15 @@ export async function generateModelString(
 
     getFields += `get created_at(): Date | undefined {
       return this.attributes.created_at
-    }\n\n
+    }
 
     get updated_at(): Date | undefined {
       return this.attributes.updated_at
-    }`
+    }\n\n`
+
+    setFields += `set updated_at(value: Date) {
+      this.attributes.updated_at = value
+    }\n\n`
 
     // constructorFields += `
     //     this.created_at = ${formattedModelName}?.created_at\n
@@ -673,6 +699,10 @@ export async function generateModelString(
     // `
     getFields += `get deleted_at(): Date | undefined {
       return this.attributes.deleted_at
+    }\n\n`
+
+    setFields += `get deleted_at(value: Date) {
+      this.attributes.deleted_at = value
     }\n\n`
 
     // constructorFields += `
@@ -800,6 +830,7 @@ export async function generateModelString(
         }
 
         ${getFields}
+        ${setFields}  
   
         select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
           return ${modelName}Model.select(params)

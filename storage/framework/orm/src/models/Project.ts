@@ -107,6 +107,26 @@ export class ProjectModel {
     return this.attributes.updated_at
   }
 
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set description(value: string) {
+    this.attributes.description = value
+  }
+
+  set url(value: string) {
+    this.attributes.url = value
+  }
+
+  set status(value: string) {
+    this.attributes.status = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
     return ProjectModel.select(params)
   }

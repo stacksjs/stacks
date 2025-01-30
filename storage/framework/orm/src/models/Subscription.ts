@@ -155,6 +155,54 @@ export class SubscriptionModel {
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
+
+  set provider_status(value: string) {
+    this.attributes.provider_status = value
+  }
+
+  set unit_price(value: number) {
+    this.attributes.unit_price = value
+  }
+
+  set provider_type(value: string) {
+    this.attributes.provider_type = value
+  }
+
+  set provider_price_id(value: string) {
+    this.attributes.provider_price_id = value
+  }
+
+  set quantity(value: number) {
+    this.attributes.quantity = value
+  }
+
+  set trial_ends_at(value: string) {
+    this.attributes.trial_ends_at = value
+  }
+
+  set ends_at(value: string) {
+    this.attributes.ends_at = value
+  }
+
+  set last_used_at(value: string) {
+    this.attributes.last_used_at = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
     return SubscriptionModel.select(params)
   }

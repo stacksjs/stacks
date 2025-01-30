@@ -98,6 +98,18 @@ export class SubscriberEmailModel {
     return this.attributes.deleted_at
   }
 
+  set email(value: string) {
+    this.attributes.email = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  get deleted_at(value: Date) {
+    this.attributes.deleted_at = value
+  }
+
   select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
     return SubscriberEmailModel.select(params)
   }

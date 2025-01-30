@@ -127,6 +127,42 @@ export class ProductModel {
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set description(value: number) {
+    this.attributes.description = value
+  }
+
+  set key(value: number) {
+    this.attributes.key = value
+  }
+
+  set unit_price(value: number) {
+    this.attributes.unit_price = value
+  }
+
+  set status(value: string) {
+    this.attributes.status = value
+  }
+
+  set image(value: string) {
+    this.attributes.image = value
+  }
+
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
     return ProductModel.select(params)
   }

@@ -144,6 +144,34 @@ export class TransactionModel {
     return this.attributes.updated_at
   }
 
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set description(value: string) {
+    this.attributes.description = value
+  }
+
+  set amount(value: number) {
+    this.attributes.amount = value
+  }
+
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set provider_id(value: string) {
+    this.attributes.provider_id = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
     return TransactionModel.select(params)
   }
