@@ -1,7 +1,18 @@
+// wip
+interface Printer {
+  id: string | number
+  name: string
+  status: string
+}
+
 interface PrinterDriver {
   print: (receipt: Receipt) => Promise<void>
   cleanUp: () => Promise<void>
   checkStatus: () => Promise<boolean>
+  findPrinters: () => Promise<Printer[]>
+  setup: (printer: Printer) => Promise<void>
+  restart: () => Promise<void>
+  canInteractWithPrinter: (printer: Printer) => Promise<boolean>
 }
 
 type Path = string
