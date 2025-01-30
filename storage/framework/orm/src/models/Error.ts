@@ -52,6 +52,8 @@ export class ErrorModel {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -59,29 +61,8 @@ export class ErrorModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public type: string | undefined
-  public message: string | undefined
-  public stack: string | undefined
-  public status: number | undefined
-  public additional_info: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(error: Partial<ErrorType> | null) {
     if (error) {
-      this.id = error?.id || 1
-      this.type = error?.type
-      this.message = error?.message
-      this.stack = error?.stack
-      this.status = error?.status
-      this.additional_info = error?.additional_info
-
-      this.created_at = error?.created_at
-
-      this.updated_at = error?.updated_at
-
       Object.keys(error).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (error as ErrorJsonResponse)[key]
@@ -94,6 +75,38 @@ export class ErrorModel {
     this.updateFromQuery = DB.instance.updateTable('errors')
     this.deleteFromQuery = DB.instance.deleteFrom('errors')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get type(): string | undefined {
+    return this.attributes.type
+  }
+
+  get message(): string | undefined {
+    return this.attributes.message
+  }
+
+  get stack(): string | undefined {
+    return this.attributes.stack
+  }
+
+  get status(): number | undefined {
+    return this.attributes.status
+  }
+
+  get additional_info(): string | undefined {
+    return this.attributes.additional_info
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {

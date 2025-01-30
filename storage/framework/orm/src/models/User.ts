@@ -81,6 +81,8 @@ export class UserModel {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
   private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -88,41 +90,8 @@ export class UserModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public deployments: DeploymentModel[] | undefined
-  public subscriptions: SubscriptionModel[] | undefined
-  public payment_methods: PaymentMethodModel[] | undefined
-  public transactions: TransactionModel[] | undefined
-  public id: number | undefined
-  public stripe_id: string | undefined
-  public uuid: string | undefined
-  public public_passkey: string | undefined
-  public name: string | undefined
-  public email: string | undefined
-  public job_title: string | undefined
-  public password: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(user: Partial<UserType> | null) {
     if (user) {
-      this.deployments = user?.deployments
-      this.subscriptions = user?.subscriptions
-      this.payment_methods = user?.payment_methods
-      this.transactions = user?.transactions
-      this.id = user?.id || 1
-      this.stripe_id = user?.stripe_id
-      this.uuid = user?.uuid
-      this.public_passkey = user?.public_passkey
-      this.name = user?.name
-      this.email = user?.email
-      this.job_title = user?.job_title
-      this.password = user?.password
-
-      this.created_at = user?.created_at
-
-      this.updated_at = user?.updated_at
-
       Object.keys(user).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as UserJsonResponse)[key]
@@ -135,6 +104,62 @@ export class UserModel {
     this.updateFromQuery = DB.instance.updateTable('users')
     this.deleteFromQuery = DB.instance.deleteFrom('users')
     this.hasSelect = false
+  }
+
+  get deployments(): DeploymentModel[] | undefined {
+    return this.attributes.deployments
+  }
+
+  get subscriptions(): SubscriptionModel[] | undefined {
+    return this.attributes.subscriptions
+  }
+
+  get payment_methods(): PaymentMethodModel[] | undefined {
+    return this.attributes.payment_methods
+  }
+
+  get transactions(): TransactionModel[] | undefined {
+    return this.attributes.transactions
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get stripe_id(): string | undefined {
+    return this.attributes.stripe_id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get public_passkey(): string | undefined {
+    return this.attributes.public_passkey
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get job_title(): string | undefined {
+    return this.attributes.job_title
+  }
+
+  get password(): string | undefined {
+    return this.attributes.password
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
@@ -1228,7 +1253,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map(result => result.team_id)
+    const tableRelationIds = results.map((result: UserModel) => result.team_id)
 
     if (!tableRelationIds.length)
       throw new HttpError(500, 'Relation Error!')

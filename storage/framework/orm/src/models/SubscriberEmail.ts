@@ -50,6 +50,8 @@ export class SubscriberEmailModel {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -57,25 +59,8 @@ export class SubscriberEmailModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public email: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
-  public deleted_at: Date | undefined
-
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
     if (subscriberemail) {
-      this.id = subscriberemail?.id || 1
-      this.email = subscriberemail?.email
-
-      this.created_at = subscriberemail?.created_at
-
-      this.updated_at = subscriberemail?.updated_at
-
-      this.deleted_at = subscriberemail?.deleted_at
-
       Object.keys(subscriberemail).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (subscriberemail as SubscriberEmailJsonResponse)[key]
@@ -88,6 +73,26 @@ export class SubscriberEmailModel {
     this.updateFromQuery = DB.instance.updateTable('subscriber_emails')
     this.deleteFromQuery = DB.instance.deleteFrom('subscriber_emails')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  get deleted_at(): Date | undefined {
+    return this.attributes.deleted_at
   }
 
   select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {

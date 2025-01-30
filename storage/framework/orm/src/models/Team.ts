@@ -61,6 +61,8 @@ export class TeamModel {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -68,37 +70,8 @@ export class TeamModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public personal_access_tokens: AccessTokenModel[] | undefined
-  public id: number | undefined
-  public name: string | undefined
-  public company_name: string | undefined
-  public email: string | undefined
-  public billing_email: string | undefined
-  public status: string | undefined
-  public description: string | undefined
-  public path: string | undefined
-  public is_personal: boolean | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(team: Partial<TeamType> | null) {
     if (team) {
-      this.personal_access_tokens = team?.personal_access_tokens
-      this.id = team?.id || 1
-      this.name = team?.name
-      this.company_name = team?.company_name
-      this.email = team?.email
-      this.billing_email = team?.billing_email
-      this.status = team?.status
-      this.description = team?.description
-      this.path = team?.path
-      this.is_personal = team?.is_personal
-
-      this.created_at = team?.created_at
-
-      this.updated_at = team?.updated_at
-
       Object.keys(team).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (team as TeamJsonResponse)[key]
@@ -111,6 +84,54 @@ export class TeamModel {
     this.updateFromQuery = DB.instance.updateTable('teams')
     this.deleteFromQuery = DB.instance.deleteFrom('teams')
     this.hasSelect = false
+  }
+
+  get personal_access_tokens(): AccessTokenModel[] | undefined {
+    return this.attributes.personal_access_tokens
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get company_name(): string | undefined {
+    return this.attributes.company_name
+  }
+
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get billing_email(): string | undefined {
+    return this.attributes.billing_email
+  }
+
+  get status(): string | undefined {
+    return this.attributes.status
+  }
+
+  get description(): string | undefined {
+    return this.attributes.description
+  }
+
+  get path(): string | undefined {
+    return this.attributes.path
+  }
+
+  get is_personal(): boolean | undefined {
+    return this.attributes.is_personal
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {

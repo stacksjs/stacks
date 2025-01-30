@@ -51,6 +51,8 @@ export class ProjectModel {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -58,27 +60,8 @@ export class ProjectModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public name: string | undefined
-  public description: string | undefined
-  public url: string | undefined
-  public status: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(project: Partial<ProjectType> | null) {
     if (project) {
-      this.id = project?.id || 1
-      this.name = project?.name
-      this.description = project?.description
-      this.url = project?.url
-      this.status = project?.status
-
-      this.created_at = project?.created_at
-
-      this.updated_at = project?.updated_at
-
       Object.keys(project).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (project as ProjectJsonResponse)[key]
@@ -91,6 +74,34 @@ export class ProjectModel {
     this.updateFromQuery = DB.instance.updateTable('projects')
     this.deleteFromQuery = DB.instance.deleteFrom('projects')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get description(): string | undefined {
+    return this.attributes.description
+  }
+
+  get url(): string | undefined {
+    return this.attributes.url
+  }
+
+  get status(): string | undefined {
+    return this.attributes.status
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {

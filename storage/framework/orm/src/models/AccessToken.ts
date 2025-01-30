@@ -56,6 +56,8 @@ export class AccessTokenModel {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -63,31 +65,8 @@ export class AccessTokenModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public team_id: number | undefined
-  public team: TeamModel | undefined
-  public id: number | undefined
-  public name: string | undefined
-  public token: string | undefined
-  public plain_text_token: string | undefined
-  public abilities: string[] | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(accesstoken: Partial<AccessTokenType> | null) {
     if (accesstoken) {
-      this.team_id = accesstoken?.team_id
-      this.team = accesstoken?.team
-      this.id = accesstoken?.id || 1
-      this.name = accesstoken?.name
-      this.token = accesstoken?.token
-      this.plain_text_token = accesstoken?.plain_text_token
-      this.abilities = accesstoken?.abilities
-
-      this.created_at = accesstoken?.created_at
-
-      this.updated_at = accesstoken?.updated_at
-
       Object.keys(accesstoken).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (accesstoken as AccessTokenJsonResponse)[key]
@@ -100,6 +79,42 @@ export class AccessTokenModel {
     this.updateFromQuery = DB.instance.updateTable('personal_access_tokens')
     this.deleteFromQuery = DB.instance.deleteFrom('personal_access_tokens')
     this.hasSelect = false
+  }
+
+  get team_id(): number | undefined {
+    return this.attributes.team_id
+  }
+
+  get team(): TeamModel | undefined {
+    return this.attributes.team
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get token(): string | undefined {
+    return this.attributes.token
+  }
+
+  get plain_text_token(): string | undefined {
+    return this.attributes.plain_text_token
+  }
+
+  get abilities(): string[] | undefined {
+    return this.attributes.abilities
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {

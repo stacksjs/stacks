@@ -52,6 +52,8 @@ export class FailedJobModel {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -59,29 +61,8 @@ export class FailedJobModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public connection: string | undefined
-  public queue: string | undefined
-  public payload: string | undefined
-  public exception: string | undefined
-  public failed_at: Date | string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(failedjob: Partial<FailedJobType> | null) {
     if (failedjob) {
-      this.id = failedjob?.id || 1
-      this.connection = failedjob?.connection
-      this.queue = failedjob?.queue
-      this.payload = failedjob?.payload
-      this.exception = failedjob?.exception
-      this.failed_at = failedjob?.failed_at
-
-      this.created_at = failedjob?.created_at
-
-      this.updated_at = failedjob?.updated_at
-
       Object.keys(failedjob).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (failedjob as FailedJobJsonResponse)[key]
@@ -94,6 +75,38 @@ export class FailedJobModel {
     this.updateFromQuery = DB.instance.updateTable('failed_jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('failed_jobs')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get connection(): string | undefined {
+    return this.attributes.connection
+  }
+
+  get queue(): string | undefined {
+    return this.attributes.queue
+  }
+
+  get payload(): string | undefined {
+    return this.attributes.payload
+  }
+
+  get exception(): string | undefined {
+    return this.attributes.exception
+  }
+
+  get failed_at(): Date | string | undefined {
+    return this.attributes.failed_at
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {

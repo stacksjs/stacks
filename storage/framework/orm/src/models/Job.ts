@@ -52,6 +52,8 @@ export class JobModel {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -59,29 +61,8 @@ export class JobModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public queue: string | undefined
-  public payload: string | undefined
-  public attempts: number | undefined
-  public available_at: number | undefined
-  public reserved_at: Date | string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(job: Partial<JobType> | null) {
     if (job) {
-      this.id = job?.id || 1
-      this.queue = job?.queue
-      this.payload = job?.payload
-      this.attempts = job?.attempts
-      this.available_at = job?.available_at
-      this.reserved_at = job?.reserved_at
-
-      this.created_at = job?.created_at
-
-      this.updated_at = job?.updated_at
-
       Object.keys(job).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (job as JobJsonResponse)[key]
@@ -94,6 +75,38 @@ export class JobModel {
     this.updateFromQuery = DB.instance.updateTable('jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('jobs')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get queue(): string | undefined {
+    return this.attributes.queue
+  }
+
+  get payload(): string | undefined {
+    return this.attributes.payload
+  }
+
+  get attempts(): number | undefined {
+    return this.attributes.attempts
+  }
+
+  get available_at(): number | undefined {
+    return this.attributes.available_at
+  }
+
+  get reserved_at(): Date | string | undefined {
+    return this.attributes.reserved_at
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {

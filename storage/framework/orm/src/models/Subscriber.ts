@@ -48,6 +48,8 @@ export class SubscriberModel {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -55,21 +57,8 @@ export class SubscriberModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public subscribed: boolean | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(subscriber: Partial<SubscriberType> | null) {
     if (subscriber) {
-      this.id = subscriber?.id || 1
-      this.subscribed = subscriber?.subscribed
-
-      this.created_at = subscriber?.created_at
-
-      this.updated_at = subscriber?.updated_at
-
       Object.keys(subscriber).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (subscriber as SubscriberJsonResponse)[key]
@@ -82,6 +71,22 @@ export class SubscriberModel {
     this.updateFromQuery = DB.instance.updateTable('subscribers')
     this.deleteFromQuery = DB.instance.deleteFrom('subscribers')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get subscribed(): boolean | undefined {
+    return this.attributes.subscribed
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {

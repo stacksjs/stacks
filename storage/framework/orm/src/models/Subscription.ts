@@ -63,6 +63,8 @@ export class SubscriptionModel {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -70,45 +72,8 @@ export class SubscriptionModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public user_id: number | undefined
-  public user: UserModel | undefined
-  public id: number | undefined
-  public uuid: string | undefined
-  public type: string | undefined
-  public provider_id: string | undefined
-  public provider_status: string | undefined
-  public unit_price: number | undefined
-  public provider_type: string | undefined
-  public provider_price_id: string | undefined
-  public quantity: number | undefined
-  public trial_ends_at: string | undefined
-  public ends_at: string | undefined
-  public last_used_at: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(subscription: Partial<SubscriptionType> | null) {
     if (subscription) {
-      this.user_id = subscription?.user_id
-      this.user = subscription?.user
-      this.id = subscription?.id || 1
-      this.uuid = subscription?.uuid
-      this.type = subscription?.type
-      this.provider_id = subscription?.provider_id
-      this.provider_status = subscription?.provider_status
-      this.unit_price = subscription?.unit_price
-      this.provider_type = subscription?.provider_type
-      this.provider_price_id = subscription?.provider_price_id
-      this.quantity = subscription?.quantity
-      this.trial_ends_at = subscription?.trial_ends_at
-      this.ends_at = subscription?.ends_at
-      this.last_used_at = subscription?.last_used_at
-
-      this.created_at = subscription?.created_at
-
-      this.updated_at = subscription?.updated_at
-
       Object.keys(subscription).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (subscription as SubscriptionJsonResponse)[key]
@@ -121,6 +86,70 @@ export class SubscriptionModel {
     this.updateFromQuery = DB.instance.updateTable('subscriptions')
     this.deleteFromQuery = DB.instance.deleteFrom('subscriptions')
     this.hasSelect = false
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get type(): string | undefined {
+    return this.attributes.type
+  }
+
+  get provider_id(): string | undefined {
+    return this.attributes.provider_id
+  }
+
+  get provider_status(): string | undefined {
+    return this.attributes.provider_status
+  }
+
+  get unit_price(): number | undefined {
+    return this.attributes.unit_price
+  }
+
+  get provider_type(): string | undefined {
+    return this.attributes.provider_type
+  }
+
+  get provider_price_id(): string | undefined {
+    return this.attributes.provider_price_id
+  }
+
+  get quantity(): number | undefined {
+    return this.attributes.quantity
+  }
+
+  get trial_ends_at(): string | undefined {
+    return this.attributes.trial_ends_at
+  }
+
+  get ends_at(): string | undefined {
+    return this.attributes.ends_at
+  }
+
+  get last_used_at(): string | undefined {
+    return this.attributes.last_used_at
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {

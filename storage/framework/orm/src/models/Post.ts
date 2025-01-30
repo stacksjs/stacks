@@ -54,6 +54,8 @@ export class PostModel {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -61,27 +63,8 @@ export class PostModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public user_id: number | undefined
-  public user: UserModel | undefined
-  public id: number | undefined
-  public title: string | undefined
-  public body: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(post: Partial<PostType> | null) {
     if (post) {
-      this.user_id = post?.user_id
-      this.user = post?.user
-      this.id = post?.id || 1
-      this.title = post?.title
-      this.body = post?.body
-
-      this.created_at = post?.created_at
-
-      this.updated_at = post?.updated_at
-
       Object.keys(post).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (post as PostJsonResponse)[key]
@@ -94,6 +77,34 @@ export class PostModel {
     this.updateFromQuery = DB.instance.updateTable('posts')
     this.deleteFromQuery = DB.instance.deleteFrom('posts')
     this.hasSelect = false
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get title(): string | undefined {
+    return this.attributes.title
+  }
+
+  get body(): string | undefined {
+    return this.attributes.body
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {

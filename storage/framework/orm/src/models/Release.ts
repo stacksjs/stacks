@@ -48,6 +48,8 @@ export class ReleaseModel {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -55,21 +57,8 @@ export class ReleaseModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public version: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(release: Partial<ReleaseType> | null) {
     if (release) {
-      this.id = release?.id || 1
-      this.version = release?.version
-
-      this.created_at = release?.created_at
-
-      this.updated_at = release?.updated_at
-
       Object.keys(release).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (release as ReleaseJsonResponse)[key]
@@ -82,6 +71,22 @@ export class ReleaseModel {
     this.updateFromQuery = DB.instance.updateTable('releases')
     this.deleteFromQuery = DB.instance.deleteFrom('releases')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get version(): string | undefined {
+    return this.attributes.version
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {

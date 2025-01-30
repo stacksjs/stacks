@@ -55,6 +55,8 @@ export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -62,35 +64,8 @@ export class ProductModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public id: number | undefined
-  public uuid: string | undefined
-  public name: string | undefined
-  public description: number | undefined
-  public key: number | undefined
-  public unit_price: number | undefined
-  public status: string | undefined
-  public image: string | undefined
-  public provider_id: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(product: Partial<ProductType> | null) {
     if (product) {
-      this.id = product?.id || 1
-      this.uuid = product?.uuid
-      this.name = product?.name
-      this.description = product?.description
-      this.key = product?.key
-      this.unit_price = product?.unit_price
-      this.status = product?.status
-      this.image = product?.image
-      this.provider_id = product?.provider_id
-
-      this.created_at = product?.created_at
-
-      this.updated_at = product?.updated_at
-
       Object.keys(product).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (product as ProductJsonResponse)[key]
@@ -103,6 +78,50 @@ export class ProductModel {
     this.updateFromQuery = DB.instance.updateTable('products')
     this.deleteFromQuery = DB.instance.deleteFrom('products')
     this.hasSelect = false
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get description(): number | undefined {
+    return this.attributes.description
+  }
+
+  get key(): number | undefined {
+    return this.attributes.key
+  }
+
+  get unit_price(): number | undefined {
+    return this.attributes.unit_price
+  }
+
+  get status(): string | undefined {
+    return this.attributes.status
+  }
+
+  get image(): string | undefined {
+    return this.attributes.image
+  }
+
+  get provider_id(): string | undefined {
+    return this.attributes.provider_id
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {

@@ -64,6 +64,8 @@ export class TransactionModel {
   private readonly hidden: Array<keyof TransactionJsonResponse> = []
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'payment_method_id']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
+  protected attributes: Partial<UserType> = {}
+  protected originalAttributes: Partial<UserType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -71,39 +73,8 @@ export class TransactionModel {
   protected deleteFromQuery: any
   protected hasSelect: boolean
   private customColumns: Record<string, unknown> = {}
-  public user_id: number | undefined
-  public user: UserModel | undefined
-  public payment_method_id: number | undefined
-  public payment_method: PaymentMethodModel | undefined
-  public id: number | undefined
-  public uuid: string | undefined
-  public name: string | undefined
-  public description: string | undefined
-  public amount: number | undefined
-  public type: string | undefined
-  public provider_id: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
   constructor(transaction: Partial<TransactionType> | null) {
     if (transaction) {
-      this.user_id = transaction?.user_id
-      this.user = transaction?.user
-      this.payment_method_id = transaction?.payment_method_id
-      this.payment_method = transaction?.payment_method
-      this.id = transaction?.id || 1
-      this.uuid = transaction?.uuid
-      this.name = transaction?.name
-      this.description = transaction?.description
-      this.amount = transaction?.amount
-      this.type = transaction?.type
-      this.provider_id = transaction?.provider_id
-
-      this.created_at = transaction?.created_at
-
-      this.updated_at = transaction?.updated_at
-
       Object.keys(transaction).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (transaction as TransactionJsonResponse)[key]
@@ -116,6 +87,58 @@ export class TransactionModel {
     this.updateFromQuery = DB.instance.updateTable('transactions')
     this.deleteFromQuery = DB.instance.deleteFrom('transactions')
     this.hasSelect = false
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get payment_method_id(): number | undefined {
+    return this.attributes.payment_method_id
+  }
+
+  get payment_method(): PaymentMethodModel | undefined {
+    return this.attributes.payment_method
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get description(): string | undefined {
+    return this.attributes.description
+  }
+
+  get amount(): number | undefined {
+    return this.attributes.amount
+  }
+
+  get type(): string | undefined {
+    return this.attributes.type
+  }
+
+  get provider_id(): string | undefined {
+    return this.attributes.provider_id
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
   }
 
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
