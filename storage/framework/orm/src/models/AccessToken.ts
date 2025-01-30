@@ -231,7 +231,7 @@ export class AccessTokenModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new AccessTokenModel(modelItem)))
+    return model.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   skip(count: number): AccessTokenModel {

@@ -218,7 +218,7 @@ export class ProjectModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new ProjectModel(modelItem)))
+    return model.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   skip(count: number): ProjectModel {

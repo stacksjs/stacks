@@ -225,7 +225,7 @@ export class PostModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new PostModel(modelItem)))
+    return model.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
   }
 
   skip(count: number): PostModel {

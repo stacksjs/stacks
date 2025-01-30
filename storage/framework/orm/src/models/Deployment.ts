@@ -243,7 +243,7 @@ export class DeploymentModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new DeploymentModel(modelItem)))
+    return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   skip(count: number): DeploymentModel {

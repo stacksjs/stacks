@@ -221,7 +221,7 @@ export class ErrorModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
+    return model.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
   skip(count: number): ErrorModel {

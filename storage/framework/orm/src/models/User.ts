@@ -278,7 +278,7 @@ export class UserModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new UserModel(modelItem)))
+    return model.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
   }
 
   skip(count: number): UserModel {

@@ -889,7 +889,7 @@ export async function generateModelString(
   
           const model = await query.execute()
   
-          return model.map(modelItem => instance.parseResult(new ${modelName}Model(modelItem)))
+          return model.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
            
         skip(count: number): ${modelName}Model {

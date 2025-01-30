@@ -242,7 +242,7 @@ export class TeamModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new TeamModel(modelItem)))
+    return model.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
   }
 
   skip(count: number): TeamModel {

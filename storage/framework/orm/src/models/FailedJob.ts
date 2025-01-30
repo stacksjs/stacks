@@ -221,7 +221,7 @@ export class FailedJobModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new FailedJobModel(modelItem)))
+    return model.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
   skip(count: number): FailedJobModel {

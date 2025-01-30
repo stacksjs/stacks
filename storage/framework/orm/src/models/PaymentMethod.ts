@@ -254,7 +254,7 @@ export class PaymentMethodModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new PaymentMethodModel(modelItem)))
+    return model.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
   skip(count: number): PaymentMethodModel {

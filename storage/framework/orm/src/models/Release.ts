@@ -209,7 +209,7 @@ export class ReleaseModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new ReleaseModel(modelItem)))
+    return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   skip(count: number): ReleaseModel {

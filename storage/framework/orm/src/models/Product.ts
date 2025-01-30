@@ -230,7 +230,7 @@ export class ProductModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new ProductModel(modelItem)))
+    return model.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
   }
 
   skip(count: number): ProductModel {

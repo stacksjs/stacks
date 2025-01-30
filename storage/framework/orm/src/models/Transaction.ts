@@ -251,7 +251,7 @@ export class TransactionModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new TransactionModel(modelItem)))
+    return model.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
   skip(count: number): TransactionModel {

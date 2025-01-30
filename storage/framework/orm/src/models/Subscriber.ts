@@ -209,7 +209,7 @@ export class SubscriberModel {
 
     const model = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new SubscriberModel(modelItem)))
+    return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   skip(count: number): SubscriberModel {
