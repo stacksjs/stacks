@@ -26,7 +26,7 @@
     "publish": "bunx --bun @raycast/api@latest publish"
   },
   "devDependencies": {
-    "@raycast/api": "^1.89.1",
+    "@raycast/api": "^1.90.0",
     "@raycast/utils": "^1.18.1",
     "@stacksjs/development": "workspace:*",
     "typescript": "^5.7.3"
