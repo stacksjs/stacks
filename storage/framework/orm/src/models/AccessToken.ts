@@ -56,8 +56,8 @@ export class AccessTokenModel {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<AccessTokenType> = {}
+  protected originalAttributes: Partial<AccessTokenType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -67,6 +67,9 @@ export class AccessTokenModel {
   private customColumns: Record<string, unknown> = {}
   constructor(accesstoken: Partial<AccessTokenType> | null) {
     if (accesstoken) {
+      this.attributes = { ...accesstoken }
+      this.originalAttributes = { ...accesstoken }
+
       Object.keys(accesstoken).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (accesstoken as AccessTokenJsonResponse)[key]

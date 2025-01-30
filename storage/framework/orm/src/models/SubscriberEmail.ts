@@ -50,8 +50,8 @@ export class SubscriberEmailModel {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<SubscriberEmailType> = {}
+  protected originalAttributes: Partial<SubscriberEmailType> = {}
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -61,6 +61,9 @@ export class SubscriberEmailModel {
   private customColumns: Record<string, unknown> = {}
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
     if (subscriberemail) {
+      this.attributes = { ...subscriberemail }
+      this.originalAttributes = { ...subscriberemail }
+
       Object.keys(subscriberemail).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (subscriberemail as SubscriberEmailJsonResponse)[key]

@@ -65,8 +65,8 @@ export class PaymentMethodModel {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PaymentMethodJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<PaymentMethodType> = {}
+  protected originalAttributes: Partial<PaymentMethodType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -76,6 +76,9 @@ export class PaymentMethodModel {
   private customColumns: Record<string, unknown> = {}
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     if (paymentmethod) {
+      this.attributes = { ...paymentmethod }
+      this.originalAttributes = { ...paymentmethod }
+
       Object.keys(paymentmethod).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (paymentmethod as PaymentMethodJsonResponse)[key]

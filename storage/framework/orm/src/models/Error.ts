@@ -52,8 +52,8 @@ export class ErrorModel {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<ErrorType> = {}
+  protected originalAttributes: Partial<ErrorType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -63,6 +63,9 @@ export class ErrorModel {
   private customColumns: Record<string, unknown> = {}
   constructor(error: Partial<ErrorType> | null) {
     if (error) {
+      this.attributes = { ...error }
+      this.originalAttributes = { ...error }
+
       Object.keys(error).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (error as ErrorJsonResponse)[key]

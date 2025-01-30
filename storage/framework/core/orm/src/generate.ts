@@ -770,8 +770,8 @@ export async function generateModelString(
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
-        protected attributes: Partial<UserType> = {}
-        protected originalAttributes: Partial<UserType> = {}
+        protected attributes: Partial<${modelName}Type> = {}
+        protected originalAttributes: Partial<${modelName}Type> = {}
         ${privateSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]
@@ -782,6 +782,9 @@ export async function generateModelString(
         constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
           if (${formattedModelName}) {
 
+            this.attributes = { ...${formattedModelName} }
+            this.originalAttributes = { ...${formattedModelName} }
+            
             Object.keys(${formattedModelName}).forEach(key => {
               if (!(key in this)) {
                  this.customColumns[key] = (${formattedModelName} as ${modelName}JsonResponse)[key]

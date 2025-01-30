@@ -54,8 +54,8 @@ export class PostModel {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<PostType> = {}
+  protected originalAttributes: Partial<PostType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -65,6 +65,9 @@ export class PostModel {
   private customColumns: Record<string, unknown> = {}
   constructor(post: Partial<PostType> | null) {
     if (post) {
+      this.attributes = { ...post }
+      this.originalAttributes = { ...post }
+
       Object.keys(post).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (post as PostJsonResponse)[key]

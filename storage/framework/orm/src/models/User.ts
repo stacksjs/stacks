@@ -92,6 +92,9 @@ export class UserModel {
   private customColumns: Record<string, unknown> = {}
   constructor(user: Partial<UserType> | null) {
     if (user) {
+      this.attributes = { ...user }
+      this.originalAttributes = { ...user }
+
       Object.keys(user).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (user as UserJsonResponse)[key]

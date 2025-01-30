@@ -55,8 +55,8 @@ export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<ProductType> = {}
+  protected originalAttributes: Partial<ProductType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -66,6 +66,9 @@ export class ProductModel {
   private customColumns: Record<string, unknown> = {}
   constructor(product: Partial<ProductType> | null) {
     if (product) {
+      this.attributes = { ...product }
+      this.originalAttributes = { ...product }
+
       Object.keys(product).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (product as ProductJsonResponse)[key]

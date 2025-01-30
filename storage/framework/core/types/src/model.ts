@@ -5,7 +5,7 @@ import type { SearchOptions } from './search-engine'
 
 export type Model = Partial<ModelOptions>
 
-interface BaseRelation {
+export interface BaseRelation {
   foreignKey?: string
   relationName?: string
 }

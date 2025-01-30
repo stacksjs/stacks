@@ -64,8 +64,8 @@ export class TransactionModel {
   private readonly hidden: Array<keyof TransactionJsonResponse> = []
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'payment_method_id']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<TransactionType> = {}
+  protected originalAttributes: Partial<TransactionType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -75,6 +75,9 @@ export class TransactionModel {
   private customColumns: Record<string, unknown> = {}
   constructor(transaction: Partial<TransactionType> | null) {
     if (transaction) {
+      this.attributes = { ...transaction }
+      this.originalAttributes = { ...transaction }
+
       Object.keys(transaction).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (transaction as TransactionJsonResponse)[key]

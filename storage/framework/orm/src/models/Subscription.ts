@@ -63,8 +63,8 @@ export class SubscriptionModel {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<SubscriptionType> = {}
+  protected originalAttributes: Partial<SubscriptionType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -74,6 +74,9 @@ export class SubscriptionModel {
   private customColumns: Record<string, unknown> = {}
   constructor(subscription: Partial<SubscriptionType> | null) {
     if (subscription) {
+      this.attributes = { ...subscription }
+      this.originalAttributes = { ...subscription }
+
       Object.keys(subscription).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (subscription as SubscriptionJsonResponse)[key]

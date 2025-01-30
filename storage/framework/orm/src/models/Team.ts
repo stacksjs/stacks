@@ -61,8 +61,8 @@ export class TeamModel {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<TeamType> = {}
+  protected originalAttributes: Partial<TeamType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -72,6 +72,9 @@ export class TeamModel {
   private customColumns: Record<string, unknown> = {}
   constructor(team: Partial<TeamType> | null) {
     if (team) {
+      this.attributes = { ...team }
+      this.originalAttributes = { ...team }
+
       Object.keys(team).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (team as TeamJsonResponse)[key]

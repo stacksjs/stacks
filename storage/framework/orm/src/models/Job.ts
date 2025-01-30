@@ -52,8 +52,8 @@ export class JobModel {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<JobType> = {}
+  protected originalAttributes: Partial<JobType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -63,6 +63,9 @@ export class JobModel {
   private customColumns: Record<string, unknown> = {}
   constructor(job: Partial<JobType> | null) {
     if (job) {
+      this.attributes = { ...job }
+      this.originalAttributes = { ...job }
+
       Object.keys(job).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (job as JobJsonResponse)[key]

@@ -52,8 +52,8 @@ export class FailedJobModel {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<FailedJobType> = {}
+  protected originalAttributes: Partial<FailedJobType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -63,6 +63,9 @@ export class FailedJobModel {
   private customColumns: Record<string, unknown> = {}
   constructor(failedjob: Partial<FailedJobType> | null) {
     if (failedjob) {
+      this.attributes = { ...failedjob }
+      this.originalAttributes = { ...failedjob }
+
       Object.keys(failedjob).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (failedjob as FailedJobJsonResponse)[key]

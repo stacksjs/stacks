@@ -48,8 +48,8 @@ export class ReleaseModel {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<ReleaseType> = {}
+  protected originalAttributes: Partial<ReleaseType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -59,6 +59,9 @@ export class ReleaseModel {
   private customColumns: Record<string, unknown> = {}
   constructor(release: Partial<ReleaseType> | null) {
     if (release) {
+      this.attributes = { ...release }
+      this.originalAttributes = { ...release }
+
       Object.keys(release).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (release as ReleaseJsonResponse)[key]

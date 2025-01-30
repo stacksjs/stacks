@@ -51,8 +51,8 @@ export class ProjectModel {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<ProjectType> = {}
+  protected originalAttributes: Partial<ProjectType> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -62,6 +62,9 @@ export class ProjectModel {
   private customColumns: Record<string, unknown> = {}
   constructor(project: Partial<ProjectType> | null) {
     if (project) {
+      this.attributes = { ...project }
+      this.originalAttributes = { ...project }
+
       Object.keys(project).forEach((key) => {
         if (!(key in this)) {
           this.customColumns[key] = (project as ProjectJsonResponse)[key]
