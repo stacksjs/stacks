@@ -4,6 +4,7 @@ import { db } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
 import { extractDefaultRequest, findRequestInstance } from './utils'
@@ -76,7 +77,13 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = (await import(p.storagePath('framework/defaults/actions/HealthAction'))).default as Action
+    let healthPath = p.userActionsPath('HealthAction')
+
+    if (fs.existsSync(healthPath))
+      healthPath = p.storagePath('framework/defaults/actions/HealthAction')
+
+    const healthModule = (await import(healthPath)).default as Action
+
     const callback = healthModule.handle
     const path = healthModule.path ?? `/health`
 
