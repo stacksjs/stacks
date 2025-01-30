@@ -600,7 +600,7 @@ export class AccessTokenModel {
 
   // Method to remove a AccessToken
   static async remove(id: number): Promise<any> {
-    return await Db.instance.deleteFrom('personal_access_tokens')
+    return await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', id)
       .execute()
   }
@@ -1066,7 +1066,7 @@ export class AccessTokenModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await Db.instance.deleteFrom('personal_access_tokens')
+    return await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1175,7 +1175,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('personal_access_tokens')
+  await DB.instance.deleteFrom('personal_access_tokens')
     .where('id', '=', id)
     .execute()
 }

@@ -611,7 +611,7 @@ export class SubscriberEmailModel {
         .execute()
     }
 
-    return await Db.instance.deleteFrom('subscriber_emails')
+    return await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', id)
       .execute()
   }
@@ -1062,7 +1062,7 @@ export class SubscriberEmailModel {
         .execute()
     }
 
-    return await Db.instance.deleteFrom('subscriber_emails')
+    return await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1154,7 +1154,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('subscriber_emails')
+  await DB.instance.deleteFrom('subscriber_emails')
     .where('id', '=', id)
     .execute()
 }

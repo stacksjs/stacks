@@ -578,7 +578,7 @@ export class ReleaseModel {
 
   // Method to remove a Release
   static async remove(id: number): Promise<any> {
-    return await Db.instance.deleteFrom('releases')
+    return await DB.instance.deleteFrom('releases')
       .where('id', '=', id)
       .execute()
   }
@@ -1020,7 +1020,7 @@ export class ReleaseModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await Db.instance.deleteFrom('releases')
+    return await DB.instance.deleteFrom('releases')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1110,7 +1110,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('releases')
+  await DB.instance.deleteFrom('releases')
     .where('id', '=', id)
     .execute()
 }

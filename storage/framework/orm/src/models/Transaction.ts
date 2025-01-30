@@ -622,7 +622,7 @@ export class TransactionModel {
 
   // Method to remove a Transaction
   static async remove(id: number): Promise<any> {
-    return await Db.instance.deleteFrom('transactions')
+    return await DB.instance.deleteFrom('transactions')
       .where('id', '=', id)
       .execute()
   }
@@ -1096,7 +1096,7 @@ export class TransactionModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await Db.instance.deleteFrom('transactions')
+    return await DB.instance.deleteFrom('transactions')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1222,7 +1222,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('transactions')
+  await DB.instance.deleteFrom('transactions')
     .where('id', '=', id)
     .execute()
 }

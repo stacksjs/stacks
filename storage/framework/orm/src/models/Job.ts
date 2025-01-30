@@ -590,7 +590,7 @@ export class JobModel {
 
   // Method to remove a Job
   static async remove(id: number): Promise<any> {
-    return await Db.instance.deleteFrom('jobs')
+    return await DB.instance.deleteFrom('jobs')
       .where('id', '=', id)
       .execute()
   }
@@ -1064,7 +1064,7 @@ export class JobModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await Db.instance.deleteFrom('jobs')
+    return await DB.instance.deleteFrom('jobs')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1158,7 +1158,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('jobs')
+  await DB.instance.deleteFrom('jobs')
     .where('id', '=', id)
     .execute()
 }

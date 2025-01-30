@@ -659,7 +659,7 @@ export class UserModel {
     if (model)
       dispatch('user:deleted', model)
 
-    return await Db.instance.deleteFrom('users')
+    return await DB.instance.deleteFrom('users')
       .where('id', '=', id)
       .execute()
   }
@@ -1134,7 +1134,7 @@ export class UserModel {
     if (model)
       dispatch('user:deleted', model)
 
-    return await Db.instance.deleteFrom('users')
+    return await DB.instance.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1582,7 +1582,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('users')
+  await DB.instance.deleteFrom('users')
     .where('id', '=', id)
     .execute()
 }

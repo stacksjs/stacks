@@ -625,7 +625,7 @@ export class PaymentMethodModel {
 
   // Method to remove a PaymentMethod
   static async remove(id: number): Promise<any> {
-    return await Db.instance.deleteFrom('payment_methods')
+    return await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', id)
       .execute()
   }
@@ -1115,7 +1115,7 @@ export class PaymentMethodModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await Db.instance.deleteFrom('payment_methods')
+    return await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1241,7 +1241,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await Db.instance.deleteFrom('payment_methods')
+  await DB.instance.deleteFrom('payment_methods')
     .where('id', '=', id)
     .execute()
 }
