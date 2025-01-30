@@ -1177,7 +1177,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new Deployment(modelItem))
+    return results.map((modelItem: UserModel) => new Deployment(modelItem))
   }
 
   async subscriptionsHasMany(): Promise<SubscriptionModel[]> {
@@ -1190,7 +1190,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new Subscription(modelItem))
+    return results.map((modelItem: UserModel) => new Subscription(modelItem))
   }
 
   async paymentMethodsHasMany(): Promise<PaymentMethodModel[]> {
@@ -1203,7 +1203,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new PaymentMethod(modelItem))
+    return results.map((modelItem: UserModel) => new PaymentMethod(modelItem))
   }
 
   async transactionsHasMany(): Promise<TransactionModel[]> {
@@ -1216,7 +1216,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new Transaction(modelItem))
+    return results.map((modelItem: UserModel) => new Transaction(modelItem))
   }
 
   async userTeams() {
@@ -1517,7 +1517,7 @@ export class UserModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<UserJsonResponse> {
@@ -1578,7 +1578,7 @@ export async function create(newUser: NewUser): Promise<UserModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

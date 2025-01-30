@@ -1096,7 +1096,7 @@ export class FailedJobModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<FailedJobJsonResponse> {
@@ -1154,7 +1154,7 @@ export async function create(newFailedJob: NewFailedJob): Promise<FailedJobModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

@@ -1112,7 +1112,7 @@ export class AccessTokenModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<AccessTokenJsonResponse> {
@@ -1171,7 +1171,7 @@ export async function create(newAccessToken: NewAccessToken): Promise<AccessToke
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

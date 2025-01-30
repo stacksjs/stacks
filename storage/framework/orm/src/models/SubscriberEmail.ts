@@ -1094,7 +1094,7 @@ export class SubscriberEmailModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<SubscriberEmailJsonResponse> {
@@ -1150,7 +1150,7 @@ export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<Su
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

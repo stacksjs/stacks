@@ -1144,7 +1144,7 @@ export class PaymentMethodModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new Transaction(modelItem))
+    return results.map((modelItem: PaymentMethodModel) => new Transaction(modelItem))
   }
 
   distinct(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -1174,7 +1174,7 @@ export class PaymentMethodModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<PaymentMethodJsonResponse> {
@@ -1237,7 +1237,7 @@ export async function create(newPaymentMethod: NewPaymentMethod): Promise<Paymen
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

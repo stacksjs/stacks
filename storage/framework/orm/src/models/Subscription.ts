@@ -1183,7 +1183,7 @@ export class SubscriptionModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<SubscriptionJsonResponse> {
@@ -1248,7 +1248,7 @@ export async function create(newSubscription: NewSubscription): Promise<Subscrip
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

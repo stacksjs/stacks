@@ -1124,7 +1124,7 @@ export class TeamModel {
       .selectAll()
       .execute()
 
-    return results.map(modelItem => new AccessToken(modelItem))
+    return results.map((modelItem: TeamModel) => new AccessToken(modelItem))
   }
 
   async teamUsers() {
@@ -1173,7 +1173,7 @@ export class TeamModel {
   }
 
   static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
+    return await sql`${rawQuery}`.execute(DB.instance)
   }
 
   toJSON(): Partial<TeamJsonResponse> {
@@ -1235,7 +1235,7 @@ export async function create(newTeam: NewTeam): Promise<TeamModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {

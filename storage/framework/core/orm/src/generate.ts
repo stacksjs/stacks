@@ -194,7 +194,7 @@ export async function generateModelString(
             .selectAll()
             .execute()
   
-            return results.map((modelItem) => new ${modelRelation}(modelItem))
+            return results.map((modelItem: ${modelName}Model) => new ${modelRelation}(modelItem))
         }\n\n`
     }
 
@@ -1751,7 +1751,7 @@ export async function generateModelString(
         }
   
         static async rawQuery(rawQuery: string): Promise<any> {
-          return await sql\`\${rawQuery}\`\.execute(db)
+          return await sql\`\${rawQuery}\`\.execute(DB.instance)
         }
   
         toJSON(): Partial<${modelName}JsonResponse> {
@@ -1797,7 +1797,7 @@ export async function generateModelString(
       }
   
       export async function rawQuery(rawQuery: string): Promise<any> {
-        return await sql\`\${rawQuery}\`\.execute(db)
+        return await sql\`\${rawQuery}\`\.execute(DB.instance)
       }
   
       export async function remove(id: number): Promise<void> {
