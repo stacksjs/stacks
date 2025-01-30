@@ -29,7 +29,6 @@ export async function generateModelString(
   let jsonRelations = ''
   let declareFields = ''
   let uuidQuery = ''
-  let uuidQueryMany = ''
   let whereStatements = ''
   let whereFunctionStatements = ''
   let relationMethods = ''
@@ -58,14 +57,8 @@ export async function generateModelString(
   const observer = model?.traits?.observe
   const useUuid = model?.traits?.useUuid || false
 
-  if (useUuid) {
+  if (useUuid)
     uuidQuery += `filteredValues['uuid'] = randomUUIDv7()`
-    uuidQueryMany += `
-          filteredValues.forEach(model => {
-            model.uuid = randomUUIDv7()
-          })
-       `
-  }
 
   if (useSoftDeletes) {
     privateSoftDeletes = `private softDeletes = false`
@@ -265,7 +258,7 @@ export async function generateModelString(
             .selectAll()
             .execute()
   
-            const tableRelationIds = results.map(result => result.${singular(tableRelation)}_id)
+            const tableRelationIds = results.map((result: ${modelName}Model) => result.${singular(tableRelation)}_id)
   
             if (! tableRelationIds.length)
               throw new HttpError(500, 'Relation Error!')
