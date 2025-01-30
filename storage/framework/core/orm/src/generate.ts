@@ -274,7 +274,7 @@ export async function generateModelString(
             .selectAll()
             .execute()
   
-            const tableRelationIds = results.map((result: ${modelName}Model) => result.${singular(tableRelation)}_id)
+            const tableRelationIds = results.map((result) => result.${singular(tableRelation)}_id)
   
             if (! tableRelationIds.length)
               throw new HttpError(500, 'Relation Error!')
