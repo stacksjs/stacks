@@ -590,7 +590,7 @@ export class ErrorModel {
 
   // Method to remove a Error
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('errors')
+    return await Db.instance.deleteFrom('errors')
       .where('id', '=', id)
       .execute()
   }
@@ -1064,7 +1064,7 @@ export class ErrorModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('errors')
+    return await Db.instance.deleteFrom('errors')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1158,7 +1158,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('errors')
+  await Db.instance.deleteFrom('errors')
     .where('id', '=', id)
     .execute()
 }

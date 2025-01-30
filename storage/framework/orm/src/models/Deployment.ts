@@ -614,7 +614,7 @@ export class DeploymentModel {
 
   // Method to remove a Deployment
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('deployments')
+    return await Db.instance.deleteFrom('deployments')
       .where('id', '=', id)
       .execute()
   }
@@ -1104,7 +1104,7 @@ export class DeploymentModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('deployments')
+    return await Db.instance.deleteFrom('deployments')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1216,7 +1216,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('deployments')
+  await Db.instance.deleteFrom('deployments')
     .where('id', '=', id)
     .execute()
 }

@@ -601,7 +601,7 @@ export class ProductModel {
 
   // Method to remove a Product
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('products')
+    return await Db.instance.deleteFrom('products')
       .where('id', '=', id)
       .execute()
   }
@@ -1091,7 +1091,7 @@ export class ProductModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('products')
+    return await Db.instance.deleteFrom('products')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1187,7 +1187,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('products')
+  await Db.instance.deleteFrom('products')
     .where('id', '=', id)
     .execute()
 }

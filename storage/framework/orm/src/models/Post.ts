@@ -594,7 +594,7 @@ export class PostModel {
 
   // Method to remove a Post
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('posts')
+    return await Db.instance.deleteFrom('posts')
       .where('id', '=', id)
       .execute()
   }
@@ -1044,7 +1044,7 @@ export class PostModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('posts')
+    return await Db.instance.deleteFrom('posts')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1151,7 +1151,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('posts')
+  await Db.instance.deleteFrom('posts')
     .where('id', '=', id)
     .execute()
 }

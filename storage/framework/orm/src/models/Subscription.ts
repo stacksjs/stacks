@@ -623,7 +623,7 @@ export class SubscriptionModel {
 
   // Method to remove a Subscription
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('subscriptions')
+    return await Db.instance.deleteFrom('subscriptions')
       .where('id', '=', id)
       .execute()
   }
@@ -1137,7 +1137,7 @@ export class SubscriptionModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('subscriptions')
+    return await Db.instance.deleteFrom('subscriptions')
       .where('id', '=', this.id)
       .execute()
   }
@@ -1252,7 +1252,7 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('subscriptions')
+  await Db.instance.deleteFrom('subscriptions')
     .where('id', '=', id)
     .execute()
 }

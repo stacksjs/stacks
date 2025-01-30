@@ -153,7 +153,7 @@ export async function generateModelString(
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
   
-          const firstModel = await db.selectFrom('${throughTableRelation}')
+          const firstModel = await Db.instance.selectFrom('${throughTableRelation}')
             .where('${foreignKeyRelation}', '=', this.id)
             .selectAll()
             .executeTakeFirst()
@@ -188,7 +188,7 @@ export async function generateModelString(
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
           
-          const results = await db.selectFrom('${tableRelation}')
+          const results = await Db.instance.selectFrom('${tableRelation}')
             .where('${foreignKeyRelation}', '=', this.id)
             .limit(5)
             .selectAll()
@@ -260,7 +260,7 @@ export async function generateModelString(
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
   
-          const results = await db.selectFrom('${pivotTable}')
+          const results = await Db.instance.selectFrom('${pivotTable}')
             .where('${pivotKey}', '=', this.id)
             .selectAll()
             .execute()
@@ -437,7 +437,7 @@ export async function generateModelString(
       }
   
       async activeSubscription() {
-        const subscription = await db.selectFrom('subscriptions')
+        const subscription = await Db.instance.selectFrom('subscriptions')
           .where('user_id', '=', this.id)
           .where('provider_status', '=', 'active')
           .selectAll()
@@ -606,7 +606,7 @@ export async function generateModelString(
         } \n\n`
 
     whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: ${entity}): Promise<${modelName}Model[]> {
-          const query = db.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
+          const query = Db.instance.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
           const results = await query.execute()
   
           return results.map(modelItem => new ${modelName}Model(modelItem))
@@ -777,7 +777,7 @@ export async function generateModelString(
 
         // Method to find a ${modelName} by ID
         static async find(id: number): Promise<${modelName}Model | undefined> {
-          const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
+          const model = await Db.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
           if (!model)
             return undefined
@@ -798,7 +798,7 @@ export async function generateModelString(
         }
         
         static async first(): Promise<${modelName}Model | undefined> {
-          const model = await db.selectFrom('${tableName}')
+          const model = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .executeTakeFirst()
   
@@ -841,7 +841,7 @@ export async function generateModelString(
         }
   
         static async all(): Promise<${modelName}Model[]> {
-          const models = await db.selectFrom('${tableName}').selectAll().execute()
+          const models = await Db.instance.selectFrom('${tableName}').selectAll().execute()
   
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             const instance = new ${modelName}Model(model)
@@ -860,7 +860,7 @@ export async function generateModelString(
         }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {
-          const model = await db.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
+          const model = await Db.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
           const instance = new ${modelName}Model(null)
   
@@ -879,7 +879,7 @@ export async function generateModelString(
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
-          let query = db.selectFrom('${tableName}').where('id', 'in', ids)
+          let query = Db.instance.selectFrom('${tableName}').where('id', 'in', ids)
   
           const instance = new ${modelName}Model(null)
   
@@ -1176,14 +1176,14 @@ export async function generateModelString(
   
         // Method to get all ${tableName}
         static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
-          const totalRecordsResult = await db.selectFrom('${tableName}')
+          const totalRecordsResult = await Db.instance.selectFrom('${tableName}')
             .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
             .executeTakeFirst()
   
           const totalRecords = Number(totalRecordsResult?.total) || 0
           const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
   
-          const ${tableName}WithExtra = await db.selectFrom('${tableName}')
+          const ${tableName}WithExtra = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
             .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -1269,7 +1269,7 @@ export async function generateModelString(
   
           ${mittDeleteStatement}
         
-          return await db.deleteFrom('${tableName}')
+          return await Db.instance.deleteFrom('${tableName}')
             .where('id', '=', id)
             .execute()
         }
@@ -1436,7 +1436,7 @@ export async function generateModelString(
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
-          const model = await db.selectFrom('${tableName}')
+          const model = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('created_at', 'desc')
             .executeTakeFirst()
@@ -1452,7 +1452,7 @@ export async function generateModelString(
         }
 
         static async oldest(): Promise<${modelName}Type | undefined> {
-          const model = await db.selectFrom('${tableName}')
+          const model = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('created_at', 'asc')
             .executeTakeFirst()
@@ -1481,7 +1481,7 @@ export async function generateModelString(
           const value = condition[key]
   
           // Attempt to find the first record matching the condition
-          const existing${modelName} = await db.selectFrom('${tableName}')
+          const existing${modelName} = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .where(key, '=', value)
             .executeTakeFirst()
@@ -1509,7 +1509,7 @@ export async function generateModelString(
           const value = condition[key]
   
           // Attempt to find the first record matching the condition
-          const existing${modelName} = await db.selectFrom('${tableName}')
+          const existing${modelName} = await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .where(key, '=', value)
             .executeTakeFirst()
@@ -1522,7 +1522,7 @@ export async function generateModelString(
               .executeTakeFirstOrThrow()
   
             // Fetch and return the updated record
-            const updated${modelName} = await db.selectFrom('${tableName}')
+            const updated${modelName} = await Db.instance.selectFrom('${tableName}')
               .selectAll()
               .where(key, '=', value)
               .executeTakeFirst()
@@ -1553,14 +1553,14 @@ export async function generateModelString(
         }
   
         async last(): Promise<${modelName}Type | undefined> {
-          return await db.selectFrom('${tableName}')
+          return await Db.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'desc')
             .executeTakeFirst()
         }
   
         static async last(): Promise<${modelName}Type | undefined> {
-          const model = await db.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+          const model = await Db.instance.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
   
           if (!model)
             return undefined
@@ -1713,7 +1713,7 @@ export async function generateModelString(
             ${mittDeleteStatement}
             ${thisSoftDeleteStatementsUpdateFrom}
   
-            return await db.deleteFrom('${tableName}')
+            return await Db.instance.deleteFrom('${tableName}')
               .where('id', '=', this.id)
               .execute()
         }
@@ -1772,7 +1772,7 @@ export async function generateModelString(
       }
   
       async function find(id: number): Promise<${modelName}Model | undefined> {
-        let query = db.selectFrom('${tableName}').where('id', '=', id).selectAll()
+        let query = Db.instance.selectFrom('${tableName}').where('id', '=', id).selectAll()
   
         const model = await query.executeTakeFirst()
   
@@ -1801,7 +1801,7 @@ export async function generateModelString(
       }
   
       export async function remove(id: number): Promise<void> {
-        await db.deleteFrom('${tableName}')
+        await Db.instance.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
       }
