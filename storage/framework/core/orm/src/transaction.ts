@@ -1,14 +1,11 @@
 import { DB } from './db'
 
 export class TransactionBuilder {
-  static async execute(callback: (trx: any) => Promise<any>): Promise<DB> {
-    return await DB.instance.transaction().execute(async (transaction: any) => {
-      DB.setTransaction(transaction)
-
+  static async execute(callback: () => Promise<void>): Promise<void> {
+    return DB.instance.transaction().execute(async (trx: any) => {
+      DB.setTransaction(trx)
       try {
-        const result = await callback(transaction)
-
-        return result
+        return await callback()
       }
       finally {
         DB.clearTransaction()

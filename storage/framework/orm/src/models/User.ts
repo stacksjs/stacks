@@ -158,7 +158,7 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -606,14 +606,11 @@ export class UserModel {
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await db.insertInto('users')
+    const result = await DB.instance.insertInto('users')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as UserModel
-
-    if (model)
-      dispatch('Users:created', model)
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     return model
   }
@@ -621,14 +618,15 @@ export class UserModel {
   static async createMany(newUser: NewUser[]): Promise<void> {
     const instance = new UserModel(null)
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(newUser).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
-      ),
-    ) as NewUser
-
-    filteredValues.forEach((model) => {
-      model.uuid = randomUUIDv7()
+    const filteredValues = newUser.map((newUser: NewUser) => {
+      const filtered = Object.fromEntries(
+        Object.entries(newUser).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewUser
+  
+      filtered.uuid = randomUUIDv7()
+      return filtered
     })
 
     await db.insertInto('users')

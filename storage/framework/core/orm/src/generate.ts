@@ -1216,11 +1216,11 @@ export async function generateModelString(
 
           ${uuidQuery}
 
-          const result = await db.insertInto('${tableName}')
+          const result = await DB.instance.insertInto('${tableName}')
             .values(filteredValues)
             .executeTakeFirst()
 
-          const model = await find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
+          const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
           if (model)
             dispatch('${formattedTableName}:created', model)
@@ -1230,22 +1230,25 @@ export async function generateModelString(
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(null)
-  
-          const filteredValues = Object.fromEntries(
-            Object.entries(new${modelName}).filter(([key]) => 
-              !instance.guarded.includes(key) && instance.fillable.includes(key)
-            ),
-          ) as New${modelName}
-  
-          ${uuidQueryMany}
-          
-          await db.insertInto('${tableName}')
+
+          const filteredValues = new${modelName}.map((new${modelName}: New${modelName}) => {
+            const filtered = Object.fromEntries(
+              Object.entries(new${modelName}).filter(([key]) =>
+                !instance.guarded.includes(key) && instance.fillable.includes(key),
+              ),
+            ) as New${modelName}
+        
+            filtered.uuid = randomUUIDv7()
+            return filtered
+          })
+
+          await DB.instance.insertInto('${tableName}')
             .values(filteredValues)
             .executeTakeFirst()
         }
   
         static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-          const result = await db.insertInto('${tableName}')
+          const result = await DB.instance.insertInto('${tableName}')
             .values(new${modelName})
             .executeTakeFirst()
   
@@ -1693,7 +1696,7 @@ export async function generateModelString(
             throw new HttpError(500, '${modelName} data is undefined')
   
           if (this.id === undefined) {
-            await db.insertInto('${tableName}')
+            await DB.instance.insertInto('${tableName}')
               .values(this as New${modelName})
               .executeTakeFirstOrThrow()
           }
@@ -1786,7 +1789,7 @@ export async function generateModelString(
   
       export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
   
-        const result = await db.insertInto('${tableName}')
+        const result = await DB.instance.insertInto('${tableName}')
           .values(new${modelName})
           .executeTakeFirstOrThrow()
   

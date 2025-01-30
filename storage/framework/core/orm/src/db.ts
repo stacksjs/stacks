@@ -4,11 +4,7 @@ export class DB {
   private static dbInstance: any = null
 
   static get instance(): DB | any {
-    if (!this.dbInstance) {
-      this.dbInstance = db
-    }
-
-    return this.dbInstance
+    return this.dbInstance || db
   }
 
   static setTransaction(transaction: any): void {
