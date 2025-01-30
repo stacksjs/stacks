@@ -520,7 +520,7 @@ export class SubscriberEmailModel {
   // Method to get all subscriber_emails
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('subscriber_emails')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0

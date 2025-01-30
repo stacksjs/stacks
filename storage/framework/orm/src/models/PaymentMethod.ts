@@ -543,7 +543,7 @@ export class PaymentMethodModel {
   // Method to get all payment_methods
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('payment_methods')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0

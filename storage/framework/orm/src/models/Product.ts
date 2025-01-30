@@ -519,7 +519,7 @@ export class ProductModel {
   // Method to get all products
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('products')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0

@@ -507,7 +507,7 @@ export class ProjectModel {
   // Method to get all projects
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('projects')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0

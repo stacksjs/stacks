@@ -1177,7 +1177,7 @@ export async function generateModelString(
         // Method to get all ${tableName}
         static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
           const totalRecordsResult = await DB.instance.selectFrom('${tableName}')
-            .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+            .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
             .executeTakeFirst()
   
           const totalRecords = Number(totalRecordsResult?.total) || 0

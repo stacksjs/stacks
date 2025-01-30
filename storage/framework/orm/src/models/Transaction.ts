@@ -540,7 +540,7 @@ export class TransactionModel {
   // Method to get all transactions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('transactions')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
