@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -117,7 +117,7 @@ export class PostModel {
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -138,7 +138,7 @@ export class PostModel {
   }
 
   static async first(): Promise<PostModel | undefined> {
-    const model = await db.selectFrom('posts')
+    const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .executeTakeFirst()
 
@@ -182,7 +182,7 @@ export class PostModel {
   }
 
   static async all(): Promise<PostModel[]> {
-    const models = await db.selectFrom('posts').selectAll().execute()
+    const models = await DB.instance.selectFrom('posts').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PostType) => {
       const instance = new PostModel(model)
@@ -200,7 +200,7 @@ export class PostModel {
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
-    const model = await db.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new PostModel(null)
 
@@ -217,7 +217,7 @@ export class PostModel {
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
-    let query = db.selectFrom('posts').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('posts').where('id', 'in', ids)
 
     const instance = new PostModel(null)
 
@@ -513,14 +513,14 @@ export class PostModel {
 
   // Method to get all posts
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const totalRecordsResult = await db.selectFrom('posts')
+    const totalRecordsResult = await DB.instance.selectFrom('posts')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const postsWithExtra = await db.selectFrom('posts')
+    const postsWithExtra = await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -774,7 +774,7 @@ export class PostModel {
   }
 
   static async latest(): Promise<PostType | undefined> {
-    const model = await db.selectFrom('posts')
+    const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -790,7 +790,7 @@ export class PostModel {
   }
 
   static async oldest(): Promise<PostType | undefined> {
-    const model = await db.selectFrom('posts')
+    const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -819,7 +819,7 @@ export class PostModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPost = await db.selectFrom('posts')
+    const existingPost = await DB.instance.selectFrom('posts')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -847,7 +847,7 @@ export class PostModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPost = await db.selectFrom('posts')
+    const existingPost = await DB.instance.selectFrom('posts')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -860,7 +860,7 @@ export class PostModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedPost = await db.selectFrom('posts')
+      const updatedPost = await DB.instance.selectFrom('posts')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -892,14 +892,14 @@ export class PostModel {
   }
 
   async last(): Promise<PostType | undefined> {
-    return await db.selectFrom('posts')
+    return await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<PostType | undefined> {
-    const model = await db.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1122,7 +1122,7 @@ export class PostModel {
 }
 
 async function find(id: number): Promise<PostModel | undefined> {
-  const query = db.selectFrom('posts').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1157,14 +1157,14 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
-  const query = db.selectFrom('posts').where('title', '=', value)
+  const query = DB.instance.selectFrom('posts').where('title', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PostModel(modelItem))
 }
 
 export async function whereBody(value: string): Promise<PostModel[]> {
-  const query = db.selectFrom('posts').where('body', '=', value)
+  const query = DB.instance.selectFrom('posts').where('body', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PostModel(modelItem))

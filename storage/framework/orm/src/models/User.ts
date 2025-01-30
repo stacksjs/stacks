@@ -6,7 +6,7 @@ import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
@@ -158,7 +158,7 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -179,7 +179,7 @@ export class UserModel {
   }
 
   static async first(): Promise<UserModel | undefined> {
-    const model = await db.selectFrom('users')
+    const model = await DB.instance.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
 
@@ -235,7 +235,7 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
-    const models = await db.selectFrom('users').selectAll().execute()
+    const models = await DB.instance.selectFrom('users').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: UserType) => {
       const instance = new UserModel(model)
@@ -253,7 +253,7 @@ export class UserModel {
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
-    const model = await db.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new UserModel(null)
 
@@ -270,7 +270,7 @@ export class UserModel {
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
-    let query = db.selectFrom('users').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('users').where('id', 'in', ids)
 
     const instance = new UserModel(null)
 
@@ -566,14 +566,14 @@ export class UserModel {
 
   // Method to get all users
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
-    const totalRecordsResult = await db.selectFrom('users')
+    const totalRecordsResult = await DB.instance.selectFrom('users')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const usersWithExtra = await db.selectFrom('users')
+    const usersWithExtra = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -855,7 +855,7 @@ export class UserModel {
   }
 
   static async latest(): Promise<UserType | undefined> {
-    const model = await db.selectFrom('users')
+    const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -871,7 +871,7 @@ export class UserModel {
   }
 
   static async oldest(): Promise<UserType | undefined> {
-    const model = await db.selectFrom('users')
+    const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -900,7 +900,7 @@ export class UserModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingUser = await db.selectFrom('users')
+    const existingUser = await DB.instance.selectFrom('users')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -928,7 +928,7 @@ export class UserModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingUser = await db.selectFrom('users')
+    const existingUser = await DB.instance.selectFrom('users')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -941,7 +941,7 @@ export class UserModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedUser = await db.selectFrom('users')
+      const updatedUser = await DB.instance.selectFrom('users')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -973,14 +973,14 @@ export class UserModel {
   }
 
   async last(): Promise<UserType | undefined> {
-    return await db.selectFrom('users')
+    return await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<UserType | undefined> {
-    const model = await db.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1171,7 +1171,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('deployments')
+    const results = await DB.instance.selectFrom('deployments')
       .where('user_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1184,7 +1184,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('subscriptions')
+    const results = await DB.instance.selectFrom('subscriptions')
       .where('user_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1197,7 +1197,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('payment_methods')
+    const results = await DB.instance.selectFrom('payment_methods')
       .where('user_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1210,7 +1210,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('transactions')
+    const results = await DB.instance.selectFrom('transactions')
       .where('user_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1223,7 +1223,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('team_users')
       .where('team_id', '=', this.id)
       .selectAll()
       .execute()
@@ -1379,7 +1379,7 @@ export class UserModel {
   }
 
   async activeSubscription() {
-    const subscription = await db.selectFrom('subscriptions')
+    const subscription = await DB.instance.selectFrom('subscriptions')
       .where('user_id', '=', this.id)
       .where('provider_status', '=', 'active')
       .selectAll()
@@ -1553,7 +1553,7 @@ export class UserModel {
 }
 
 async function find(id: number): Promise<UserModel | undefined> {
-  const query = db.selectFrom('users').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('users').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1588,28 +1588,28 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<UserModel[]> {
-  const query = db.selectFrom('users').where('name', '=', value)
+  const query = DB.instance.selectFrom('users').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<UserModel[]> {
-  const query = db.selectFrom('users').where('email', '=', value)
+  const query = DB.instance.selectFrom('users').where('email', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function whereJobTitle(value: string): Promise<UserModel[]> {
-  const query = db.selectFrom('users').where('job_title', '=', value)
+  const query = DB.instance.selectFrom('users').where('job_title', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new UserModel(modelItem))
 }
 
 export async function wherePassword(value: string): Promise<UserModel[]> {
-  const query = db.selectFrom('users').where('password', '=', value)
+  const query = DB.instance.selectFrom('users').where('password', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new UserModel(modelItem))

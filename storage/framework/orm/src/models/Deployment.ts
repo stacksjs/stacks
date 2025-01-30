@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -135,7 +135,7 @@ export class DeploymentModel {
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -156,7 +156,7 @@ export class DeploymentModel {
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
-    const model = await db.selectFrom('deployments')
+    const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .executeTakeFirst()
 
@@ -200,7 +200,7 @@ export class DeploymentModel {
   }
 
   static async all(): Promise<DeploymentModel[]> {
-    const models = await db.selectFrom('deployments').selectAll().execute()
+    const models = await DB.instance.selectFrom('deployments').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       const instance = new DeploymentModel(model)
@@ -218,7 +218,7 @@ export class DeploymentModel {
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
-    const model = await db.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new DeploymentModel(null)
 
@@ -235,7 +235,7 @@ export class DeploymentModel {
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
-    let query = db.selectFrom('deployments').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('deployments').where('id', 'in', ids)
 
     const instance = new DeploymentModel(null)
 
@@ -531,14 +531,14 @@ export class DeploymentModel {
 
   // Method to get all deployments
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    const totalRecordsResult = await db.selectFrom('deployments')
+    const totalRecordsResult = await DB.instance.selectFrom('deployments')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const deploymentsWithExtra = await db.selectFrom('deployments')
+    const deploymentsWithExtra = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -834,7 +834,7 @@ export class DeploymentModel {
   }
 
   static async latest(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments')
+    const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -850,7 +850,7 @@ export class DeploymentModel {
   }
 
   static async oldest(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments')
+    const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -879,7 +879,7 @@ export class DeploymentModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingDeployment = await db.selectFrom('deployments')
+    const existingDeployment = await DB.instance.selectFrom('deployments')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -907,7 +907,7 @@ export class DeploymentModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingDeployment = await db.selectFrom('deployments')
+    const existingDeployment = await DB.instance.selectFrom('deployments')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -920,7 +920,7 @@ export class DeploymentModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedDeployment = await db.selectFrom('deployments')
+      const updatedDeployment = await DB.instance.selectFrom('deployments')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -952,14 +952,14 @@ export class DeploymentModel {
   }
 
   async last(): Promise<DeploymentType | undefined> {
-    return await db.selectFrom('deployments')
+    return await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<DeploymentType | undefined> {
-    const model = await db.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1187,7 +1187,7 @@ export class DeploymentModel {
 }
 
 async function find(id: number): Promise<DeploymentModel | undefined> {
-  const query = db.selectFrom('deployments').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1222,49 +1222,49 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereCommitSha(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commit_sha', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('commit_sha', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereCommitMessage(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('commit_message', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('commit_message', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereBranch(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('branch', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('branch', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('status', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereExecutionTime(value: number): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('execution_time', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('execution_time', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereDeployScript(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('deploy_script', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('deploy_script', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))
 }
 
 export async function whereTerminalOutput(value: string): Promise<DeploymentModel[]> {
-  const query = db.selectFrom('deployments').where('terminal_output', '=', value)
+  const query = DB.instance.selectFrom('deployments').where('terminal_output', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new DeploymentModel(modelItem))

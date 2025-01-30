@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -117,7 +117,7 @@ export class JobModel {
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -138,7 +138,7 @@ export class JobModel {
   }
 
   static async first(): Promise<JobModel | undefined> {
-    const model = await db.selectFrom('jobs')
+    const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .executeTakeFirst()
 
@@ -178,7 +178,7 @@ export class JobModel {
   }
 
   static async all(): Promise<JobModel[]> {
-    const models = await db.selectFrom('jobs').selectAll().execute()
+    const models = await DB.instance.selectFrom('jobs').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: JobType) => {
       const instance = new JobModel(model)
@@ -196,7 +196,7 @@ export class JobModel {
   }
 
   static async findOrFail(id: number): Promise<JobModel> {
-    const model = await db.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new JobModel(null)
 
@@ -213,7 +213,7 @@ export class JobModel {
   }
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
-    let query = db.selectFrom('jobs').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('jobs').where('id', 'in', ids)
 
     const instance = new JobModel(null)
 
@@ -509,14 +509,14 @@ export class JobModel {
 
   // Method to get all jobs
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    const totalRecordsResult = await db.selectFrom('jobs')
+    const totalRecordsResult = await DB.instance.selectFrom('jobs')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const jobsWithExtra = await db.selectFrom('jobs')
+    const jobsWithExtra = await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -794,7 +794,7 @@ export class JobModel {
   }
 
   static async latest(): Promise<JobType | undefined> {
-    const model = await db.selectFrom('jobs')
+    const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -810,7 +810,7 @@ export class JobModel {
   }
 
   static async oldest(): Promise<JobType | undefined> {
-    const model = await db.selectFrom('jobs')
+    const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -839,7 +839,7 @@ export class JobModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingJob = await db.selectFrom('jobs')
+    const existingJob = await DB.instance.selectFrom('jobs')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -867,7 +867,7 @@ export class JobModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingJob = await db.selectFrom('jobs')
+    const existingJob = await DB.instance.selectFrom('jobs')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -880,7 +880,7 @@ export class JobModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedJob = await db.selectFrom('jobs')
+      const updatedJob = await DB.instance.selectFrom('jobs')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -912,14 +912,14 @@ export class JobModel {
   }
 
   async last(): Promise<JobType | undefined> {
-    return await db.selectFrom('jobs')
+    return await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<JobType | undefined> {
-    const model = await db.selectFrom('jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1129,7 +1129,7 @@ export class JobModel {
 }
 
 async function find(id: number): Promise<JobModel | undefined> {
-  const query = db.selectFrom('jobs').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1164,35 +1164,35 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereQueue(value: string): Promise<JobModel[]> {
-  const query = db.selectFrom('jobs').where('queue', '=', value)
+  const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))
 }
 
 export async function wherePayload(value: string): Promise<JobModel[]> {
-  const query = db.selectFrom('jobs').where('payload', '=', value)
+  const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))
 }
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
-  const query = db.selectFrom('jobs').where('attempts', '=', value)
+  const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))
 }
 
 export async function whereAvailableAt(value: number): Promise<JobModel[]> {
-  const query = db.selectFrom('jobs').where('available_at', '=', value)
+  const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))
 }
 
 export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
-  const query = db.selectFrom('jobs').where('reserved_at', '=', value)
+  const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new JobModel(modelItem))

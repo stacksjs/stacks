@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -117,7 +117,7 @@ export class ErrorModel {
 
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -138,7 +138,7 @@ export class ErrorModel {
   }
 
   static async first(): Promise<ErrorModel | undefined> {
-    const model = await db.selectFrom('errors')
+    const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .executeTakeFirst()
 
@@ -178,7 +178,7 @@ export class ErrorModel {
   }
 
   static async all(): Promise<ErrorModel[]> {
-    const models = await db.selectFrom('errors').selectAll().execute()
+    const models = await DB.instance.selectFrom('errors').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
       const instance = new ErrorModel(model)
@@ -196,7 +196,7 @@ export class ErrorModel {
   }
 
   static async findOrFail(id: number): Promise<ErrorModel> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ErrorModel(null)
 
@@ -213,7 +213,7 @@ export class ErrorModel {
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
-    let query = db.selectFrom('errors').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('errors').where('id', 'in', ids)
 
     const instance = new ErrorModel(null)
 
@@ -509,14 +509,14 @@ export class ErrorModel {
 
   // Method to get all errors
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
-    const totalRecordsResult = await db.selectFrom('errors')
+    const totalRecordsResult = await DB.instance.selectFrom('errors')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const errorsWithExtra = await db.selectFrom('errors')
+    const errorsWithExtra = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -794,7 +794,7 @@ export class ErrorModel {
   }
 
   static async latest(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors')
+    const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -810,7 +810,7 @@ export class ErrorModel {
   }
 
   static async oldest(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors')
+    const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -839,7 +839,7 @@ export class ErrorModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingError = await db.selectFrom('errors')
+    const existingError = await DB.instance.selectFrom('errors')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -867,7 +867,7 @@ export class ErrorModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingError = await db.selectFrom('errors')
+    const existingError = await DB.instance.selectFrom('errors')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -880,7 +880,7 @@ export class ErrorModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedError = await db.selectFrom('errors')
+      const updatedError = await DB.instance.selectFrom('errors')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -912,14 +912,14 @@ export class ErrorModel {
   }
 
   async last(): Promise<ErrorType | undefined> {
-    return await db.selectFrom('errors')
+    return await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1129,7 +1129,7 @@ export class ErrorModel {
 }
 
 async function find(id: number): Promise<ErrorModel | undefined> {
-  const query = db.selectFrom('errors').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('errors').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1164,35 +1164,35 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereType(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('type', '=', value)
+  const query = DB.instance.selectFrom('errors').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
 export async function whereMessage(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('message', '=', value)
+  const query = DB.instance.selectFrom('errors').where('message', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
 export async function whereStack(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('stack', '=', value)
+  const query = DB.instance.selectFrom('errors').where('stack', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
 export async function whereStatus(value: number): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('status', '=', value)
+  const query = DB.instance.selectFrom('errors').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))
 }
 
 export async function whereAdditionalInfo(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('additional_info', '=', value)
+  const query = DB.instance.selectFrom('errors').where('additional_info', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ErrorModel(modelItem))

@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -111,7 +111,7 @@ export class SubscriberEmailModel {
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -132,7 +132,7 @@ export class SubscriberEmailModel {
   }
 
   static async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await db.selectFrom('subscriber_emails')
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .executeTakeFirst()
 
@@ -172,7 +172,7 @@ export class SubscriberEmailModel {
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
-    const models = await db.selectFrom('subscriber_emails').selectAll().execute()
+    const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
       const instance = new SubscriberEmailModel(model)
@@ -190,7 +190,7 @@ export class SubscriberEmailModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriberEmailModel(null)
 
@@ -211,7 +211,7 @@ export class SubscriberEmailModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('subscriber_emails').where('id', 'in', ids)
 
     const instance = new SubscriberEmailModel(null)
 
@@ -519,14 +519,14 @@ export class SubscriberEmailModel {
 
   // Method to get all subscriber_emails
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-    const totalRecordsResult = await db.selectFrom('subscriber_emails')
+    const totalRecordsResult = await DB.instance.selectFrom('subscriber_emails')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const subscriber_emailsWithExtra = await db.selectFrom('subscriber_emails')
+    const subscriber_emailsWithExtra = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -783,7 +783,7 @@ export class SubscriberEmailModel {
   }
 
   static async latest(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails')
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -799,7 +799,7 @@ export class SubscriberEmailModel {
   }
 
   static async oldest(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails')
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -828,7 +828,7 @@ export class SubscriberEmailModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscriberEmail = await db.selectFrom('subscriber_emails')
+    const existingSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -856,7 +856,7 @@ export class SubscriberEmailModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscriberEmail = await db.selectFrom('subscriber_emails')
+    const existingSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -869,7 +869,7 @@ export class SubscriberEmailModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedSubscriberEmail = await db.selectFrom('subscriber_emails')
+      const updatedSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -901,14 +901,14 @@ export class SubscriberEmailModel {
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
-    return await db.selectFrom('subscriber_emails')
+    return await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1125,7 +1125,7 @@ export class SubscriberEmailModel {
 }
 
 async function find(id: number): Promise<SubscriberEmailModel | undefined> {
-  const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1160,7 +1160,7 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereEmail(value: string): Promise<SubscriberEmailModel[]> {
-  const query = db.selectFrom('subscriber_emails').where('email', '=', value)
+  const query = DB.instance.selectFrom('subscriber_emails').where('email', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriberEmailModel(modelItem))

@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -126,7 +126,7 @@ export class ProductModel {
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -147,7 +147,7 @@ export class ProductModel {
   }
 
   static async first(): Promise<ProductModel | undefined> {
-    const model = await db.selectFrom('products')
+    const model = await DB.instance.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
 
@@ -187,7 +187,7 @@ export class ProductModel {
   }
 
   static async all(): Promise<ProductModel[]> {
-    const models = await db.selectFrom('products').selectAll().execute()
+    const models = await DB.instance.selectFrom('products').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       const instance = new ProductModel(model)
@@ -205,7 +205,7 @@ export class ProductModel {
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {
-    const model = await db.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ProductModel(null)
 
@@ -222,7 +222,7 @@ export class ProductModel {
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
-    let query = db.selectFrom('products').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('products').where('id', 'in', ids)
 
     const instance = new ProductModel(null)
 
@@ -518,14 +518,14 @@ export class ProductModel {
 
   // Method to get all products
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
-    const totalRecordsResult = await db.selectFrom('products')
+    const totalRecordsResult = await DB.instance.selectFrom('products')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const productsWithExtra = await db.selectFrom('products')
+    const productsWithExtra = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -821,7 +821,7 @@ export class ProductModel {
   }
 
   static async latest(): Promise<ProductType | undefined> {
-    const model = await db.selectFrom('products')
+    const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -837,7 +837,7 @@ export class ProductModel {
   }
 
   static async oldest(): Promise<ProductType | undefined> {
-    const model = await db.selectFrom('products')
+    const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -866,7 +866,7 @@ export class ProductModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProduct = await db.selectFrom('products')
+    const existingProduct = await DB.instance.selectFrom('products')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -894,7 +894,7 @@ export class ProductModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProduct = await db.selectFrom('products')
+    const existingProduct = await DB.instance.selectFrom('products')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -907,7 +907,7 @@ export class ProductModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedProduct = await db.selectFrom('products')
+      const updatedProduct = await DB.instance.selectFrom('products')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -939,14 +939,14 @@ export class ProductModel {
   }
 
   async last(): Promise<ProductType | undefined> {
-    return await db.selectFrom('products')
+    return await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<ProductType | undefined> {
-    const model = await db.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1158,7 +1158,7 @@ export class ProductModel {
 }
 
 async function find(id: number): Promise<ProductModel | undefined> {
-  const query = db.selectFrom('products').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1193,49 +1193,49 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('name', '=', value)
+  const query = DB.instance.selectFrom('products').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereDescription(value: number): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('description', '=', value)
+  const query = DB.instance.selectFrom('products').where('description', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereKey(value: number): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('key', '=', value)
+  const query = DB.instance.selectFrom('products').where('key', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereUnitPrice(value: number): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('unit_price', '=', value)
+  const query = DB.instance.selectFrom('products').where('unit_price', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('status', '=', value)
+  const query = DB.instance.selectFrom('products').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereImage(value: string): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('image', '=', value)
+  const query = DB.instance.selectFrom('products').where('image', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<ProductModel[]> {
-  const query = db.selectFrom('products').where('provider_id', '=', value)
+  const query = DB.instance.selectFrom('products').where('provider_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProductModel(modelItem))

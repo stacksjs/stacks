@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { AccessTokenModel } from './AccessToken'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -134,7 +134,7 @@ export class TeamModel {
 
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
-    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -155,7 +155,7 @@ export class TeamModel {
   }
 
   static async first(): Promise<TeamModel | undefined> {
-    const model = await db.selectFrom('teams')
+    const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
 
@@ -199,7 +199,7 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
-    const models = await db.selectFrom('teams').selectAll().execute()
+    const models = await DB.instance.selectFrom('teams').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       const instance = new TeamModel(model)
@@ -217,7 +217,7 @@ export class TeamModel {
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
-    const model = await db.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new TeamModel(null)
 
@@ -234,7 +234,7 @@ export class TeamModel {
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {
-    let query = db.selectFrom('teams').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('teams').where('id', 'in', ids)
 
     const instance = new TeamModel(null)
 
@@ -530,14 +530,14 @@ export class TeamModel {
 
   // Method to get all teams
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TeamResponse> {
-    const totalRecordsResult = await db.selectFrom('teams')
+    const totalRecordsResult = await DB.instance.selectFrom('teams')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const teamsWithExtra = await db.selectFrom('teams')
+    const teamsWithExtra = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -839,7 +839,7 @@ export class TeamModel {
   }
 
   static async latest(): Promise<TeamType | undefined> {
-    const model = await db.selectFrom('teams')
+    const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -855,7 +855,7 @@ export class TeamModel {
   }
 
   static async oldest(): Promise<TeamType | undefined> {
-    const model = await db.selectFrom('teams')
+    const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -884,7 +884,7 @@ export class TeamModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingTeam = await db.selectFrom('teams')
+    const existingTeam = await DB.instance.selectFrom('teams')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -912,7 +912,7 @@ export class TeamModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingTeam = await db.selectFrom('teams')
+    const existingTeam = await DB.instance.selectFrom('teams')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -925,7 +925,7 @@ export class TeamModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedTeam = await db.selectFrom('teams')
+      const updatedTeam = await DB.instance.selectFrom('teams')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -957,14 +957,14 @@ export class TeamModel {
   }
 
   async last(): Promise<TeamType | undefined> {
-    return await db.selectFrom('teams')
+    return await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<TeamType | undefined> {
-    const model = await db.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1118,7 +1118,7 @@ export class TeamModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('personal_access_tokens')
+    const results = await DB.instance.selectFrom('personal_access_tokens')
       .where('team_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1131,7 +1131,7 @@ export class TeamModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('team_users')
       .where('user_id', '=', this.id)
       .selectAll()
       .execute()
@@ -1210,7 +1210,7 @@ export class TeamModel {
 }
 
 async function find(id: number): Promise<TeamModel | undefined> {
-  const query = db.selectFrom('teams').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1245,56 +1245,56 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('name', '=', value)
+  const query = DB.instance.selectFrom('teams').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereCompanyName(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('company_name', '=', value)
+  const query = DB.instance.selectFrom('teams').where('company_name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('email', '=', value)
+  const query = DB.instance.selectFrom('teams').where('email', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereBillingEmail(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('billing_email', '=', value)
+  const query = DB.instance.selectFrom('teams').where('billing_email', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('status', '=', value)
+  const query = DB.instance.selectFrom('teams').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('description', '=', value)
+  const query = DB.instance.selectFrom('teams').where('description', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function wherePath(value: string): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('path', '=', value)
+  const query = DB.instance.selectFrom('teams').where('path', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))
 }
 
 export async function whereIsPersonal(value: boolean): Promise<TeamModel[]> {
-  const query = db.selectFrom('teams').where('is_personal', '=', value)
+  const query = DB.instance.selectFrom('teams').where('is_personal', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TeamModel(modelItem))

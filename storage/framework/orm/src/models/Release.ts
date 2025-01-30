@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -105,7 +105,7 @@ export class ReleaseModel {
 
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
-    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -126,7 +126,7 @@ export class ReleaseModel {
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
-    const model = await db.selectFrom('releases')
+    const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .executeTakeFirst()
 
@@ -166,7 +166,7 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
-    const models = await db.selectFrom('releases').selectAll().execute()
+    const models = await DB.instance.selectFrom('releases').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       const instance = new ReleaseModel(model)
@@ -184,7 +184,7 @@ export class ReleaseModel {
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
-    const model = await db.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ReleaseModel(null)
 
@@ -201,7 +201,7 @@ export class ReleaseModel {
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
-    let query = db.selectFrom('releases').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('releases').where('id', 'in', ids)
 
     const instance = new ReleaseModel(null)
 
@@ -497,14 +497,14 @@ export class ReleaseModel {
 
   // Method to get all releases
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
-    const totalRecordsResult = await db.selectFrom('releases')
+    const totalRecordsResult = await DB.instance.selectFrom('releases')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const releasesWithExtra = await db.selectFrom('releases')
+    const releasesWithExtra = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -750,7 +750,7 @@ export class ReleaseModel {
   }
 
   static async latest(): Promise<ReleaseType | undefined> {
-    const model = await db.selectFrom('releases')
+    const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -766,7 +766,7 @@ export class ReleaseModel {
   }
 
   static async oldest(): Promise<ReleaseType | undefined> {
-    const model = await db.selectFrom('releases')
+    const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -795,7 +795,7 @@ export class ReleaseModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingRelease = await db.selectFrom('releases')
+    const existingRelease = await DB.instance.selectFrom('releases')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -823,7 +823,7 @@ export class ReleaseModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingRelease = await db.selectFrom('releases')
+    const existingRelease = await DB.instance.selectFrom('releases')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -836,7 +836,7 @@ export class ReleaseModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedRelease = await db.selectFrom('releases')
+      const updatedRelease = await DB.instance.selectFrom('releases')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -868,14 +868,14 @@ export class ReleaseModel {
   }
 
   async last(): Promise<ReleaseType | undefined> {
-    return await db.selectFrom('releases')
+    return await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<ReleaseType | undefined> {
-    const model = await db.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1081,7 +1081,7 @@ export class ReleaseModel {
 }
 
 async function find(id: number): Promise<ReleaseModel | undefined> {
-  const query = db.selectFrom('releases').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('releases').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1116,7 +1116,7 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereVersion(value: string): Promise<ReleaseModel[]> {
-  const query = db.selectFrom('releases').where('version', '=', value)
+  const query = DB.instance.selectFrom('releases').where('version', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ReleaseModel(modelItem))

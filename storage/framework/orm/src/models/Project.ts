@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -114,7 +114,7 @@ export class ProjectModel {
 
   // Method to find a Project by ID
   static async find(id: number): Promise<ProjectModel | undefined> {
-    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -135,7 +135,7 @@ export class ProjectModel {
   }
 
   static async first(): Promise<ProjectModel | undefined> {
-    const model = await db.selectFrom('projects')
+    const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .executeTakeFirst()
 
@@ -175,7 +175,7 @@ export class ProjectModel {
   }
 
   static async all(): Promise<ProjectModel[]> {
-    const models = await db.selectFrom('projects').selectAll().execute()
+    const models = await DB.instance.selectFrom('projects').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       const instance = new ProjectModel(model)
@@ -193,7 +193,7 @@ export class ProjectModel {
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
-    const model = await db.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new ProjectModel(null)
 
@@ -210,7 +210,7 @@ export class ProjectModel {
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
-    let query = db.selectFrom('projects').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('projects').where('id', 'in', ids)
 
     const instance = new ProjectModel(null)
 
@@ -506,14 +506,14 @@ export class ProjectModel {
 
   // Method to get all projects
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    const totalRecordsResult = await db.selectFrom('projects')
+    const totalRecordsResult = await DB.instance.selectFrom('projects')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const projectsWithExtra = await db.selectFrom('projects')
+    const projectsWithExtra = await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -783,7 +783,7 @@ export class ProjectModel {
   }
 
   static async latest(): Promise<ProjectType | undefined> {
-    const model = await db.selectFrom('projects')
+    const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -799,7 +799,7 @@ export class ProjectModel {
   }
 
   static async oldest(): Promise<ProjectType | undefined> {
-    const model = await db.selectFrom('projects')
+    const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -828,7 +828,7 @@ export class ProjectModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProject = await db.selectFrom('projects')
+    const existingProject = await DB.instance.selectFrom('projects')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -856,7 +856,7 @@ export class ProjectModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProject = await db.selectFrom('projects')
+    const existingProject = await DB.instance.selectFrom('projects')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -869,7 +869,7 @@ export class ProjectModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedProject = await db.selectFrom('projects')
+      const updatedProject = await DB.instance.selectFrom('projects')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -901,14 +901,14 @@ export class ProjectModel {
   }
 
   async last(): Promise<ProjectType | undefined> {
-    return await db.selectFrom('projects')
+    return await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<ProjectType | undefined> {
-    const model = await db.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1117,7 +1117,7 @@ export class ProjectModel {
 }
 
 async function find(id: number): Promise<ProjectModel | undefined> {
-  const query = db.selectFrom('projects').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('projects').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1152,28 +1152,28 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<ProjectModel[]> {
-  const query = db.selectFrom('projects').where('name', '=', value)
+  const query = DB.instance.selectFrom('projects').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProjectModel[]> {
-  const query = db.selectFrom('projects').where('description', '=', value)
+  const query = DB.instance.selectFrom('projects').where('description', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereUrl(value: string): Promise<ProjectModel[]> {
-  const query = db.selectFrom('projects').where('url', '=', value)
+  const query = DB.instance.selectFrom('projects').where('url', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProjectModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProjectModel[]> {
-  const query = db.selectFrom('projects').where('status', '=', value)
+  const query = DB.instance.selectFrom('projects').where('status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new ProjectModel(modelItem))

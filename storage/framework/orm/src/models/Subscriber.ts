@@ -1,7 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -105,7 +105,7 @@ export class SubscriberModel {
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -126,7 +126,7 @@ export class SubscriberModel {
   }
 
   static async first(): Promise<SubscriberModel | undefined> {
-    const model = await db.selectFrom('subscribers')
+    const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .executeTakeFirst()
 
@@ -166,7 +166,7 @@ export class SubscriberModel {
   }
 
   static async all(): Promise<SubscriberModel[]> {
-    const models = await db.selectFrom('subscribers').selectAll().execute()
+    const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       const instance = new SubscriberModel(model)
@@ -184,7 +184,7 @@ export class SubscriberModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
-    const model = await db.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriberModel(null)
 
@@ -201,7 +201,7 @@ export class SubscriberModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
-    let query = db.selectFrom('subscribers').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('subscribers').where('id', 'in', ids)
 
     const instance = new SubscriberModel(null)
 
@@ -497,14 +497,14 @@ export class SubscriberModel {
 
   // Method to get all subscribers
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
-    const totalRecordsResult = await db.selectFrom('subscribers')
+    const totalRecordsResult = await DB.instance.selectFrom('subscribers')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const subscribersWithExtra = await db.selectFrom('subscribers')
+    const subscribersWithExtra = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -750,7 +750,7 @@ export class SubscriberModel {
   }
 
   static async latest(): Promise<SubscriberType | undefined> {
-    const model = await db.selectFrom('subscribers')
+    const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -766,7 +766,7 @@ export class SubscriberModel {
   }
 
   static async oldest(): Promise<SubscriberType | undefined> {
-    const model = await db.selectFrom('subscribers')
+    const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -795,7 +795,7 @@ export class SubscriberModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscriber = await db.selectFrom('subscribers')
+    const existingSubscriber = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -823,7 +823,7 @@ export class SubscriberModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscriber = await db.selectFrom('subscribers')
+    const existingSubscriber = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -836,7 +836,7 @@ export class SubscriberModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedSubscriber = await db.selectFrom('subscribers')
+      const updatedSubscriber = await DB.instance.selectFrom('subscribers')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -868,14 +868,14 @@ export class SubscriberModel {
   }
 
   async last(): Promise<SubscriberType | undefined> {
-    return await db.selectFrom('subscribers')
+    return await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<SubscriberType | undefined> {
-    const model = await db.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscribers').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1081,7 +1081,7 @@ export class SubscriberModel {
 }
 
 async function find(id: number): Promise<SubscriberModel | undefined> {
-  const query = db.selectFrom('subscribers').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1116,7 +1116,7 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]> {
-  const query = db.selectFrom('subscribers').where('subscribed', '=', value)
+  const query = DB.instance.selectFrom('subscribers').where('subscribed', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriberModel(modelItem))

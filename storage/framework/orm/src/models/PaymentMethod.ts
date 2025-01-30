@@ -3,7 +3,7 @@ import type { TransactionModel } from './Transaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
@@ -142,7 +142,7 @@ export class PaymentMethodModel {
 
   // Method to find a PaymentMethod by ID
   static async find(id: number): Promise<PaymentMethodModel | undefined> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -163,7 +163,7 @@ export class PaymentMethodModel {
   }
 
   static async first(): Promise<PaymentMethodModel | undefined> {
-    const model = await db.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .executeTakeFirst()
 
@@ -211,7 +211,7 @@ export class PaymentMethodModel {
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
-    const models = await db.selectFrom('payment_methods').selectAll().execute()
+    const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       const instance = new PaymentMethodModel(model)
@@ -229,7 +229,7 @@ export class PaymentMethodModel {
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
-    const model = await db.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new PaymentMethodModel(null)
 
@@ -246,7 +246,7 @@ export class PaymentMethodModel {
   }
 
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
-    let query = db.selectFrom('payment_methods').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('payment_methods').where('id', 'in', ids)
 
     const instance = new PaymentMethodModel(null)
 
@@ -542,14 +542,14 @@ export class PaymentMethodModel {
 
   // Method to get all payment_methods
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
-    const totalRecordsResult = await db.selectFrom('payment_methods')
+    const totalRecordsResult = await DB.instance.selectFrom('payment_methods')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const payment_methodsWithExtra = await db.selectFrom('payment_methods')
+    const payment_methodsWithExtra = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -845,7 +845,7 @@ export class PaymentMethodModel {
   }
 
   static async latest(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -861,7 +861,7 @@ export class PaymentMethodModel {
   }
 
   static async oldest(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -890,7 +890,7 @@ export class PaymentMethodModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPaymentMethod = await db.selectFrom('payment_methods')
+    const existingPaymentMethod = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -918,7 +918,7 @@ export class PaymentMethodModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPaymentMethod = await db.selectFrom('payment_methods')
+    const existingPaymentMethod = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -931,7 +931,7 @@ export class PaymentMethodModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedPaymentMethod = await db.selectFrom('payment_methods')
+      const updatedPaymentMethod = await DB.instance.selectFrom('payment_methods')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -963,14 +963,14 @@ export class PaymentMethodModel {
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
-    return await db.selectFrom('payment_methods')
+    return await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {
-    const model = await db.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1138,7 +1138,7 @@ export class PaymentMethodModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await db.selectFrom('transactions')
+    const results = await DB.instance.selectFrom('transactions')
       .where('payment_method_id', '=', this.id)
       .limit(5)
       .selectAll()
@@ -1212,7 +1212,7 @@ export class PaymentMethodModel {
 }
 
 async function find(id: number): Promise<PaymentMethodModel | undefined> {
-  const query = db.selectFrom('payment_methods').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1247,49 +1247,49 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereType(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('type', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereLastFour(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('last_four', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('last_four', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereBrand(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('brand', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('brand', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpMonth(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('exp_month', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('exp_month', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereExpYear(value: number): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('exp_year', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('exp_year', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereIsDefault(value: boolean): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('is_default', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('is_default', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<PaymentMethodModel[]> {
-  const query = db.selectFrom('payment_methods').where('provider_id', '=', value)
+  const query = DB.instance.selectFrom('payment_methods').where('provider_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new PaymentMethodModel(modelItem))

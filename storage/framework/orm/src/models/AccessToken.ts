@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { TeamModel } from './Team'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -123,7 +123,7 @@ export class AccessTokenModel {
 
   // Method to find a AccessToken by ID
   static async find(id: number): Promise<AccessTokenModel | undefined> {
-    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -144,7 +144,7 @@ export class AccessTokenModel {
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
-    const model = await db.selectFrom('personal_access_tokens')
+    const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .executeTakeFirst()
 
@@ -188,7 +188,7 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
-    const models = await db.selectFrom('personal_access_tokens').selectAll().execute()
+    const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       const instance = new AccessTokenModel(model)
@@ -206,7 +206,7 @@ export class AccessTokenModel {
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {
-    const model = await db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new AccessTokenModel(null)
 
@@ -223,7 +223,7 @@ export class AccessTokenModel {
   }
 
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
-    let query = db.selectFrom('personal_access_tokens').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
     const instance = new AccessTokenModel(null)
 
@@ -519,14 +519,14 @@ export class AccessTokenModel {
 
   // Method to get all personal_access_tokens
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
-    const totalRecordsResult = await db.selectFrom('personal_access_tokens')
+    const totalRecordsResult = await DB.instance.selectFrom('personal_access_tokens')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const personal_access_tokensWithExtra = await db.selectFrom('personal_access_tokens')
+    const personal_access_tokensWithExtra = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -796,7 +796,7 @@ export class AccessTokenModel {
   }
 
   static async latest(): Promise<AccessTokenType | undefined> {
-    const model = await db.selectFrom('personal_access_tokens')
+    const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -812,7 +812,7 @@ export class AccessTokenModel {
   }
 
   static async oldest(): Promise<AccessTokenType | undefined> {
-    const model = await db.selectFrom('personal_access_tokens')
+    const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -841,7 +841,7 @@ export class AccessTokenModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingAccessToken = await db.selectFrom('personal_access_tokens')
+    const existingAccessToken = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -869,7 +869,7 @@ export class AccessTokenModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingAccessToken = await db.selectFrom('personal_access_tokens')
+    const existingAccessToken = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -882,7 +882,7 @@ export class AccessTokenModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedAccessToken = await db.selectFrom('personal_access_tokens')
+      const updatedAccessToken = await DB.instance.selectFrom('personal_access_tokens')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -914,14 +914,14 @@ export class AccessTokenModel {
   }
 
   async last(): Promise<AccessTokenType | undefined> {
-    return await db.selectFrom('personal_access_tokens')
+    return await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<AccessTokenType | undefined> {
-    const model = await db.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1146,7 +1146,7 @@ export class AccessTokenModel {
 }
 
 async function find(id: number): Promise<AccessTokenModel | undefined> {
-  const query = db.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1181,28 +1181,28 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<AccessTokenModel[]> {
-  const query = db.selectFrom('personal_access_tokens').where('name', '=', value)
+  const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function whereToken(value: string): Promise<AccessTokenModel[]> {
-  const query = db.selectFrom('personal_access_tokens').where('token', '=', value)
+  const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
-  const query = db.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
+  const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new AccessTokenModel(modelItem))
 }
 
 export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
-  const query = db.selectFrom('personal_access_tokens').where('abilities', '=', value)
+  const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new AccessTokenModel(modelItem))

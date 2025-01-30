@@ -2,7 +2,7 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
@@ -144,7 +144,7 @@ export class SubscriptionModel {
 
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
-    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -165,7 +165,7 @@ export class SubscriptionModel {
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
-    const model = await db.selectFrom('subscriptions')
+    const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .executeTakeFirst()
 
@@ -209,7 +209,7 @@ export class SubscriptionModel {
   }
 
   static async all(): Promise<SubscriptionModel[]> {
-    const models = await db.selectFrom('subscriptions').selectAll().execute()
+    const models = await DB.instance.selectFrom('subscriptions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriptionType) => {
       const instance = new SubscriptionModel(model)
@@ -227,7 +227,7 @@ export class SubscriptionModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
-    const model = await db.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new SubscriptionModel(null)
 
@@ -244,7 +244,7 @@ export class SubscriptionModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
-    let query = db.selectFrom('subscriptions').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('subscriptions').where('id', 'in', ids)
 
     const instance = new SubscriptionModel(null)
 
@@ -540,14 +540,14 @@ export class SubscriptionModel {
 
   // Method to get all subscriptions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
-    const totalRecordsResult = await db.selectFrom('subscriptions')
+    const totalRecordsResult = await DB.instance.selectFrom('subscriptions')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const subscriptionsWithExtra = await db.selectFrom('subscriptions')
+    const subscriptionsWithExtra = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -867,7 +867,7 @@ export class SubscriptionModel {
   }
 
   static async latest(): Promise<SubscriptionType | undefined> {
-    const model = await db.selectFrom('subscriptions')
+    const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -883,7 +883,7 @@ export class SubscriptionModel {
   }
 
   static async oldest(): Promise<SubscriptionType | undefined> {
-    const model = await db.selectFrom('subscriptions')
+    const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -912,7 +912,7 @@ export class SubscriptionModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscription = await db.selectFrom('subscriptions')
+    const existingSubscription = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -940,7 +940,7 @@ export class SubscriptionModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingSubscription = await db.selectFrom('subscriptions')
+    const existingSubscription = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -953,7 +953,7 @@ export class SubscriptionModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedSubscription = await db.selectFrom('subscriptions')
+      const updatedSubscription = await DB.instance.selectFrom('subscriptions')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -985,14 +985,14 @@ export class SubscriptionModel {
   }
 
   async last(): Promise<SubscriptionType | undefined> {
-    return await db.selectFrom('subscriptions')
+    return await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<SubscriptionType | undefined> {
-    const model = await db.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1223,7 +1223,7 @@ export class SubscriptionModel {
 }
 
 async function find(id: number): Promise<SubscriptionModel | undefined> {
-  const query = db.selectFrom('subscriptions').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1258,70 +1258,70 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereType(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('type', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('provider_id', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('provider_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderStatus(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('provider_status', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('provider_status', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereUnitPrice(value: number): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('unit_price', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('unit_price', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderType(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('provider_type', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('provider_type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderPriceId(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('provider_price_id', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('provider_price_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereQuantity(value: number): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('quantity', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('quantity', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereTrialEndsAt(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('trial_ends_at', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('trial_ends_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereEndsAt(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('ends_at', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('ends_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))
 }
 
 export async function whereLastUsedAt(value: string): Promise<SubscriptionModel[]> {
-  const query = db.selectFrom('subscriptions').where('last_used_at', '=', value)
+  const query = DB.instance.selectFrom('subscriptions').where('last_used_at', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new SubscriptionModel(modelItem))

@@ -3,7 +3,7 @@ import type { PaymentMethodModel } from './PaymentMethod'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
+import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
@@ -139,7 +139,7 @@ export class TransactionModel {
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
-    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -160,7 +160,7 @@ export class TransactionModel {
   }
 
   static async first(): Promise<TransactionModel | undefined> {
-    const model = await db.selectFrom('transactions')
+    const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
 
@@ -208,7 +208,7 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
-    const models = await db.selectFrom('transactions').selectAll().execute()
+    const models = await DB.instance.selectFrom('transactions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       const instance = new TransactionModel(model)
@@ -226,7 +226,7 @@ export class TransactionModel {
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
-    const model = await db.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
+    const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     const instance = new TransactionModel(null)
 
@@ -243,7 +243,7 @@ export class TransactionModel {
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
-    let query = db.selectFrom('transactions').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('transactions').where('id', 'in', ids)
 
     const instance = new TransactionModel(null)
 
@@ -539,14 +539,14 @@ export class TransactionModel {
 
   // Method to get all transactions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
-    const totalRecordsResult = await db.selectFrom('transactions')
+    const totalRecordsResult = await DB.instance.selectFrom('transactions')
       .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const transactionsWithExtra = await db.selectFrom('transactions')
+    const transactionsWithExtra = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -826,7 +826,7 @@ export class TransactionModel {
   }
 
   static async latest(): Promise<TransactionType | undefined> {
-    const model = await db.selectFrom('transactions')
+    const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('created_at', 'desc')
       .executeTakeFirst()
@@ -842,7 +842,7 @@ export class TransactionModel {
   }
 
   static async oldest(): Promise<TransactionType | undefined> {
-    const model = await db.selectFrom('transactions')
+    const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('created_at', 'asc')
       .executeTakeFirst()
@@ -871,7 +871,7 @@ export class TransactionModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingTransaction = await db.selectFrom('transactions')
+    const existingTransaction = await DB.instance.selectFrom('transactions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -899,7 +899,7 @@ export class TransactionModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingTransaction = await db.selectFrom('transactions')
+    const existingTransaction = await DB.instance.selectFrom('transactions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
@@ -912,7 +912,7 @@ export class TransactionModel {
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedTransaction = await db.selectFrom('transactions')
+      const updatedTransaction = await DB.instance.selectFrom('transactions')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
@@ -944,14 +944,14 @@ export class TransactionModel {
   }
 
   async last(): Promise<TransactionType | undefined> {
-    return await db.selectFrom('transactions')
+    return await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<TransactionType | undefined> {
-    const model = await db.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
@@ -1193,7 +1193,7 @@ export class TransactionModel {
 }
 
 async function find(id: number): Promise<TransactionModel | undefined> {
-  const query = db.selectFrom('transactions').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('transactions').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1228,35 +1228,35 @@ export async function remove(id: number): Promise<void> {
 }
 
 export async function whereName(value: string): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('name', '=', value)
+  const query = DB.instance.selectFrom('transactions').where('name', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('description', '=', value)
+  const query = DB.instance.selectFrom('transactions').where('description', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))
 }
 
 export async function whereAmount(value: number): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('amount', '=', value)
+  const query = DB.instance.selectFrom('transactions').where('amount', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))
 }
 
 export async function whereType(value: string): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('type', '=', value)
+  const query = DB.instance.selectFrom('transactions').where('type', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<TransactionModel[]> {
-  const query = db.selectFrom('transactions').where('provider_id', '=', value)
+  const query = DB.instance.selectFrom('transactions').where('provider_id', '=', value)
   const results = await query.execute()
 
   return results.map(modelItem => new TransactionModel(modelItem))
