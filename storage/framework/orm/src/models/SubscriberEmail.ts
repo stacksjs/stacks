@@ -298,6 +298,10 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
+    await SubscriberEmailModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -751,6 +755,18 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): SubscriberEmailModel {
+    return SubscriberEmailModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

@@ -316,6 +316,10 @@ export class FailedJobModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: FailedJobModel[]) => Promise<void>): Promise<void> {
+    await FailedJobModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: FailedJobModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -750,6 +754,18 @@ export class FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): FailedJobModel {
+    return FailedJobModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

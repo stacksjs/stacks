@@ -324,6 +324,10 @@ export class AccessTokenModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
+    await AccessTokenModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -758,6 +762,18 @@ export class AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): AccessTokenModel {
+    return AccessTokenModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

@@ -373,6 +373,10 @@ export class PaymentMethodModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: PaymentMethodModel[]) => Promise<void>): Promise<void> {
+    await PaymentMethodModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: PaymentMethodModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -809,6 +813,18 @@ export class PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): PaymentMethodModel {
+    return PaymentMethodModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

@@ -306,6 +306,10 @@ export class PostModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
+    await PostModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -740,6 +744,18 @@ export class PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): PostModel {
+    return PostModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): PostModel {
+    const instance = new PostModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

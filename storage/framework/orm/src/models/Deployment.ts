@@ -360,6 +360,10 @@ export class DeploymentModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
+    await DeploymentModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -796,6 +800,18 @@ export class DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): DeploymentModel {
+    return DeploymentModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

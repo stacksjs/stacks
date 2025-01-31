@@ -357,6 +357,10 @@ export class TeamModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
+    await TeamModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -791,6 +795,18 @@ export class TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): TeamModel {
+    return TeamModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

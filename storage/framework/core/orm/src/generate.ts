@@ -1020,6 +1020,10 @@ export async function generateModelString(
           return instance
         }
 
+        async chunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {
+          await ${modelName}Model.chunk(size, callback)
+        }
+
         static async chunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {
           let page = 1
           let hasMore = true
@@ -1465,6 +1469,18 @@ export async function generateModelString(
           const instance = new ${modelName}Model(null)
 
           instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+          return instance
+        }
+
+        whereRaw(sqlStatement: string): ${modelName}Model {
+          return ${modelName}Model.whereRaw(sqlStatement)
+        }
+
+        static whereRaw(sqlStatement: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.where(sql\`\${sqlStatement}\`)
 
           return instance
         }

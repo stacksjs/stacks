@@ -360,6 +360,10 @@ export class TransactionModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: TransactionModel[]) => Promise<void>): Promise<void> {
+    await TransactionModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: TransactionModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -796,6 +800,18 @@ export class TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): TransactionModel {
+    return TransactionModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

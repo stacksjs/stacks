@@ -316,6 +316,10 @@ export class JobModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    await JobModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -750,6 +754,18 @@ export class JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): JobModel {
+    return JobModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

@@ -343,6 +343,10 @@ export class ProductModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
+    await ProductModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -779,6 +783,18 @@ export class ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): ProductModel {
+    return ProductModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

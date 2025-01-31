@@ -280,6 +280,10 @@ export class ReleaseModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
+    await ReleaseModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -714,6 +718,18 @@ export class ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): ReleaseModel {
+    return ReleaseModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

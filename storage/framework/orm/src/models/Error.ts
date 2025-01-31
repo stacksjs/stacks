@@ -316,6 +316,10 @@ export class ErrorModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
+    await ErrorModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -750,6 +754,18 @@ export class ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): ErrorModel {
+    return ErrorModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

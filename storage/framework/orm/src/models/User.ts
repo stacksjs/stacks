@@ -393,6 +393,10 @@ export class UserModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: UserModel[]) => Promise<void>): Promise<void> {
+    await UserModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: UserModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -839,6 +843,18 @@ export class UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): UserModel {
+    return UserModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }

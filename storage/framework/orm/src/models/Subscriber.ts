@@ -280,6 +280,10 @@ export class SubscriberModel {
     return instance
   }
 
+  async chunk(size: number, callback: (models: SubscriberModel[]) => Promise<void>): Promise<void> {
+    await SubscriberModel.chunk(size, callback)
+  }
+
   static async chunk(size: number, callback: (models: SubscriberModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
@@ -714,6 +718,18 @@ export class SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
+
+    return instance
+  }
+
+  whereRaw(sqlStatement: string): SubscriberModel {
+    return SubscriberModel.whereRaw(sqlStatement)
+  }
+
+  static whereRaw(sqlStatement: string): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }
