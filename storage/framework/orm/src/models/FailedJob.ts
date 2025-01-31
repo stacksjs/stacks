@@ -1101,9 +1101,15 @@ export class FailedJobModel {
     if (!this)
       throw new HttpError(500, 'FailedJob data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewFailedJob
+
     if (this.id === undefined) {
       await DB.instance.insertInto('failed_jobs')
-        .values(this as NewFailedJob)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

@@ -1084,9 +1084,15 @@ export class ProjectModel {
     if (!this)
       throw new HttpError(500, 'Project data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewProject
+
     if (this.id === undefined) {
       await DB.instance.insertInto('projects')
-        .values(this as NewProject)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

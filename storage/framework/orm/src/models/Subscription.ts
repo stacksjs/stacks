@@ -1214,9 +1214,15 @@ export class SubscriptionModel {
     if (!this)
       throw new HttpError(500, 'Subscription data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewSubscription
+
     if (this.id === undefined) {
       await DB.instance.insertInto('subscriptions')
-        .values(this as NewSubscription)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

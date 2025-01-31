@@ -1147,9 +1147,15 @@ export class TransactionModel {
     if (!this)
       throw new HttpError(500, 'Transaction data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewTransaction
+
     if (this.id === undefined) {
       await DB.instance.insertInto('transactions')
-        .values(this as NewTransaction)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

@@ -839,7 +839,7 @@ export async function generateModelString(
 
           return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
             const currentValue = (this.attributes as any)[key]
-            
+
             return currentValue !== originalValue
           })
         }
@@ -1782,10 +1782,16 @@ export async function generateModelString(
         async save(): Promise<void> {
           if (!this)
             throw new HttpError(500, '${modelName} data is undefined')
-  
+          
+           const filteredValues = Object.fromEntries(
+            Object.entries(this).filter(([key]) => 
+              !this.guarded.includes(key) && this.fillable.includes(key)
+            ),
+          ) as New${modelName}
+
           if (this.id === undefined) {
             await DB.instance.insertInto('${tableName}')
-              .values(this as New${modelName})
+              .values(filteredValues)
               .executeTakeFirstOrThrow()
           }
           else {

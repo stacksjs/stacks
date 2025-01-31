@@ -1067,9 +1067,15 @@ export class PostModel {
     if (!this)
       throw new HttpError(500, 'Post data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewPost
+
     if (this.id === undefined) {
       await DB.instance.insertInto('posts')
-        .values(this as NewPost)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

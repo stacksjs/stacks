@@ -1101,9 +1101,15 @@ export class JobModel {
     if (!this)
       throw new HttpError(500, 'Job data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewJob
+
     if (this.id === undefined) {
       await DB.instance.insertInto('jobs')
-        .values(this as NewJob)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

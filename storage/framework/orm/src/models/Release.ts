@@ -1033,9 +1033,15 @@ export class ReleaseModel {
     if (!this)
       throw new HttpError(500, 'Release data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewRelease
+
     if (this.id === undefined) {
       await DB.instance.insertInto('releases')
-        .values(this as NewRelease)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

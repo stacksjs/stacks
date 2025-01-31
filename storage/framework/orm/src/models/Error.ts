@@ -1101,9 +1101,15 @@ export class ErrorModel {
     if (!this)
       throw new HttpError(500, 'Error data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewError
+
     if (this.id === undefined) {
       await DB.instance.insertInto('errors')
-        .values(this as NewError)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

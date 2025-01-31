@@ -1176,9 +1176,15 @@ export class PaymentMethodModel {
     if (!this)
       throw new HttpError(500, 'PaymentMethod data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewPaymentMethod
+
     if (this.id === undefined) {
       await DB.instance.insertInto('payment_methods')
-        .values(this as NewPaymentMethod)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

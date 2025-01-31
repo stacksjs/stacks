@@ -1070,9 +1070,15 @@ export class SubscriberEmailModel {
     if (!this)
       throw new HttpError(500, 'SubscriberEmail data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewSubscriberEmail
+
     if (this.id === undefined) {
       await DB.instance.insertInto('subscriber_emails')
-        .values(this as NewSubscriberEmail)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {

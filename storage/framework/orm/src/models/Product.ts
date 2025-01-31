@@ -1146,9 +1146,15 @@ export class ProductModel {
     if (!this)
       throw new HttpError(500, 'Product data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewProduct
+
     if (this.id === undefined) {
       await DB.instance.insertInto('products')
-        .values(this as NewProduct)
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {
