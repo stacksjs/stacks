@@ -1101,6 +1101,15 @@ export class SubscriberEmailModel {
     return this
   }
 
+  forceFill(data: Partial<SubscriberEmailType>): SubscriberEmailModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the subscriberemail instance
   async delete(): Promise<any> {
     if (this.id === undefined)

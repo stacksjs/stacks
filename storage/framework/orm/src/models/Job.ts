@@ -1132,6 +1132,15 @@ export class JobModel {
     return this
   }
 
+  forceFill(data: Partial<JobType>): JobModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the job instance
   async delete(): Promise<any> {
     if (this.id === undefined)

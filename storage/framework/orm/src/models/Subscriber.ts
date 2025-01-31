@@ -1064,6 +1064,15 @@ export class SubscriberModel {
     return this
   }
 
+  forceFill(data: Partial<SubscriberType>): SubscriberModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the subscriber instance
   async delete(): Promise<any> {
     if (this.id === undefined)

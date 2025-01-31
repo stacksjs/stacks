@@ -1132,6 +1132,15 @@ export class AccessTokenModel {
     return this
   }
 
+  forceFill(data: Partial<AccessTokenType>): AccessTokenModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the accesstoken instance
   async delete(): Promise<any> {
     if (this.id === undefined)

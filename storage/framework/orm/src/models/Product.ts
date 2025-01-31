@@ -1177,6 +1177,15 @@ export class ProductModel {
     return this
   }
 
+  forceFill(data: Partial<ProductType>): ProductModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the product instance
   async delete(): Promise<any> {
     if (this.id === undefined)

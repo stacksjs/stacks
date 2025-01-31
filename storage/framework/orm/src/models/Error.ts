@@ -1132,6 +1132,15 @@ export class ErrorModel {
     return this
   }
 
+  forceFill(data: Partial<ErrorType>): ErrorModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the error instance
   async delete(): Promise<any> {
     if (this.id === undefined)

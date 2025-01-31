@@ -1197,6 +1197,15 @@ export class TeamModel {
     return this
   }
 
+  forceFill(data: Partial<TeamType>): TeamModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the team instance
   async delete(): Promise<any> {
     if (this.id === undefined)

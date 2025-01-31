@@ -1194,6 +1194,15 @@ export class DeploymentModel {
     return this
   }
 
+  forceFill(data: Partial<DeploymentType>): DeploymentModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the deployment instance
   async delete(): Promise<any> {
     if (this.id === undefined)

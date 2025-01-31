@@ -1064,6 +1064,15 @@ export class ReleaseModel {
     return this
   }
 
+  forceFill(data: Partial<ReleaseType>): ReleaseModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the release instance
   async delete(): Promise<any> {
     if (this.id === undefined)

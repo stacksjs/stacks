@@ -1178,6 +1178,15 @@ export class TransactionModel {
     return this
   }
 
+  forceFill(data: Partial<TransactionType>): TransactionModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the transaction instance
   async delete(): Promise<any> {
     if (this.id === undefined)

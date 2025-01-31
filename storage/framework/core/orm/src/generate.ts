@@ -1814,6 +1814,15 @@ export async function generateModelString(
           return this
         }
 
+        forceFill(data: Partial<${modelName}Type>): ${modelName}Model {
+          this.attributes = {
+            ...this.attributes,
+            ...data
+          }
+
+          return this
+        }
+
   
         // Method to delete (soft delete) the ${formattedModelName} instance
         async delete(): Promise<any> {

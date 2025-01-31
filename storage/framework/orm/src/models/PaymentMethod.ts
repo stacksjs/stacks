@@ -1207,6 +1207,15 @@ export class PaymentMethodModel {
     return this
   }
 
+  forceFill(data: Partial<PaymentMethodType>): PaymentMethodModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the paymentmethod instance
   async delete(): Promise<any> {
     if (this.id === undefined)

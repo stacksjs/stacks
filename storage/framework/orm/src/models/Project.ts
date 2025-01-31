@@ -1115,6 +1115,15 @@ export class ProjectModel {
     return this
   }
 
+  forceFill(data: Partial<ProjectType>): ProjectModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the project instance
   async delete(): Promise<any> {
     if (this.id === undefined)
