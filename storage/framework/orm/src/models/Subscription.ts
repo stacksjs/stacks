@@ -211,12 +211,15 @@ export class SubscriptionModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<SubscriptionType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<SubscriptionType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<SubscriptionJsonResponse> {
+    return this.fillable.reduce<Partial<SubscriptionJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof SubscriptionsTable]
+      const originalValue = this.originalAttributes[key as keyof SubscriptionsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

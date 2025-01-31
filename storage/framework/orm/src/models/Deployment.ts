@@ -184,12 +184,15 @@ export class DeploymentModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<DeploymentType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<DeploymentType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<DeploymentJsonResponse> {
+    return this.fillable.reduce<Partial<DeploymentJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof DeploymentsTable]
+      const originalValue = this.originalAttributes[key as keyof DeploymentsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

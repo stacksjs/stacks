@@ -135,12 +135,15 @@ export class ProjectModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ProjectType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<ProjectType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<ProjectJsonResponse> {
+    return this.fillable.reduce<Partial<ProjectJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ProjectsTable]
+      const originalValue = this.originalAttributes[key as keyof ProjectsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

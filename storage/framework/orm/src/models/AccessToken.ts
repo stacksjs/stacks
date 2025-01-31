@@ -148,12 +148,15 @@ export class AccessTokenModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<AccessTokenType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<AccessTokenType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<AccessTokenJsonResponse> {
+    return this.fillable.reduce<Partial<AccessTokenJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof PersonalAccessTokensTable]
+      const originalValue = this.originalAttributes[key as keyof PersonalAccessTokensTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

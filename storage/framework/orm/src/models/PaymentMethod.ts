@@ -193,12 +193,15 @@ export class PaymentMethodModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<PaymentMethodType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<PaymentMethodType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<PaymentMethodJsonResponse> {
+    return this.fillable.reduce<Partial<PaymentMethodJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof PaymentMethodsTable]
+      const originalValue = this.originalAttributes[key as keyof PaymentMethodsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

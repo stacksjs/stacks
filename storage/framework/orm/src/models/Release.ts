@@ -108,12 +108,15 @@ export class ReleaseModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ReleaseType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<ReleaseType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<ReleaseJsonResponse> {
+    return this.fillable.reduce<Partial<ReleaseJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ReleasesTable]
+      const originalValue = this.originalAttributes[key as keyof ReleasesTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

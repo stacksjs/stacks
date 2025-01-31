@@ -180,12 +180,15 @@ export class TransactionModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<TransactionType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<TransactionType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<TransactionJsonResponse> {
+    return this.fillable.reduce<Partial<TransactionJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof TransactionsTable]
+      const originalValue = this.originalAttributes[key as keyof TransactionsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

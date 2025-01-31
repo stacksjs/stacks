@@ -181,12 +181,15 @@ export class TeamModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<TeamType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<TeamType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<TeamJsonResponse> {
+    return this.fillable.reduce<Partial<TeamJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof TeamsTable]
+      const originalValue = this.originalAttributes[key as keyof TeamsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

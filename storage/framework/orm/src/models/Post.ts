@@ -130,12 +130,15 @@ export class PostModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<PostType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<PostType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<PostJsonResponse> {
+    return this.fillable.reduce<Partial<PostJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof PostsTable]
+      const originalValue = this.originalAttributes[key as keyof PostsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

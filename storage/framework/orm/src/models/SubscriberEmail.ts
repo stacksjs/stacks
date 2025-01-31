@@ -118,12 +118,15 @@ export class SubscriberEmailModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<SubscriberEmailType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<SubscriberEmailType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<SubscriberEmailJsonResponse> {
+    return this.fillable.reduce<Partial<SubscriberEmailJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof SubscriberEmailsTable]
+      const originalValue = this.originalAttributes[key as keyof SubscriberEmailsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

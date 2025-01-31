@@ -144,12 +144,15 @@ export class JobModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<JobType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<JobType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<JobJsonResponse> {
+    return this.fillable.reduce<Partial<JobJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof JobsTable]
+      const originalValue = this.originalAttributes[key as keyof JobsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

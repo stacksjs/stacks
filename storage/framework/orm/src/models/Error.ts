@@ -144,12 +144,15 @@ export class ErrorModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ErrorType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<ErrorType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<ErrorJsonResponse> {
+    return this.fillable.reduce<Partial<ErrorJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ErrorsTable]
+      const originalValue = this.originalAttributes[key as keyof ErrorsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

@@ -171,12 +171,15 @@ export class ProductModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ProductType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<ProductType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<ProductJsonResponse> {
+    return this.fillable.reduce<Partial<ProductJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ProductsTable]
+      const originalValue = this.originalAttributes[key as keyof ProductsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

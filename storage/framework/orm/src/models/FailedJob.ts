@@ -144,12 +144,15 @@ export class FailedJobModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<FailedJobType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<FailedJobType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<FailedJobJsonResponse> {
+    return this.fillable.reduce<Partial<FailedJobJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof FailedJobsTable]
+      const originalValue = this.originalAttributes[key as keyof FailedJobsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }

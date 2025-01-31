@@ -205,12 +205,15 @@ export class UserModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<UserType> {
-    return Object.entries(this.attributes).reduce((changes: Partial<UserType>, [key, value]) => {
-      const originalValue = (this.originalAttributes as any)[key]
-      if (value !== originalValue) {
-        changes[key] = value
+  getChanges(): Partial<UserJsonResponse> {
+    return this.fillable.reduce<Partial<UserJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof UsersTable]
+      const originalValue = this.originalAttributes[key as keyof UsersTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
       }
+
       return changes
     }, {})
   }
