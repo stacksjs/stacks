@@ -1445,6 +1445,18 @@ export async function generateModelString(
           return ${modelName}Model.applyWhere(instance, column, operator, value)
         }
 
+        whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+          return ${modelName}Model.whereColumn(first, operator, second)
+        }
+
+        static whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+          return instance
+        }
+
         whereRef(column: string, operator: string, value: string): ${modelName}Model {
           return ${modelName}Model.whereRef(column, operator, value)
         }

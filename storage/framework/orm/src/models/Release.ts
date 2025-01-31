@@ -694,6 +694,18 @@ export class ReleaseModel {
     return ReleaseModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): ReleaseModel {
+    return ReleaseModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): ReleaseModel {
     return ReleaseModel.whereRef(column, operator, value)
   }

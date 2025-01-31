@@ -738,6 +738,18 @@ export class AccessTokenModel {
     return AccessTokenModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+    return AccessTokenModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): AccessTokenModel {
     return AccessTokenModel.whereRef(column, operator, value)
   }

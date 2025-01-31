@@ -731,6 +731,18 @@ export class SubscriberEmailModel {
     return SubscriberEmailModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+    return SubscriberEmailModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): SubscriberEmailModel {
     return SubscriberEmailModel.whereRef(column, operator, value)
   }

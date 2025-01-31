@@ -819,6 +819,18 @@ export class UserModel {
     return UserModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): UserModel {
+    return UserModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): UserModel {
     return UserModel.whereRef(column, operator, value)
   }

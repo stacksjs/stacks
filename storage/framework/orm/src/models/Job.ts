@@ -730,6 +730,18 @@ export class JobModel {
     return JobModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): JobModel {
+    return JobModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): JobModel {
+    const instance = new JobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): JobModel {
     return JobModel.whereRef(column, operator, value)
   }

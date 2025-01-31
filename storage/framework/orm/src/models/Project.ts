@@ -721,6 +721,18 @@ export class ProjectModel {
     return ProjectModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): ProjectModel {
+    return ProjectModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): ProjectModel {
     return ProjectModel.whereRef(column, operator, value)
   }

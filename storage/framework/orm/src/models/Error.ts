@@ -730,6 +730,18 @@ export class ErrorModel {
     return ErrorModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): ErrorModel {
+    return ErrorModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): ErrorModel {
     return ErrorModel.whereRef(column, operator, value)
   }

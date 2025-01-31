@@ -776,6 +776,18 @@ export class DeploymentModel {
     return DeploymentModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): DeploymentModel {
+    return DeploymentModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): DeploymentModel {
     return DeploymentModel.whereRef(column, operator, value)
   }

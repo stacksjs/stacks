@@ -694,6 +694,18 @@ export class SubscriberModel {
     return SubscriberModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): SubscriberModel {
+    return SubscriberModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): SubscriberModel {
     return SubscriberModel.whereRef(column, operator, value)
   }

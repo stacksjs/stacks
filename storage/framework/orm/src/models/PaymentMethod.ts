@@ -789,6 +789,18 @@ export class PaymentMethodModel {
     return PaymentMethodModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+    return PaymentMethodModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): PaymentMethodModel {
     return PaymentMethodModel.whereRef(column, operator, value)
   }

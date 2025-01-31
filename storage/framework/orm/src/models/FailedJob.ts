@@ -730,6 +730,18 @@ export class FailedJobModel {
     return FailedJobModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): FailedJobModel {
+    return FailedJobModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): FailedJobModel {
     return FailedJobModel.whereRef(column, operator, value)
   }

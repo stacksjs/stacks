@@ -803,6 +803,18 @@ export class SubscriptionModel {
     return SubscriptionModel.applyWhere(instance, column, operator, value)
   }
 
+  whereColumn(first: string, operator: string, second: string): SubscriptionModel {
+    return SubscriptionModel.whereColumn(first, operator, second)
+  }
+
+  static whereColumn(first: string, operator: string, second: string): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
   whereRef(column: string, operator: string, value: string): SubscriptionModel {
     return SubscriptionModel.whereRef(column, operator, value)
   }
