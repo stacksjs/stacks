@@ -832,6 +832,14 @@ export async function generateModelString(
         ${getFields}
         ${setFields}
         
+        getOriginal(column?: keyof ${modelName}Type): Partial<UserType> | any {
+          if (column) {
+            return this.originalAttributes[column]
+          }
+
+          return this.originalAttributes
+        }
+
         isDirty(column?: keyof ${modelName}Type): boolean {
           if (column) {
             return this.attributes[column] !== this.originalAttributes[column]

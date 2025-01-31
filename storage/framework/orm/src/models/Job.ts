@@ -136,6 +136,14 @@ export class JobModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof JobType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof JobType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

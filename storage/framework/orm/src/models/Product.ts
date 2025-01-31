@@ -163,6 +163,14 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof ProductType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof ProductType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

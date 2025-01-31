@@ -197,6 +197,14 @@ export class UserModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof UserType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof UserType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

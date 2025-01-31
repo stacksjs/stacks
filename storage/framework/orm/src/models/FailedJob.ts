@@ -136,6 +136,14 @@ export class FailedJobModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof FailedJobType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof FailedJobType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

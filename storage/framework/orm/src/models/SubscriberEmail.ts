@@ -110,6 +110,14 @@ export class SubscriberEmailModel {
     this.attributes.deleted_at = value
   }
 
+  getOriginal(column?: keyof SubscriberEmailType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof SubscriberEmailType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

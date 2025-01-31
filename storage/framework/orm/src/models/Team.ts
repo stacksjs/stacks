@@ -173,6 +173,14 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof TeamType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof TeamType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

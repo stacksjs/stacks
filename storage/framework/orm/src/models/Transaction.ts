@@ -172,6 +172,14 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof TransactionType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof TransactionType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

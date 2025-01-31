@@ -176,6 +176,14 @@ export class DeploymentModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof DeploymentType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof DeploymentType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

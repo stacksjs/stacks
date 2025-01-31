@@ -100,6 +100,14 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof ReleaseType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof ReleaseType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

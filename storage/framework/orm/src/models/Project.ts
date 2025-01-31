@@ -127,6 +127,14 @@ export class ProjectModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof ProjectType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof ProjectType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

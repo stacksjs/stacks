@@ -185,6 +185,14 @@ export class PaymentMethodModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof PaymentMethodType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof PaymentMethodType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

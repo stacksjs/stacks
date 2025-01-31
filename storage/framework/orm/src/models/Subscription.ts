@@ -203,6 +203,14 @@ export class SubscriptionModel {
     this.attributes.updated_at = value
   }
 
+  getOriginal(column?: keyof SubscriptionType): Partial<UserType> | any {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
   isDirty(column?: keyof SubscriptionType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
