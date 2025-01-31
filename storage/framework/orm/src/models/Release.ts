@@ -870,6 +870,8 @@ export class ReleaseModel {
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
+
     const key = Object.keys(condition)[0] as keyof ReleaseType
 
     if (!key) {
@@ -901,8 +903,10 @@ export class ReleaseModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new ReleaseModel(null)
       const result = await instance.mapWith(updatedRelease)
+
+      instance.hasSaved = true
+
       return new ReleaseModel(result as ReleaseType)
     }
     else {
@@ -1035,6 +1039,8 @@ export class ReleaseModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1050,6 +1056,8 @@ export class ReleaseModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1075,6 +1083,8 @@ export class ReleaseModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<ReleaseType>): ReleaseModel {

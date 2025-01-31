@@ -907,6 +907,8 @@ export class SubscriberEmailModel {
     condition: Partial<SubscriberEmailType>,
     newSubscriberEmail: NewSubscriberEmail,
   ): Promise<SubscriberEmailModel> {
+    const instance = new SubscriberEmailModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriberEmailType
 
     if (!key) {
@@ -938,8 +940,10 @@ export class SubscriberEmailModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new SubscriberEmailModel(null)
       const result = await instance.mapWith(updatedSubscriberEmail)
+
+      instance.hasSaved = true
+
       return new SubscriberEmailModel(result as SubscriberEmailType)
     }
     else {
@@ -1072,6 +1076,8 @@ export class SubscriberEmailModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1087,6 +1093,8 @@ export class SubscriberEmailModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1112,6 +1120,8 @@ export class SubscriberEmailModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<SubscriberEmailType>): SubscriberEmailModel {

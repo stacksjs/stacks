@@ -1616,6 +1616,8 @@ export async function generateModelString(
           condition: Partial<${modelName}Type>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
+          const instance = new ${modelName}Model(null)
+
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
           if (!key) {
@@ -1647,8 +1649,10 @@ export async function generateModelString(
               throw new HttpError(500, 'Failed to fetch updated record')
             }
   
-            const instance = new ${modelName}Model(null)
             const result = await instance.mapWith(updated${modelName})
+
+            instance.hasSaved = true
+
             return new ${modelName}Model(result as ${modelName}Type)
           } else {
             // If not found, create a new record
@@ -1782,6 +1786,8 @@ export async function generateModelString(
             return model
           }
 
+          this.hasSaved = true
+
           return undefined
         }
   
@@ -1800,6 +1806,8 @@ export async function generateModelString(
   
   
             ${mittUpdateStatement}
+
+            this.hasSaved = true
   
             return model
           }
@@ -1825,6 +1833,8 @@ export async function generateModelString(
           else {
             await this.update(this)
           }
+
+          this.hasSaved = true
         }
 
         fill(data: Partial<${modelName}Type>): ${modelName}Model {

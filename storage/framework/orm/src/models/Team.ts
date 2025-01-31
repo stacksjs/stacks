@@ -1003,6 +1003,8 @@ export class TeamModel {
     condition: Partial<TeamType>,
     newTeam: NewTeam,
   ): Promise<TeamModel> {
+    const instance = new TeamModel(null)
+
     const key = Object.keys(condition)[0] as keyof TeamType
 
     if (!key) {
@@ -1034,8 +1036,10 @@ export class TeamModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new TeamModel(null)
       const result = await instance.mapWith(updatedTeam)
+
+      instance.hasSaved = true
+
       return new TeamModel(result as TeamType)
     }
     else {
@@ -1168,6 +1172,8 @@ export class TeamModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1183,6 +1189,8 @@ export class TeamModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1208,6 +1216,8 @@ export class TeamModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<TeamType>): TeamModel {

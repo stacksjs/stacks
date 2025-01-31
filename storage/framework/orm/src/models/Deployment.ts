@@ -1000,6 +1000,8 @@ export class DeploymentModel {
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
+    const instance = new DeploymentModel(null)
+
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
     if (!key) {
@@ -1031,8 +1033,10 @@ export class DeploymentModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new DeploymentModel(null)
       const result = await instance.mapWith(updatedDeployment)
+
+      instance.hasSaved = true
+
       return new DeploymentModel(result as DeploymentType)
     }
     else {
@@ -1165,6 +1169,8 @@ export class DeploymentModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1180,6 +1186,8 @@ export class DeploymentModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1205,6 +1213,8 @@ export class DeploymentModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<DeploymentType>): DeploymentModel {

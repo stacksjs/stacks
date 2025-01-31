@@ -938,6 +938,8 @@ export class ErrorModel {
     condition: Partial<ErrorType>,
     newError: NewError,
   ): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
+
     const key = Object.keys(condition)[0] as keyof ErrorType
 
     if (!key) {
@@ -969,8 +971,10 @@ export class ErrorModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new ErrorModel(null)
       const result = await instance.mapWith(updatedError)
+
+      instance.hasSaved = true
+
       return new ErrorModel(result as ErrorType)
     }
     else {
@@ -1103,6 +1107,8 @@ export class ErrorModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1118,6 +1124,8 @@ export class ErrorModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1143,6 +1151,8 @@ export class ErrorModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<ErrorType>): ErrorModel {

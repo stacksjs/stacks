@@ -1051,6 +1051,8 @@ export class SubscriptionModel {
     condition: Partial<SubscriptionType>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
+    const instance = new SubscriptionModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
     if (!key) {
@@ -1082,8 +1084,10 @@ export class SubscriptionModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new SubscriptionModel(null)
       const result = await instance.mapWith(updatedSubscription)
+
+      instance.hasSaved = true
+
       return new SubscriptionModel(result as SubscriptionType)
     }
     else {
@@ -1216,6 +1220,8 @@ export class SubscriptionModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1231,6 +1237,8 @@ export class SubscriptionModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1256,6 +1264,8 @@ export class SubscriptionModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<SubscriptionType>): SubscriptionModel {

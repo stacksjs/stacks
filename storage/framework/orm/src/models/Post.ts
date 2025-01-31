@@ -904,6 +904,8 @@ export class PostModel {
     condition: Partial<PostType>,
     newPost: NewPost,
   ): Promise<PostModel> {
+    const instance = new PostModel(null)
+
     const key = Object.keys(condition)[0] as keyof PostType
 
     if (!key) {
@@ -935,8 +937,10 @@ export class PostModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new PostModel(null)
       const result = await instance.mapWith(updatedPost)
+
+      instance.hasSaved = true
+
       return new PostModel(result as PostType)
     }
     else {
@@ -1069,6 +1073,8 @@ export class PostModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1084,6 +1090,8 @@ export class PostModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1109,6 +1117,8 @@ export class PostModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<PostType>): PostModel {

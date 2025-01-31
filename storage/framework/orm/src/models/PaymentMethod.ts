@@ -1013,6 +1013,8 @@ export class PaymentMethodModel {
     condition: Partial<PaymentMethodType>,
     newPaymentMethod: NewPaymentMethod,
   ): Promise<PaymentMethodModel> {
+    const instance = new PaymentMethodModel(null)
+
     const key = Object.keys(condition)[0] as keyof PaymentMethodType
 
     if (!key) {
@@ -1044,8 +1046,10 @@ export class PaymentMethodModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new PaymentMethodModel(null)
       const result = await instance.mapWith(updatedPaymentMethod)
+
+      instance.hasSaved = true
+
       return new PaymentMethodModel(result as PaymentMethodType)
     }
     else {
@@ -1178,6 +1182,8 @@ export class PaymentMethodModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1193,6 +1199,8 @@ export class PaymentMethodModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1218,6 +1226,8 @@ export class PaymentMethodModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<PaymentMethodType>): PaymentMethodModel {

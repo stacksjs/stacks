@@ -984,6 +984,8 @@ export class TransactionModel {
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
+    const instance = new TransactionModel(null)
+
     const key = Object.keys(condition)[0] as keyof TransactionType
 
     if (!key) {
@@ -1015,8 +1017,10 @@ export class TransactionModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new TransactionModel(null)
       const result = await instance.mapWith(updatedTransaction)
+
+      instance.hasSaved = true
+
       return new TransactionModel(result as TransactionType)
     }
     else {
@@ -1149,6 +1153,8 @@ export class TransactionModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1164,6 +1170,8 @@ export class TransactionModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1189,6 +1197,8 @@ export class TransactionModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<TransactionType>): TransactionModel {

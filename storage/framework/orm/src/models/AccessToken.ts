@@ -938,6 +938,8 @@ export class AccessTokenModel {
     condition: Partial<AccessTokenType>,
     newAccessToken: NewAccessToken,
   ): Promise<AccessTokenModel> {
+    const instance = new AccessTokenModel(null)
+
     const key = Object.keys(condition)[0] as keyof AccessTokenType
 
     if (!key) {
@@ -969,8 +971,10 @@ export class AccessTokenModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new AccessTokenModel(null)
       const result = await instance.mapWith(updatedAccessToken)
+
+      instance.hasSaved = true
+
       return new AccessTokenModel(result as AccessTokenType)
     }
     else {
@@ -1103,6 +1107,8 @@ export class AccessTokenModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1118,6 +1124,8 @@ export class AccessTokenModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1143,6 +1151,8 @@ export class AccessTokenModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<AccessTokenType>): AccessTokenModel {

@@ -921,6 +921,8 @@ export class ProjectModel {
     condition: Partial<ProjectType>,
     newProject: NewProject,
   ): Promise<ProjectModel> {
+    const instance = new ProjectModel(null)
+
     const key = Object.keys(condition)[0] as keyof ProjectType
 
     if (!key) {
@@ -952,8 +954,10 @@ export class ProjectModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new ProjectModel(null)
       const result = await instance.mapWith(updatedProject)
+
+      instance.hasSaved = true
+
       return new ProjectModel(result as ProjectType)
     }
     else {
@@ -1086,6 +1090,8 @@ export class ProjectModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1101,6 +1107,8 @@ export class ProjectModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1126,6 +1134,8 @@ export class ProjectModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<ProjectType>): ProjectModel {

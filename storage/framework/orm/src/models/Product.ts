@@ -983,6 +983,8 @@ export class ProductModel {
     condition: Partial<ProductType>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
+    const instance = new ProductModel(null)
+
     const key = Object.keys(condition)[0] as keyof ProductType
 
     if (!key) {
@@ -1014,8 +1016,10 @@ export class ProductModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new ProductModel(null)
       const result = await instance.mapWith(updatedProduct)
+
+      instance.hasSaved = true
+
       return new ProductModel(result as ProductType)
     }
     else {
@@ -1148,6 +1152,8 @@ export class ProductModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1163,6 +1169,8 @@ export class ProductModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1188,6 +1196,8 @@ export class ProductModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<ProductType>): ProductModel {

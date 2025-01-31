@@ -938,6 +938,8 @@ export class FailedJobModel {
     condition: Partial<FailedJobType>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
+    const instance = new FailedJobModel(null)
+
     const key = Object.keys(condition)[0] as keyof FailedJobType
 
     if (!key) {
@@ -969,8 +971,10 @@ export class FailedJobModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new FailedJobModel(null)
       const result = await instance.mapWith(updatedFailedJob)
+
+      instance.hasSaved = true
+
       return new FailedJobModel(result as FailedJobType)
     }
     else {
@@ -1103,6 +1107,8 @@ export class FailedJobModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1118,6 +1124,8 @@ export class FailedJobModel {
 
     if (this.id) {
       const model = await this.find(this.id)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1143,6 +1151,8 @@ export class FailedJobModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<FailedJobType>): FailedJobModel {

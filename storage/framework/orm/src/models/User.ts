@@ -1019,6 +1019,8 @@ export class UserModel {
     condition: Partial<UserType>,
     newUser: NewUser,
   ): Promise<UserModel> {
+    const instance = new UserModel(null)
+
     const key = Object.keys(condition)[0] as keyof UserType
 
     if (!key) {
@@ -1050,8 +1052,10 @@ export class UserModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const instance = new UserModel(null)
       const result = await instance.mapWith(updatedUser)
+
+      instance.hasSaved = true
+
       return new UserModel(result as UserType)
     }
     else {
@@ -1187,6 +1191,8 @@ export class UserModel {
       return model
     }
 
+    this.hasSaved = true
+
     return undefined
   }
 
@@ -1205,6 +1211,8 @@ export class UserModel {
 
       if (model)
         dispatch('user:updated', model)
+
+      this.hasSaved = true
 
       return model
     }
@@ -1230,6 +1238,8 @@ export class UserModel {
     else {
       await this.update(this)
     }
+
+    this.hasSaved = true
   }
 
   fill(data: Partial<UserType>): UserModel {
