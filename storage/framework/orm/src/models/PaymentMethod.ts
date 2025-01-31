@@ -193,6 +193,16 @@ export class PaymentMethodModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<PaymentMethodType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<PaymentMethodType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof PaymentMethodType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

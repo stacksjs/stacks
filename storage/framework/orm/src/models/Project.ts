@@ -135,6 +135,16 @@ export class ProjectModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<ProjectType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<ProjectType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof ProjectType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

@@ -108,6 +108,16 @@ export class ReleaseModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<ReleaseType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<ReleaseType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof ReleaseType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

@@ -840,6 +840,16 @@ export async function generateModelString(
           return this.originalAttributes
         }
 
+        getChanges(): Partial<${modelName}Type> {
+          return Object.entries(this.attributes).reduce((changes: Partial<${modelName}Type>, [key, value]) => {
+            const originalValue = (this.originalAttributes as any)[key]
+            if (value !== originalValue) {
+              changes[key] = value
+            }
+            return changes
+          }, {})
+        }
+
         isDirty(column?: keyof ${modelName}Type): boolean {
           if (column) {
             return this.attributes[column] !== this.originalAttributes[column]

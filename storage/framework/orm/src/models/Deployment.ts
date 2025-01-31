@@ -184,6 +184,16 @@ export class DeploymentModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<DeploymentType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<DeploymentType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof DeploymentType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

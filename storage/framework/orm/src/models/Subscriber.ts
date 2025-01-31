@@ -108,6 +108,16 @@ export class SubscriberModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<SubscriberType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<SubscriberType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof SubscriberType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

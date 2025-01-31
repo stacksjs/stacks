@@ -205,6 +205,16 @@ export class UserModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<UserType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<UserType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof UserType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

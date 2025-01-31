@@ -118,6 +118,16 @@ export class SubscriberEmailModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<SubscriberEmailType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<SubscriberEmailType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof SubscriberEmailType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

@@ -181,6 +181,16 @@ export class TeamModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<TeamType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<TeamType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof TeamType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

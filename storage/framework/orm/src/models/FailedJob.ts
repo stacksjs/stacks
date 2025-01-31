@@ -144,6 +144,16 @@ export class FailedJobModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<FailedJobType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<FailedJobType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof FailedJobType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

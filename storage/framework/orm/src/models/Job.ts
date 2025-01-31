@@ -144,6 +144,16 @@ export class JobModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<JobType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<JobType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof JobType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

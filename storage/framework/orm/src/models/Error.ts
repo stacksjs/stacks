@@ -144,6 +144,16 @@ export class ErrorModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<ErrorType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<ErrorType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof ErrorType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]

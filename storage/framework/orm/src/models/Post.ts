@@ -130,6 +130,16 @@ export class PostModel {
     return this.originalAttributes
   }
 
+  getChanges(): Partial<PostType> {
+    return Object.entries(this.attributes).reduce((changes: Partial<PostType>, [key, value]) => {
+      const originalValue = (this.originalAttributes as any)[key]
+      if (value !== originalValue) {
+        changes[key] = value
+      }
+      return changes
+    }, {})
+  }
+
   isDirty(column?: keyof PostType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
