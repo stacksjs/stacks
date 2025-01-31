@@ -1133,6 +1133,16 @@ export async function generateModelString(
           return instance
         }
 
+        static whereExists(callback: (qb: any) => any): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) => 
+            exists(callback({ exists, selectFrom }))
+          )
+        
+          return instance
+        }
+
         whereHas(
           relation: string,
           callback: (query: SubqueryBuilder) => void

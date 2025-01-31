@@ -417,6 +417,16 @@ export class ProjectModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

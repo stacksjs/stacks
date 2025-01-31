@@ -416,6 +416,16 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

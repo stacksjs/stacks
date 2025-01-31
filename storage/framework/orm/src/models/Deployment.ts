@@ -470,6 +470,16 @@ export class DeploymentModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

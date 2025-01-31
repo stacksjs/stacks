@@ -453,6 +453,16 @@ export class ProductModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

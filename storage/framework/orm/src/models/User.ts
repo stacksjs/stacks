@@ -503,6 +503,16 @@ export class UserModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

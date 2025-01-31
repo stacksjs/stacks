@@ -426,6 +426,16 @@ export class ErrorModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

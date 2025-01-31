@@ -426,6 +426,16 @@ export class FailedJobModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

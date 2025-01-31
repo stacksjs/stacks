@@ -497,6 +497,16 @@ export class SubscriptionModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,

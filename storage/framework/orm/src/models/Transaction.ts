@@ -470,6 +470,16 @@ export class TransactionModel {
     return instance
   }
 
+  static whereExists(callback: (qb: any) => any): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
