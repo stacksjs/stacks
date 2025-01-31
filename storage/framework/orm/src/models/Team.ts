@@ -69,7 +69,9 @@ export class TeamModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(team: Partial<TeamType> | null) {
     if (team) {
       this.attributes = { ...team }
@@ -87,6 +89,7 @@ export class TeamModel {
     this.updateFromQuery = DB.instance.updateTable('teams')
     this.deleteFromQuery = DB.instance.deleteFrom('teams')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get personal_access_tokens(): AccessTokenModel[] | undefined {
@@ -204,6 +207,10 @@ export class TeamModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof TeamType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {

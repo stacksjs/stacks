@@ -808,7 +808,9 @@ export async function generateModelString(
         protected updateFromQuery: any
         protected deleteFromQuery: any
         protected hasSelect: boolean
+        private hasSaved: boolean
         private customColumns: Record<string, unknown> = {}
+       
         constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
           if (${formattedModelName}) {
 
@@ -827,6 +829,7 @@ export async function generateModelString(
           this.updateFromQuery = DB.instance.updateTable('${tableName}')
           this.deleteFromQuery = DB.instance.deleteFrom('${tableName}')
           this.hasSelect = false
+          this.hasSaved = false
         }
 
         ${getFields}
@@ -843,7 +846,7 @@ export async function generateModelString(
         getChanges(): Partial<${modelName}JsonResponse> {
           return this.fillable.reduce<Partial<${modelName}JsonResponse>>((changes, key) => {
             const currentValue = this.attributes[key as keyof ${formattedTableName}Table]
-      const originalValue = this.originalAttributes[key as keyof ${formattedTableName}Table]
+            const originalValue = this.originalAttributes[key as keyof ${formattedTableName}Table]
 
             if (currentValue !== originalValue) {
               changes[key] = currentValue
@@ -863,6 +866,10 @@ export async function generateModelString(
 
             return currentValue !== originalValue
           })
+        }
+
+        wasChanged(column?: keyof ${modelName}Type): boolean {
+          return this.hasSaved && this.isDirty(column)
         }
   
         select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {

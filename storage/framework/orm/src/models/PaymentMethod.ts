@@ -73,7 +73,9 @@ export class PaymentMethodModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(paymentmethod: Partial<PaymentMethodType> | null) {
     if (paymentmethod) {
       this.attributes = { ...paymentmethod }
@@ -91,6 +93,7 @@ export class PaymentMethodModel {
     this.updateFromQuery = DB.instance.updateTable('payment_methods')
     this.deleteFromQuery = DB.instance.deleteFrom('payment_methods')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get user_id(): number | undefined {
@@ -216,6 +219,10 @@ export class PaymentMethodModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof PaymentMethodType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {

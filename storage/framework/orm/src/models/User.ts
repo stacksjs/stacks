@@ -89,7 +89,9 @@ export class UserModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(user: Partial<UserType> | null) {
     if (user) {
       this.attributes = { ...user }
@@ -107,6 +109,7 @@ export class UserModel {
     this.updateFromQuery = DB.instance.updateTable('users')
     this.deleteFromQuery = DB.instance.deleteFrom('users')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get deployments(): DeploymentModel[] | undefined {
@@ -228,6 +231,10 @@ export class UserModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof UserType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {

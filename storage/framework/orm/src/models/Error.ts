@@ -60,7 +60,9 @@ export class ErrorModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(error: Partial<ErrorType> | null) {
     if (error) {
       this.attributes = { ...error }
@@ -78,6 +80,7 @@ export class ErrorModel {
     this.updateFromQuery = DB.instance.updateTable('errors')
     this.deleteFromQuery = DB.instance.deleteFrom('errors')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -167,6 +170,10 @@ export class ErrorModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof ErrorType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {

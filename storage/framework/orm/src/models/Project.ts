@@ -59,7 +59,9 @@ export class ProjectModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(project: Partial<ProjectType> | null) {
     if (project) {
       this.attributes = { ...project }
@@ -77,6 +79,7 @@ export class ProjectModel {
     this.updateFromQuery = DB.instance.updateTable('projects')
     this.deleteFromQuery = DB.instance.deleteFrom('projects')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -158,6 +161,10 @@ export class ProjectModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof ProjectType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {

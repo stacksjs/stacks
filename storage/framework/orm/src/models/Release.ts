@@ -56,7 +56,9 @@ export class ReleaseModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(release: Partial<ReleaseType> | null) {
     if (release) {
       this.attributes = { ...release }
@@ -74,6 +76,7 @@ export class ReleaseModel {
     this.updateFromQuery = DB.instance.updateTable('releases')
     this.deleteFromQuery = DB.instance.deleteFrom('releases')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -131,6 +134,10 @@ export class ReleaseModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof ReleaseType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {

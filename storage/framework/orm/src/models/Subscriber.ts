@@ -56,7 +56,9 @@ export class SubscriberModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(subscriber: Partial<SubscriberType> | null) {
     if (subscriber) {
       this.attributes = { ...subscriber }
@@ -74,6 +76,7 @@ export class SubscriberModel {
     this.updateFromQuery = DB.instance.updateTable('subscribers')
     this.deleteFromQuery = DB.instance.deleteFrom('subscribers')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -131,6 +134,10 @@ export class SubscriberModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof SubscriberType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {

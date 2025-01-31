@@ -68,7 +68,9 @@ export class DeploymentModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(deployment: Partial<DeploymentType> | null) {
     if (deployment) {
       this.attributes = { ...deployment }
@@ -86,6 +88,7 @@ export class DeploymentModel {
     this.updateFromQuery = DB.instance.updateTable('deployments')
     this.deleteFromQuery = DB.instance.deleteFrom('deployments')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get user_id(): number | undefined {
@@ -207,6 +210,10 @@ export class DeploymentModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof DeploymentType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {

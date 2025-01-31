@@ -72,7 +72,9 @@ export class TransactionModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(transaction: Partial<TransactionType> | null) {
     if (transaction) {
       this.attributes = { ...transaction }
@@ -90,6 +92,7 @@ export class TransactionModel {
     this.updateFromQuery = DB.instance.updateTable('transactions')
     this.deleteFromQuery = DB.instance.deleteFrom('transactions')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get user_id(): number | undefined {
@@ -203,6 +206,10 @@ export class TransactionModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof TransactionType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {

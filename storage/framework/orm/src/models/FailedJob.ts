@@ -60,7 +60,9 @@ export class FailedJobModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(failedjob: Partial<FailedJobType> | null) {
     if (failedjob) {
       this.attributes = { ...failedjob }
@@ -78,6 +80,7 @@ export class FailedJobModel {
     this.updateFromQuery = DB.instance.updateTable('failed_jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('failed_jobs')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -167,6 +170,10 @@ export class FailedJobModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof FailedJobType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {

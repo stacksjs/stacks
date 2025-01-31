@@ -62,7 +62,9 @@ export class PostModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(post: Partial<PostType> | null) {
     if (post) {
       this.attributes = { ...post }
@@ -80,6 +82,7 @@ export class PostModel {
     this.updateFromQuery = DB.instance.updateTable('posts')
     this.deleteFromQuery = DB.instance.deleteFrom('posts')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get user_id(): number | undefined {
@@ -153,6 +156,10 @@ export class PostModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof PostType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {

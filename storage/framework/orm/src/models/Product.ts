@@ -63,7 +63,9 @@ export class ProductModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(product: Partial<ProductType> | null) {
     if (product) {
       this.attributes = { ...product }
@@ -81,6 +83,7 @@ export class ProductModel {
     this.updateFromQuery = DB.instance.updateTable('products')
     this.deleteFromQuery = DB.instance.deleteFrom('products')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -194,6 +197,10 @@ export class ProductModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof ProductType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {

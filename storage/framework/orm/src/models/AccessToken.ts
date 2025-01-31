@@ -64,7 +64,9 @@ export class AccessTokenModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(accesstoken: Partial<AccessTokenType> | null) {
     if (accesstoken) {
       this.attributes = { ...accesstoken }
@@ -82,6 +84,7 @@ export class AccessTokenModel {
     this.updateFromQuery = DB.instance.updateTable('personal_access_tokens')
     this.deleteFromQuery = DB.instance.deleteFrom('personal_access_tokens')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get team_id(): number | undefined {
@@ -171,6 +174,10 @@ export class AccessTokenModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof AccessTokenType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {

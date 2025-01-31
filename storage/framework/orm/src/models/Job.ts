@@ -60,7 +60,9 @@ export class JobModel {
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
+  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
+
   constructor(job: Partial<JobType> | null) {
     if (job) {
       this.attributes = { ...job }
@@ -78,6 +80,7 @@ export class JobModel {
     this.updateFromQuery = DB.instance.updateTable('jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('jobs')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
   get id(): number | undefined {
@@ -167,6 +170,10 @@ export class JobModel {
 
       return currentValue !== originalValue
     })
+  }
+
+  wasChanged(column?: keyof JobType): boolean {
+    return this.hasSaved && this.isDirty(column)
   }
 
   select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
