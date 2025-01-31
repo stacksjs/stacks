@@ -122,6 +122,18 @@ export class PostModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof PostType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
     return PostModel.select(params)
   }

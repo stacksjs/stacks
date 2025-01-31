@@ -172,6 +172,18 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof TransactionType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
     return TransactionModel.select(params)
   }

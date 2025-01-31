@@ -197,6 +197,18 @@ export class UserModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof UserType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
     return UserModel.select(params)
   }

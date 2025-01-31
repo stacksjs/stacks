@@ -136,6 +136,18 @@ export class ErrorModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof ErrorType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
     return ErrorModel.select(params)
   }

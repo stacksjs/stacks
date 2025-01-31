@@ -830,7 +830,19 @@ export async function generateModelString(
         }
 
         ${getFields}
-        ${setFields}  
+        ${setFields}
+        
+        isDirty(column?: keyof ${modelName}Type): boolean {
+          if (column) {
+            return this.attributes[column] !== this.originalAttributes[column]
+          }
+
+          return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+            const currentValue = (this.attributes as any)[key]
+            
+            return currentValue !== originalValue
+          })
+        }
   
         select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
           return ${modelName}Model.select(params)

@@ -127,6 +127,18 @@ export class ProjectModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof ProjectType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
     return ProjectModel.select(params)
   }

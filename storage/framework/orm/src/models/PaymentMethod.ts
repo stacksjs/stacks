@@ -185,6 +185,18 @@ export class PaymentMethodModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof PaymentMethodType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
     return PaymentMethodModel.select(params)
   }

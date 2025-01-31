@@ -136,6 +136,18 @@ export class FailedJobModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof FailedJobType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
     return FailedJobModel.select(params)
   }

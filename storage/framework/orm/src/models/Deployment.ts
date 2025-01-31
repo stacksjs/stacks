@@ -176,6 +176,18 @@ export class DeploymentModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof DeploymentType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
     return DeploymentModel.select(params)
   }

@@ -100,6 +100,18 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof ReleaseType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
     return ReleaseModel.select(params)
   }

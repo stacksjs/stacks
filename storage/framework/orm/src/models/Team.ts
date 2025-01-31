@@ -173,6 +173,18 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof TeamType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
     return TeamModel.select(params)
   }

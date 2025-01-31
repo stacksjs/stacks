@@ -100,6 +100,18 @@ export class SubscriberModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof SubscriberType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
     return SubscriberModel.select(params)
   }

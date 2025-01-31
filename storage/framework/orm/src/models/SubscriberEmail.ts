@@ -110,6 +110,18 @@ export class SubscriberEmailModel {
     this.attributes.deleted_at = value
   }
 
+  isDirty(column?: keyof SubscriberEmailType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
     return SubscriberEmailModel.select(params)
   }

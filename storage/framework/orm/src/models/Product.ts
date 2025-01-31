@@ -163,6 +163,18 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
+  isDirty(column?: keyof ProductType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
     return ProductModel.select(params)
   }
