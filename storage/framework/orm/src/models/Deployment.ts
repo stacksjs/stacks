@@ -1179,6 +1179,21 @@ export class DeploymentModel {
     }
   }
 
+  fill(data: Partial<DeploymentType>): DeploymentModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewDeployment
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the deployment instance
   async delete(): Promise<any> {
     if (this.id === undefined)

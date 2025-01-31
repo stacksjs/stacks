@@ -1100,6 +1100,21 @@ export class ProjectModel {
     }
   }
 
+  fill(data: Partial<ProjectType>): ProjectModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewProject
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the project instance
   async delete(): Promise<any> {
     if (this.id === undefined)

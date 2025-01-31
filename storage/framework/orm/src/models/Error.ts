@@ -1117,6 +1117,21 @@ export class ErrorModel {
     }
   }
 
+  fill(data: Partial<ErrorType>): ErrorModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewError
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the error instance
   async delete(): Promise<any> {
     if (this.id === undefined)

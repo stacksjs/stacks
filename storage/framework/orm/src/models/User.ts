@@ -1204,6 +1204,21 @@ export class UserModel {
     }
   }
 
+  fill(data: Partial<UserType>): UserModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewUser
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the user instance
   async delete(): Promise<any> {
     if (this.id === undefined)

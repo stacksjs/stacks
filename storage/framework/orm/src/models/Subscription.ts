@@ -1230,6 +1230,21 @@ export class SubscriptionModel {
     }
   }
 
+  fill(data: Partial<SubscriptionType>): SubscriptionModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewSubscription
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
   // Method to delete (soft delete) the subscription instance
   async delete(): Promise<any> {
     if (this.id === undefined)
