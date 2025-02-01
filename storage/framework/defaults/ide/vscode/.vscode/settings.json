@@ -100,17 +100,19 @@
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
   "markdownlint.config": {
-    "default": true,
-    "MD033": {
-      "allowed_elements": [
-        "details",
-        "summary",
-        "VPTeamPage",
-        "VPTeamPageTitle",
-        "VPTeamMembers",
-        "script"
-      ]
-    },
+    "default": false,
+    // "MD033": {
+    //   "allowed_elements": [
+    //     "h3",
+    //     "div",
+    //     "details",
+    //     "summary",
+    //     "VPTeamPage",
+    //     "VPTeamPageTitle",
+    //     "VPTeamMembers",
+    //     "script"
+    //   ]
+    // },
     "MD041": false
   },
   // Stacks
