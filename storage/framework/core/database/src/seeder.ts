@@ -77,7 +77,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
     modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
   else
-    modelInstance = (await import(path.storagePath(`framework/database/models/generated/${relation?.model}.ts`))).default as Model
+    modelInstance = (await import(path.storagePath(`framework/models/generated/${relation?.model}.ts`))).default as Model
 
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
@@ -136,7 +136,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   if (fs.existsSync(path.userModelsPath(`${modelName}.ts`)))
     modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
   else
-    modelInstance = (await import(path.storagePath(`framework/database/models/generated/${modelName}.ts`))).default as Model
+    modelInstance = (await import(path.storagePath(`framework/models/generated/${modelName}.ts`))).default as Model
 
   if (!modelInstance)
     return 1
@@ -191,7 +191,7 @@ export async function seed(): Promise<void> {
 
   // otherwise, seed all models
   const modelsDir = path.userModelsPath()
-  const coreModelsDir = path.storagePath('framework/database/models/generated')
+  const coreModelsDir = path.storagePath('framework/models/generated')
   const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
   const coreModelFiles = fs.readdirSync(coreModelsDir).filter(file => file.endsWith('.ts'))
 

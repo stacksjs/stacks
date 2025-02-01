@@ -32,12 +32,12 @@ export async function deleteMigrationFiles(): Promise<void> {
 }
 
 export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
+        const modelPath = path.frameworkPath(`models/${modelFile}`)
 
         if (fs.existsSync(modelPath))
           await Bun.$`rm ${modelPath}`
@@ -47,7 +47,7 @@ export async function deleteFrameworkModels(): Promise<void> {
 }
 
 export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
-  const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
+  const oldModelPath = path.frameworkPath(`models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model
   let fields = {} as Attributes
 
@@ -79,7 +79,7 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
 
   const migrations = globSync([path.userMigrationsPath('*.ts')], { absolute: true })
 
-  return migrations.some(path => path.includes('create-jobs-'))
+  return migrations.some(path => path.includes(`create-${tableName}`))
 }
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {

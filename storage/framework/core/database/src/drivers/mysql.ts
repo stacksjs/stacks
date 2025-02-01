@@ -53,14 +53,14 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   // if (files.length === 0) {
   //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
-  //   // delete the *.ts files in the database/models folder
-  //   const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  //   // delete the *.ts files in the models folder
+  //   const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
   //   if (modelFiles.length) {
   //     log.debug('No existing model files in framework path...')
 
   //     for (const file of modelFiles) {
-  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`database/models/${file}`))
+  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`models/${file}`))
   //     }
   //   }
   // }
@@ -70,7 +70,7 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   const tableName = getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
 
   let haveFieldsChanged = false
 
@@ -132,7 +132,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
     await createPasskeyMigration()
 
   if (useBillable && tableName === 'users')
-    await createTableMigration(path.storagePath('framework/database/models/generated/Subscription.ts'))
+    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

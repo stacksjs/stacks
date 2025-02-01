@@ -140,7 +140,7 @@ export interface ModelOptions extends Base {
     billable?: boolean
     useActivityLog?: boolean | ActivityLogOption
 
-    likeable: boolean | LikeableOptions
+    likeable?: boolean | LikeableOptions
   }
 
   attributes?: Attributes
