@@ -45,7 +45,7 @@ export interface AuthOptions {
   usePasskey?: boolean
 }
 export interface LikeableOptions {
-  tableName?: string
+  table?: string
   foreignKey?: string
 }
 

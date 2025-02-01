@@ -38,7 +38,7 @@ export default {
     description: {
       fillable: true,
       validation: {
-        rule: schema.string().nullable(),
+        rule: schema.string(),
         message: {
           string: 'description must be a string',
         },
@@ -89,7 +89,7 @@ export default {
     wereDetained: {
       fillable: true,
       validation: {
-        rule: schema.boolean().nullable(),
+        rule: schema.boolean(),
         message: {
           string: 'wereDetained must be a boolean or null',
         },
