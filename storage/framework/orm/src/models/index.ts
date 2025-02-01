@@ -1,5 +1,7 @@
 export { default as AccessToken } from './AccessToken'
 
+export { default as Activity } from './Activity'
+
 export { default as Deployment } from './Deployment'
 
 export { default as Error } from './Error'

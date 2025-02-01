@@ -108,6 +108,35 @@ export interface TeamRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataActivity {
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ActivityRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'title' | 'description' | 'address' | 'latlng') => string) & ((key: 'info_source') => string[]) & ((key: 'were_detained') => boolean)
+
+  all: () => RequestDataActivity
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataSubscriber {
   id: number
   subscribed: boolean
@@ -420,4 +449,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeFailedJobRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeFailedJobRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType
