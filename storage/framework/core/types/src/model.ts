@@ -44,6 +44,10 @@ export interface AuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
 }
+export interface LikeableOptions {
+  tableName?: string
+  foreignKey?: string
+}
 
 type ActionPath = string
 type ActionName = string
@@ -135,6 +139,8 @@ export interface ModelOptions extends Base {
     observe?: string[] | boolean
     billable?: boolean
     useActivityLog?: boolean | ActivityLogOption
+
+    likeable: boolean | LikeableOptions
   }
 
   attributes?: Attributes
