@@ -749,7 +749,8 @@ export class PaymentMethodModel {
         ),
       ) as NewPaymentMethod
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

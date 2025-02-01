@@ -736,7 +736,8 @@ export class TransactionModel {
         ),
       ) as NewTransaction
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

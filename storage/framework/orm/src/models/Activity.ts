@@ -1,5 +1,4 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -154,7 +153,7 @@ export class ActivityModel {
     this.attributes.updated_at = value
   }
 
-  get deleted_at(value: Date) {
+  set deleted_at(value: Date) {
     this.attributes.deleted_at = value
   }
 
@@ -725,7 +724,6 @@ export class ActivityModel {
         ),
       ) as NewActivity
 
-      filtered.uuid = randomUUIDv7()
       return filtered
     })
 
@@ -1315,6 +1313,54 @@ export class ActivityModel {
     return await DB.instance.deleteFrom('activities')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  async getLikeCount(): Promise<number> {
+    const result = await DB.instance
+      .selectFrom('likes')
+      .select('count(*) as count')
+      .where('likes', '=', this.id)
+      .executeTakeFirst()
+
+    return Number(result?.count) || 0
+  }
+
+  async likes(): Promise<number> {
+    return this.getLikeCount()
+  }
+
+  async like(userId: number): Promise<void> {
+    const authUserId = userId || 1
+
+    await DB.instance
+      .insertInto('likes')
+      .values({
+        likes: this.id,
+        user_id: authUserId,
+      })
+      .execute()
+  }
+
+  async unlike(userId: number): Promise<void> {
+    const authUserId = userId || 1
+    await DB.instance
+      .deleteFrom('likes')
+      .where('likes', '=', this.id)
+      .where('user_id', '=', authUserId)
+      .execute()
+  }
+
+  async isLiked(userId: number): Promise<boolean> {
+    const authUserId = userId || 1
+
+    const like = await DB.instance
+      .selectFrom('likes')
+      .select('id')
+      .where('likes', '=', this.id)
+      .where('user_id', '=', authUserId)
+      .executeTakeFirst()
+
+    return !!like
   }
 
   distinct(column: keyof ActivityType): ActivityModel {

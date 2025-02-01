@@ -769,7 +769,8 @@ export class UserModel {
         ),
       ) as NewUser
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

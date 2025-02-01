@@ -736,7 +736,8 @@ export class DeploymentModel {
         ),
       ) as NewDeployment
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

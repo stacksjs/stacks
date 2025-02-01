@@ -1,5 +1,4 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -654,7 +653,6 @@ export class ReleaseModel {
         ),
       ) as NewRelease
 
-      filtered.uuid = randomUUIDv7()
       return filtered
     })
 

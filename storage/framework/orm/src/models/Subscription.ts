@@ -763,7 +763,8 @@ export class SubscriptionModel {
         ),
       ) as NewSubscription
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

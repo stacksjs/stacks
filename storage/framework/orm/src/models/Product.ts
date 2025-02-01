@@ -719,7 +719,8 @@ export class ProductModel {
         ),
       ) as NewProduct
 
-      filtered.uuid = randomUUIDv7()
+      filteredValues.uuid = randomUUIDv7()
+
       return filtered
     })
 

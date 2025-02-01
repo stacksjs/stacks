@@ -1,5 +1,4 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -109,7 +108,7 @@ export class SubscriberEmailModel {
     this.attributes.updated_at = value
   }
 
-  get deleted_at(value: Date) {
+  set deleted_at(value: Date) {
     this.attributes.deleted_at = value
   }
 
@@ -680,7 +679,6 @@ export class SubscriberEmailModel {
         ),
       ) as NewSubscriberEmail
 
-      filtered.uuid = randomUUIDv7()
       return filtered
     })
 

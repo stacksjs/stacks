@@ -1,6 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
-import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -680,7 +679,6 @@ export class PostModel {
         ),
       ) as NewPost
 
-      filtered.uuid = randomUUIDv7()
       return filtered
     })
 

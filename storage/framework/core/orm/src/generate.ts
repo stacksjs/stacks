@@ -5,6 +5,24 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
+function getUpvoteTableName(model: Model, tableName: string): string {
+  const defaultTable = `${tableName}_likes`
+  const traits = model.traits
+
+  return typeof traits?.likeable === 'object'
+    ? traits.likeable.table || defaultTable
+    : defaultTable
+}
+
+function getUpvoteForeignKey(model: Model, modelName: string): string {
+  const defaultForeignKey = `${snakeCase(modelName)}_id`
+  const traits = model.traits
+
+  return typeof traits?.likeable === 'object'
+    ? traits.likeable.foreignKey || defaultForeignKey
+    : defaultForeignKey
+}
+
 export async function generateModelString(
   tableName: string,
   modelName: string,
@@ -38,6 +56,7 @@ export async function generateModelString(
   let paymentImports = ''
   let twoFactorStatements = ''
   let billableStatements = ''
+  let likeableStatements = ''
   let displayableStatements = ''
   let removeInstanceStatment = ''
   let mittCreateStatement = ''
@@ -297,8 +316,13 @@ export async function generateModelString(
   const useTwoFactor = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.useTwoFactor
   const usePasskey = typeof model.traits?.useAuth === 'object' && model.traits.useAuth.usePasskey
   const useBillable = model.traits?.billable || false
+  const useLikeable = model.traits?.likeable || false
+
   const useSearchable = model.traits?.useSearch || false
   const displayableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.displayable
+
+  const likeableTable = getUpvoteTableName(model, tableName)
+  const likeableForeignKey = getUpvoteTableName(model, modelName)
 
   if (typeof useSearchable === 'object' && useSearchable) {
     const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
@@ -312,6 +336,58 @@ export async function generateModelString(
               }
           }
       `
+  }
+
+  if (useLikeable) {
+    likeableStatements += `
+      async getLikeCount(): Promise<number> {
+        const result = await DB.instance
+          .selectFrom('${likeableTable}')
+          .select('count(*) as count')
+          .where('${likeableForeignKey}', '=', this.id)
+          .executeTakeFirst()
+
+        return Number(result?.count) || 0
+      }\n\n
+
+      async likes(): Promise<number> {
+        return this.getLikeCount()
+      }\n\n
+
+      async like(userId: number): Promise<void> {
+        const authUserId = userId || 1
+
+        await DB.instance
+          .insertInto('${likeableTable}')
+          .values({
+            ${likeableForeignKey}: this.id,
+            user_id: authUserId
+          })
+        .execute()
+      }\n\n
+
+      async unlike(userId: number): Promise<void> {
+        const authUserId = userId || 1
+        await DB.instance
+          .deleteFrom('${likeableTable}')
+          .where('${likeableForeignKey}', '=', this.id)
+          .where('user_id', '=', authUserId)
+          .execute()
+      }\n\n
+
+      async isLiked(userId: number): Promise<boolean> {
+        const authUserId = userId || 1
+
+        const like = await DB.instance
+          .selectFrom('${likeableTable}')
+          .select('id')
+          .where('${likeableForeignKey}', '=', this.id)
+          .where('user_id', '=', authUserId)
+          .executeTakeFirst()
+        
+        return !!like
+      }
+    `
   }
 
   if (useBillable) {
@@ -701,7 +777,7 @@ export async function generateModelString(
       return this.attributes.deleted_at
     }\n\n`
 
-    setFields += `get deleted_at(value: Date) {
+    setFields += `set deleted_at(value: Date) {
       this.attributes.deleted_at = value
     }\n\n`
 
@@ -1395,7 +1471,8 @@ export async function generateModelString(
               ),
             ) as New${modelName}
         
-            filtered.uuid = randomUUIDv7()
+            ${uuidQuery}
+            
             return filtered
           })
 
@@ -1945,6 +2022,8 @@ export async function generateModelString(
         ${displayableStatements}
   
         ${billableStatements}
+
+        ${likeableStatements}
   
         distinct(column: keyof ${modelName}Type): ${modelName}Model {
           return ${modelName}Model.distinct(column)
