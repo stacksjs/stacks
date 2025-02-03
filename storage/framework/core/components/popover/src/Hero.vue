@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Popover, PopoverButton, PopoverPanel } from '../components'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 
 const solutions = [
   {
@@ -294,3 +294,4 @@ const solutions = [
   }
 }
 </style>
+..

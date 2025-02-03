@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 
-import { useCopyCode } from '../composables/useCopyCode'
+import { useCopyCode } from './composables/useCopyCode'
 
 const code = `<!-- App.vue -->
 <script lang="ts" setup>

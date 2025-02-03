@@ -8,7 +8,7 @@ import {
 } from '@headlessui/vue'
 import { computed, ref } from 'vue'
 
-import { useCopyCode } from '../composables/useCopyCode'
+import { useCopyCode } from './composables/useCopyCode'
 
 interface TransitionClass {
   enter: string

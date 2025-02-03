@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Switch } from './components'
+import { Switch } from '@headlessui/vue'
 
 const plugin: Plugin = {
   install(app) {

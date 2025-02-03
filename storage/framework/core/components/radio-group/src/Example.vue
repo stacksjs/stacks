@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '../components'
+import { RadioGroup, RadioGroupLabel, RadioGroupOption } from '@headlessui/vue'
 
 const plans = [
   {

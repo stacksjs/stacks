@@ -7,16 +7,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    Example: typeof import('./src/components/Example.vue')['default']
-    Footer: typeof import('./src/components/Footer.vue')['default']
-    Hero: typeof import('./src/components/Hero.vue')['default']
-    Installation: typeof import('./src/components/Installation.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
     Step: typeof import('./src/components/Step.vue')['default']
     Stepper: typeof import('./src/components/Stepper.vue')['default']
-    Usage: typeof import('./src/components/Usage.vue')['default']
   }
 }

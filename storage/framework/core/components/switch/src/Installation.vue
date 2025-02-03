@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useCopyCode } from '../composables/useCopyCode'
+import { useCopyCode } from './composables/useCopyCode'
 
-const code = `bun install @stacksjs/stepper`
+const code = `bun install @stacksjs/switch`
 
 const showCheckIcon = ref(false)
 
@@ -35,7 +35,3 @@ async function handleCopyCode() {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* @unocss-placeholder */
-</style>
