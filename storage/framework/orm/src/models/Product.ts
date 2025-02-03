@@ -443,7 +443,7 @@ export class ProductModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<ProductModel[]> {
+  async applyGet(): Promise<ProductModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -464,27 +464,14 @@ export class ProductModel {
     return data
   }
 
+  async get(): Promise<ProductModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<ProductModel[]> {
     const instance = new ProductModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ProductModel) => {
-      const instance = new ProductModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProductModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): ProductModel {

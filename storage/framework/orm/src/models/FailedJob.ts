@@ -415,7 +415,7 @@ export class FailedJobModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<FailedJobModel[]> {
+  async applyGet(): Promise<FailedJobModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -436,27 +436,14 @@ export class FailedJobModel {
     return data
   }
 
+  async get(): Promise<FailedJobModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<FailedJobModel[]> {
     const instance = new FailedJobModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: FailedJobModel) => {
-      const instance = new FailedJobModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new FailedJobModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): FailedJobModel {

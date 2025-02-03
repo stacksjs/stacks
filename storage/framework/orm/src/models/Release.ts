@@ -379,7 +379,7 @@ export class ReleaseModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<ReleaseModel[]> {
+  async applyGet(): Promise<ReleaseModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -400,27 +400,14 @@ export class ReleaseModel {
     return data
   }
 
+  async get(): Promise<ReleaseModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ReleaseModel) => {
-      const instance = new ReleaseModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ReleaseModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): ReleaseModel {

@@ -456,7 +456,7 @@ export class TeamModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<TeamModel[]> {
+  async applyGet(): Promise<TeamModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -477,27 +477,14 @@ export class TeamModel {
     return data
   }
 
+  async get(): Promise<TeamModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<TeamModel[]> {
     const instance = new TeamModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: TeamModel) => {
-      const instance = new TeamModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new TeamModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): TeamModel {

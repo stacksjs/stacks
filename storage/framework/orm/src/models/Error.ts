@@ -415,7 +415,7 @@ export class ErrorModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<ErrorModel[]> {
+  async applyGet(): Promise<ErrorModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -436,27 +436,14 @@ export class ErrorModel {
     return data
   }
 
+  async get(): Promise<ErrorModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<ErrorModel[]> {
     const instance = new ErrorModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ErrorModel) => {
-      const instance = new ErrorModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ErrorModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): ErrorModel {

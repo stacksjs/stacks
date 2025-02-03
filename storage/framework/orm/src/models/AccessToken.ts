@@ -423,7 +423,7 @@ export class AccessTokenModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<AccessTokenModel[]> {
+  async applyGet(): Promise<AccessTokenModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -444,27 +444,14 @@ export class AccessTokenModel {
     return data
   }
 
+  async get(): Promise<AccessTokenModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
-      const instance = new AccessTokenModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new AccessTokenModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): AccessTokenModel {

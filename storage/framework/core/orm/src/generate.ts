@@ -1195,8 +1195,8 @@ export async function generateModelString(
             .select(sql\`SUM(\${sql.raw(field as string)})\`)
             .executeTakeFirst()
         }
-
-        async get(): Promise<${modelName}Model[]> {
+        
+        async applyGet(): Promise<${modelName}Model[]> {
           let models
         
           if (this.hasSelect) {
@@ -1216,30 +1216,14 @@ export async function generateModelString(
           return data
         }
 
+        async get(): Promise<${modelName}Model[]> {
+          return await this.applyGet()
+        }
+
         static async get(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(null)
-  
-          let models
-        
-          if (instance.hasSelect) {
-            ${instanceSoftDeleteStatementsSelectFrom}
-  
-            models = await instance.selectFromQuery.execute()
-          } else {
-            ${instanceSoftDeleteStatementsSelectFrom}
-  
-            models = await instance.selectFromQuery.selectAll().execute()
-          }
-  
-          const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
-            const instance = new ${modelName}Model(model)
-  
-            const results = await instance.mapWith(model)
-  
-            return new ${modelName}Model(results)
-          }))
-          
-          return data
+
+          return await instance.applyGet()
         }
 
         has(relation: string): ${modelName}Model {

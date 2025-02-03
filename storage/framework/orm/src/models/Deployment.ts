@@ -460,7 +460,7 @@ export class DeploymentModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<DeploymentModel[]> {
+  async applyGet(): Promise<DeploymentModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -481,27 +481,14 @@ export class DeploymentModel {
     return data
   }
 
+  async get(): Promise<DeploymentModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<DeploymentModel[]> {
     const instance = new DeploymentModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: DeploymentModel) => {
-      const instance = new DeploymentModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new DeploymentModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): DeploymentModel {

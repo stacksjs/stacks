@@ -460,7 +460,7 @@ export class TransactionModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<TransactionModel[]> {
+  async applyGet(): Promise<TransactionModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -481,27 +481,14 @@ export class TransactionModel {
     return data
   }
 
+  async get(): Promise<TransactionModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<TransactionModel[]> {
     const instance = new TransactionModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: TransactionModel) => {
-      const instance = new TransactionModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new TransactionModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): TransactionModel {

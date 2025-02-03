@@ -487,7 +487,7 @@ export class SubscriptionModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<SubscriptionModel[]> {
+  async applyGet(): Promise<SubscriptionModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -508,27 +508,14 @@ export class SubscriptionModel {
     return data
   }
 
+  async get(): Promise<SubscriptionModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<SubscriptionModel[]> {
     const instance = new SubscriptionModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
-      const instance = new SubscriptionModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriptionModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): SubscriptionModel {

@@ -405,7 +405,7 @@ export class PostModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<PostModel[]> {
+  async applyGet(): Promise<PostModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -426,27 +426,14 @@ export class PostModel {
     return data
   }
 
+  async get(): Promise<PostModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<PostModel[]> {
     const instance = new PostModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: PostModel) => {
-      const instance = new PostModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new PostModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): PostModel {

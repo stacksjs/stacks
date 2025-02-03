@@ -406,7 +406,7 @@ export class ProjectModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<ProjectModel[]> {
+  async applyGet(): Promise<ProjectModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -427,27 +427,14 @@ export class ProjectModel {
     return data
   }
 
+  async get(): Promise<ProjectModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<ProjectModel[]> {
     const instance = new ProjectModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ProjectModel) => {
-      const instance = new ProjectModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProjectModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): ProjectModel {

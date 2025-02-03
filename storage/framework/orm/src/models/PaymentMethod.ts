@@ -473,7 +473,7 @@ export class PaymentMethodModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<PaymentMethodModel[]> {
+  async applyGet(): Promise<PaymentMethodModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -494,27 +494,14 @@ export class PaymentMethodModel {
     return data
   }
 
+  async get(): Promise<PaymentMethodModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<PaymentMethodModel[]> {
     const instance = new PaymentMethodModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
-      const instance = new PaymentMethodModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new PaymentMethodModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): PaymentMethodModel {

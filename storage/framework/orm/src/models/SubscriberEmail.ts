@@ -397,7 +397,7 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
   }
 
-  async get(): Promise<SubscriberEmailModel[]> {
+  async applyGet(): Promise<SubscriberEmailModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -418,35 +418,14 @@ export class SubscriberEmailModel {
     return data
   }
 
+  async get(): Promise<SubscriberEmailModel[]> {
+    return await this.applyGet()
+  }
+
   static async get(): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(null)
 
-    let models
-
-    if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      if (instance.softDeletes) {
-        instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
-      const instance = new SubscriberEmailModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriberEmailModel(results)
-    }))
-
-    return data
+    return await instance.applyGet()
   }
 
   has(relation: string): SubscriberEmailModel {
