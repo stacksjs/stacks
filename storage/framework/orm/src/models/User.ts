@@ -758,7 +758,7 @@ export class UserModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
-      dispatch('Users:created', model)
+      dispatch('user:created', model)
 
     return model
   }
@@ -1009,11 +1009,11 @@ export class UserModel {
   static whereLike(column: keyof UserType, value: string): UserModel {
     const instance = new UserModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

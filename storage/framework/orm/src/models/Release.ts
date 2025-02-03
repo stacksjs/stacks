@@ -642,7 +642,7 @@ export class ReleaseModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     if (model)
-      dispatch('Releases:created', model)
+      dispatch('release:created', model)
 
     return model
   }
@@ -857,11 +857,11 @@ export class ReleaseModel {
   static whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

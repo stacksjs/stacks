@@ -678,7 +678,7 @@ export class JobModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
 
     if (model)
-      dispatch('Jobs:created', model)
+      dispatch('job:created', model)
 
     return model
   }
@@ -925,11 +925,11 @@ export class JobModel {
   static whereLike(column: keyof JobType, value: string): JobModel {
     const instance = new JobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

@@ -678,7 +678,7 @@ export class FailedJobModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
 
     if (model)
-      dispatch('FailedJobs:created', model)
+      dispatch('failedjob:created', model)
 
     return model
   }
@@ -925,11 +925,11 @@ export class FailedJobModel {
   static whereLike(column: keyof FailedJobType, value: string): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

@@ -725,7 +725,7 @@ export class DeploymentModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
     if (model)
-      dispatch('Deployments:created', model)
+      dispatch('deployment:created', model)
 
     return model
   }
@@ -990,11 +990,11 @@ export class DeploymentModel {
   static whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

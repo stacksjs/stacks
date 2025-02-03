@@ -678,7 +678,7 @@ export class ErrorModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
     if (model)
-      dispatch('Errors:created', model)
+      dispatch('error:created', model)
 
     return model
   }
@@ -925,11 +925,11 @@ export class ErrorModel {
   static whereLike(column: keyof ErrorType, value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

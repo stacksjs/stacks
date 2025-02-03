@@ -642,7 +642,7 @@ export class SubscriberModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
     if (model)
-      dispatch('Subscribers:created', model)
+      dispatch('subscriber:created', model)
 
     return model
   }
@@ -857,11 +857,11 @@ export class SubscriberModel {
   static whereLike(column: keyof SubscriberType, value: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

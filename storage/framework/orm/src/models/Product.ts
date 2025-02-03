@@ -708,7 +708,7 @@ export class ProductModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     if (model)
-      dispatch('Products:created', model)
+      dispatch('product:created', model)
 
     return model
   }
@@ -973,11 +973,11 @@ export class ProductModel {
   static whereLike(column: keyof ProductType, value: string): ProductModel {
     const instance = new ProductModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

@@ -669,7 +669,7 @@ export class ProjectModel {
     const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
     if (model)
-      dispatch('Projects:created', model)
+      dispatch('project:created', model)
 
     return model
   }
@@ -908,11 +908,11 @@ export class ProjectModel {
   static whereLike(column: keyof ProjectType, value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     return instance
   }

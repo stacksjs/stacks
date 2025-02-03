@@ -1460,7 +1460,7 @@ export async function generateModelString(
           const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
           if (model)
-            dispatch('${formattedTableName}:created', model)
+            dispatch('${formattedModelName}:created', model)
 
           return model
         }
@@ -1682,11 +1682,11 @@ export async function generateModelString(
         static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
+          instance.selectFromQuery = instance.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
   
-          instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
+          instance.updateFromQuery = instance.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
   
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
+          instance.deleteFromQuery = instance.deleteFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
   
           return instance
         }
