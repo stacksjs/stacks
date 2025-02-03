@@ -742,15 +742,17 @@ export class ProjectModel {
     return instance
   }
 
-  whereRef(column: string, operator: string, value: string): ProjectModel {
-    return ProjectModel.whereRef(column, operator, value)
+  whereRef(column: string, ...args: string[]): ProjectModel {
+    return ProjectModel.whereRef(column, ...args)
   }
 
-  static whereRef(column: string, operator: string, value: string): ProjectModel {
+  static whereRef(column: string, ...args: string[]): ProjectModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
     const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
-
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
     return instance
   }
 

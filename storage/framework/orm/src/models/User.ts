@@ -843,15 +843,17 @@ export class UserModel {
     return instance
   }
 
-  whereRef(column: string, operator: string, value: string): UserModel {
-    return UserModel.whereRef(column, operator, value)
+  whereRef(column: string, ...args: string[]): UserModel {
+    return UserModel.whereRef(column, ...args)
   }
 
-  static whereRef(column: string, operator: string, value: string): UserModel {
+  static whereRef(column: string, ...args: string[]): UserModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
     const instance = new UserModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
-
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
     return instance
   }
 

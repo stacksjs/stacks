@@ -800,15 +800,17 @@ export class TransactionModel {
     return instance
   }
 
-  whereRef(column: string, operator: string, value: string): TransactionModel {
-    return TransactionModel.whereRef(column, operator, value)
+  whereRef(column: string, ...args: string[]): TransactionModel {
+    return TransactionModel.whereRef(column, ...args)
   }
 
-  static whereRef(column: string, operator: string, value: string): TransactionModel {
+  static whereRef(column: string, ...args: string[]): TransactionModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
     const instance = new TransactionModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, value)
-
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
     return instance
   }
 
