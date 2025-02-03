@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { defineComponent, h, markRaw, ref } from 'vue'
-import { notification } from '../'
-import { useCopyCode } from '../composables/useCopyCode'
+import { notification } from '.'
+import { useCopyCode } from './composables/useCopyCode'
 
 // eslint-disable-next-line no-template-curly-in-string
 const promiseCode = '`${data.name} notification has been added`'

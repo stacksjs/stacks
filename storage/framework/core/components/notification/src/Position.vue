@@ -1,9 +1,9 @@
 <script lang="ts" setup>
 import type { PropType } from 'vue'
-import type { Position } from '../types'
+import type { Position } from './types'
 import { computed, ref } from 'vue'
-import { notification } from '../'
-import { useCopyCode } from '../composables/useCopyCode'
+import { notification } from '.'
+import { useCopyCode } from './composables/useCopyCode'
 
 const props = defineProps({
   position: String as PropType<Position>,

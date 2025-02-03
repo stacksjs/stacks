@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { notification } from '../'
-import { useCopyCode } from '../composables/useCopyCode'
+import { notification } from '.'
+import { useCopyCode } from './composables/useCopyCode'
 
 const props = defineProps({
   expand: {

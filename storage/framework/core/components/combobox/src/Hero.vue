@@ -9,6 +9,7 @@ import {
 } from '@headlessui/vue'
 
 import { computed, ref } from 'vue'
+import type { Ref } from 'vue'
 
 interface Person {
   id: number

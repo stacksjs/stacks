@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { notification } from '../'
+import { notification } from '.'
 </script>
 
 <template>

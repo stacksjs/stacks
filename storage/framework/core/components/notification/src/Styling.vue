@@ -1,21 +1,38 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
-import { notification } from '../'
-import { useCopyCode } from '../composables/useCopyCode'
+import { notification } from '.'
+import { useCopyCode } from './composables/useCopyCode'
 
-const emit = defineEmits(['setTheme'])
-
-const currentAction = ref('light')
+const currentAction = ref('all')
 const showCheckIcon = ref(false)
 
 const renderedCode = computed(() => {
-  return currentAction.value === 'light' ? `<Notification theme="light" />` : `<Notification theme="dark" />`
+  return currentAction.value === 'all'
+    ? `<Notification
+  :toastOptions="{
+    style: { background: '#fda4af' },
+    class: 'my-toast',
+    descriptionClass: 'my-toast-description'
+  }"
+/>`
+    : `notification('Event has been created', {
+  style: {
+    background: '#6ee7b7'
+  },
+  class: 'my-toast',
+  descriptionClass: 'my-toast-description'
+})`
 })
 
 function handleClick(action: string) {
   currentAction.value = action
-  emit('setTheme', action)
-  notification('Event has been created')
+  notification('Event has been created', {
+    style: {
+      background: currentAction.value === 'all' ? '#fda4af' : '#6ee7b7',
+    },
+    class: 'my-toast',
+    descriptionClass: 'my-toast-description',
+  })
 }
 
 async function handleCopyCode() {
@@ -27,32 +44,37 @@ async function handleCopyCode() {
 <template>
   <div class="types">
     <h1 class="my-2 text-lg font-semibold">
-      Theme
+      Styling
     </h1>
     <p class="my-3 text-base">
-      You can smoothly switch between light mode and dark mode.
+      You can style your toasts globally with the
+      <code class="mx-1 rounded-md p-1 text-xs !bg-neutral-200/66">
+        toastOptions
+      </code>
+      prop in the Toaster component.
     </p>
     <div class="mb-4 flex gap-3 overflow-auto">
       <button
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'light',
+          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'all',
         }"
-        @click="(e) => handleClick('light')"
+        @click="(e) => handleClick('all')"
       >
-        Light
+        For all toasts
       </button>
       <button
         class="btn-default"
         :class="{
-          'bg-neutral-200/50 border-neutral-400/50': currentAction === 'dark',
+          'bg-neutral-200/50 border-neutral-400/50':
+            currentAction === 'individual',
         }"
-        @click="(e) => handleClick('dark')"
+        @click="(e) => handleClick('individual')"
       >
-        Dark
+        For individual toast
       </button>
     </div>
-    <div class="group code-block relative">
+    <div class="code-block group relative">
       <Highlight
         language="javascript"
         class-name="rounded-md text-xs"
