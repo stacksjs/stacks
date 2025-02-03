@@ -760,8 +760,8 @@ export class SubscriptionModel {
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(null)
 
-    const filteredValues = newSubscription.map((newSubscription: NewSubscription) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newSubscription.map((newSubscription: NewSubscription) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newSubscription).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -769,11 +769,11 @@ export class SubscriptionModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('subscriptions')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -1041,13 +1041,11 @@ export class SubscriptionModel {
   static whereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

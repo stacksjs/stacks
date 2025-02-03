@@ -746,8 +746,8 @@ export class PaymentMethodModel {
   static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(null)
 
-    const filteredValues = newPaymentMethod.map((newPaymentMethod: NewPaymentMethod) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newPaymentMethod.map((newPaymentMethod: NewPaymentMethod) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newPaymentMethod).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -755,11 +755,11 @@ export class PaymentMethodModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('payment_methods')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -1003,13 +1003,11 @@ export class PaymentMethodModel {
   static whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

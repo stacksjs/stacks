@@ -766,8 +766,8 @@ export class UserModel {
   static async createMany(newUser: NewUser[]): Promise<void> {
     const instance = new UserModel(null)
 
-    const filteredValues = newUser.map((newUser: NewUser) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newUser.map((newUser: NewUser) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newUser).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -775,11 +775,11 @@ export class UserModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('users')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -1009,13 +1009,11 @@ export class UserModel {
   static whereLike(column: keyof UserType, value: string): UserModel {
     const instance = new UserModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

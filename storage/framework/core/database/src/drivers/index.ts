@@ -295,6 +295,9 @@ export async function fetchTables(): Promise<string[]> {
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
     const tableName = getTableName(model, modelPath)
+    const upvoteTable = getUpvoteTableName(model, tableName)
+    if (upvoteTable)
+      tables.push(upvoteTable)
 
     tables.push(tableName)
   }
@@ -307,4 +310,13 @@ export async function fetchTables(): Promise<string[]> {
   }
 
   return tables
+}
+
+function getUpvoteTableName(model: Model, tableName: string): string | undefined {
+  const defaultTable = `${tableName}_likes`
+  const traits = model.traits
+
+  return typeof traits?.likeable === 'object'
+    ? traits.likeable.table || defaultTable
+    : undefined
 }

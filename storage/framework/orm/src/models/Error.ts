@@ -686,18 +686,18 @@ export class ErrorModel {
   static async createMany(newError: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
-    const filteredValues = newError.map((newError: NewError) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newError.map((newError: NewError) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newError).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewError
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('errors')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -925,13 +925,11 @@ export class ErrorModel {
   static whereLike(column: keyof ErrorType, value: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

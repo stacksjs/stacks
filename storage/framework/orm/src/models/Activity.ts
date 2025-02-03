@@ -721,18 +721,18 @@ export class ActivityModel {
   static async createMany(newActivity: NewActivity[]): Promise<void> {
     const instance = new ActivityModel(null)
 
-    const filteredValues = newActivity.map((newActivity: NewActivity) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newActivity.map((newActivity: NewActivity) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newActivity).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewActivity
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('activities')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -979,13 +979,11 @@ export class ActivityModel {
   static whereLike(column: keyof ActivityType, value: string): ActivityModel {
     const instance = new ActivityModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

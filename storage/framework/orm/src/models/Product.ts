@@ -716,8 +716,8 @@ export class ProductModel {
   static async createMany(newProduct: NewProduct[]): Promise<void> {
     const instance = new ProductModel(null)
 
-    const filteredValues = newProduct.map((newProduct: NewProduct) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newProduct.map((newProduct: NewProduct) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newProduct).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -725,11 +725,11 @@ export class ProductModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('products')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -973,13 +973,11 @@ export class ProductModel {
   static whereLike(column: keyof ProductType, value: string): ProductModel {
     const instance = new ProductModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

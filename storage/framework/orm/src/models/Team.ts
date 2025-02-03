@@ -727,18 +727,18 @@ export class TeamModel {
   static async createMany(newTeam: NewTeam[]): Promise<void> {
     const instance = new TeamModel(null)
 
-    const filteredValues = newTeam.map((newTeam: NewTeam) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newTeam.map((newTeam: NewTeam) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newTeam).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewTeam
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('teams')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -990,13 +990,11 @@ export class TeamModel {
   static whereLike(column: keyof TeamType, value: string): TeamModel {
     const instance = new TeamModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

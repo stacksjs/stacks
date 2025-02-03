@@ -677,18 +677,18 @@ export class ProjectModel {
   static async createMany(newProject: NewProject[]): Promise<void> {
     const instance = new ProjectModel(null)
 
-    const filteredValues = newProject.map((newProject: NewProject) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newProject.map((newProject: NewProject) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newProject).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewProject
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('projects')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -908,13 +908,11 @@ export class ProjectModel {
   static whereLike(column: keyof ProjectType, value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

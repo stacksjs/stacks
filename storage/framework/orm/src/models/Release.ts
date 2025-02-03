@@ -650,18 +650,18 @@ export class ReleaseModel {
   static async createMany(newRelease: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(null)
 
-    const filteredValues = newRelease.map((newRelease: NewRelease) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newRelease.map((newRelease: NewRelease) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newRelease).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewRelease
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('releases')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -857,13 +857,11 @@ export class ReleaseModel {
   static whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

@@ -733,8 +733,8 @@ export class DeploymentModel {
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(null)
 
-    const filteredValues = newDeployment.map((newDeployment: NewDeployment) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newDeployment.map((newDeployment: NewDeployment) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newDeployment).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -742,11 +742,11 @@ export class DeploymentModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('deployments')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -990,13 +990,11 @@ export class DeploymentModel {
   static whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

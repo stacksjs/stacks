@@ -686,18 +686,18 @@ export class JobModel {
   static async createMany(newJob: NewJob[]): Promise<void> {
     const instance = new JobModel(null)
 
-    const filteredValues = newJob.map((newJob: NewJob) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newJob.map((newJob: NewJob) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newJob).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewJob
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('jobs')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -925,13 +925,11 @@ export class JobModel {
   static whereLike(column: keyof JobType, value: string): JobModel {
     const instance = new JobModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

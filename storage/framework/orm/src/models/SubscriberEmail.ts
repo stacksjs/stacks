@@ -676,18 +676,18 @@ export class SubscriberEmailModel {
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
-    const filteredValues = newSubscriberEmail.map((newSubscriberEmail: NewSubscriberEmail) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newSubscriberEmail.map((newSubscriberEmail: NewSubscriberEmail) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newSubscriberEmail).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewSubscriberEmail
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('subscriber_emails')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -894,13 +894,11 @@ export class SubscriberEmailModel {
   static whereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

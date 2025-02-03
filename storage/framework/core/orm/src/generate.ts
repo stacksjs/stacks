@@ -1468,8 +1468,8 @@ export async function generateModelString(
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(null)
 
-          const filteredValues = new${modelName}.map((new${modelName}: New${modelName}) => {
-            const filtered = Object.fromEntries(
+          const valuesFiltered = new${modelName}.map((new${modelName}: New${modelName}) => {
+            const filteredValues = Object.fromEntries(
               Object.entries(new${modelName}).filter(([key]) =>
                 !instance.guarded.includes(key) && instance.fillable.includes(key),
               ),
@@ -1477,11 +1477,11 @@ export async function generateModelString(
         
             ${uuidQuery}
             
-            return filtered
+            return filteredValues
           })
 
           await DB.instance.insertInto('${tableName}')
-            .values(filteredValues)
+            .values(valuesFiltered)
             .executeTakeFirst()
         }
   
@@ -1682,13 +1682,11 @@ export async function generateModelString(
         static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
+          instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+          instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
   
-          instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
   
           return instance
         }

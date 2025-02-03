@@ -694,18 +694,18 @@ export class AccessTokenModel {
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(null)
 
-    const filteredValues = newAccessToken.map((newAccessToken: NewAccessToken) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newAccessToken.map((newAccessToken: NewAccessToken) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newAccessToken).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewAccessToken
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('personal_access_tokens')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -925,13 +925,11 @@ export class AccessTokenModel {
   static whereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

@@ -686,18 +686,18 @@ export class FailedJobModel {
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {
     const instance = new FailedJobModel(null)
 
-    const filteredValues = newFailedJob.map((newFailedJob: NewFailedJob) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newFailedJob.map((newFailedJob: NewFailedJob) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newFailedJob).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewFailedJob
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('failed_jobs')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -925,13 +925,11 @@ export class FailedJobModel {
   static whereLike(column: keyof FailedJobType, value: string): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

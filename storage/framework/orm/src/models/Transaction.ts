@@ -733,8 +733,8 @@ export class TransactionModel {
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {
     const instance = new TransactionModel(null)
 
-    const filteredValues = newTransaction.map((newTransaction: NewTransaction) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newTransaction.map((newTransaction: NewTransaction) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newTransaction).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
@@ -742,11 +742,11 @@ export class TransactionModel {
 
       filteredValues.uuid = randomUUIDv7()
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('transactions')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -974,13 +974,11 @@ export class TransactionModel {
   static whereLike(column: keyof TransactionType, value: string): TransactionModel {
     const instance = new TransactionModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

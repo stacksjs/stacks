@@ -676,18 +676,18 @@ export class PostModel {
   static async createMany(newPost: NewPost[]): Promise<void> {
     const instance = new PostModel(null)
 
-    const filteredValues = newPost.map((newPost: NewPost) => {
-      const filtered = Object.fromEntries(
+    const valuesFiltered = newPost.map((newPost: NewPost) => {
+      const filteredValues = Object.fromEntries(
         Object.entries(newPost).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
       ) as NewPost
 
-      return filtered
+      return filteredValues
     })
 
     await DB.instance.insertInto('posts')
-      .values(filteredValues)
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
@@ -891,13 +891,11 @@ export class PostModel {
   static whereLike(column: keyof PostType, value: string): PostModel {
     const instance = new PostModel(null)
 
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', value)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', value)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', value)
 
     return instance
   }

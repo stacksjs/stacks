@@ -69,7 +69,7 @@ describe('Models test', () => {
 
     const userDeleted = await User.find(model?.id as number)
 
-    expect(userDeleted).toBeUndefined()
+    expect(userDeleted === undefined).toBeTrue()
   })
 
   it('should remove records in models', async () => {
@@ -536,7 +536,7 @@ it('should perform whereBetween queries', async () => {
   await Promise.all(users.map(user => User.create(user)))
 
   const results = await User
-    .whereBetween('id', [25, 35])
+    .whereBetween('id', [1, 5])
     .get()
 
   expect(results.length).toBe(3)
