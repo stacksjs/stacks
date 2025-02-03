@@ -902,6 +902,24 @@ export class JobModel {
     return JobModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof JobType, value: string): JobModel {
+    return JobModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof JobType, value: string): JobModel {
+    const instance = new JobModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof JobType, range: [any, any]): JobModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

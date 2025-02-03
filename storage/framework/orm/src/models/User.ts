@@ -986,6 +986,24 @@ export class UserModel {
     return UserModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof UserType, value: string): UserModel {
+    return UserModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof UserType, value: string): UserModel {
+    const instance = new UserModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

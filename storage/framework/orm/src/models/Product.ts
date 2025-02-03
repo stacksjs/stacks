@@ -950,6 +950,24 @@ export class ProductModel {
     return ProductModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof ProductType, value: string): ProductModel {
+    return ProductModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof ProductType, value: string): ProductModel {
+    const instance = new ProductModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

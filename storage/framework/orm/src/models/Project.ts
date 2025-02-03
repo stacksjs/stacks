@@ -885,6 +885,24 @@ export class ProjectModel {
     return ProjectModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof ProjectType, value: string): ProjectModel {
+    return ProjectModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof ProjectType, value: string): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

@@ -834,6 +834,24 @@ export class SubscriberModel {
     return SubscriberModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof SubscriberType, value: string): SubscriberModel {
+    return SubscriberModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof SubscriberType, value: string): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof SubscriberType, range: [any, any]): SubscriberModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

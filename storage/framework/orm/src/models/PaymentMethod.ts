@@ -980,6 +980,24 @@ export class PaymentMethodModel {
     return PaymentMethodModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+    return PaymentMethodModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof PaymentMethodType, range: [any, any]): PaymentMethodModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

@@ -956,6 +956,24 @@ export class ActivityModel {
     return ActivityModel.whereBetween(column, range)
   }
 
+  whereLike(column: keyof ActivityType, value: string): ActivityModel {
+    return ActivityModel.whereLike(column, value)
+  }
+
+  static whereLike(column: keyof ActivityType, value: string): ActivityModel {
+    const instance = new ActivityModel(null)
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+
+    instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+
+    return instance
+  }
+
   static whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')

@@ -1658,6 +1658,24 @@ export async function generateModelString(
         whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
           return ${modelName}Model.whereBetween(column, range)
         }
+
+        whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+          return ${modelName}Model.whereLike(column, value)
+        }
+          
+        static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+  
+          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
+  
+          instance.selectFromQuery = instance.selectFromQuery.where(column, 'LIKE', values)
+  
+          instance.updateFromQuery = instance.updateFromQuery.where(column, 'LIKE', values)
+  
+          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'LIKE', values)
+  
+          return instance
+        }
   
         static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
