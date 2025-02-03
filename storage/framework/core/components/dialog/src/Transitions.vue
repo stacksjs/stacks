@@ -1,8 +1,9 @@
 <script lang="ts" setup>
-import type { Transition } from '../types'
+import type { Transition } from './types'
 import { computed, ref } from 'vue'
-import { Dialog, DialogPanel } from '../components'
-import { useCopyCode } from '../composables/useCopyCode'
+import Dialog from './components/Dialog.vue'
+import DialogPanel from './components/DialogPanel.vue'
+import { useCopyCode } from './composables/useCopyCode'
 
 const currentTransition = ref<Transition>('fade')
 const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jackInTheBox', 'slideInDown', 'slideInRight', 'custom-transition'])
