@@ -1512,22 +1512,25 @@ export async function generateModelString(
             .execute()
         }
   
-        private static applyWhere(instance: ${modelName}Model, column: string, operator: string, value: any): ${modelName}Model {
-          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+        private static applyWhere(instance: ${modelName}Model, column: string, ...args: any[]): ${modelName}Model {
+          const [operatorOrValue, value] = args
+          const operator = value === undefined ? '=' : operatorOrValue
+          const actualValue = value === undefined ? operatorOrValue : value
+
+          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
           return instance
         }
 
-        where(column: string, operator: string, value: any): ${modelName}Model {
-          return ${modelName}Model.applyWhere(this, column, operator, value)
+        where(column: string, ...args: any[]): ${modelName}Model {
+          return ${modelName}Model.applyWhere(this, column, ...args)
         }
 
-        static where(column: string, operator: string, value: any): ${modelName}Model {
+        static where(column: string, ...args: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
-
-          return ${modelName}Model.applyWhere(instance, column, operator, value)
+          return ${modelName}Model.applyWhere(instance, column, ...args)
         }
 
         whereColumn(first: string, operator: string, second: string): ${modelName}Model {

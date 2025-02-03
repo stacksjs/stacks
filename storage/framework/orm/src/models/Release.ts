@@ -682,22 +682,25 @@ export class ReleaseModel {
       .execute()
   }
 
-  private static applyWhere(instance: ReleaseModel, column: string, operator: string, value: any): ReleaseModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: ReleaseModel, column: string, ...args: any[]): ReleaseModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): ReleaseModel {
-    return ReleaseModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): ReleaseModel {
+    return ReleaseModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): ReleaseModel {
+  static where(column: string, ...args: any[]): ReleaseModel {
     const instance = new ReleaseModel(null)
-
-    return ReleaseModel.applyWhere(instance, column, operator, value)
+    return ReleaseModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): ReleaseModel {

@@ -810,22 +810,25 @@ export class UserModel {
       .execute()
   }
 
-  private static applyWhere(instance: UserModel, column: string, operator: string, value: any): UserModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: UserModel, column: string, ...args: any[]): UserModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): UserModel {
-    return UserModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): UserModel {
+    return UserModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): UserModel {
+  static where(column: string, ...args: any[]): UserModel {
     const instance = new UserModel(null)
-
-    return UserModel.applyWhere(instance, column, operator, value)
+    return UserModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): UserModel {

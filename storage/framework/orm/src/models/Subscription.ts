@@ -794,22 +794,25 @@ export class SubscriptionModel {
       .execute()
   }
 
-  private static applyWhere(instance: SubscriptionModel, column: string, operator: string, value: any): SubscriptionModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: SubscriptionModel, column: string, ...args: any[]): SubscriptionModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): SubscriptionModel {
-    return SubscriptionModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): SubscriptionModel {
+    return SubscriptionModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): SubscriptionModel {
+  static where(column: string, ...args: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
-
-    return SubscriptionModel.applyWhere(instance, column, operator, value)
+    return SubscriptionModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): SubscriptionModel {

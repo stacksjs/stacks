@@ -708,22 +708,25 @@ export class PostModel {
       .execute()
   }
 
-  private static applyWhere(instance: PostModel, column: string, operator: string, value: any): PostModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: PostModel, column: string, ...args: any[]): PostModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): PostModel {
-    return PostModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): PostModel {
+    return PostModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): PostModel {
+  static where(column: string, ...args: any[]): PostModel {
     const instance = new PostModel(null)
-
-    return PostModel.applyWhere(instance, column, operator, value)
+    return PostModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): PostModel {

@@ -719,22 +719,25 @@ export class SubscriberEmailModel {
       .execute()
   }
 
-  private static applyWhere(instance: SubscriberEmailModel, column: string, operator: string, value: any): SubscriberEmailModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: SubscriberEmailModel, column: string, ...args: any[]): SubscriberEmailModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): SubscriberEmailModel {
-    return SubscriberEmailModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): SubscriberEmailModel {
+    return SubscriberEmailModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): SubscriberEmailModel {
+  static where(column: string, ...args: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
-
-    return SubscriberEmailModel.applyWhere(instance, column, operator, value)
+    return SubscriberEmailModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {

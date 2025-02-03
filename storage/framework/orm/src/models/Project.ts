@@ -709,22 +709,25 @@ export class ProjectModel {
       .execute()
   }
 
-  private static applyWhere(instance: ProjectModel, column: string, operator: string, value: any): ProjectModel {
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  private static applyWhere(instance: ProjectModel, column: string, ...args: any[]): ProjectModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  where(column: string, operator: string, value: any): ProjectModel {
-    return ProjectModel.applyWhere(this, column, operator, value)
+  where(column: string, ...args: any[]): ProjectModel {
+    return ProjectModel.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, operator: string, value: any): ProjectModel {
+  static where(column: string, ...args: any[]): ProjectModel {
     const instance = new ProjectModel(null)
-
-    return ProjectModel.applyWhere(instance, column, operator, value)
+    return ProjectModel.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): ProjectModel {
