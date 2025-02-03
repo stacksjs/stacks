@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from '../components'
+import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
 </script>
 
 <template>

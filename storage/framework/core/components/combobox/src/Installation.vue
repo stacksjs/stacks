@@ -1,8 +1,8 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import { useCopyCode } from '../composables/useCopyCode'
+import { useCopyCode } from './composables/useCopyCode'
 
-const code = `bun install @stacksjs/dropdown`
+const code = `bun install @stacksjs/combobox`
 
 const showCheckIcon = ref(false)
 

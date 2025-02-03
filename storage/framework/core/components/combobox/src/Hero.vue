@@ -1,94 +1,129 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '../components'
+import {
+  TransitionRoot,
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions
+} from '@headlessui/vue'
+
+import { computed, ref } from 'vue'
 
 interface Person {
   id: number
   name: string
-  unavailable: boolean
 }
 
-const people: Person[] = [
-  { id: 1, name: 'Durward Reynolds', unavailable: false },
-  { id: 2, name: 'Kenton Towne', unavailable: false },
-  { id: 3, name: 'Therese Wunsch', unavailable: false },
-  { id: 4, name: 'Benedict Kessler', unavailable: true },
-  { id: 5, name: 'Katelyn Rohan', unavailable: false },
-]
+const people = ref<Person[]>([
+  { id: 1, name: 'Wade Cooper' },
+  { id: 2, name: 'Arlene Mccoy' },
+  { id: 3, name: 'Devon Webb' },
+  { id: 4, name: 'Tom Cook' },
+  { id: 5, name: 'Tanya Fox' },
+  { id: 6, name: 'Hellen Schmidt' },
+])
 
-const selectedPerson = ref<Person>(people[0] as Person)
+const selected = ref<Person | null>(null)
+const query = ref<string>('')
+const filteredPeople = computed(() =>
+  query.value === ''
+    ? people
+    : people.value.filter((person: Person) =>
+        person.name
+          .toLowerCase()
+          .replace(/\s+/g, '')
+          .includes(query.value.toLowerCase().replace(/\s+/g, '')),
+      ),
+) as Ref<Person[]>
 </script>
 
 <template>
   <div class="flex flex-col items-center gap-3">
-    <div class="listbosWrapper">
+    <div class="dropdownWrapper">
       <div class="toast" />
       <div class="toast" />
       <div class="toast" />
     </div>
     <h1 class="text-neon mb-3 text-5xl font-bold -mt-5">
-      stacks/listbox
+      stacks/combobox
     </h1>
     <p class="mb-3 mt-0 text-lg">
-      An opinionated listbox component for Stacks.
+      An opinionated combobox component for Stacks.
     </p>
     <div class="flex gap-2">
-      <div class="z-20 inline-block flex text-left">
-        <Listbox v-model="selectedPerson">
+      <div class="relative z-20 mr-auto inline-block flex text-left">
+        <Combobox v-model="selected">
           <div class="relative mt-1">
-            <ListboxButton
-              class="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus-visible:border-indigo-500 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/75 focus-visible:ring-offset-orange-300"
+            <div
+              class="relative w-full cursor-default overflow-hidden rounded-lg bg-white text-left shadow-md sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/75 focus-visible:ring-offset-teal-300"
             >
-              <span class="block truncate">{{ selectedPerson.name }}</span>
-              <span
-                class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+              <ComboboxInput
+                class="w-full border-none py-2 pl-3 pr-10 text-sm text-gray-900 leading-5 focus:outline-none focus:ring-0"
+                :display-value="(person: any) => person?.name"
+                placeholder="Search..."
+                @change="query = $event.target.value"
+              />
+              <ComboboxButton
+                class="absolute inset-y-0 right-0 flex items-center pr-2"
               >
                 <div class="i-heroicons-chevron-up-down-20-solid" />
-              </span>
-            </ListboxButton>
-
-            <transition
-              leave-active-class="transition duration-100 ease-in"
-              leave-from-class="opacity-100"
-              leave-to-class="opacity-0"
+              </ComboboxButton>
+            </div>
+            <TransitionRoot
+              leave="transition ease-in duration-100"
+              leave-from="opacity-100"
+              leave-to="opacity-0"
+              @after-leave="query = ''"
             >
-              <ListboxOptions
+              <ComboboxOptions
                 class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm focus:outline-none"
               >
-                <ListboxOption
-                  v-for="person in people"
-                  v-slot="{ active, selected }"
-                  :key="person.name"
-                  :value="person"
+                <div
+                  v-if="filteredPeople.length === 0 && query !== ''"
+                  class="relative cursor-default select-none px-4 py-2 text-gray-700"
+                >
+                  Nothing found.
+                </div>
+
+                <ComboboxOption
+                  v-for="person in filteredPeople"
+                  :key="person.id"
+                  v-slot="{ selected, active }"
                   as="template"
+                  :value="person"
                 >
                   <li
-                    class="relative cursor-default select-none py-2 pl-10 pr-4" :class="[
-                      active ? 'bg-amber-100 text-amber-900' : 'text-gray-900',
-                    ]"
+                    class="relative cursor-default select-none py-2 pl-10 pr-4"
+                    :class="{
+                      'bg-teal-600 text-white': active,
+                      'text-gray-900': !active,
+                    }"
                   >
                     <span
-                      class="block truncate" :class="[
-                        selected ? 'font-medium' : 'font-normal',
-                      ]"
-                    >{{ person.name }}</span>
+                      class="block truncate"
+                      :class="{ 'font-medium': selected, 'font-normal': !selected }"
+                    >
+                      {{ person.name }}
+                    </span>
                     <span
                       v-if="selected"
-                      class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
+                      class="absolute inset-y-0 left-0 flex items-center pl-3"
+                      :class="{ 'text-white': active, 'text-teal-600': !active }"
                     >
                       <div class="i-heroicons-check-20-solid" />
                     </span>
                   </li>
-                </ListboxOption>
-              </ListboxOptions>
-            </transition>
+                </ComboboxOption>
+              </ComboboxOptions>
+            </TransitionRoot>
           </div>
-        </Listbox>
+        </Combobox>
       </div>
 
       <a
         class="button btn-secondary"
-        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/listbox"
+        href="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/combobox"
         target="_blank"
       >
         GitHub
@@ -98,7 +133,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
 </template>
 
 <style scoped>
-.listbosWrapper {
+.dropdownWrapper {
   display: flex;
   flex-direction: column;
   margin: 0 auto;
@@ -205,7 +240,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
 }
 
 @media (max-width: 600px) {
-  .listbosWrapper {
+  .dropdownWrapper {
     width: 100%;
   }
 }
