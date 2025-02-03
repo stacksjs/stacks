@@ -221,6 +221,10 @@ export class PaymentMethodModel {
     })
   }
 
+  isClean(column?: keyof PaymentMethodType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof PaymentMethodType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

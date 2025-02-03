@@ -135,6 +135,10 @@ export class SubscriberModel {
     })
   }
 
+  isClean(column?: keyof SubscriberType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof SubscriberType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

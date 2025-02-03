@@ -171,6 +171,10 @@ export class FailedJobModel {
     })
   }
 
+  isClean(column?: keyof FailedJobType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof FailedJobType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

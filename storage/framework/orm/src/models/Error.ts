@@ -171,6 +171,10 @@ export class ErrorModel {
     })
   }
 
+  isClean(column?: keyof ErrorType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof ErrorType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

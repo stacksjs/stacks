@@ -208,6 +208,10 @@ export class TeamModel {
     })
   }
 
+  isClean(column?: keyof TeamType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof TeamType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

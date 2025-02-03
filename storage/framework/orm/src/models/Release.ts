@@ -135,6 +135,10 @@ export class ReleaseModel {
     })
   }
 
+  isClean(column?: keyof ReleaseType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof ReleaseType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

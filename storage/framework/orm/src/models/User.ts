@@ -233,6 +233,10 @@ export class UserModel {
     })
   }
 
+  isClean(column?: keyof UserType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof UserType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

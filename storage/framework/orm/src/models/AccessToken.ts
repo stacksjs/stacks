@@ -175,6 +175,10 @@ export class AccessTokenModel {
     })
   }
 
+  isClean(column?: keyof AccessTokenType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof AccessTokenType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

@@ -208,6 +208,10 @@ export class TransactionModel {
     })
   }
 
+  isClean(column?: keyof TransactionType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof TransactionType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

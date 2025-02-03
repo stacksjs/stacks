@@ -944,6 +944,10 @@ export async function generateModelString(
           })
         }
 
+        isClean(column?: keyof ${modelName}Type): boolean {
+          return !this.isDirty(column)
+        }
+
         wasChanged(column?: keyof ${modelName}Type): boolean {
           return this.hasSaved && this.isDirty(column)
         }

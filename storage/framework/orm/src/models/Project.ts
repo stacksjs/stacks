@@ -162,6 +162,10 @@ export class ProjectModel {
     })
   }
 
+  isClean(column?: keyof ProjectType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof ProjectType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

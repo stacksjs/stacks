@@ -171,6 +171,10 @@ export class JobModel {
     })
   }
 
+  isClean(column?: keyof JobType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof JobType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

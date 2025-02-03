@@ -190,6 +190,10 @@ export class ActivityModel {
     })
   }
 
+  isClean(column?: keyof ActivityType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof ActivityType): boolean {
     return this.hasSaved && this.isDirty(column)
   }
@@ -1319,7 +1323,7 @@ export class ActivityModel {
     const result = await DB.instance
       .selectFrom('likes')
       .select('count(*) as count')
-      .where('likes', '=', this.id)
+      .where('activity_id', '=', this.id)
       .executeTakeFirst()
 
     return Number(result?.count) || 0
@@ -1335,7 +1339,7 @@ export class ActivityModel {
     await DB.instance
       .insertInto('likes')
       .values({
-        likes: this.id,
+        activity_id: this.id,
         user_id: authUserId,
       })
       .execute()
@@ -1345,7 +1349,7 @@ export class ActivityModel {
     const authUserId = userId || 1
     await DB.instance
       .deleteFrom('likes')
-      .where('likes', '=', this.id)
+      .where('activity_id', '=', this.id)
       .where('user_id', '=', authUserId)
       .execute()
   }
@@ -1356,7 +1360,7 @@ export class ActivityModel {
     const like = await DB.instance
       .selectFrom('likes')
       .select('id')
-      .where('likes', '=', this.id)
+      .where('activity_id', '=', this.id)
       .where('user_id', '=', authUserId)
       .executeTakeFirst()
 

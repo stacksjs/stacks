@@ -145,6 +145,10 @@ export class SubscriberEmailModel {
     })
   }
 
+  isClean(column?: keyof SubscriberEmailType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof SubscriberEmailType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

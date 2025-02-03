@@ -212,6 +212,10 @@ export class DeploymentModel {
     })
   }
 
+  isClean(column?: keyof DeploymentType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof DeploymentType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

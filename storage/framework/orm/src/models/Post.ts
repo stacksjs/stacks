@@ -157,6 +157,10 @@ export class PostModel {
     })
   }
 
+  isClean(column?: keyof PostType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof PostType): boolean {
     return this.hasSaved && this.isDirty(column)
   }

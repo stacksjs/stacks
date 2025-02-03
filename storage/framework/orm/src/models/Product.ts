@@ -199,6 +199,10 @@ export class ProductModel {
     })
   }
 
+  isClean(column?: keyof ProductType): boolean {
+    return !this.isDirty(column)
+  }
+
   wasChanged(column?: keyof ProductType): boolean {
     return this.hasSaved && this.isDirty(column)
   }
