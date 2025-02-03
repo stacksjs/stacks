@@ -322,7 +322,7 @@ export async function generateModelString(
   const displayableAttributes = typeof model.traits?.useSearch === 'object' && model.traits?.useSearch.displayable
 
   const likeableTable = getUpvoteTableName(model, tableName)
-  const likeableForeignKey = getUpvoteTableName(model, modelName)
+  const likeableForeignKey = getUpvoteForeignKey(model, modelName)
 
   if (typeof useSearchable === 'object' && useSearchable) {
     const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
