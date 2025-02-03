@@ -42,6 +42,13 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
 
       return await serverResponse(req, reqBody)
     },
+    error(error: any) {
+      return new Response(`<pre>${error}\n${error.stack}</pre>`, {
+        headers: {
+          'Content-Type': 'text/html',
+        },
+      })
+    },
   })
 }
 
