@@ -768,33 +768,44 @@ export class ProjectModel {
     return instance
   }
 
-  orWhere(...args: Array<[string, string, any]>): ProjectModel {
-    return ProjectModel.orWhere(...args)
+  orWhere(...conditions: (string | [string, any] | [string, string, any])[]): ProjectModel {
+    return ProjectModel.orWhere(...conditions)
   }
 
-  static orWhere(...args: Array<[string, string, any]>): ProjectModel {
+  static orWhere(...conditions: (string | [string, any] | [string, string, any])[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    if (args.length === 0) {
+    if (conditions.length === 0) {
       throw new HttpError(500, 'At least one condition must be provided')
     }
+
+    // Process conditions to handle different formats
+    const processedConditions = conditions.map((condition) => {
+      if (Array.isArray(condition)) {
+        if (condition.length === 2) {
+          return [condition[0], '=', condition[1]]
+        }
+        return condition
+      }
+      throw new Error('Invalid condition format')
+    })
 
     // Use the expression builder to append the OR conditions
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
+        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
       eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
+        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
     instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
+        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
       ),
     )
 
