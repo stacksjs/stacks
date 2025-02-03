@@ -911,7 +911,7 @@ export async function generateModelString(
         ${getFields}
         ${setFields}
         
-        getOriginal(column?: keyof ${modelName}Type): Partial<UserType> | any {
+        getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> | any {
           if (column) {
             return this.originalAttributes[column]
           }
@@ -1197,7 +1197,23 @@ export async function generateModelString(
         }
 
         async get(): Promise<${modelName}Model[]> {
-          return ${modelName}Model.get()
+          let models
+        
+          if (this.hasSelect) {
+            models = await this.selectFromQuery.execute()
+          } else {
+            models = await this.selectFromQuery.selectAll().execute()
+          }
+  
+          const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
+            const instance = new ${modelName}Model(model)
+  
+            const results = await instance.mapWith(model)
+  
+            return new ${modelName}Model(results)
+          }))
+          
+          return data
         }
 
         static async get(): Promise<${modelName}Model[]> {

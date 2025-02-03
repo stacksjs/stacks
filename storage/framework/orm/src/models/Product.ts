@@ -166,7 +166,7 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductType): Partial<UserType> | any {
+  getOriginal(column?: keyof ProductType): Partial<ProductType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -444,7 +444,24 @@ export class ProductModel {
   }
 
   async get(): Promise<ProductModel[]> {
-    return ProductModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: ProductModel) => {
+      const instance = new ProductModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ProductModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<ProductModel[]> {

@@ -494,7 +494,24 @@ export class UserModel {
   }
 
   async get(): Promise<UserModel[]> {
-    return UserModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: UserModel) => {
+      const instance = new UserModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new UserModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<UserModel[]> {

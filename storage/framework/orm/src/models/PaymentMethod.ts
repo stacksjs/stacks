@@ -188,7 +188,7 @@ export class PaymentMethodModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PaymentMethodType): Partial<UserType> | any {
+  getOriginal(column?: keyof PaymentMethodType): Partial<PaymentMethodType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -474,7 +474,24 @@ export class PaymentMethodModel {
   }
 
   async get(): Promise<PaymentMethodModel[]> {
-    return PaymentMethodModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
+      const instance = new PaymentMethodModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new PaymentMethodModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<PaymentMethodModel[]> {

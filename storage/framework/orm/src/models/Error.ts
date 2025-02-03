@@ -138,7 +138,7 @@ export class ErrorModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ErrorType): Partial<UserType> | any {
+  getOriginal(column?: keyof ErrorType): Partial<ErrorType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -416,7 +416,24 @@ export class ErrorModel {
   }
 
   async get(): Promise<ErrorModel[]> {
-    return ErrorModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: ErrorModel) => {
+      const instance = new ErrorModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ErrorModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<ErrorModel[]> {

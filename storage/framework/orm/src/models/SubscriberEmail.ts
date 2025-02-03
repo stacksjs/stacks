@@ -112,7 +112,7 @@ export class SubscriberEmailModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof SubscriberEmailType): Partial<UserType> | any {
+  getOriginal(column?: keyof SubscriberEmailType): Partial<SubscriberEmailType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -398,7 +398,24 @@ export class SubscriberEmailModel {
   }
 
   async get(): Promise<SubscriberEmailModel[]> {
-    return SubscriberEmailModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+      const instance = new SubscriberEmailModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new SubscriberEmailModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<SubscriberEmailModel[]> {

@@ -102,7 +102,7 @@ export class SubscriberModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriberType): Partial<UserType> | any {
+  getOriginal(column?: keyof SubscriberType): Partial<SubscriberType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -380,7 +380,24 @@ export class SubscriberModel {
   }
 
   async get(): Promise<SubscriberModel[]> {
-    return SubscriberModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: SubscriberModel) => {
+      const instance = new SubscriberModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new SubscriberModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<SubscriberModel[]> {

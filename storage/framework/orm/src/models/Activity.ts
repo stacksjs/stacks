@@ -157,7 +157,7 @@ export class ActivityModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof ActivityType): Partial<UserType> | any {
+  getOriginal(column?: keyof ActivityType): Partial<ActivityType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -443,7 +443,24 @@ export class ActivityModel {
   }
 
   async get(): Promise<ActivityModel[]> {
-    return ActivityModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: ActivityModel) => {
+      const instance = new ActivityModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ActivityModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<ActivityModel[]> {

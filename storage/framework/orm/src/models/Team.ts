@@ -175,7 +175,7 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TeamType): Partial<UserType> | any {
+  getOriginal(column?: keyof TeamType): Partial<TeamType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -457,7 +457,24 @@ export class TeamModel {
   }
 
   async get(): Promise<TeamModel[]> {
-    return TeamModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: TeamModel) => {
+      const instance = new TeamModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new TeamModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<TeamModel[]> {

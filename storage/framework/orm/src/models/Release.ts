@@ -102,7 +102,7 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ReleaseType): Partial<UserType> | any {
+  getOriginal(column?: keyof ReleaseType): Partial<ReleaseType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -380,7 +380,24 @@ export class ReleaseModel {
   }
 
   async get(): Promise<ReleaseModel[]> {
-    return ReleaseModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: ReleaseModel) => {
+      const instance = new ReleaseModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new ReleaseModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<ReleaseModel[]> {

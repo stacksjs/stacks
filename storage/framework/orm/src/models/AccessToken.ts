@@ -142,7 +142,7 @@ export class AccessTokenModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof AccessTokenType): Partial<UserType> | any {
+  getOriginal(column?: keyof AccessTokenType): Partial<AccessTokenType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -424,7 +424,24 @@ export class AccessTokenModel {
   }
 
   async get(): Promise<AccessTokenModel[]> {
-    return AccessTokenModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
+      const instance = new AccessTokenModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new AccessTokenModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<AccessTokenModel[]> {

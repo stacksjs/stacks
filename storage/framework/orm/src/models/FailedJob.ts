@@ -138,7 +138,7 @@ export class FailedJobModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof FailedJobType): Partial<UserType> | any {
+  getOriginal(column?: keyof FailedJobType): Partial<FailedJobType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -416,7 +416,24 @@ export class FailedJobModel {
   }
 
   async get(): Promise<FailedJobModel[]> {
-    return FailedJobModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: FailedJobModel) => {
+      const instance = new FailedJobModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new FailedJobModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<FailedJobModel[]> {

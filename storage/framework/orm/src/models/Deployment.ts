@@ -179,7 +179,7 @@ export class DeploymentModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof DeploymentType): Partial<UserType> | any {
+  getOriginal(column?: keyof DeploymentType): Partial<DeploymentType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -461,7 +461,24 @@ export class DeploymentModel {
   }
 
   async get(): Promise<DeploymentModel[]> {
-    return DeploymentModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: DeploymentModel) => {
+      const instance = new DeploymentModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new DeploymentModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<DeploymentModel[]> {

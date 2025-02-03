@@ -175,7 +175,7 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TransactionType): Partial<UserType> | any {
+  getOriginal(column?: keyof TransactionType): Partial<TransactionType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -461,7 +461,24 @@ export class TransactionModel {
   }
 
   async get(): Promise<TransactionModel[]> {
-    return TransactionModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: TransactionModel) => {
+      const instance = new TransactionModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new TransactionModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<TransactionModel[]> {

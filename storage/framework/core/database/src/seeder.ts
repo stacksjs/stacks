@@ -77,7 +77,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
     modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
   else
-    modelInstance = (await import(path.storagePath(`framework/models/generated/${relation?.model}.ts`))).default as Model
+    modelInstance = (await import(path.storagePath(`framework/defaults/models/${relation?.model}.ts`))).default as Model
 
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
@@ -132,17 +132,21 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
 
 async function seedModelRelation(modelName: string): Promise<bigint | number> {
   let modelInstance: Model
+  let currentPath = path.userModelsPath(`${modelName}.ts`)
 
-  if (fs.existsSync(path.userModelsPath(`${modelName}.ts`)))
+  if (fs.existsSync(currentPath)) {
     modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
-  else
-    modelInstance = (await import(path.storagePath(`framework/models/generated/${modelName}.ts`))).default as Model
+  }
+  else {
+    currentPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+    modelInstance = (await import(currentPath)).default as Model
+  }
 
   if (!modelInstance)
     return 1
 
   const record: any = {}
-  const table = modelInstance.table
+  const tableName = getTableName(modelInstance, currentPath)
 
   const useUuid = modelInstance.traits?.useUuid || false
 
@@ -159,7 +163,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   if (useUuid)
     record.uuid = randomUUIDv7()
 
-  const data = await db.insertInto(table).values(record).executeTakeFirstOrThrow()
+  const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
 
   return data.insertId || 1
 }
@@ -191,7 +195,7 @@ export async function seed(): Promise<void> {
 
   // otherwise, seed all models
   const modelsDir = path.userModelsPath()
-  const coreModelsDir = path.storagePath('framework/models/generated')
+  const coreModelsDir = path.storagePath('framework/defaults/models')
   const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
   const coreModelFiles = fs.readdirSync(coreModelsDir).filter(file => file.endsWith('.ts'))
 

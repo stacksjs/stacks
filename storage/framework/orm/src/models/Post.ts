@@ -124,7 +124,7 @@ export class PostModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PostType): Partial<UserType> | any {
+  getOriginal(column?: keyof PostType): Partial<PostType> | any {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -406,7 +406,24 @@ export class PostModel {
   }
 
   async get(): Promise<PostModel[]> {
-    return PostModel.get()
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    const data = await Promise.all(models.map(async (model: PostModel) => {
+      const instance = new PostModel(model)
+
+      const results = await instance.mapWith(model)
+
+      return new PostModel(results)
+    }))
+
+    return data
   }
 
   static async get(): Promise<PostModel[]> {
