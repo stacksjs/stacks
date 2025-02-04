@@ -752,46 +752,48 @@ export class SubscriberModel {
     return instance
   }
 
-  orWhere(column: string, ...args: any[]): SubscriberModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  orWhere(...conditions: [string, any][]): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
-    // Use the expression builder to append the OR condition
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
+    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
+    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
     return this
   }
 
-  static orWhere(column: string, ...args: any[]): SubscriberModel {
+  static orWhere(...conditions: [string, any][]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
-    // Use the expression builder to append the OR condition
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
+    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or([eb(column, operator, actualValue)]),
-    )
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
 
     return instance
   }

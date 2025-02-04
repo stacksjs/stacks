@@ -883,49 +883,48 @@ export class UserModel {
   orWhere(...conditions: [string, any][]): UserModel {
     this.selectFromQuery = this.selectFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     this.updateFromQuery = this.updateFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     return this
   }
-  
+
   static orWhere(...conditions: [string, any][]): UserModel {
     const instance = new UserModel(null)
-  
+
     instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
       return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value))
+        conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
-  
+
     return instance
   }
-  
 
   when(
     condition: boolean,

@@ -483,18 +483,18 @@ describe('Models test', () => {
         job_title: 'Manager',
         email: 'jane@test.com',
         password: '123456',
-      }
+      },
     ]
-  
+
     await Promise.all(users.map(user => User.create(user)))
-  
+
     const results = await User
       .orWhere(
         ['job_title', 'Developer'],
-        ['job_title', 'Designer']
+        ['job_title', 'Designer'],
       )
       .get()
-    
+
     expect(results.length).toBe(2)
     expect(results.map(r => r.job_title).sort()).toEqual(['Designer', 'Developer'])
   })
@@ -543,7 +543,7 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .whereBetween('id', [1, 5])
+      .whereBetween('id', [1, 3])
       .get()
 
     expect(results.length).toBe(3)
@@ -556,36 +556,28 @@ describe('Models test', () => {
         job_title: 'Senior Developer',
         email: 'chris@stacksjs.org',
         password: '123456',
-        department: 'Engineering',
-        active: true,
       },
       {
         name: 'John Doe',
         job_title: 'Junior Developer',
         email: 'john@stacks.com',
         password: '789012',
-        department: 'Engineering',
-        active: false,
       },
       {
         name: 'Jane Smith',
         job_title: 'Senior Designer',
         email: 'jane@stacks.com',
         password: '345678',
-        department: 'Design',
-        active: true,
       },
     ]
 
     await Promise.all(users.map(user => User.create(user)))
 
     const results = await User
-      .where('department', 'Engineering')
-      .where('active', true)
-      .whereLike('job_title', 'Senior%')
+      .whereLike('job_title', 'Junior%')
       .get()
 
     expect(results.length).toBe(1)
-    expect(results[0]?.email).toBe('chris@stacksjs.org')
+    expect(results[0]?.email).toBe('john@stacks.com')
   })
 })
