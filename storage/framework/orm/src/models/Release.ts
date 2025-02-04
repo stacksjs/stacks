@@ -291,20 +291,14 @@ export class ReleaseModel {
     return instance
   }
 
-  async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
-    await ReleaseModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
     while (hasMore) {
-      const instance = new ReleaseModel(null)
-
       // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
+      const models = await this.selectFromQuery
+        .take(size)
         .offset((page - 1) * size)
         .execute()
 
@@ -322,8 +316,20 @@ export class ReleaseModel {
     }
   }
 
+  async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
+    const instance = new ReleaseModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
   take(count: number): ReleaseModel {
-    return ReleaseModel.take(count)
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
   }
 
   static take(count: number): ReleaseModel {
@@ -834,7 +840,7 @@ export class ReleaseModel {
     return instance
   }
 
-  orWhere(...conditions: [string, any][]): ReleaseModel {
+  applyOrWhere(...conditions: [string, any][]): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -856,28 +862,14 @@ export class ReleaseModel {
     return this
   }
 
+  orWhere(...conditions: [string, any][]): ReleaseModel {
+    return this.applyOrWhere(...conditions)
+  }
+
   static orWhere(...conditions: [string, any][]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
+    return instance.applyOrWhere(...conditions)
   }
 
   when(

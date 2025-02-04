@@ -368,20 +368,14 @@ export class TeamModel {
     return instance
   }
 
-  async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
-    await TeamModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
     while (hasMore) {
-      const instance = new TeamModel(null)
-
       // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
+      const models = await this.selectFromQuery
+        .take(size)
         .offset((page - 1) * size)
         .execute()
 
@@ -399,8 +393,20 @@ export class TeamModel {
     }
   }
 
+  async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
+    const instance = new TeamModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
   take(count: number): TeamModel {
-    return TeamModel.take(count)
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
   }
 
   static take(count: number): TeamModel {
@@ -911,7 +917,7 @@ export class TeamModel {
     return instance
   }
 
-  orWhere(...conditions: [string, any][]): TeamModel {
+  applyOrWhere(...conditions: [string, any][]): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -933,28 +939,14 @@ export class TeamModel {
     return this
   }
 
+  orWhere(...conditions: [string, any][]): TeamModel {
+    return this.applyOrWhere(...conditions)
+  }
+
   static orWhere(...conditions: [string, any][]): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
+    return instance.applyOrWhere(...conditions)
   }
 
   when(

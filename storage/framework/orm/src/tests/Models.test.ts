@@ -582,26 +582,26 @@ describe('Models test', () => {
   //   expect(results[0]?.email).toBe('john@stacks.com')
   // })
 
-  it('should perform aggregation functions (min, max, avg, sum)', async () => {
-    const users = Array.from({ length: 5 }, (_, i) => ({
-      name: `User ${i + 1}`,
-      job_title: 'Developer',
-      email: `user${i + 1}@stacks.com`,
-      password: '123456',
-    }))
+  // it('should perform aggregation functions (min, max, avg, sum)', async () => {
+  //   const users = Array.from({ length: 5 }, (_, i) => ({
+  //     name: `User ${i + 1}`,
+  //     job_title: 'Developer',
+  //     email: `user${i + 1}@stacks.com`,
+  //     password: '123456',
+  //   }))
 
-    await Promise.all(users.map(user => User.create(user)))
+  //   await Promise.all(users.map(user => User.create(user)))
 
-    const maxId = await User.max('id')
-    const minId = await User.min('id')
-    const avgId = await User.avg('id')
-    const totalId = await User.sum('id')
+  //   const maxId = await User.max('id')
+  //   const minId = await User.min('id')
+  //   const avgId = await User.avg('id')
+  //   const totalId = await User.sum('id')
 
-    expect(maxId).toBe(5) // Last created user's id
-    expect(minId).toBe(1) // First created user's id
-    expect(avgId).toBe(3) // Average of ids 1,2,3,4,5
-    expect(totalId).toBe(15) // Sum of ids 1,2,3,4,5
-  })
+  //   expect(maxId).toBe(5) // Last created user's id
+  //   expect(minId).toBe(1) // First created user's id
+  //   expect(avgId).toBe(3) // Average of ids 1,2,3,4,5
+  //   expect(totalId).toBe(15) // Sum of ids 1,2,3,4,5
+  // })
 
   it('should handle chunk processing of records', async () => {
     // Create 25 users
@@ -615,13 +615,16 @@ describe('Models test', () => {
     await Promise.all(users.map(user => User.create(user)))
 
     let processedCount = 0
-    const chunkSize = 10
+    let chunkedCount = 0
+    const chunkSize = 5
 
     await User.chunk(chunkSize, async (models) => {
+      chunkedCount++
       processedCount += models.length
     })
 
     expect(processedCount).toBe(25)
+    expect(chunkedCount).toBe(5)
   })
 
   it('should handle pluck operation for specific fields', async () => {

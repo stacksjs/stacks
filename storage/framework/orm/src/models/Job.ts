@@ -327,20 +327,14 @@ export class JobModel {
     return instance
   }
 
-  async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
-    await JobModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
     while (hasMore) {
-      const instance = new JobModel(null)
-
       // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
+      const models = await this.selectFromQuery
+        .take(size)
         .offset((page - 1) * size)
         .execute()
 
@@ -358,8 +352,20 @@ export class JobModel {
     }
   }
 
+  async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    const instance = new JobModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
   take(count: number): JobModel {
-    return JobModel.take(count)
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
   }
 
   static take(count: number): JobModel {
@@ -870,7 +876,7 @@ export class JobModel {
     return instance
   }
 
-  orWhere(...conditions: [string, any][]): JobModel {
+  applyOrWhere(...conditions: [string, any][]): JobModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -892,28 +898,14 @@ export class JobModel {
     return this
   }
 
+  orWhere(...conditions: [string, any][]): JobModel {
+    return this.applyOrWhere(...conditions)
+  }
+
   static orWhere(...conditions: [string, any][]): JobModel {
     const instance = new JobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
+    return instance.applyOrWhere(...conditions)
   }
 
   when(

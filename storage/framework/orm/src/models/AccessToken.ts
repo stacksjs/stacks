@@ -335,20 +335,14 @@ export class AccessTokenModel {
     return instance
   }
 
-  async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
-    await AccessTokenModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
     while (hasMore) {
-      const instance = new AccessTokenModel(null)
-
       // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
+      const models = await this.selectFromQuery
+        .take(size)
         .offset((page - 1) * size)
         .execute()
 
@@ -366,8 +360,20 @@ export class AccessTokenModel {
     }
   }
 
+  async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
+    const instance = new AccessTokenModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
   take(count: number): AccessTokenModel {
-    return AccessTokenModel.take(count)
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
   }
 
   static take(count: number): AccessTokenModel {
@@ -878,7 +884,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  orWhere(...conditions: [string, any][]): AccessTokenModel {
+  applyOrWhere(...conditions: [string, any][]): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -900,28 +906,14 @@ export class AccessTokenModel {
     return this
   }
 
+  orWhere(...conditions: [string, any][]): AccessTokenModel {
+    return this.applyOrWhere(...conditions)
+  }
+
   static orWhere(...conditions: [string, any][]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
+    return instance.applyOrWhere(...conditions)
   }
 
   when(

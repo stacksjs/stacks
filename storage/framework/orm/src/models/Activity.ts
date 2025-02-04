@@ -354,20 +354,14 @@ export class ActivityModel {
     return instance
   }
 
-  async chunk(size: number, callback: (models: ActivityModel[]) => Promise<void>): Promise<void> {
-    await ActivityModel.chunk(size, callback)
-  }
-
-  static async chunk(size: number, callback: (models: ActivityModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: ActivityModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
     while (hasMore) {
-      const instance = new ActivityModel(null)
-
       // Get one batch
-      const models = await instance.selectFromQuery
-        .limit(size)
+      const models = await this.selectFromQuery
+        .take(size)
         .offset((page - 1) * size)
         .execute()
 
@@ -385,8 +379,20 @@ export class ActivityModel {
     }
   }
 
+  async chunk(size: number, callback: (models: ActivityModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: ActivityModel[]) => Promise<void>): Promise<void> {
+    const instance = new ActivityModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
   take(count: number): ActivityModel {
-    return ActivityModel.take(count)
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
   }
 
   static take(count: number): ActivityModel {
@@ -908,7 +914,7 @@ export class ActivityModel {
     return instance
   }
 
-  orWhere(...conditions: [string, any][]): ActivityModel {
+  applyOrWhere(...conditions: [string, any][]): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -930,28 +936,14 @@ export class ActivityModel {
     return this
   }
 
+  orWhere(...conditions: [string, any][]): ActivityModel {
+    return this.applyOrWhere(...conditions)
+  }
+
   static orWhere(...conditions: [string, any][]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return instance
+    return instance.applyOrWhere(...conditions)
   }
 
   when(
