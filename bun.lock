@@ -1270,6 +1270,7 @@
         "@stacksjs/development": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@unhead/vue": "^1.11.18",
+        "bun-plugin-unocss": "^0.1.1",
         "pinia": "^2.3.1",
         "unhead": "^1.11.18",
         "unocss": "65.4.3",
@@ -3099,6 +3100,8 @@
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.9", "", { "dependencies": { "@stacksjs/dtsx": "^0.8.0" } }, "sha512-ZEGVuJllTxvTGGa+fcKst0/FvShPsdll209PVWgGalEeLxsp5NfGbmmPAHsHHLxNlffxizdY+cGwI7ZmmWUpRw=="],
 
     "bun-plugin-env": ["bun-plugin-env@0.4.1", "", {}, "sha512-g0CNc7eVw+W8zPQDWccRI8wVNMdeYAURVxWFNAFteWfJaGW7dPkvjug/uB0R0yq7VRkscAYIQzwoGA3SkaQz5A=="],
+
+    "bun-plugin-unocss": ["bun-plugin-unocss@0.1.1", "", {}, "sha512-9dSwUg3vg9Nqk+tMKxFjtcGUh03Zhrolp8AaBoJhTV1lEUKyrZqYcNkPdpGCx2sCjx169+dQhPJFIZkFkdOgbw=="],
 
     "bun-plugin-yml": ["bun-plugin-yml@0.3.1", "", {}, "sha512-qRy6wNIU+VuwNYmiWvpTuq4MJAvP6emXcHCetE3YDdObaywL4rI+3gATUq3TTWWBqCO9NvQGWRfgLl+BOfQQ0A=="],
 

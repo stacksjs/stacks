@@ -1,5 +1,5 @@
 # preload these modules before running bun
-preload = [ "./storage/framework/defaults/plugins/preloader.ts" ]
+preload = [ "./resources/plugins/preloader.ts" ]
 
 [test]
 preload = [ "./tests/setup.ts" ]
@@ -70,3 +70,6 @@ save = true
 [run]
 # equivalent to `bun --bun` for all `bun run` commands
 bun = true
+
+[serve.static]
+plugins = [ "bun-plugin-tailwind" ]
