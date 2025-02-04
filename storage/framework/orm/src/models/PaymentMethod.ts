@@ -836,7 +836,9 @@ export class PaymentMethodModel {
   }
 
   whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
-    return PaymentMethodModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
@@ -848,21 +850,30 @@ export class PaymentMethodModel {
   }
 
   whereRef(column: string, ...args: string[]): PaymentMethodModel {
-    return PaymentMethodModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): PaymentMethodModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new PaymentMethodModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): PaymentMethodModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): PaymentMethodModel {
-    return PaymentMethodModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): PaymentMethodModel {
@@ -1432,7 +1443,11 @@ export class PaymentMethodModel {
   }
 
   distinct(column: keyof PaymentMethodType): PaymentMethodModel {
-    return PaymentMethodModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -1446,7 +1461,9 @@ export class PaymentMethodModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): PaymentMethodModel {
-    return PaymentMethodModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): PaymentMethodModel {

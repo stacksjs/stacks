@@ -806,7 +806,9 @@ export class ProductModel {
   }
 
   whereColumn(first: string, operator: string, second: string): ProductModel {
-    return ProductModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): ProductModel {
@@ -818,21 +820,30 @@ export class ProductModel {
   }
 
   whereRef(column: string, ...args: string[]): ProductModel {
-    return ProductModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): ProductModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new ProductModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): ProductModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): ProductModel {
+    const instance = new ProductModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): ProductModel {
-    return ProductModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): ProductModel {
@@ -1375,7 +1386,11 @@ export class ProductModel {
   }
 
   distinct(column: keyof ProductType): ProductModel {
-    return ProductModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof ProductType): ProductModel {
@@ -1389,7 +1404,9 @@ export class ProductModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ProductModel {
-    return ProductModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProductModel {

@@ -812,7 +812,9 @@ export class ActivityModel {
   }
 
   whereColumn(first: string, operator: string, second: string): ActivityModel {
-    return ActivityModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): ActivityModel {
@@ -824,21 +826,30 @@ export class ActivityModel {
   }
 
   whereRef(column: string, ...args: string[]): ActivityModel {
-    return ActivityModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): ActivityModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new ActivityModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): ActivityModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): ActivityModel {
+    const instance = new ActivityModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): ActivityModel {
-    return ActivityModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): ActivityModel {
@@ -1430,7 +1441,11 @@ export class ActivityModel {
   }
 
   distinct(column: keyof ActivityType): ActivityModel {
-    return ActivityModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof ActivityType): ActivityModel {
@@ -1444,7 +1459,9 @@ export class ActivityModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ActivityModel {
-    return ActivityModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): ActivityModel {

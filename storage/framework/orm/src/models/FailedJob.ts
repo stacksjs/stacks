@@ -774,7 +774,9 @@ export class FailedJobModel {
   }
 
   whereColumn(first: string, operator: string, second: string): FailedJobModel {
-    return FailedJobModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): FailedJobModel {
@@ -786,21 +788,30 @@ export class FailedJobModel {
   }
 
   whereRef(column: string, ...args: string[]): FailedJobModel {
-    return FailedJobModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): FailedJobModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new FailedJobModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): FailedJobModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): FailedJobModel {
-    return FailedJobModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): FailedJobModel {
@@ -1327,7 +1338,11 @@ export class FailedJobModel {
   }
 
   distinct(column: keyof FailedJobType): FailedJobModel {
-    return FailedJobModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof FailedJobType): FailedJobModel {
@@ -1341,7 +1356,9 @@ export class FailedJobModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): FailedJobModel {
-    return FailedJobModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): FailedJobModel {

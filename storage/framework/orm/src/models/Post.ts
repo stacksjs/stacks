@@ -764,7 +764,9 @@ export class PostModel {
   }
 
   whereColumn(first: string, operator: string, second: string): PostModel {
-    return PostModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): PostModel {
@@ -776,21 +778,30 @@ export class PostModel {
   }
 
   whereRef(column: string, ...args: string[]): PostModel {
-    return PostModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): PostModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new PostModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): PostModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): PostModel {
+    const instance = new PostModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): PostModel {
-    return PostModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): PostModel {
@@ -1307,7 +1318,11 @@ export class PostModel {
   }
 
   distinct(column: keyof PostType): PostModel {
-    return PostModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof PostType): PostModel {
@@ -1321,7 +1336,9 @@ export class PostModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): PostModel {
-    return PostModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): PostModel {

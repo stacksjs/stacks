@@ -774,7 +774,9 @@ export class ErrorModel {
   }
 
   whereColumn(first: string, operator: string, second: string): ErrorModel {
-    return ErrorModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): ErrorModel {
@@ -786,21 +788,30 @@ export class ErrorModel {
   }
 
   whereRef(column: string, ...args: string[]): ErrorModel {
-    return ErrorModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): ErrorModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new ErrorModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): ErrorModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): ErrorModel {
-    return ErrorModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): ErrorModel {
@@ -1327,7 +1338,11 @@ export class ErrorModel {
   }
 
   distinct(column: keyof ErrorType): ErrorModel {
-    return ErrorModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof ErrorType): ErrorModel {
@@ -1341,7 +1356,9 @@ export class ErrorModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ErrorModel {
-    return ErrorModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): ErrorModel {

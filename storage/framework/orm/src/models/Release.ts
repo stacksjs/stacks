@@ -738,7 +738,9 @@ export class ReleaseModel {
   }
 
   whereColumn(first: string, operator: string, second: string): ReleaseModel {
-    return ReleaseModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): ReleaseModel {
@@ -750,21 +752,30 @@ export class ReleaseModel {
   }
 
   whereRef(column: string, ...args: string[]): ReleaseModel {
-    return ReleaseModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): ReleaseModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new ReleaseModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): ReleaseModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): ReleaseModel {
-    return ReleaseModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): ReleaseModel {
@@ -1259,7 +1270,11 @@ export class ReleaseModel {
   }
 
   distinct(column: keyof ReleaseType): ReleaseModel {
-    return ReleaseModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof ReleaseType): ReleaseModel {
@@ -1273,7 +1288,9 @@ export class ReleaseModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    return ReleaseModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): ReleaseModel {

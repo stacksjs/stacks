@@ -767,7 +767,9 @@ export class SubscriberEmailModel {
   }
 
   whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
-    return SubscriberEmailModel.whereColumn(first, operator, second)
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
   }
 
   static whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
@@ -779,21 +781,30 @@ export class SubscriberEmailModel {
   }
 
   whereRef(column: string, ...args: string[]): SubscriberEmailModel {
-    return SubscriberEmailModel.whereRef(column, ...args)
-  }
-
-  static whereRef(column: string, ...args: string[]): SubscriberEmailModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
     const instance = new SubscriberEmailModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
     return instance
   }
 
+  whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+    return this.whereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.whereRef(column, ...args)
+  }
+
   whereRaw(sqlStatement: string): SubscriberEmailModel {
-    return SubscriberEmailModel.whereRaw(sqlStatement)
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
   }
 
   static whereRaw(sqlStatement: string): SubscriberEmailModel {
@@ -1297,7 +1308,11 @@ export class SubscriberEmailModel {
   }
 
   distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    return SubscriberEmailModel.distinct(column)
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
   }
 
   static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -1311,7 +1326,9 @@ export class SubscriberEmailModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    return SubscriberEmailModel.join(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
