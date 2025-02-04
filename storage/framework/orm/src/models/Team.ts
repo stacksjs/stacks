@@ -1294,7 +1294,9 @@ export class TeamModel {
   }
 
   having(column: keyof TeamType, operator: string, value: any): TeamModel {
-    return TeamModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof TeamType, operator: string, value: any): TeamModel {

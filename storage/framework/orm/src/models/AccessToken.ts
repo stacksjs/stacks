@@ -1229,7 +1229,9 @@ export class AccessTokenModel {
   }
 
   having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
-    return AccessTokenModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {

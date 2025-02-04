@@ -1195,7 +1195,9 @@ export class PostModel {
   }
 
   having(column: keyof PostType, operator: string, value: any): PostModel {
-    return PostModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof PostType, operator: string, value: any): PostModel {

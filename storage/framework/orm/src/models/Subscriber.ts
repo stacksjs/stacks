@@ -1161,7 +1161,9 @@ export class SubscriberModel {
   }
 
   having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
-    return SubscriberModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {

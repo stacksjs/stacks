@@ -1307,7 +1307,9 @@ export class PaymentMethodModel {
   }
 
   having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
-    return PaymentMethodModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {

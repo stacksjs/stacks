@@ -1229,7 +1229,9 @@ export class JobModel {
   }
 
   having(column: keyof JobType, operator: string, value: any): JobModel {
-    return JobModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof JobType, operator: string, value: any): JobModel {

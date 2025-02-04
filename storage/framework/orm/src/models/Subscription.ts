@@ -1345,7 +1345,9 @@ export class SubscriptionModel {
   }
 
   having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {
-    return SubscriptionModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof SubscriptionType, operator: string, value: any): SubscriptionModel {

@@ -1212,7 +1212,9 @@ export class ProjectModel {
   }
 
   having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
-    return ProjectModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {

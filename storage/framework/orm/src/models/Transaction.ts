@@ -1278,7 +1278,9 @@ export class TransactionModel {
   }
 
   having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
-    return TransactionModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {

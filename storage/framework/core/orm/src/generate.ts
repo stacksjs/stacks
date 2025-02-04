@@ -1981,7 +1981,9 @@ export async function generateModelString(
         }
 
         having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
-          return ${modelName}Model.having(column, operator, value)
+          this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+  
+          return this
         }
 
         static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {

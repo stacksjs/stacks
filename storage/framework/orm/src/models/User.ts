@@ -1313,7 +1313,9 @@ export class UserModel {
   }
 
   having(column: keyof UserType, operator: string, value: any): UserModel {
-    return UserModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof UserType, operator: string, value: any): UserModel {

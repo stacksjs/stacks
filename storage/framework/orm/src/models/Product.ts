@@ -1277,7 +1277,9 @@ export class ProductModel {
   }
 
   having(column: keyof ProductType, operator: string, value: any): ProductModel {
-    return ProductModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof ProductType, operator: string, value: any): ProductModel {

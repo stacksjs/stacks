@@ -1190,7 +1190,9 @@ export class SubscriberEmailModel {
   }
 
   having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
-    return SubscriberEmailModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {

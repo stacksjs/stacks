@@ -1161,7 +1161,9 @@ export class ReleaseModel {
   }
 
   having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
-    return ReleaseModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {

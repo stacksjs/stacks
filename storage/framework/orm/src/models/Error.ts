@@ -1229,7 +1229,9 @@ export class ErrorModel {
   }
 
   having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
-    return ErrorModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof ErrorType, operator: string, value: any): ErrorModel {

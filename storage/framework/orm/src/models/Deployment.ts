@@ -1294,7 +1294,9 @@ export class DeploymentModel {
   }
 
   having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
-    return DeploymentModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {

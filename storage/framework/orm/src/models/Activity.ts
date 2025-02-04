@@ -1275,7 +1275,9 @@ export class ActivityModel {
   }
 
   having(column: keyof ActivityType, operator: string, value: any): ActivityModel {
-    return ActivityModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof ActivityType, operator: string, value: any): ActivityModel {

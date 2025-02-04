@@ -1229,7 +1229,9 @@ export class FailedJobModel {
   }
 
   having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
-    return FailedJobModel.having(column, operator, value)
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
   }
 
   static having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
