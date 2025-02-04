@@ -477,9 +477,25 @@ export class SubscriptionModel {
     return result.count || 0
   }
 
+  static async max(field: keyof SubscriptionModel): Promise<number> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   async max(field: keyof SubscriptionModel): Promise<number> {
     return await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  static async min(field: keyof SubscriptionModel): Promise<number> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
       .executeTakeFirst()
   }
 
@@ -489,9 +505,25 @@ export class SubscriptionModel {
       .executeTakeFirst()
   }
 
+  static async avg(field: keyof SubscriptionModel): Promise<number> {
+    const instance = new SubscriptionModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   async avg(field: keyof SubscriptionModel): Promise<number> {
     return this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  static async sum(field: keyof SubscriptionModel): Promise<number> {
+    const instance = new SubscriptionModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
       .executeTakeFirst()
   }
 

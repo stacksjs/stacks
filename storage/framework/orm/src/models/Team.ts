@@ -446,9 +446,25 @@ export class TeamModel {
     return result.count || 0
   }
 
+  static async max(field: keyof TeamModel): Promise<number> {
+    const instance = new TeamModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   async max(field: keyof TeamModel): Promise<number> {
     return await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  static async min(field: keyof TeamModel): Promise<number> {
+    const instance = new TeamModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
       .executeTakeFirst()
   }
 
@@ -458,9 +474,25 @@ export class TeamModel {
       .executeTakeFirst()
   }
 
+  static async avg(field: keyof TeamModel): Promise<number> {
+    const instance = new TeamModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   async avg(field: keyof TeamModel): Promise<number> {
     return this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  static async sum(field: keyof TeamModel): Promise<number> {
+    const instance = new TeamModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
       .executeTakeFirst()
   }
 

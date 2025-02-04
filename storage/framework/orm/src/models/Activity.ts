@@ -432,9 +432,25 @@ export class ActivityModel {
     return result.count || 0
   }
 
+  static async max(field: keyof ActivityModel): Promise<number> {
+    const instance = new ActivityModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
   async max(field: keyof ActivityModel): Promise<number> {
     return await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) `)
+      .executeTakeFirst()
+  }
+
+  static async min(field: keyof ActivityModel): Promise<number> {
+    const instance = new ActivityModel(null)
+
+    return await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) `)
       .executeTakeFirst()
   }
 
@@ -444,9 +460,25 @@ export class ActivityModel {
       .executeTakeFirst()
   }
 
+  static async avg(field: keyof ActivityModel): Promise<number> {
+    const instance = new ActivityModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
   async avg(field: keyof ActivityModel): Promise<number> {
     return this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)})`)
+      .executeTakeFirst()
+  }
+
+  static async sum(field: keyof ActivityModel): Promise<number> {
+    const instance = new ActivityModel(null)
+
+    return instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)})`)
       .executeTakeFirst()
   }
 
