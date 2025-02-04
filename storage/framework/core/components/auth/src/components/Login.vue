@@ -1,47 +1,131 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const props = defineProps({
+  showLogo: {
+    type: Boolean,
+    default: true
+  },
+  headingText: {
+    type: String,
+    default: 'Sign in to your account'
+  },
+  showSocialLogin: {
+    type: Boolean,
+    default: true
+  },
+  showRememberMe: {
+    type: Boolean,
+    default: true
+  },
+  showForgotPassword: {
+    type: Boolean,
+    default: true
+  },
+  showSignup: {
+    type: Boolean,
+    default: true
+  },
+  signupText: {
+    type: String,
+    default: 'Start a 14 day free trial'
+  }
+})
+
+// Reactive state for form inputs and messages
+const email = ref('')
+const password = ref('')
+const errorMessage = ref('')
+
+// Router instance
+const router = useRouter()
+
+// Method to handle email and password login
+async function login() {
+  const body = {
+    email: email.value,
+    password: password.value,
+  }
+
+  try {
+    const url = 'http://localhost:3008/api/login'
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(body),
+    })
+
+    const data: any = await response.json()
+
+    if (!response.ok) {
+      errorMessage.value = data.error || 'Login failed'
+    }
+    else {
+      localStorage.setItem('token', data.token)
+      router.push({ path: '/dashboard' })
+    }
+  }
+  catch (error) {
+    console.error(error)
+    errorMessage.value = 'An error occurred during login'
+  }
+  finally {
+    // Clear password after login attempt
+    password.value = ''
+  }
+}
+</script>
+
 <template>
   <div class="min-h-full flex flex-col justify-center py-12 lg:px-8 sm:px-6">
     <div class="sm:mx-auto sm:max-w-md sm:w-full">
+      <Logo v-if="showLogo" class="mx-auto h-11 w-auto" />
       <h2 class="mt-6 text-center text-2xl text-gray-900 font-bold leading-9 tracking-tight">
-        Sign in to your account
+        {{ headingText }}
       </h2>
     </div>
 
     <div class="mt-10 sm:mx-auto sm:max-w-[480px] sm:w-full">
       <div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
-        <form class="space-y-6" action="#" method="POST">
+        <div class="space-y-6">
           <div>
             <label for="email" class="block text-sm text-gray-900 font-medium leading-6">Email address</label>
             <div class="mt-2">
-              <input id="email" name="email" type="email" autocomplete="email" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="email" v-model="email" name="email" type="email" autocomplete="email" required class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
             </div>
           </div>
 
           <div>
             <label for="password" class="block text-sm text-gray-900 font-medium leading-6">Password</label>
             <div class="mt-2">
-              <input id="password" name="password" type="password" autocomplete="current-password" required class="block w-full border-0 rounded-md p-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-teal-600 focus:ring-inset">
+              <input id="password" v-model="password" name="password" type="password" autocomplete="current-password" required class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
             </div>
           </div>
 
           <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-teal-600 focus:ring-teal-600">
+            <div v-if="showRememberMe" class="flex items-center">
+              <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-600">
               <label for="remember-me" class="ml-3 block text-sm text-gray-900 leading-6">Remember me</label>
             </div>
 
-            <div class="text-sm leading-6">
-              <a href="#" class="text-teal-600 font-semibold hover:text-teal-500">Forgot password?</a>
+            <div v-if="showForgotPassword" class="text-sm leading-6">
+              <a href="#" class="text-indigo-600 font-semibold hover:text-indigo-500">Forgot password?</a>
             </div>
           </div>
 
           <div>
-            <button type="submit" class="w-full flex justify-center rounded-md bg-teal-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-teal-500 focus-visible:outline-2 focus-visible:outline-teal-600 focus-visible:outline-offset-2 focus-visible:outline">
+            <button type="submit" class="w-full flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm text-white font-semibold leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" @click="login">
               Sign in
             </button>
           </div>
-        </form>
+        </div>
 
-        <div>
+        <div v-if="showSocialLogin">
           <div class="relative mt-10">
             <div class="absolute inset-0 flex items-center" aria-hidden="true">
               <div class="w-full border-t border-gray-200" />
@@ -72,9 +156,9 @@
         </div>
       </div>
 
-      <p class="mt-10 text-center text-sm text-gray-500">
+      <p v-if="showSignup" class="mt-10 text-center text-sm text-gray-500">
         Not a member?
-        <a href="#" class="text-teal-600 font-semibold leading-6 hover:text-teal-500">Start a 14 day free trial</a>
+        <a href="#" class="text-indigo-600 font-semibold leading-6 hover:text-indigo-500">Start a 14 day free trial</a>
       </p>
     </div>
   </div>

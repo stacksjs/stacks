@@ -20,7 +20,6 @@ const components = await glob('./components/*', {
 // console.log('components', components)
 dirs.push(...components)
 
-console.log('dirs', dirs)
 const startTime = Date.now()
 
 for (const dir of dirs) {
