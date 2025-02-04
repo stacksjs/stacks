@@ -1163,9 +1163,11 @@ export async function generateModelString(
         static async count(): Promise<number> {
           const instance = new ${modelName}Model(null)
 
-          return instance.selectFromQuery
+          const result = instance.selectFromQuery
             .select(sql\`COUNT(*) as count\`)
             .executeTakeFirst()
+          
+          return result.count || 0
         }
 
         async count(): Promise<number> {
@@ -1921,7 +1923,9 @@ export async function generateModelString(
         }
 
         orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
-          return ${modelName}Model.orderByDesc(column)
+          this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+  
+          return this
         }
 
         static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {

@@ -440,9 +440,11 @@ export class PaymentMethodModel {
   static async count(): Promise<number> {
     const instance = new PaymentMethodModel(null)
 
-    return instance.selectFromQuery
+    const result = instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async count(): Promise<number> {
@@ -1247,7 +1249,9 @@ export class PaymentMethodModel {
   }
 
   orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {
-    return PaymentMethodModel.orderByDesc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
   }
 
   static orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {

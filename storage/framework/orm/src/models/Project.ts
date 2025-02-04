@@ -373,9 +373,11 @@ export class ProjectModel {
   static async count(): Promise<number> {
     const instance = new ProjectModel(null)
 
-    return instance.selectFromQuery
+    const result = instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async count(): Promise<number> {
@@ -1152,7 +1154,9 @@ export class ProjectModel {
   }
 
   orderByDesc(column: keyof ProjectType): ProjectModel {
-    return ProjectModel.orderByDesc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
   }
 
   static orderByDesc(column: keyof ProjectType): ProjectModel {

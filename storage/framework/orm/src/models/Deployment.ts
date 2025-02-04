@@ -427,9 +427,11 @@ export class DeploymentModel {
   static async count(): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    return instance.selectFromQuery
+    const result = instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async count(): Promise<number> {
@@ -1234,7 +1236,9 @@ export class DeploymentModel {
   }
 
   orderByDesc(column: keyof DeploymentType): DeploymentModel {
-    return DeploymentModel.orderByDesc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
   }
 
   static orderByDesc(column: keyof DeploymentType): DeploymentModel {

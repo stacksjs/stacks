@@ -372,9 +372,11 @@ export class PostModel {
   static async count(): Promise<number> {
     const instance = new PostModel(null)
 
-    return instance.selectFromQuery
+    const result = instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async count(): Promise<number> {
@@ -1135,7 +1137,9 @@ export class PostModel {
   }
 
   orderByDesc(column: keyof PostType): PostModel {
-    return PostModel.orderByDesc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
   }
 
   static orderByDesc(column: keyof PostType): PostModel {

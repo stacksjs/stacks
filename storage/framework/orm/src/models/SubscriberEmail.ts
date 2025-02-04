@@ -364,9 +364,11 @@ export class SubscriberEmailModel {
   static async count(): Promise<number> {
     const instance = new SubscriberEmailModel(null)
 
-    return instance.selectFromQuery
+    const result = instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async count(): Promise<number> {
@@ -1130,7 +1132,9 @@ export class SubscriberEmailModel {
   }
 
   orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    return SubscriberEmailModel.orderByDesc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
   }
 
   static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
