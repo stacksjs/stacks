@@ -6,5 +6,4 @@ import {
   ComboboxOptions,
 } from '@headlessui/vue'
 
-
 export { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions }

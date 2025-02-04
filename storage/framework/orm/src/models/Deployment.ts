@@ -427,7 +427,7 @@ export class DeploymentModel {
   static async count(): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    const result = instance.selectFromQuery
+    const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
 
@@ -435,7 +435,11 @@ export class DeploymentModel {
   }
 
   async count(): Promise<number> {
-    return DeploymentModel.count()
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
   }
 
   async max(field: keyof DeploymentModel): Promise<number> {
@@ -773,7 +777,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  private static applyWhere(instance: DeploymentModel, column: string, ...args: any[]): DeploymentModel {
+  applyWhere(instance: DeploymentModel, column: string, ...args: any[]): DeploymentModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -786,12 +790,13 @@ export class DeploymentModel {
   }
 
   where(column: string, ...args: any[]): DeploymentModel {
-    return DeploymentModel.applyWhere(this, column, ...args)
+    return this.applyWhere(this, column, ...args)
   }
 
   static where(column: string, ...args: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
-    return DeploymentModel.applyWhere(instance, column, ...args)
+
+    return instance.applyWhere(instance, column, ...args)
   }
 
   whereColumn(first: string, operator: string, second: string): DeploymentModel {
@@ -832,45 +837,45 @@ export class DeploymentModel {
     return instance
   }
 
-  orWhere(...conditions: (string | [string, any] | [string, string, any])[]): DeploymentModel {
-    return DeploymentModel.orWhere(...conditions)
+  orWhere(column: string, ...args: any[]): DeploymentModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    // Use the expression builder to append the OR condition
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb.or([eb(column, operator, actualValue)]),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb.or([eb(column, operator, actualValue)]),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb.or([eb(column, operator, actualValue)]),
+    )
+
+    return this
   }
 
-  static orWhere(...conditions: (string | [string, any] | [string, string, any])[]): DeploymentModel {
+  static orWhere(column: string, ...args: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    if (conditions.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
 
-    // Process conditions to handle different formats
-    const processedConditions = conditions.map((condition) => {
-      if (Array.isArray(condition)) {
-        if (condition.length === 2) {
-          return [condition[0], '=', condition[1]]
-        }
-        return condition
-      }
-      throw new Error('Invalid condition format')
-    })
-
-    // Use the expression builder to append the OR conditions
+    // Use the expression builder to append the OR condition
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or(
-        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
+      eb.or([eb(column, operator, actualValue)]),
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or(
-        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
+      eb.or([eb(column, operator, actualValue)]),
     )
 
     instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        processedConditions.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
+      eb.or([eb(column, operator, actualValue)]),
     )
 
     return instance
