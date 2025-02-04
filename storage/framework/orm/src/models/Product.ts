@@ -1458,10 +1458,6 @@ export class ProductModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<ProductJsonResponse> {
     const output: Partial<ProductJsonResponse> = {
 

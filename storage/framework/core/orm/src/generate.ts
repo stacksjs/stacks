@@ -2179,10 +2179,6 @@ export async function generateModelString(
           return instance
         }
   
-        static async rawQuery(rawQuery: string): Promise<any> {
-          return await sql\`\${rawQuery}\`\.execute(DB.instance)
-        }
-  
         toJSON(): Partial<${modelName}JsonResponse> {
           const output: Partial<${modelName}JsonResponse> = ${jsonFields}
 

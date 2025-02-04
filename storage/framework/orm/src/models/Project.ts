@@ -1393,10 +1393,6 @@ export class ProjectModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<ProjectJsonResponse> {
     const output: Partial<ProjectJsonResponse> = {
 

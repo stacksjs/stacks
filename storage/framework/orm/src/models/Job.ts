@@ -1410,10 +1410,6 @@ export class JobModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<JobJsonResponse> {
     const output: Partial<JobJsonResponse> = {
 

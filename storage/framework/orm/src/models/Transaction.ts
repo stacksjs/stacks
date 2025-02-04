@@ -1487,10 +1487,6 @@ export class TransactionModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<TransactionJsonResponse> {
     const output: Partial<TransactionJsonResponse> = {
 

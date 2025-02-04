@@ -1513,10 +1513,6 @@ export class ActivityModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<ActivityJsonResponse> {
     const output: Partial<ActivityJsonResponse> = {
 

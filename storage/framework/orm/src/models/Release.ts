@@ -1342,10 +1342,6 @@ export class ReleaseModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<ReleaseJsonResponse> {
     const output: Partial<ReleaseJsonResponse> = {
 

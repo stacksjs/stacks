@@ -1854,10 +1854,6 @@ export class UserModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<UserJsonResponse> {
     const output: Partial<UserJsonResponse> = {
 

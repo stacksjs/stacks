@@ -1540,10 +1540,6 @@ export class SubscriptionModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<SubscriptionJsonResponse> {
     const output: Partial<SubscriptionJsonResponse> = {
 

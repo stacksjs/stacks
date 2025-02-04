@@ -1507,10 +1507,6 @@ export class TeamModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<TeamJsonResponse> {
     const output: Partial<TeamJsonResponse> = {
 

@@ -1515,10 +1515,6 @@ export class PaymentMethodModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<PaymentMethodJsonResponse> {
     const output: Partial<PaymentMethodJsonResponse> = {
 

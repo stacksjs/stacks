@@ -1390,10 +1390,6 @@ export class PostModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(DB.instance)
-  }
-
   toJSON(): Partial<PostJsonResponse> {
     const output: Partial<PostJsonResponse> = {
 
