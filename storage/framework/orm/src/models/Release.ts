@@ -522,14 +522,8 @@ export class ReleaseModel {
     return instance
   }
 
-  doesntHave(relation: string): ReleaseModel {
-    return ReleaseModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -539,24 +533,26 @@ export class ReleaseModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
-    return ReleaseModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): ReleaseModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ReleaseModel {
+  static doesntHave(relation: string): ReleaseModel {
     const instance = new ReleaseModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -606,15 +602,23 @@ export class ReleaseModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
-    return ReleaseModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all releases
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('releases')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -642,6 +646,17 @@ export class ReleaseModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all releases
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {

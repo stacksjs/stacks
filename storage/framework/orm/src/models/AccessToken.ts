@@ -566,14 +566,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  doesntHave(relation: string): AccessTokenModel {
-    return AccessTokenModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): AccessTokenModel {
-    const instance = new AccessTokenModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -583,24 +577,26 @@ export class AccessTokenModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
-    return AccessTokenModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): AccessTokenModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): AccessTokenModel {
+  static doesntHave(relation: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -650,15 +646,23 @@ export class AccessTokenModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
-    return AccessTokenModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all personal_access_tokens
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('personal_access_tokens')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -686,6 +690,17 @@ export class AccessTokenModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all personal_access_tokens
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<AccessTokenResponse> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {

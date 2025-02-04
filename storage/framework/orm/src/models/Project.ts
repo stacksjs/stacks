@@ -549,14 +549,8 @@ export class ProjectModel {
     return instance
   }
 
-  doesntHave(relation: string): ProjectModel {
-    return ProjectModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): ProjectModel {
-    const instance = new ProjectModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): ProjectModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -566,24 +560,26 @@ export class ProjectModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
-    return ProjectModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): ProjectModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProjectModel {
+  static doesntHave(relation: string): ProjectModel {
     const instance = new ProjectModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -633,15 +629,23 @@ export class ProjectModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
-    return ProjectModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all projects
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('projects')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -669,6 +673,17 @@ export class ProjectModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all projects
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProjectResponse> {
+    const instance = new ProjectModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newProject: NewProject): Promise<ProjectModel> {

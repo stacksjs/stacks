@@ -636,14 +636,8 @@ export class UserModel {
     return instance
   }
 
-  doesntHave(relation: string): UserModel {
-    return UserModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): UserModel {
-    const instance = new UserModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -653,24 +647,26 @@ export class UserModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
-    return UserModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): UserModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): UserModel {
+  static doesntHave(relation: string): UserModel {
     const instance = new UserModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -720,15 +716,23 @@ export class UserModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
-    return UserModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all users
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
+    const instance = new UserModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('users')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -756,6 +760,17 @@ export class UserModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all users
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
+    const instance = new UserModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newUser: NewUser): Promise<UserModel> {

@@ -1336,14 +1336,8 @@ export async function generateModelString(
           return instance
         }
 
-        doesntHave(relation: string): ${modelName}Model {
-          return ${modelName}Model.doesntHave(relation)
-        }
-
-        static doesntHave(relation: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
-
-          instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+        applyDoesntHave(relation: string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
             not(
               exists(
                 selectFrom(relation)
@@ -1353,24 +1347,26 @@ export async function generateModelString(
             )
           )
 
-          return instance
+          return this
         }
 
-        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
-          return ${modelName}Model.whereDoesntHave(relation, callback)
+        doesntHave(relation: string): ${modelName}Model {
+          return this.applyDoesntHave(relation)
         }
 
-        static whereDoesntHave(
-          relation: string,
-          callback: (query: SubqueryBuilder) => void
-        ): ${modelName}Model {
+        static doesntHave(relation: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
+
+          return instance.doesntHave(relation)
+        }
+
+        applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
           const subqueryBuilder = new SubqueryBuilder()
           
           callback(subqueryBuilder)
           const conditions = subqueryBuilder.getConditions()
         
-          instance.selectFromQuery = instance.selectFromQuery
+          this.selectFromQuery = this.selectFromQuery
             .where(({ exists, selectFrom, not }: any) => {
               let subquery = selectFrom(relation)
                 .select('1')
@@ -1418,15 +1414,23 @@ export async function generateModelString(
             return not(exists(subquery))
           })
             
-          return instance
+          return this
         }
 
-        async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
-          return ${modelName}Model.paginate(options)
+        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+          return this.applyWhereDoesntHave(relation, callback)
         }
-  
-        // Method to get all ${tableName}
-        static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
+
+        static whereDoesntHave(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+          
+          return instance.applyWhereDoesntHave(relation, callback)
+        }
+
+        async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
           const totalRecordsResult = await DB.instance.selectFrom('${tableName}')
             .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
             .executeTakeFirst()
@@ -1454,6 +1458,17 @@ export async function generateModelString(
             },
             next_cursor: nextCursor,
           }
+        }
+
+        async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
+          return await this.applyPaginate(options)
+        }
+  
+        // Method to get all ${tableName}
+        static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.applyPaginate(options)
         }
   
         static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {

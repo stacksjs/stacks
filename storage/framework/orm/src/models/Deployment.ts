@@ -603,14 +603,8 @@ export class DeploymentModel {
     return instance
   }
 
-  doesntHave(relation: string): DeploymentModel {
-    return DeploymentModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -620,24 +614,26 @@ export class DeploymentModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
-    return DeploymentModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): DeploymentModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): DeploymentModel {
+  static doesntHave(relation: string): DeploymentModel {
     const instance = new DeploymentModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -687,15 +683,23 @@ export class DeploymentModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    return DeploymentModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all deployments
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('deployments')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -723,6 +727,17 @@ export class DeploymentModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all deployments
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {

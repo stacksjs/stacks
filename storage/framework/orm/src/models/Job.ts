@@ -558,14 +558,8 @@ export class JobModel {
     return instance
   }
 
-  doesntHave(relation: string): JobModel {
-    return JobModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): JobModel {
-    const instance = new JobModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): JobModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -575,24 +569,26 @@ export class JobModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
-    return JobModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): JobModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): JobModel {
+  static doesntHave(relation: string): JobModel {
     const instance = new JobModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -642,15 +638,23 @@ export class JobModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    return JobModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all jobs
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): JobModel {
+    const instance = new JobModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('jobs')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -678,6 +682,17 @@ export class JobModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all jobs
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
+    const instance = new JobModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newJob: NewJob): Promise<JobModel> {

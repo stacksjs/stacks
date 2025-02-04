@@ -630,14 +630,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  doesntHave(relation: string): SubscriptionModel {
-    return SubscriptionModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -647,24 +641,26 @@ export class SubscriptionModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {
-    return SubscriptionModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): SubscriptionModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): SubscriptionModel {
+  static doesntHave(relation: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -714,15 +710,23 @@ export class SubscriptionModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
-    return SubscriptionModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all subscriptions
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('subscriptions')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -750,6 +754,17 @@ export class SubscriptionModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all subscriptions
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {

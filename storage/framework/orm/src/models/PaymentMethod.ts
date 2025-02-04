@@ -616,14 +616,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  doesntHave(relation: string): PaymentMethodModel {
-    return PaymentMethodModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): PaymentMethodModel {
-    const instance = new PaymentMethodModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -633,24 +627,26 @@ export class PaymentMethodModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
-    return PaymentMethodModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): PaymentMethodModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): PaymentMethodModel {
+  static doesntHave(relation: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -700,15 +696,23 @@ export class PaymentMethodModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
-    return PaymentMethodModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all payment_methods
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('payment_methods')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -736,6 +740,17 @@ export class PaymentMethodModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all payment_methods
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentMethodResponse> {
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {

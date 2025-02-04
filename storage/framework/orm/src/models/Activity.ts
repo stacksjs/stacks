@@ -585,14 +585,8 @@ export class ActivityModel {
     return instance
   }
 
-  doesntHave(relation: string): ActivityModel {
-    return ActivityModel.doesntHave(relation)
-  }
-
-  static doesntHave(relation: string): ActivityModel {
-    const instance = new ActivityModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+  applyDoesntHave(relation: string): ActivityModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
@@ -602,24 +596,26 @@ export class ActivityModel {
       ),
     )
 
-    return instance
+    return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {
-    return ActivityModel.whereDoesntHave(relation, callback)
+  doesntHave(relation: string): ActivityModel {
+    return this.applyDoesntHave(relation)
   }
 
-  static whereDoesntHave(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ActivityModel {
+  static doesntHave(relation: string): ActivityModel {
     const instance = new ActivityModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -669,15 +665,23 @@ export class ActivityModel {
         return not(exists(subquery))
       })
 
-    return instance
+    return this
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ActivityResponse> {
-    return ActivityModel.paginate(options)
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {
+    return this.applyWhereDoesntHave(relation, callback)
   }
 
-  // Method to get all activities
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ActivityResponse> {
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ActivityModel {
+    const instance = new ActivityModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ActivityResponse> {
     const totalRecordsResult = await DB.instance.selectFrom('activities')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
@@ -705,6 +709,17 @@ export class ActivityModel {
       },
       next_cursor: nextCursor,
     }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ActivityResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all activities
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ActivityResponse> {
+    const instance = new ActivityModel(null)
+
+    return await instance.applyPaginate(options)
   }
 
   static async create(newActivity: NewActivity): Promise<ActivityModel> {
