@@ -1115,7 +1115,8 @@ export async function generateModelString(
           while (hasMore) {
             // Get one batch
             const models = await this.selectFromQuery
-              .take(size)
+              .selectAll()
+              .limit(size)
               .offset((page - 1) * size)
               .execute()
         
@@ -2083,7 +2084,7 @@ export async function generateModelString(
             throw new HttpError(500, '${modelName} data is undefined')
           
            const filteredValues = Object.fromEntries(
-            Object.entries(this).filter(([key]) => 
+            Object.entries(this.attributes).filter(([key]) => 
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
@@ -2094,7 +2095,7 @@ export async function generateModelString(
               .executeTakeFirstOrThrow()
           }
           else {
-            await this.update(this)
+            await this.update(this.attributes)
           }
 
           this.hasSaved = true
