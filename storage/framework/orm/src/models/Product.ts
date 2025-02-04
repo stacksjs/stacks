@@ -208,7 +208,11 @@ export class ProductModel {
   }
 
   select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
-    return ProductModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
@@ -222,26 +226,30 @@ export class ProductModel {
     return instance
   }
 
-  async find(id: number): Promise<ProductModel | undefined> {
-    return await ProductModel.find(id)
-  }
-
-  // Method to find a Product by ID
-  static async find(id: number): Promise<ProductModel | undefined> {
+  async applyFind(id: number): Promise<ProductModel | undefined> {
     const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ProductModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ProductModel(result as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ProductModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Product by ID
+  static async find(id: number): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<ProductModel | undefined> {
@@ -821,19 +829,19 @@ export class ProductModel {
   }
 
   orWhere(...conditions: [string, any][]): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -845,19 +853,19 @@ export class ProductModel {
   static orWhere(...conditions: [string, any][]): ProductModel {
     const instance = new ProductModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

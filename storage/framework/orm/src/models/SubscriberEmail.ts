@@ -154,7 +154,11 @@ export class SubscriberEmailModel {
   }
 
   select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
-    return SubscriberEmailModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
@@ -168,26 +172,30 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    return await SubscriberEmailModel.find(id)
-  }
-
-  // Method to find a SubscriberEmail by ID
-  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
+  async applyFind(id: number): Promise<SubscriberEmailModel | undefined> {
     const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a SubscriberEmail by ID
+  static async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
@@ -782,19 +790,19 @@ export class SubscriberEmailModel {
   }
 
   orWhere(...conditions: [string, any][]): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -806,19 +814,19 @@ export class SubscriberEmailModel {
   static orWhere(...conditions: [string, any][]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

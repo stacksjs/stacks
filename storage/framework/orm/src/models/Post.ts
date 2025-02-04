@@ -166,7 +166,11 @@ export class PostModel {
   }
 
   select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
-    return PostModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
@@ -180,26 +184,30 @@ export class PostModel {
     return instance
   }
 
-  async find(id: number): Promise<PostModel | undefined> {
-    return await PostModel.find(id)
-  }
-
-  // Method to find a Post by ID
-  static async find(id: number): Promise<PostModel | undefined> {
+  async applyFind(id: number): Promise<PostModel | undefined> {
     const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new PostModel(result as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<PostModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Post by ID
+  static async find(id: number): Promise<PostModel | undefined> {
+    const instance = new PostModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<PostModel | undefined> {
@@ -779,19 +787,19 @@ export class PostModel {
   }
 
   orWhere(...conditions: [string, any][]): PostModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -803,19 +811,19 @@ export class PostModel {
   static orWhere(...conditions: [string, any][]): PostModel {
     const instance = new PostModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

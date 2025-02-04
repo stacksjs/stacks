@@ -248,7 +248,11 @@ export class SubscriptionModel {
   }
 
   select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
-    return SubscriptionModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
@@ -262,26 +266,30 @@ export class SubscriptionModel {
     return instance
   }
 
-  async find(id: number): Promise<SubscriptionModel | undefined> {
-    return await SubscriptionModel.find(id)
-  }
-
-  // Method to find a Subscription by ID
-  static async find(id: number): Promise<SubscriptionModel | undefined> {
+  async applyFind(id: number): Promise<SubscriptionModel | undefined> {
     const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new SubscriptionModel(result as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<SubscriptionModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Subscription by ID
+  static async find(id: number): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
@@ -865,19 +873,19 @@ export class SubscriptionModel {
   }
 
   orWhere(...conditions: [string, any][]): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -889,19 +897,19 @@ export class SubscriptionModel {
   static orWhere(...conditions: [string, any][]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

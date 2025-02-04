@@ -199,7 +199,11 @@ export class ActivityModel {
   }
 
   select(params: (keyof ActivityType)[] | RawBuilder<string> | string): ActivityModel {
-    return ActivityModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof ActivityType)[] | RawBuilder<string> | string): ActivityModel {
@@ -213,26 +217,30 @@ export class ActivityModel {
     return instance
   }
 
-  async find(id: number): Promise<ActivityModel | undefined> {
-    return await ActivityModel.find(id)
-  }
-
-  // Method to find a Activity by ID
-  static async find(id: number): Promise<ActivityModel | undefined> {
+  async applyFind(id: number): Promise<ActivityModel | undefined> {
     const model = await DB.instance.selectFrom('activities').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ActivityModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ActivityModel(result as ActivityType)
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ActivityModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Activity by ID
+  static async find(id: number): Promise<ActivityModel | undefined> {
+    const instance = new ActivityModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<ActivityModel | undefined> {
@@ -827,19 +835,19 @@ export class ActivityModel {
   }
 
   orWhere(...conditions: [string, any][]): ActivityModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -851,19 +859,19 @@ export class ActivityModel {
   static orWhere(...conditions: [string, any][]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

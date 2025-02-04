@@ -180,7 +180,11 @@ export class FailedJobModel {
   }
 
   select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
-    return FailedJobModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
@@ -194,26 +198,30 @@ export class FailedJobModel {
     return instance
   }
 
-  async find(id: number): Promise<FailedJobModel | undefined> {
-    return await FailedJobModel.find(id)
-  }
-
-  // Method to find a FailedJob by ID
-  static async find(id: number): Promise<FailedJobModel | undefined> {
+  async applyFind(id: number): Promise<FailedJobModel | undefined> {
     const model = await DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new FailedJobModel(result as FailedJobType)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<FailedJobModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a FailedJob by ID
+  static async find(id: number): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<FailedJobModel | undefined> {
@@ -789,19 +797,19 @@ export class FailedJobModel {
   }
 
   orWhere(...conditions: [string, any][]): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -813,19 +821,19 @@ export class FailedJobModel {
   static orWhere(...conditions: [string, any][]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

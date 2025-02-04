@@ -144,7 +144,11 @@ export class ReleaseModel {
   }
 
   select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
-    return ReleaseModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
@@ -158,26 +162,30 @@ export class ReleaseModel {
     return instance
   }
 
-  async find(id: number): Promise<ReleaseModel | undefined> {
-    return await ReleaseModel.find(id)
-  }
-
-  // Method to find a Release by ID
-  static async find(id: number): Promise<ReleaseModel | undefined> {
+  async applyFind(id: number): Promise<ReleaseModel | undefined> {
     const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ReleaseModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ReleaseModel(result as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ReleaseModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Release by ID
+  static async find(id: number): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<ReleaseModel | undefined> {
@@ -753,19 +761,19 @@ export class ReleaseModel {
   }
 
   orWhere(...conditions: [string, any][]): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -777,19 +785,19 @@ export class ReleaseModel {
   static orWhere(...conditions: [string, any][]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

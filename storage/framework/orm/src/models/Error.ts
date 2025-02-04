@@ -180,7 +180,11 @@ export class ErrorModel {
   }
 
   select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
-    return ErrorModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
@@ -194,26 +198,30 @@ export class ErrorModel {
     return instance
   }
 
-  async find(id: number): Promise<ErrorModel | undefined> {
-    return await ErrorModel.find(id)
-  }
-
-  // Method to find a Error by ID
-  static async find(id: number): Promise<ErrorModel | undefined> {
+  async applyFind(id: number): Promise<ErrorModel | undefined> {
     const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ErrorModel(result as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ErrorModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Error by ID
+  static async find(id: number): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<ErrorModel | undefined> {
@@ -789,19 +797,19 @@ export class ErrorModel {
   }
 
   orWhere(...conditions: [string, any][]): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -813,19 +821,19 @@ export class ErrorModel {
   static orWhere(...conditions: [string, any][]): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

@@ -171,7 +171,11 @@ export class ProjectModel {
   }
 
   select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
-    return ProjectModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
@@ -185,26 +189,30 @@ export class ProjectModel {
     return instance
   }
 
-  async find(id: number): Promise<ProjectModel | undefined> {
-    return await ProjectModel.find(id)
-  }
-
-  // Method to find a Project by ID
-  static async find(id: number): Promise<ProjectModel | undefined> {
+  async applyFind(id: number): Promise<ProjectModel | undefined> {
     const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ProjectModel(result as ProjectType)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ProjectModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Project by ID
+  static async find(id: number): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<ProjectModel | undefined> {
@@ -780,19 +788,19 @@ export class ProjectModel {
   }
 
   orWhere(...conditions: [string, any][]): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -804,19 +812,19 @@ export class ProjectModel {
   static orWhere(...conditions: [string, any][]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

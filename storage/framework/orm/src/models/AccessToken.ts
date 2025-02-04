@@ -184,7 +184,11 @@ export class AccessTokenModel {
   }
 
   select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
-    return AccessTokenModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
@@ -198,26 +202,30 @@ export class AccessTokenModel {
     return instance
   }
 
-  async find(id: number): Promise<AccessTokenModel | undefined> {
-    return await AccessTokenModel.find(id)
-  }
-
-  // Method to find a AccessToken by ID
-  static async find(id: number): Promise<AccessTokenModel | undefined> {
+  async applyFind(id: number): Promise<AccessTokenModel | undefined> {
     const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new AccessTokenModel(result as AccessTokenType)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<AccessTokenModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a AccessToken by ID
+  static async find(id: number): Promise<AccessTokenModel | undefined> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
@@ -797,19 +805,19 @@ export class AccessTokenModel {
   }
 
   orWhere(...conditions: [string, any][]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -821,19 +829,19 @@ export class AccessTokenModel {
   static orWhere(...conditions: [string, any][]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

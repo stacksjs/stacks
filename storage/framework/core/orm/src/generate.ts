@@ -953,7 +953,11 @@ export async function generateModelString(
         }
   
         select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
-          return ${modelName}Model.select(params)
+          this.selectFromQuery = this.selectFromQuery.select(params)
+
+          this.hasSelect = true
+
+          return this
         }
 
         static select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
@@ -966,27 +970,31 @@ export async function generateModelString(
   
           return instance
         }
-  
-        async find(id: number): Promise<${modelName}Model | undefined> {
-          return await ${modelName}Model.find(id)
-        }
-
-        // Method to find a ${modelName} by ID
-        static async find(id: number): Promise<${modelName}Model | undefined> {
+        
+        async applyFind(id: number): Promise<${modelName}Model | undefined> {
           const model = await DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
           if (!model)
             return undefined
           
-          const instance = new ${modelName}Model(null)
-  
-          const result = await instance.mapWith(model)
+          const result = await this.mapWith(model)
   
           const data = new ${modelName}Model(result as ${modelName}Type)
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
           return data
+        } 
+  
+        async find(id: number): Promise<${modelName}Model | undefined> {
+          return await this.applyFind(id)
+        }
+
+        // Method to find a ${modelName} by ID
+        static async find(id: number): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.applyFind(id)
         }
 
         async first(): Promise<${modelName}Model | undefined> {
@@ -1579,19 +1587,19 @@ export async function generateModelString(
         }
   
         orWhere(...conditions: [string, any][]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb) => {
+          this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )
           })
 
-          this.updateFromQuery = this.updateFromQuery.where((eb) => {
+          this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )
           })
 
-          this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )
@@ -1603,19 +1611,19 @@ export async function generateModelString(
         static orWhere(...conditions: [string, any][]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+          instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )
           })
 
-          instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+          instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )
           })
 
-          instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+          instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
             return eb.or(
               conditions.map(([column, value]) => eb(column, '=', value))
             )

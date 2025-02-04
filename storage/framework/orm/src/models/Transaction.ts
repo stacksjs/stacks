@@ -217,7 +217,11 @@ export class TransactionModel {
   }
 
   select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
-    return TransactionModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
@@ -231,26 +235,30 @@ export class TransactionModel {
     return instance
   }
 
-  async find(id: number): Promise<TransactionModel | undefined> {
-    return await TransactionModel.find(id)
-  }
-
-  // Method to find a Transaction by ID
-  static async find(id: number): Promise<TransactionModel | undefined> {
+  async applyFind(id: number): Promise<TransactionModel | undefined> {
     const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new TransactionModel(result as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<TransactionModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Transaction by ID
+  static async find(id: number): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<TransactionModel | undefined> {
@@ -838,19 +846,19 @@ export class TransactionModel {
   }
 
   orWhere(...conditions: [string, any][]): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -862,19 +870,19 @@ export class TransactionModel {
   static orWhere(...conditions: [string, any][]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )

@@ -242,7 +242,11 @@ export class UserModel {
   }
 
   select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
-    return UserModel.select(params)
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   static select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
@@ -256,26 +260,30 @@ export class UserModel {
     return instance
   }
 
-  async find(id: number): Promise<UserModel | undefined> {
-    return await UserModel.find(id)
-  }
-
-  // Method to find a User by ID
-  static async find(id: number): Promise<UserModel | undefined> {
+  async applyFind(id: number): Promise<UserModel | undefined> {
     const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new UserModel(result as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<UserModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a User by ID
+  static async find(id: number): Promise<UserModel | undefined> {
+    const instance = new UserModel(null)
+
+    return await instance.applyFind(id)
   }
 
   async first(): Promise<UserModel | undefined> {
@@ -881,19 +889,19 @@ export class UserModel {
   }
 
   orWhere(...conditions: [string, any][]): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb) => {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.updateFromQuery = this.updateFromQuery.where((eb) => {
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    this.deleteFromQuery = this.deleteFromQuery.where((eb) => {
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
@@ -905,19 +913,19 @@ export class UserModel {
   static orWhere(...conditions: [string, any][]): UserModel {
     const instance = new UserModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb) => {
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.updateFromQuery = instance.updateFromQuery.where((eb) => {
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
     })
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb) => {
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
       )
