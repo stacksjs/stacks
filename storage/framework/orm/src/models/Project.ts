@@ -399,57 +399,73 @@ export class ProjectModel {
   static async max(field: keyof ProjectModel): Promise<number> {
     const instance = new ProjectModel(null)
 
-    return await instance.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
+    const result = await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max `)
       .executeTakeFirst()
+
+    return result.max
   }
 
   async max(field: keyof ProjectModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
       .executeTakeFirst()
+
+    return result.max
   }
 
   static async min(field: keyof ProjectModel): Promise<number> {
     const instance = new ProjectModel(null)
 
-    return await instance.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
+    const result = await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
+
+    return result.min
   }
 
   async min(field: keyof ProjectModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
+
+    return result.min
   }
 
   static async avg(field: keyof ProjectModel): Promise<number> {
     const instance = new ProjectModel(null)
 
-    return instance.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
+    const result = await instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
+
+    return result.avg
   }
 
   async avg(field: keyof ProjectModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
+
+    return result.avg
   }
 
   static async sum(field: keyof ProjectModel): Promise<number> {
     const instance = new ProjectModel(null)
 
-    return instance.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
+    const result = await instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
+
+    return result.sum
   }
 
   async sum(field: keyof ProjectModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
+    const result = this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
+
+    return result.sum
   }
 
   async applyGet(): Promise<ProjectModel[]> {
@@ -810,7 +826,7 @@ export class ProjectModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ProjectModel {
+  applyWhereRef(column: string, ...args: string[]): ProjectModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -822,13 +838,13 @@ export class ProjectModel {
   }
 
   whereRef(column: string, ...args: string[]): ProjectModel {
-    return this.whereRef(column, ...args)
+    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: string, ...args: string[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    return instance.whereRef(column, ...args)
+    return instance.applyWhereRef(column, ...args)
   }
 
   whereRaw(sqlStatement: string): ProjectModel {

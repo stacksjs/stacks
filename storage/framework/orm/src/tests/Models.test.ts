@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { DB } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import User from '../models/User'
 
@@ -672,7 +673,7 @@ describe('Models test', () => {
       },
     )
 
-    expect(firstUser.id).toBe(existingUser.id)
+    expect(firstUser.id).toBe(existingUser.id!)
     expect(existingUser.name).toBe('Chris Breuer')
   })
 
@@ -703,7 +704,7 @@ describe('Models test', () => {
       updatedData,
     )
 
-    expect(created.id).toBe(updated.id)
+    expect(created.id).toBe(updated.id!)
     expect(updated.job_title).toBe('Senior Developer')
     expect(updated.name).toBe('Chris B')
   })
@@ -749,7 +750,7 @@ describe('Models test', () => {
       .get()
 
     expect(results.length).toBeGreaterThan(0)
-    expect(results[0].name).toBe('Chris Breuer')
+    expect(results[0]!.name).toBe('Chris Breuer')
   })
 
   it('should handle groupBy and having operations', async () => {

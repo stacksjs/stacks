@@ -453,57 +453,73 @@ export class DeploymentModel {
   static async max(field: keyof DeploymentModel): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    return await instance.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
+    const result = await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max `)
       .executeTakeFirst()
+
+    return result.max
   }
 
   async max(field: keyof DeploymentModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MAX(${sql.raw(field as string)}) `)
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
       .executeTakeFirst()
+
+    return result.max
   }
 
   static async min(field: keyof DeploymentModel): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    return await instance.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
+    const result = await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
+
+    return result.min
   }
 
   async min(field: keyof DeploymentModel): Promise<number> {
-    return await this.selectFromQuery
-      .select(sql`MIN(${sql.raw(field as string)}) `)
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
+
+    return result.min
   }
 
   static async avg(field: keyof DeploymentModel): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    return instance.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
+    const result = await instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
+
+    return result.avg
   }
 
   async avg(field: keyof DeploymentModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`AVG(${sql.raw(field as string)})`)
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
+
+    return result.avg
   }
 
   static async sum(field: keyof DeploymentModel): Promise<number> {
     const instance = new DeploymentModel(null)
 
-    return instance.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
+    const result = await instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
+
+    return result.sum
   }
 
   async sum(field: keyof DeploymentModel): Promise<number> {
-    return this.selectFromQuery
-      .select(sql`SUM(${sql.raw(field as string)})`)
+    const result = this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
+
+    return result.sum
   }
 
   async applyGet(): Promise<DeploymentModel[]> {
@@ -868,7 +884,7 @@ export class DeploymentModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): DeploymentModel {
+  applyWhereRef(column: string, ...args: string[]): DeploymentModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -880,13 +896,13 @@ export class DeploymentModel {
   }
 
   whereRef(column: string, ...args: string[]): DeploymentModel {
-    return this.whereRef(column, ...args)
+    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: string, ...args: string[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    return instance.whereRef(column, ...args)
+    return instance.applyWhereRef(column, ...args)
   }
 
   whereRaw(sqlStatement: string): DeploymentModel {
