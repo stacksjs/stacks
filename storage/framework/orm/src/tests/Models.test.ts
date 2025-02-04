@@ -794,4 +794,166 @@ describe('Models test', () => {
 
     expect(user.id).toBe(999) // Should work with forceFill
   })
+
+  it('should handle inRandomOrder query', async () => {
+    const users = Array.from({ length: 10 }, (_, i) => ({
+      name: `User ${i + 1}`,
+      job_title: 'Developer',
+      email: `user${i + 1}@stacks.com`,
+      password: '123456'
+    }))
+    await Promise.all(users.map(user => User.create(user)))
+    
+    const randomResults1 = await User.inRandomOrder().get()
+    const randomResults2 = await User.inRandomOrder().get()
+    
+    expect(randomResults1.length).toBe(10)
+    expect(randomResults2.length).toBe(10)
+    // Check if orders are different (there's a small chance they could be the same)
+    const areDifferent = randomResults1.some((user, index) => user.id !== randomResults2[index]?.id)
+    expect(areDifferent).toBe(true)
+  })
+
+  it('should handle whereNull queries', async () => {
+    await User.create({
+      name: 'User 1',
+      job_title: null,
+      email: 'user1@test.com',
+      password: '123456'
+    })
+    await User.create({
+      name: 'User 2',
+      job_title: 'Developer',
+      email: 'user2@test.com',
+      password: '123456'
+    })
+
+    const nullResults = await User.whereNull('job_title').get()
+    expect(nullResults.length).toBe(1)
+    expect(nullResults[0]?.name).toBe('User 1')
+  })
+
+  it('should handle skip and take operations', async () => {
+    const users = Array.from({ length: 5 }, (_, i) => ({
+      name: `User ${i + 1}`,
+      job_title: 'Developer',
+      email: `user${i + 1}@stacks.com`,
+      password: '123456'
+    }))
+    await Promise.all(users.map(user => User.create(user)))
+
+    const results = await User.skip(2).take(2).get()
+    expect(results.length).toBe(2)
+    expect(results[0]?.name).toBe('User 3')
+    expect(results[1]?.name).toBe('User 4')
+  })
+
+  it('should handle whereColumn comparison', async () => {
+    await User.create({
+      name: 'Same Name',
+      job_title: 'Same Name',
+      email: 'test1@test.com',
+      password: '123456'
+    })
+    await User.create({
+      name: 'Different',
+      job_title: 'Not Same',
+      email: 'test2@test.com',
+      password: '123456'
+    })
+
+    const results = await User.whereColumn('name', '=', 'job_title').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('Same Name')
+  })
+
+  it('should handle when conditional queries', async () => {
+    await Promise.all([
+      User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
+      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' })
+    ])
+
+    const condition = true
+    const results = await User
+      .when(condition, query => query.where('job_title', '=', 'Developer'))
+      .get()
+
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('User 1')
+  })
+
+  it('should track original attributes and changes', async () => {
+    const user = await User.create({
+      name: 'Original Name',
+      job_title: 'Developer',
+      email: 'test@test.com',
+      password: '123456'
+    })
+
+    const original = user.getOriginal('name')
+    user.name = 'New Name'
+    const changes = user.getChanges()
+
+    expect(original).toBe('Original Name')
+    expect(changes.name).toBe('New Name')
+  })
+
+  it('should handle findMany operation', async () => {
+    const createdUsers = await Promise.all([
+      User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
+      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' })
+    ])
+
+    const ids = createdUsers.map(user => user.id) as number[]
+    const foundUsers = await User.findMany(ids)
+
+    expect(foundUsers.length).toBe(2)
+    expect(foundUsers.map(user => user.name).sort()).toEqual(['User 1', 'User 2'])
+  })
+
+  it('should handle exists check', async () => {
+    await User.create({
+      name: 'Test User',
+      job_title: 'Developer',
+      email: 'test@test.com',
+      password: '123456'
+    })
+
+    const exists = await User.where('email', '=', 'test@test.com').exists()
+    const notExists = await User.where('email', '=', 'nonexistent@test.com').exists()
+
+    expect(exists).toBe(true)
+    expect(notExists).toBe(false)
+  })
+
+  it('should handle latest and oldest queries', async () => {
+    const users = Array.from({ length: 3 }, (_, i) => ({
+      name: `User ${i + 1}`,
+      job_title: 'Developer',
+      email: `user${i + 1}@test.com`,
+      password: '123456'
+    }))
+    await Promise.all(users.map(user => User.create(user)))
+
+    const latest = await User.latest()
+    const oldest = await User.oldest()
+
+    expect(latest?.name).toBe('User 3')
+    expect(oldest?.name).toBe('User 1')
+  })
+
+  it('should handle createMany operation', async () => {
+    const usersToCreate = Array.from({ length: 3 }, (_, i) => ({
+      name: `Batch User ${i + 1}`,
+      job_title: 'Developer',
+      email: `batch${i + 1}@test.com`,
+      password: '123456'
+    }))
+
+    await User.createMany(usersToCreate)
+    const allUsers = await User.get()
+
+    expect(allUsers.length).toBe(3)
+    expect(allUsers.map(user => user.name)).toContain('Batch User 1')
+  })
 })
