@@ -131,7 +131,7 @@
                       <div class="flex items-center">
                         <div class="h-10 w-10 flex-shrink-0">
                           <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
+                            src="https://avatars.githubusercontent.com/u/6228425?v=4"
                             alt=""
                             class="h-10 w-10 rounded-full"
                           >
@@ -177,7 +177,7 @@
                       <div class="flex items-center">
                         <div class="h-10 w-10 flex-shrink-0">
                           <img
-                            src="https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg"
+                            src="https://avatars.githubusercontent.com/u/6228425?v=4"
                             alt=""
                             class="h-10 w-10 rounded-full"
                           >
