@@ -76,12 +76,18 @@
                         <a href="github.com/stacksjs/stacks/commit/342afe5a" class="hover:text-gray-800 transition ease-in-out duration-150">342afe5a</a>
                       </div>
 
-                      <div class="rounded-md bg-gray-400/40 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-white/10">main</div>
+                      <div class="rounded-md bg-gray-300/40 px-2 py-1 text-xs font-medium text-gray-700 ring-1 ring-inset ring-white/10">main</div>
                     </div>
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    Deployed
+                  <td class="py-4 pr-4 pl-0 text-sm/6 sm:pr-8 lg:pr-20">
+                    <div class="flex items-center justify-end gap-x-2 sm:justify-start">
+                      <time class="text-gray-400 sm:hidden" datetime="2023-01-23T11:00">45 minutes ago</time>
+                      <div class="flex-none rounded-full bg-green-400/10 p-1 text-green-400">
+                        <div class="size-1.5 rounded-full bg-current"></div>
+                      </div>
+                      <div class="hidden text-gray-900 sm:block">Completed</div>
+                    </div>
                   </td>
 
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
