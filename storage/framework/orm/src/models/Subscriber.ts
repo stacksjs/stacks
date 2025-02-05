@@ -987,15 +987,22 @@ export class SubscriberModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    let model
 
-    return model !== null || model !== undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
   }
 
   static async latest(): Promise<SubscriberType | undefined> {
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
-      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
       .executeTakeFirst()
 
     if (!model)
@@ -1011,7 +1018,7 @@ export class SubscriberModel {
   static async oldest(): Promise<SubscriberType | undefined> {
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
-      .orderBy('created_at', 'asc')
+      .orderBy('id', 'asc')
       .executeTakeFirst()
 
     if (!model)

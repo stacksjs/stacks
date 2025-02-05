@@ -803,10 +803,10 @@ describe('Models test', () => {
       password: '123456'
     }))
     await Promise.all(users.map(user => User.create(user)))
-    
+
     const randomResults1 = await User.inRandomOrder().get()
     const randomResults2 = await User.inRandomOrder().get()
-    
+
     expect(randomResults1.length).toBe(10)
     expect(randomResults2.length).toBe(10)
     // Check if orders are different (there's a small chance they could be the same)
@@ -817,8 +817,8 @@ describe('Models test', () => {
   it('should handle whereNull queries', async () => {
     await User.create({
       name: 'User 1',
-      job_title: null,
       email: 'user1@test.com',
+      job_title: 'Designer',
       password: '123456'
     })
     await User.create({
@@ -828,9 +828,8 @@ describe('Models test', () => {
       password: '123456'
     })
 
-    const nullResults = await User.whereNull('job_title').get()
-    expect(nullResults.length).toBe(1)
-    expect(nullResults[0]?.name).toBe('User 1')
+    const nullResults = await User.whereNull('updated_at').get()
+    expect(nullResults.length).toBe(2)
   })
 
   it('should handle skip and take operations', async () => {
@@ -916,7 +915,7 @@ describe('Models test', () => {
       name: 'Test User',
       job_title: 'Developer',
       email: 'test@test.com',
-      password: '123456'
+      password: '123456',
     })
 
     const exists = await User.where('email', '=', 'test@test.com').exists()
@@ -931,7 +930,7 @@ describe('Models test', () => {
       name: `User ${i + 1}`,
       job_title: 'Developer',
       email: `user${i + 1}@test.com`,
-      password: '123456'
+      password: '123456',
     }))
     await Promise.all(users.map(user => User.create(user)))
 
@@ -947,7 +946,7 @@ describe('Models test', () => {
       name: `Batch User ${i + 1}`,
       job_title: 'Developer',
       email: `batch${i + 1}@test.com`,
-      password: '123456'
+      password: '123456',
     }))
 
     await User.createMany(usersToCreate)

@@ -1807,16 +1807,23 @@ export async function generateModelString(
           return instance
         }
   
-        async exists(): Promise<boolean> {
-          const model = await this.selectFromQuery.executeTakeFirst()
-  
-          return model !== null || model !== undefined
+         async exists(): Promise<boolean> {
+          let model
+
+          if (this.hasSelect) {
+            model = await this.selectFromQuery.executeTakeFirst()
+          }
+          else {
+            model = await this.selectFromQuery.selectAll().executeTakeFirst()
+          }
+
+          return model !== null && model !== undefined
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
-            .orderBy('created_at', 'desc')
+            .orderBy('id', 'desc')
             .executeTakeFirst()
 
           if (!model)
@@ -1832,7 +1839,7 @@ export async function generateModelString(
         static async oldest(): Promise<${modelName}Type | undefined> {
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
-            .orderBy('created_at', 'asc')
+            .orderBy('id', 'asc')
             .executeTakeFirst()
 
           if (!model)

@@ -1055,15 +1055,22 @@ export class ErrorModel {
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    let model
 
-    return model !== null || model !== undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
   }
 
   static async latest(): Promise<ErrorType | undefined> {
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
-      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
       .executeTakeFirst()
 
     if (!model)
@@ -1079,7 +1086,7 @@ export class ErrorModel {
   static async oldest(): Promise<ErrorType | undefined> {
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
-      .orderBy('created_at', 'asc')
+      .orderBy('id', 'asc')
       .executeTakeFirst()
 
     if (!model)
