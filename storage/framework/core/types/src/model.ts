@@ -74,11 +74,10 @@ interface ActivityLogOption {
 }
 
 export interface Relations {
-  hasOne?: HasOne<ModelNames>
-  hasMany?: HasMany<ModelNames>
-  belongsTo?: BelongsTo<ModelNames>
-  belongsToMany?: BelongsToMany<ModelNames>
-  hasOneThrough?: HasOneThrough<ModelNames>
+  hasOne?: HasOne<ModelNames> | ModelNames[]
+  hasMany?: HasMany<ModelNames> | ModelNames[]
+  belongsTo?: BelongsTo<ModelNames> | ModelNames[]
+  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
 }
 
 export interface ApiSettings {
@@ -151,7 +150,7 @@ export interface ModelOptions extends Base {
   attributes?: Attributes
 
   // relationships
-  hasOne?: HasOne<ModelNames> | string[]
+  hasOne?: HasOne<ModelNames> | ModelNames[]
 
   hasMany?: HasMany<ModelNames> | ModelNames[]
 
