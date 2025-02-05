@@ -17,7 +17,12 @@ interface Relation<T = string> extends BaseRelation {
 interface HasOne<T = string> extends Array<Relation<T>> {}
 interface HasMany<T = string> extends Array<Relation<T>> {}
 interface BelongsTo<T = string> extends Array<Relation<T>> {}
-interface BelongsToMany<T = string> extends Array<T> {}
+interface BelongsToMany<T = string> extends Array<{
+  model: T
+  firstForeignKey?: string
+  secondForeignKey?: string
+  pivotTable?: string
+} | T> {}
 
 interface HasOneThrough<T = string> extends Array<{
   model: T
@@ -69,10 +74,10 @@ interface ActivityLogOption {
 }
 
 export interface Relations {
-  hasOne?: HasOne<ModelNames> | string[]
-  hasMany?: HasMany<ModelNames> | ModelNames[]
-  belongsTo?: BelongsTo<ModelNames> | ModelNames[]
-  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
+  hasOne?: HasOne<ModelNames>
+  hasMany?: HasMany<ModelNames>
+  belongsTo?: BelongsTo<ModelNames>
+  belongsToMany?: BelongsToMany<ModelNames>
   hasOneThrough?: HasOneThrough<ModelNames>
 }
 
