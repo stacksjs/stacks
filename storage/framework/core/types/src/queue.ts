@@ -38,6 +38,10 @@ export interface QueueOptions {
 
 export interface QueueOption extends JobOptions {
   delay?: number
+  payload?: any
+  afterResponse?: any
+  context?: string
+  maxTries?: number
 }
 
 export type QueueConfig = DeepPartial<QueueOptions>
