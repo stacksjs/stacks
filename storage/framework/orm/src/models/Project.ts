@@ -215,11 +215,7 @@ export class ProjectModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProjectModel | undefined> {
-    return await ProjectModel.first()
-  }
-
-  static async first(): Promise<ProjectModel | undefined> {
+  async applyFirst(): Promise<ProjectModel | undefined> {
     const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .executeTakeFirst()
@@ -227,13 +223,21 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ProjectModel(result as ProjectType)
 
     return data
+  }
+
+  async first(): Promise<ProjectModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<ProjectModel | undefined> {

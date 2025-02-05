@@ -224,11 +224,7 @@ export class ErrorModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ErrorModel | undefined> {
-    return await ErrorModel.first()
-  }
-
-  static async first(): Promise<ErrorModel | undefined> {
+  async applyFirst(): Promise<ErrorModel | undefined> {
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .executeTakeFirst()
@@ -236,13 +232,21 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ErrorModel(result as ErrorType)
 
     return data
+  }
+
+  async first(): Promise<ErrorModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<ErrorModel | undefined> {

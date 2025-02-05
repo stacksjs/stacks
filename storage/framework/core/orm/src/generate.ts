@@ -997,11 +997,7 @@ export async function generateModelString(
           return await instance.applyFind(id)
         }
 
-        async first(): Promise<${modelName}Model | undefined> {
-          return await ${modelName}Model.first()
-        }
-        
-        static async first(): Promise<${modelName}Model | undefined> {
+        async applyFirst(): Promise<${modelName}Model | undefined> {
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .executeTakeFirst()
@@ -1009,13 +1005,21 @@ export async function generateModelString(
           if (! model)
             return undefined
   
-          const instance = new ${modelName}Model(null)
-  
-          const result = await instance.mapWith(model)
+          const result = await this.mapWith(model)
   
           const data = new ${modelName}Model(result as ${modelName}Type)
   
           return data
+        }
+
+        async first(): Promise<${modelName}Model | undefined> {
+          return await this.first()
+        }
+        
+        static async first(): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(null)
+  
+          return await instance.first()
         }
   
         async firstOrFail(): Promise<${modelName}Model | undefined> {

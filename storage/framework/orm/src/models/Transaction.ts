@@ -261,11 +261,7 @@ export class TransactionModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<TransactionModel | undefined> {
-    return await TransactionModel.first()
-  }
-
-  static async first(): Promise<TransactionModel | undefined> {
+  async applyFirst(): Promise<TransactionModel | undefined> {
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
@@ -273,13 +269,21 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new TransactionModel(result as TransactionType)
 
     return data
+  }
+
+  async first(): Promise<TransactionModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<TransactionModel | undefined> {

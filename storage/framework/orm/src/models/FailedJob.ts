@@ -224,11 +224,7 @@ export class FailedJobModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<FailedJobModel | undefined> {
-    return await FailedJobModel.first()
-  }
-
-  static async first(): Promise<FailedJobModel | undefined> {
+  async applyFirst(): Promise<FailedJobModel | undefined> {
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
       .executeTakeFirst()
@@ -236,13 +232,21 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new FailedJobModel(result as FailedJobType)
 
     return data
+  }
+
+  async first(): Promise<FailedJobModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<FailedJobModel | undefined> {

@@ -198,11 +198,7 @@ export class SubscriberEmailModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<SubscriberEmailModel | undefined> {
-    return await SubscriberEmailModel.first()
-  }
-
-  static async first(): Promise<SubscriberEmailModel | undefined> {
+  async applyFirst(): Promise<SubscriberEmailModel | undefined> {
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .executeTakeFirst()
@@ -210,13 +206,21 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new SubscriberEmailModel(result as SubscriberEmailType)
 
     return data
+  }
+
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {

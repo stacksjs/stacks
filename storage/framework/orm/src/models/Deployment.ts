@@ -265,11 +265,7 @@ export class DeploymentModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<DeploymentModel | undefined> {
-    return await DeploymentModel.first()
-  }
-
-  static async first(): Promise<DeploymentModel | undefined> {
+  async applyFirst(): Promise<DeploymentModel | undefined> {
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .executeTakeFirst()
@@ -277,13 +273,21 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new DeploymentModel(result as DeploymentType)
 
     return data
+  }
+
+  async first(): Promise<DeploymentModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {

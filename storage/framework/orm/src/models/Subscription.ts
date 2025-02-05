@@ -292,11 +292,7 @@ export class SubscriptionModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<SubscriptionModel | undefined> {
-    return await SubscriptionModel.first()
-  }
-
-  static async first(): Promise<SubscriptionModel | undefined> {
+  async applyFirst(): Promise<SubscriptionModel | undefined> {
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .executeTakeFirst()
@@ -304,13 +300,21 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new SubscriptionModel(result as SubscriptionType)
 
     return data
+  }
+
+  async first(): Promise<SubscriptionModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {

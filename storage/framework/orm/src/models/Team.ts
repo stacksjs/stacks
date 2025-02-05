@@ -261,11 +261,7 @@ export class TeamModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<TeamModel | undefined> {
-    return await TeamModel.first()
-  }
-
-  static async first(): Promise<TeamModel | undefined> {
+  async applyFirst(): Promise<TeamModel | undefined> {
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
@@ -273,13 +269,21 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const instance = new TeamModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new TeamModel(result as TeamType)
 
     return data
+  }
+
+  async first(): Promise<TeamModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<TeamModel | undefined> {

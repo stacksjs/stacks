@@ -224,11 +224,7 @@ export class JobModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<JobModel | undefined> {
-    return await JobModel.first()
-  }
-
-  static async first(): Promise<JobModel | undefined> {
+  async applyFirst(): Promise<JobModel | undefined> {
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .executeTakeFirst()
@@ -236,13 +232,21 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new JobModel(result as JobType)
 
     return data
+  }
+
+  async first(): Promise<JobModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<JobModel | undefined> {
+    const instance = new JobModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<JobModel | undefined> {

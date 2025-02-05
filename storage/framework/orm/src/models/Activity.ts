@@ -243,11 +243,7 @@ export class ActivityModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ActivityModel | undefined> {
-    return await ActivityModel.first()
-  }
-
-  static async first(): Promise<ActivityModel | undefined> {
+  async applyFirst(): Promise<ActivityModel | undefined> {
     const model = await DB.instance.selectFrom('activities')
       .selectAll()
       .executeTakeFirst()
@@ -255,13 +251,21 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const instance = new ActivityModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ActivityModel(result as ActivityType)
 
     return data
+  }
+
+  async first(): Promise<ActivityModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<ActivityModel | undefined> {
+    const instance = new ActivityModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<ActivityModel | undefined> {

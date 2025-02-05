@@ -252,11 +252,7 @@ export class ProductModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductModel | undefined> {
-    return await ProductModel.first()
-  }
-
-  static async first(): Promise<ProductModel | undefined> {
+  async applyFirst(): Promise<ProductModel | undefined> {
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
@@ -264,13 +260,21 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const instance = new ProductModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new ProductModel(result as ProductType)
 
     return data
+  }
+
+  async first(): Promise<ProductModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<ProductModel | undefined> {

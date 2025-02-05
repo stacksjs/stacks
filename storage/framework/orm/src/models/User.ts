@@ -286,11 +286,7 @@ export class UserModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<UserModel | undefined> {
-    return await UserModel.first()
-  }
-
-  static async first(): Promise<UserModel | undefined> {
+  async applyFirst(): Promise<UserModel | undefined> {
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
@@ -298,13 +294,21 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new UserModel(result as UserType)
 
     return data
+  }
+
+  async first(): Promise<UserModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<UserModel | undefined> {
+    const instance = new UserModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<UserModel | undefined> {

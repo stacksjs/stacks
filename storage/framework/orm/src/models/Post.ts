@@ -210,11 +210,7 @@ export class PostModel {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<PostModel | undefined> {
-    return await PostModel.first()
-  }
-
-  static async first(): Promise<PostModel | undefined> {
+  async applyFirst(): Promise<PostModel | undefined> {
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .executeTakeFirst()
@@ -222,13 +218,21 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
+    const result = await this.mapWith(model)
 
     const data = new PostModel(result as PostType)
 
     return data
+  }
+
+  async first(): Promise<PostModel | undefined> {
+    return await this.first()
+  }
+
+  static async first(): Promise<PostModel | undefined> {
+    const instance = new PostModel(null)
+
+    return await instance.first()
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {
