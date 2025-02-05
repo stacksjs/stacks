@@ -800,7 +800,7 @@ describe('Models test', () => {
       name: `User ${i + 1}`,
       job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
-      password: '123456'
+      password: '123456',
     }))
     await Promise.all(users.map(user => User.create(user)))
 
@@ -819,13 +819,13 @@ describe('Models test', () => {
       name: 'User 1',
       email: 'user1@test.com',
       job_title: 'Designer',
-      password: '123456'
+      password: '123456',
     })
     await User.create({
       name: 'User 2',
       job_title: 'Developer',
       email: 'user2@test.com',
-      password: '123456'
+      password: '123456',
     })
 
     const nullResults = await User.whereNull('updated_at').get()
@@ -837,7 +837,7 @@ describe('Models test', () => {
       name: `User ${i + 1}`,
       job_title: 'Developer',
       email: `user${i + 1}@stacks.com`,
-      password: '123456'
+      password: '123456',
     }))
     await Promise.all(users.map(user => User.create(user)))
 
@@ -852,13 +852,13 @@ describe('Models test', () => {
       name: 'Same Name',
       job_title: 'Same Name',
       email: 'test1@test.com',
-      password: '123456'
+      password: '123456',
     })
     await User.create({
       name: 'Different',
       job_title: 'Not Same',
       email: 'test2@test.com',
-      password: '123456'
+      password: '123456',
     })
 
     const results = await User.whereColumn('name', '=', 'job_title').get()
@@ -869,7 +869,7 @@ describe('Models test', () => {
   it('should handle when conditional queries', async () => {
     await Promise.all([
       User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
-      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' })
+      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' }),
     ])
 
     const condition = true
@@ -886,7 +886,7 @@ describe('Models test', () => {
       name: 'Original Name',
       job_title: 'Developer',
       email: 'test@test.com',
-      password: '123456'
+      password: '123456',
     })
 
     const original = user.getOriginal('name')
@@ -900,7 +900,7 @@ describe('Models test', () => {
   it('should handle findMany operation', async () => {
     const createdUsers = await Promise.all([
       User.create({ name: 'User 1', job_title: 'Developer', email: 'user1@test.com', password: '123456' }),
-      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' })
+      User.create({ name: 'User 2', job_title: 'Designer', email: 'user2@test.com', password: '123456' }),
     ])
 
     const ids = createdUsers.map(user => user.id) as number[]

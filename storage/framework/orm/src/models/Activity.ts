@@ -1084,20 +1084,24 @@ export class ActivityModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
-    return ActivityModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1224,7 +1228,9 @@ export class ActivityModel {
   }
 
   with(relations: string[]): ActivityModel {
-    return ActivityModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): ActivityModel {
@@ -1258,7 +1264,9 @@ export class ActivityModel {
   }
 
   orderBy(column: keyof ActivityType, order: 'asc' | 'desc'): ActivityModel {
-    return ActivityModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof ActivityType, order: 'asc' | 'desc'): ActivityModel {
@@ -1270,7 +1278,9 @@ export class ActivityModel {
   }
 
   groupBy(column: keyof ActivityType): ActivityModel {
-    return ActivityModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof ActivityType): ActivityModel {
@@ -1296,7 +1306,9 @@ export class ActivityModel {
   }
 
   inRandomOrder(): ActivityModel {
-    return ActivityModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): ActivityModel {
@@ -1322,7 +1334,9 @@ export class ActivityModel {
   }
 
   orderByAsc(column: keyof ActivityType): ActivityModel {
-    return ActivityModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof ActivityType): ActivityModel {

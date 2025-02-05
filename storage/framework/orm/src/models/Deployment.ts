@@ -1103,20 +1103,24 @@ export class DeploymentModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
-    return DeploymentModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1243,7 +1247,9 @@ export class DeploymentModel {
   }
 
   with(relations: string[]): DeploymentModel {
-    return DeploymentModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): DeploymentModel {
@@ -1277,7 +1283,9 @@ export class DeploymentModel {
   }
 
   orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
-    return DeploymentModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
@@ -1289,7 +1297,9 @@ export class DeploymentModel {
   }
 
   groupBy(column: keyof DeploymentType): DeploymentModel {
-    return DeploymentModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof DeploymentType): DeploymentModel {
@@ -1315,7 +1325,9 @@ export class DeploymentModel {
   }
 
   inRandomOrder(): DeploymentModel {
-    return DeploymentModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): DeploymentModel {
@@ -1341,7 +1353,9 @@ export class DeploymentModel {
   }
 
   orderByAsc(column: keyof DeploymentType): DeploymentModel {
-    return DeploymentModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof DeploymentType): DeploymentModel {

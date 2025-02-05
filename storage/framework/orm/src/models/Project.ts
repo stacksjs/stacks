@@ -1021,20 +1021,24 @@ export class ProjectModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
-    return ProjectModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1161,7 +1165,9 @@ export class ProjectModel {
   }
 
   with(relations: string[]): ProjectModel {
-    return ProjectModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): ProjectModel {
@@ -1195,7 +1201,9 @@ export class ProjectModel {
   }
 
   orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
-    return ProjectModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
@@ -1207,7 +1215,9 @@ export class ProjectModel {
   }
 
   groupBy(column: keyof ProjectType): ProjectModel {
-    return ProjectModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof ProjectType): ProjectModel {
@@ -1233,7 +1243,9 @@ export class ProjectModel {
   }
 
   inRandomOrder(): ProjectModel {
-    return ProjectModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): ProjectModel {
@@ -1259,7 +1271,9 @@ export class ProjectModel {
   }
 
   orderByAsc(column: keyof ProjectType): ProjectModel {
-    return ProjectModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof ProjectType): ProjectModel {

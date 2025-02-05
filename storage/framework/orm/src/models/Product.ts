@@ -1086,20 +1086,24 @@ export class ProductModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
-    return ProductModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
     const instance = new ProductModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1226,7 +1230,9 @@ export class ProductModel {
   }
 
   with(relations: string[]): ProductModel {
-    return ProductModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): ProductModel {
@@ -1260,7 +1266,9 @@ export class ProductModel {
   }
 
   orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
-    return ProductModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
@@ -1272,7 +1280,9 @@ export class ProductModel {
   }
 
   groupBy(column: keyof ProductType): ProductModel {
-    return ProductModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof ProductType): ProductModel {
@@ -1298,7 +1308,9 @@ export class ProductModel {
   }
 
   inRandomOrder(): ProductModel {
-    return ProductModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): ProductModel {
@@ -1324,7 +1336,9 @@ export class ProductModel {
   }
 
   orderByAsc(column: keyof ProductType): ProductModel {
-    return ProductModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof ProductType): ProductModel {

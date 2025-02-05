@@ -1122,20 +1122,24 @@ export class UserModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof UserType, values: any[]): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof UserType, values: any[]): UserModel {
-    return UserModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof UserType, values: any[]): UserModel {
     const instance = new UserModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1262,7 +1266,9 @@ export class UserModel {
   }
 
   with(relations: string[]): UserModel {
-    return UserModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): UserModel {
@@ -1296,7 +1302,9 @@ export class UserModel {
   }
 
   orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
-    return UserModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
@@ -1308,7 +1316,9 @@ export class UserModel {
   }
 
   groupBy(column: keyof UserType): UserModel {
-    return UserModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof UserType): UserModel {
@@ -1334,7 +1344,9 @@ export class UserModel {
   }
 
   inRandomOrder(): UserModel {
-    return UserModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): UserModel {
@@ -1360,7 +1372,9 @@ export class UserModel {
   }
 
   orderByAsc(column: keyof UserType): UserModel {
-    return UserModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof UserType): UserModel {

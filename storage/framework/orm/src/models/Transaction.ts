@@ -1087,20 +1087,24 @@ export class TransactionModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
-    return TransactionModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1227,7 +1231,9 @@ export class TransactionModel {
   }
 
   with(relations: string[]): TransactionModel {
-    return TransactionModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): TransactionModel {
@@ -1261,7 +1267,9 @@ export class TransactionModel {
   }
 
   orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
-    return TransactionModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
@@ -1273,7 +1281,9 @@ export class TransactionModel {
   }
 
   groupBy(column: keyof TransactionType): TransactionModel {
-    return TransactionModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof TransactionType): TransactionModel {
@@ -1299,7 +1309,9 @@ export class TransactionModel {
   }
 
   inRandomOrder(): TransactionModel {
-    return TransactionModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): TransactionModel {
@@ -1325,7 +1337,9 @@ export class TransactionModel {
   }
 
   orderByAsc(column: keyof TransactionType): TransactionModel {
-    return TransactionModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof TransactionType): TransactionModel {

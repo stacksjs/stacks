@@ -1038,20 +1038,24 @@ export class FailedJobModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
-    return FailedJobModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1178,7 +1182,9 @@ export class FailedJobModel {
   }
 
   with(relations: string[]): FailedJobModel {
-    return FailedJobModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): FailedJobModel {
@@ -1212,7 +1218,9 @@ export class FailedJobModel {
   }
 
   orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
-    return FailedJobModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
@@ -1224,7 +1232,9 @@ export class FailedJobModel {
   }
 
   groupBy(column: keyof FailedJobType): FailedJobModel {
-    return FailedJobModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof FailedJobType): FailedJobModel {
@@ -1250,7 +1260,9 @@ export class FailedJobModel {
   }
 
   inRandomOrder(): FailedJobModel {
-    return FailedJobModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): FailedJobModel {
@@ -1276,7 +1288,9 @@ export class FailedJobModel {
   }
 
   orderByAsc(column: keyof FailedJobType): FailedJobModel {
-    return FailedJobModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof FailedJobType): FailedJobModel {

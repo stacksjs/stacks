@@ -1038,20 +1038,24 @@ export class ErrorModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
-    return ErrorModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1178,7 +1182,9 @@ export class ErrorModel {
   }
 
   with(relations: string[]): ErrorModel {
-    return ErrorModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): ErrorModel {
@@ -1212,7 +1218,9 @@ export class ErrorModel {
   }
 
   orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
-    return ErrorModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
@@ -1224,7 +1232,9 @@ export class ErrorModel {
   }
 
   groupBy(column: keyof ErrorType): ErrorModel {
-    return ErrorModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof ErrorType): ErrorModel {
@@ -1250,7 +1260,9 @@ export class ErrorModel {
   }
 
   inRandomOrder(): ErrorModel {
-    return ErrorModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): ErrorModel {
@@ -1276,7 +1288,9 @@ export class ErrorModel {
   }
 
   orderByAsc(column: keyof ErrorType): ErrorModel {
-    return ErrorModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof ErrorType): ErrorModel {

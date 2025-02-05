@@ -999,20 +999,24 @@ export class SubscriberEmailModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
-    return SubscriberEmailModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1139,7 +1143,9 @@ export class SubscriberEmailModel {
   }
 
   with(relations: string[]): SubscriberEmailModel {
-    return SubscriberEmailModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): SubscriberEmailModel {
@@ -1173,7 +1179,9 @@ export class SubscriberEmailModel {
   }
 
   orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-    return SubscriberEmailModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
@@ -1185,7 +1193,9 @@ export class SubscriberEmailModel {
   }
 
   groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    return SubscriberEmailModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
@@ -1211,7 +1221,9 @@ export class SubscriberEmailModel {
   }
 
   inRandomOrder(): SubscriberEmailModel {
-    return SubscriberEmailModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): SubscriberEmailModel {
@@ -1237,7 +1249,9 @@ export class SubscriberEmailModel {
   }
 
   orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    return SubscriberEmailModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {

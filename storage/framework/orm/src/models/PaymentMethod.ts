@@ -1116,20 +1116,24 @@ export class PaymentMethodModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
-    return PaymentMethodModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1256,7 +1260,9 @@ export class PaymentMethodModel {
   }
 
   with(relations: string[]): PaymentMethodModel {
-    return PaymentMethodModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): PaymentMethodModel {
@@ -1290,7 +1296,9 @@ export class PaymentMethodModel {
   }
 
   orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
-    return PaymentMethodModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
@@ -1302,7 +1310,9 @@ export class PaymentMethodModel {
   }
 
   groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
-    return PaymentMethodModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
@@ -1328,7 +1338,9 @@ export class PaymentMethodModel {
   }
 
   inRandomOrder(): PaymentMethodModel {
-    return PaymentMethodModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): PaymentMethodModel {
@@ -1354,7 +1366,9 @@ export class PaymentMethodModel {
   }
 
   orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
-    return PaymentMethodModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {

@@ -1038,20 +1038,24 @@ export class JobModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof JobType, values: any[]): JobModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof JobType, values: any[]): JobModel {
-    return JobModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof JobType, values: any[]): JobModel {
     const instance = new JobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1178,7 +1182,9 @@ export class JobModel {
   }
 
   with(relations: string[]): JobModel {
-    return JobModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): JobModel {
@@ -1212,7 +1218,9 @@ export class JobModel {
   }
 
   orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
-    return JobModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
@@ -1224,7 +1232,9 @@ export class JobModel {
   }
 
   groupBy(column: keyof JobType): JobModel {
-    return JobModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof JobType): JobModel {
@@ -1250,7 +1260,9 @@ export class JobModel {
   }
 
   inRandomOrder(): JobModel {
-    return JobModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): JobModel {
@@ -1276,7 +1288,9 @@ export class JobModel {
   }
 
   orderByAsc(column: keyof JobType): JobModel {
-    return JobModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof JobType): JobModel {

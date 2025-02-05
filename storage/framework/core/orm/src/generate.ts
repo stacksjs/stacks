@@ -1791,20 +1791,24 @@ export async function generateModelString(
           return instance
         }
 
+        applyWhereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+  
+          this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+  
+          this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+  
+          return this
+        }
+
         whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          return ${modelName}Model.whereNotIn(column, values)
+          return this.applyWhereNotIn(column, values)
         }
   
         static whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-  
-          instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-  
-          return instance
+          return instance.applyWhereNotIn(column, values)
         }
   
          async exists(): Promise<boolean> {
@@ -1930,14 +1934,16 @@ export async function generateModelString(
         }
   
         with(relations: string[]): ${modelName}Model {
-          return ${modelName}Model.with(relations)
+          this.withRelations = relations
+            
+          return this
         }
   
         static with(relations: string[]): ${modelName}Model {
-         const instance = new ${modelName}Model(null)
-  
+          const instance = new ${modelName}Model(null)
+    
           instance.withRelations = relations
-          
+            
           return instance
         }
   
@@ -1964,7 +1970,9 @@ export async function generateModelString(
         }
 
         orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
-          return ${modelName}Model.orderBy(column, order)
+          this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+  
+          return this
         }
   
         static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
@@ -1976,7 +1984,9 @@ export async function generateModelString(
         }
 
         groupBy(column: keyof ${modelName}Type): ${modelName}Model {
-          return ${modelName}Model.groupBy(column)
+          this.selectFromQuery = this.selectFromQuery.groupBy(column)
+  
+          return this
         }
   
         static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
@@ -2002,7 +2012,9 @@ export async function generateModelString(
         }
 
         inRandomOrder(): ${modelName}Model {
-          return ${modelName}Model.inRandomOrder()
+          this.selectFromQuery = this.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
+
+          return this
         }
         
         static inRandomOrder(): ${modelName}Model {
@@ -2028,7 +2040,9 @@ export async function generateModelString(
         }
           
         orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
-          return ${modelName}Model.orderByAsc(column)
+          this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+  
+          return this
         }
   
         static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {

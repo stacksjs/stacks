@@ -1103,20 +1103,24 @@ export class TeamModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
-    return TeamModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1243,7 +1247,9 @@ export class TeamModel {
   }
 
   with(relations: string[]): TeamModel {
-    return TeamModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): TeamModel {
@@ -1277,7 +1283,9 @@ export class TeamModel {
   }
 
   orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
-    return TeamModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
@@ -1289,7 +1297,9 @@ export class TeamModel {
   }
 
   groupBy(column: keyof TeamType): TeamModel {
-    return TeamModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof TeamType): TeamModel {
@@ -1315,7 +1325,9 @@ export class TeamModel {
   }
 
   inRandomOrder(): TeamModel {
-    return TeamModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): TeamModel {
@@ -1341,7 +1353,9 @@ export class TeamModel {
   }
 
   orderByAsc(column: keyof TeamType): TeamModel {
-    return TeamModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof TeamType): TeamModel {

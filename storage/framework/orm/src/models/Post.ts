@@ -1004,20 +1004,24 @@ export class PostModel {
     return instance
   }
 
+  applyWhereNotIn(column: keyof PostType, values: any[]): PostModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
   whereNotIn(column: keyof PostType, values: any[]): PostModel {
-    return PostModel.whereNotIn(column, values)
+    return this.applyWhereNotIn(column, values)
   }
 
   static whereNotIn(column: keyof PostType, values: any[]): PostModel {
     const instance = new PostModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'not in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'not in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'not in', values)
-
-    return instance
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1144,7 +1148,9 @@ export class PostModel {
   }
 
   with(relations: string[]): PostModel {
-    return PostModel.with(relations)
+    this.withRelations = relations
+
+    return this
   }
 
   static with(relations: string[]): PostModel {
@@ -1178,7 +1184,9 @@ export class PostModel {
   }
 
   orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    return PostModel.orderBy(column, order)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
@@ -1190,7 +1198,9 @@ export class PostModel {
   }
 
   groupBy(column: keyof PostType): PostModel {
-    return PostModel.groupBy(column)
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
   }
 
   static groupBy(column: keyof PostType): PostModel {
@@ -1216,7 +1226,9 @@ export class PostModel {
   }
 
   inRandomOrder(): PostModel {
-    return PostModel.inRandomOrder()
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
   }
 
   static inRandomOrder(): PostModel {
@@ -1242,7 +1254,9 @@ export class PostModel {
   }
 
   orderByAsc(column: keyof PostType): PostModel {
-    return PostModel.orderByAsc(column)
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
   }
 
   static orderByAsc(column: keyof PostType): PostModel {
