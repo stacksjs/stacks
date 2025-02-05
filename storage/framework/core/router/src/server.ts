@@ -7,7 +7,7 @@ import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
-import { route } from '.'
+import { route, StaticRouteManager } from '.'
 
 import { middlewares } from './middleware'
 
@@ -28,11 +28,14 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+  const staticManager: StaticRouteManager = new StaticRouteManager()
+  const staticFiles = staticManager.getStaticConfig()
 
   if (options.timezone)
     process.env.TZ = options.timezone
 
   Bun.serve({
+    static: staticFiles,
     hostname,
     port,
     development,
@@ -41,13 +44,6 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
       const reqBody = await req.text()
 
       return await serverResponse(req, reqBody)
-    },
-    error(error: any) {
-      return new Response(`<pre>${error}\n${error.stack}</pre>`, {
-        headers: {
-          'Content-Type': 'text/html',
-        },
-      })
     },
   })
 }

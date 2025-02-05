@@ -7,6 +7,7 @@ import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
+import { StaticRouteManager } from './static'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string
@@ -14,6 +15,7 @@ type ActionPath = string
 export class Router implements RouterInterface {
   private routes: Route[] = []
   private path = ''
+  private staticManager: StaticRouteManager = new StaticRouteManager()
 
   private addRoute(
     method: Route['method'],
@@ -135,12 +137,20 @@ export class Router implements RouterInterface {
     return this.addRoute('POST', uri, callback, 201)
   }
 
-  public view(path: Route['url'], callback: Route['callback']): this {
+  public view(path: Route['url'], htmlFile: any): this {
     this.path = this.normalizePath(path)
-
     const uri = this.prepareUri(this.path)
 
-    return this.addRoute('GET', uri, callback, 200)
+    // Add to static manager
+    this.staticManager.addHtmlFile(uri, htmlFile)
+
+    // Register as a route for consistency
+    return this.addRoute('GET', uri, async () => htmlFile, 200)
+  }
+
+  // New method to get static configuration
+  public getStaticConfig(): Record<string, any> {
+    return this.staticManager.getStaticConfig()
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {

@@ -14,7 +14,7 @@ export default new Job({
     factor: 3,
   },
   handle: (payload: any) => {
-    console.log('test')
+    return payload
   },
   // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
 })
