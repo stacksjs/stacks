@@ -8,6 +8,6 @@ export default new Action({
   async handle() {
     const results = User.all()
 
-    return json.response(response)
+    return response.json(results)
   },
 })

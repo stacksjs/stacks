@@ -548,26 +548,27 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   const formattedApiRoute = apiRoute.charAt(0).toUpperCase() + apiRoute.slice(1)
 
   let method = 'GET'
-  let actionString = `import { Action } from '@stacksjs/actions'\n`
-  actionString += `import { response } from '@stacksjs/router'\n`
+  let actionString = `import { Action } from '@stacksjs/actions'\n import { response } from '@stacksjs/router'\n\n`
   let handleString = ``
 
   if (apiRoute === 'index') {
     handleString += `async handle() {
         const results = ${modelName}.all()
 
-        return json.response(response)
+        return response.json(results)
       },`
 
     method = 'GET'
   }
 
   if (apiRoute === 'show') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         const id = request.getParam('id')
 
-        return await ${modelName}.findOrFail(Number(id))
+        const model = await ${modelName}.findOrFail(Number(id))
+
+        return response.json(model)
       },`
 
     method = 'GET'
@@ -589,26 +590,28 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   }
 
   if (apiRoute === 'store') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
         const model = await ${modelName}.create(request.all())
 
-        return model
+        return response.json(model)
       },`
 
     method = 'POST'
   }
 
   if (apiRoute === 'update') {
-    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n\n`
+    actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
 
         const id = request.getParam('id')
         const model = await ${modelName}.findOrFail(Number(id))
 
-        return model.update(request.all())
+        const result = model.update(request.all())
+
+        return response.json(result)
       },`
 
     method = 'PATCH'
