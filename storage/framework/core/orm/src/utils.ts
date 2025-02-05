@@ -158,8 +158,17 @@ export async function getPivotTables(
   if ('belongsToMany' in model) {
     const belongsToManyArr = model.belongsToMany || []
     for (const belongsToManyRelation of belongsToManyArr) {
+      let modelRelation: Model
+
       const modelRelationPath = path.userModelsPath(`${belongsToManyRelation}.ts`)
-      const modelRelation = (await import(modelRelationPath)).default as Model
+
+      const coreModelRelationPath = path.storagePath(`framework/defaults/models/${belongsToManyRelation}.ts`)
+
+      if (fs.existsSync(modelRelationPath))
+        modelRelation = (await import(modelRelationPath)).default as Model
+      else
+        modelRelation = (await import(coreModelRelationPath)).default as Model
+
       const modelRelationTableName = getTableName(modelRelation, modelRelationPath)
       const modelName = getModelName(model, modelPath)
       const tableName = getTableName(model, modelPath)
@@ -1051,6 +1060,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Table Names')
     }
     catch (error) {
+      throw error
       handleError('Error while writing Table Names', error)
     }
 
@@ -1120,7 +1130,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await ensureCodeStyle()
   }
   catch (error) {
-    // throw error
+    throw error
     handleError('Error while generating model files', error)
   }
 }
