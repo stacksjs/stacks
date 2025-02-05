@@ -26,6 +26,8 @@ export enum Every {
   Year = '0 0 1 1 *',
 }
 
+export type JobHandler = (data?: any) => Promise<any> | any
+
 /**
  * Represents different backoff strategies for job retries
  */
@@ -81,7 +83,7 @@ export interface JobOptions {
   /**
    * Job handler function or identifier string
    */
-  handle?: string | Function
+  handle?: string | JobHandler
   /**
    * Action identifier
    */
