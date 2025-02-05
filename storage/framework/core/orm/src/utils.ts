@@ -1060,7 +1060,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Table Names')
     }
     catch (error) {
-      throw error
       handleError('Error while writing Table Names', error)
     }
 
@@ -1130,7 +1129,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await ensureCodeStyle()
   }
   catch (error) {
-    throw error
     handleError('Error while generating model files', error)
   }
 }
