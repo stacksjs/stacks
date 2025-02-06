@@ -201,15 +201,12 @@ export async function getPivotTables(
 }
 
 export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-
-  const allModelFiles = [...modelFiles, ...coreModelFiles]
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   const modelRelations = []
 
-  for (let i = 0; i < allModelFiles.length; i++) {
-    const modelFileElement = allModelFiles[i] as string
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelFileElement = modelFiles[i] as string
 
     const modelFile = await import(modelFileElement)
 
@@ -297,8 +294,7 @@ export function getFillableAttributes(model: Model, otherModelRelations: Relatio
 }
 
 export async function writeModelNames(): Promise<void> {
-  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const models = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
   let fileString = `export type ModelNames = `
 
   for (let i = 0; i < models.length; i++) {
@@ -315,19 +311,6 @@ export async function writeModelNames(): Promise<void> {
 
   fileString += ' | '
 
-  for (let j = 0; j < coreModelFiles.length; j++) {
-    const modelPath = coreModelFiles[j] as string
-
-    const model = (await import(modelPath)).default as Model
-    const modelName = getModelName(model, modelPath)
-
-    fileString += `'${modelName}'`
-
-    if (j < coreModelFiles.length - 1) {
-      fileString += ' | '
-    }
-  }
-
   // Ensure the directory exists
   const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
   await fs.promises.mkdir(typesDir, { recursive: true })
@@ -338,8 +321,7 @@ export async function writeModelNames(): Promise<void> {
 }
 
 export async function writeTableNames(): Promise<void> {
-  const models = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const models = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   let fileString = `export type TableNames = `
 
@@ -362,21 +344,6 @@ export async function writeTableNames(): Promise<void> {
     }
   }
 
-  fileString += ' | '
-
-  for (let j = 0; j < coreModelFiles.length; j++) {
-    const modelPath = coreModelFiles[j] as string
-
-    const model = (await import(modelPath)).default as Model
-    const tableName = getTableName(model, modelPath)
-
-    fileString += `'${tableName}'`
-
-    if (j < coreModelFiles.length - 1) {
-      fileString += ' | '
-    }
-  }
-
   // Ensure the directory exists
   const typesDir = path.dirname(path.typesPath(`src/table-names.ts`))
   await fs.promises.mkdir(typesDir, { recursive: true })
@@ -387,9 +354,7 @@ export async function writeTableNames(): Promise<void> {
 }
 
 export async function writeModelRequest(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-  const allModelFiles = [...modelFiles, ...coreModelFiles]
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
@@ -406,13 +371,13 @@ export async function writeModelRequest(): Promise<void> {
     [key: string]: ValidationField
   }\n\n`
 
-  for (let i = 0; i < allModelFiles.length; i++) {
+  for (let i = 0; i < modelFiles.length; i++) {
     let fieldStringType = ``
     let fieldString = ``
     let fieldStringInt = ``
     let fileString = `import { Request } from '@stacksjs/router'\nimport { validateField, customValidate, type schema } from '@stacksjs/validation'\n`
 
-    const modeFileElement = allModelFiles[i] as string
+    const modeFileElement = modelFiles[i] as string
 
     const model = (await import(modeFileElement)).default as Model
 
@@ -907,22 +872,11 @@ export async function deleteExistingOrmRoute(): Promise<void> {
 }
 
 export async function generateKyselyTypes(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   let text = ``
 
   for (const modelFile of modelFiles) {
-    const model = (await import(modelFile)).default as Model
-    const tableName = getTableName(model, modelFile)
-    const modelName = getModelName(model, modelFile)
-    const words = tableName.split('_')
-    const pivotFormatted = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}`
-
-    text += `import type { ${pivotFormatted}Table } from '../src/models/${modelName}'\n`
-  }
-
-  for (const modelFile of coreModelFiles) {
     const model = (await import(modelFile)).default as Model
     const tableName = getTableName(model, modelFile)
     const modelName = getModelName(model, modelFile)

@@ -287,8 +287,7 @@ export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: num
 }
 
 export async function fetchTables(): Promise<string[]> {
-  const modelFiles = globSync(path.userModelsPath('*.ts'), { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   const tables: string[] = []
 
@@ -298,13 +297,6 @@ export async function fetchTables(): Promise<string[]> {
     const upvoteTable = getUpvoteTableName(model, tableName)
     if (upvoteTable)
       tables.push(upvoteTable)
-
-    tables.push(tableName)
-  }
-
-  for (const coreModelPath of coreModelFiles) {
-    const model = (await import(coreModelPath)).default as Model
-    const tableName = getTableName(model, coreModelPath)
 
     tables.push(tableName)
   }

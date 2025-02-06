@@ -30,7 +30,7 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
 }
 
 export async function dropMysqlTables(): Promise<void> {
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
@@ -38,7 +38,7 @@ export async function dropMysqlTables(): Promise<void> {
   await db.schema.dropTable('migration_locks').ifExists().execute()
   await db.schema.dropTable('passkeys').ifExists().execute()
 
-  for (const userModel of userModelFiles) {
+  for (const userModel of modelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 

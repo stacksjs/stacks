@@ -369,7 +369,8 @@ function noCache(response: Response): Response {
 }
 
 async function addRouteQuery(url: URL): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
     const modelName = getModelName(model, modelFile)
@@ -386,7 +387,7 @@ async function addRouteQuery(url: URL): Promise<void> {
 }
 
 async function addBody(params: any): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -404,7 +405,7 @@ async function addBody(params: any): Promise<void> {
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -422,7 +423,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model

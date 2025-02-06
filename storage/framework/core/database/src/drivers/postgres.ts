@@ -27,7 +27,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   const files = await fs.readdir(path.userMigrationsPath())
   const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -271,7 +271,7 @@ async function createAlterTableMigration(modelPath: string) {
 }
 
 export async function fetchPostgresTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')])
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
