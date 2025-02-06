@@ -268,23 +268,27 @@ export class ActivityModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<ActivityModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new ActivityModel(result as ActivityType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<ActivityModel | undefined> {
-    return await ActivityModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<ActivityModel | undefined> {
     const instance = new ActivityModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: ActivityType): Promise<ActivityType> {

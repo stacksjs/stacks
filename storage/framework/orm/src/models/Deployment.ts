@@ -290,23 +290,27 @@ export class DeploymentModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<DeploymentModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new DeploymentModel(result as DeploymentType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<DeploymentModel | undefined> {
-    return await DeploymentModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: DeploymentType): Promise<DeploymentType> {

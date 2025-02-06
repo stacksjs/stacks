@@ -249,23 +249,27 @@ export class ErrorModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<ErrorModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new ErrorModel(result as ErrorType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<ErrorModel | undefined> {
-    return await ErrorModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: ErrorType): Promise<ErrorType> {

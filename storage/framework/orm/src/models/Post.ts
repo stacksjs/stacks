@@ -235,23 +235,27 @@ export class PostModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<PostModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No PostModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new PostModel(result as PostType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<PostModel | undefined> {
-    return await PostModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<PostModel | undefined> {
     const instance = new PostModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PostModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: PostType): Promise<PostType> {

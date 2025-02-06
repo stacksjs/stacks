@@ -253,23 +253,27 @@ export class AccessTokenModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<AccessTokenModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new AccessTokenModel(result as AccessTokenType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    return await AccessTokenModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: AccessTokenType): Promise<AccessTokenType> {

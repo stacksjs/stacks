@@ -223,23 +223,27 @@ export class SubscriberEmailModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    return await SubscriberEmailModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: SubscriberEmailType): Promise<SubscriberEmailType> {

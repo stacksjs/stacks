@@ -249,23 +249,27 @@ export class JobModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<JobModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No JobModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new JobModel(result as JobType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<JobModel | undefined> {
-    return await JobModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<JobModel | undefined> {
     const instance = new JobModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No JobModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: JobType): Promise<JobType> {

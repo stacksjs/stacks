@@ -299,23 +299,27 @@ export class PaymentMethodModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<PaymentMethodModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new PaymentMethodModel(result as PaymentMethodType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<PaymentMethodModel | undefined> {
-    return await PaymentMethodModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<PaymentMethodModel | undefined> {
     const instance = new PaymentMethodModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: PaymentMethodType): Promise<PaymentMethodType> {

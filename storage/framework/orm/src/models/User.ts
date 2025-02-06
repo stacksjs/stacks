@@ -311,23 +311,27 @@ export class UserModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<UserModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No UserModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new UserModel(result as UserType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<UserModel | undefined> {
-    return await UserModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<UserModel | undefined> {
     const instance = new UserModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No UserModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: UserType): Promise<UserType> {

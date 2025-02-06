@@ -286,23 +286,27 @@ export class TeamModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<TeamModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new TeamModel(result as TeamType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<TeamModel | undefined> {
-    return await TeamModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: TeamType): Promise<TeamType> {

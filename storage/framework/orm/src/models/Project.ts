@@ -240,23 +240,27 @@ export class ProjectModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<ProjectModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new ProjectModel(result as ProjectType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<ProjectModel | undefined> {
-    return await ProjectModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: ProjectType): Promise<ProjectType> {

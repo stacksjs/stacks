@@ -277,23 +277,27 @@ export class ProductModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<ProductModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new ProductModel(result as ProductType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<ProductModel | undefined> {
-    return await ProductModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: ProductType): Promise<ProductType> {

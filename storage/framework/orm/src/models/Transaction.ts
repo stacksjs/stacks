@@ -286,23 +286,27 @@ export class TransactionModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<TransactionModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new TransactionModel(result as TransactionType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<TransactionModel | undefined> {
-    return await TransactionModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: TransactionType): Promise<TransactionType> {

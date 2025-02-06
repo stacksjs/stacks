@@ -213,23 +213,27 @@ export class ReleaseModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<ReleaseModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new ReleaseModel(result as ReleaseType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<ReleaseModel | undefined> {
-    return await ReleaseModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: ReleaseType): Promise<ReleaseType> {

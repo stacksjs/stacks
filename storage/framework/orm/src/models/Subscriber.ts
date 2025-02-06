@@ -213,23 +213,27 @@ export class SubscriberModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<SubscriberModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new SubscriberModel(result as SubscriberType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<SubscriberModel | undefined> {
-    return await SubscriberModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: SubscriberType): Promise<SubscriberType> {

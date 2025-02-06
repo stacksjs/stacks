@@ -249,23 +249,27 @@ export class FailedJobModel {
     return await instance.applyFirst()
   }
 
+  async applyFirstOrFail(): Promise<FailedJobModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
+
+    const result = await this.mapWith(model)
+
+    const data = new FailedJobModel(result as FailedJobType)
+
+    return data
+  }
+
   async firstOrFail(): Promise<FailedJobModel | undefined> {
-    return await FailedJobModel.firstOrFail()
+    return await this.applyFirstOrFail()
   }
 
   static async firstOrFail(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(null)
 
-    const model = await instance.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
-
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
-
-    return data
+    return await instance.applyFirstOrFail()
   }
 
   async mapWith(model: FailedJobType): Promise<FailedJobType> {
