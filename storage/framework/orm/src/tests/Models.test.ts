@@ -955,4 +955,27 @@ describe('Models test', () => {
     expect(allUsers.length).toBe(3)
     expect(allUsers.map(user => user.name)).toContain('Batch User 1')
   })
+
+  it('should handle dynamic query building using when() with multiple conditions', async () => {
+    const users = [
+      { name: 'John', job_title: 'Senior Dev', email: 'john@test.com', password: '123' },
+      { name: 'Jane', job_title: 'Junior Dev', email: 'jane@test.com', password: '456' },
+      { name: 'Bob', job_title: 'Manager', email: 'bob@test.com', password: '789' },
+    ]
+
+    await Promise.all(users.map(user => User.create(user)))
+
+    const filters = {
+      searchTerm: 'Dev',
+      isJunior: true,
+    }
+
+    const results = await User
+      .when(filters.searchTerm !== '', query => query.where('job_title', 'like', `%${filters.searchTerm}%`))
+      .when(filters.isJunior, query => query.where('job_title', 'like', '%Junior%'))
+      .get()
+
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('Jane')
+  })
 })
