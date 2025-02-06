@@ -236,8 +236,12 @@ export class ReleaseModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: ReleaseType): Promise<ReleaseType> {
-    return model
+  async mapWith(): Promise<ReleaseType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<ReleaseModel[]> {
@@ -245,8 +249,6 @@ export class ReleaseModel {
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       const instance = new ReleaseModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new ReleaseModel(results)
     }))

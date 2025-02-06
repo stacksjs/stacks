@@ -272,8 +272,12 @@ export class ErrorModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: ErrorType): Promise<ErrorType> {
-    return model
+  async mapWith(): Promise<ErrorType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<ErrorModel[]> {
@@ -281,8 +285,6 @@ export class ErrorModel {
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
       const instance = new ErrorModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new ErrorModel(results)
     }))

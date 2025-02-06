@@ -322,16 +322,18 @@ export class PaymentMethodModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: PaymentMethodType): Promise<PaymentMethodType> {
-    if (this.withRelations.includes('transactions')) {
-      model.transactions = await this.transactionsHasMany()
-    }
+  async mapWith(): Promise<PaymentMethodType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
 
-    if (this.withRelations.includes('user')) {
-      model.user = await this.userBelong()
-    }
+        .with(relation, (db: any) => {
+          db.selectFrom(relation)
+            .whereRef('payment_method_id', '=', 'payment_methods.id')
+            .selectAll()
+        })
+    })
 
-    return model
+    return this
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
@@ -339,8 +341,6 @@ export class PaymentMethodModel {
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       const instance = new PaymentMethodModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new PaymentMethodModel(results)
     }))

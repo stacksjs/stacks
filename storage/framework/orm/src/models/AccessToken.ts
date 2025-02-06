@@ -276,12 +276,12 @@ export class AccessTokenModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: AccessTokenType): Promise<AccessTokenType> {
-    if (this.withRelations.includes('team')) {
-      model.team = await this.teamBelong()
-    }
+  async mapWith(): Promise<AccessTokenType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
 
-    return model
+    return this
   }
 
   static async all(): Promise<AccessTokenModel[]> {
@@ -289,8 +289,6 @@ export class AccessTokenModel {
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       const instance = new AccessTokenModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new AccessTokenModel(results)
     }))

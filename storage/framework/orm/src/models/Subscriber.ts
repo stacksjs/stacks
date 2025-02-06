@@ -236,8 +236,12 @@ export class SubscriberModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: SubscriberType): Promise<SubscriberType> {
-    return model
+  async mapWith(): Promise<SubscriberType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<SubscriberModel[]> {
@@ -245,8 +249,6 @@ export class SubscriberModel {
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       const instance = new SubscriberModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new SubscriberModel(results)
     }))

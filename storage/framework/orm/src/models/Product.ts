@@ -300,8 +300,12 @@ export class ProductModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: ProductType): Promise<ProductType> {
-    return model
+  async mapWith(): Promise<ProductType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<ProductModel[]> {
@@ -309,8 +313,6 @@ export class ProductModel {
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       const instance = new ProductModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new ProductModel(results)
     }))

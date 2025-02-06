@@ -309,16 +309,12 @@ export class TransactionModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: TransactionType): Promise<TransactionType> {
-    if (this.withRelations.includes('user')) {
-      model.user = await this.userBelong()
-    }
+  async mapWith(): Promise<TransactionType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
 
-    if (this.withRelations.includes('payment_method')) {
-      model.payment_method = await this.paymentMethodBelong()
-    }
-
-    return model
+    return this
   }
 
   static async all(): Promise<TransactionModel[]> {
@@ -326,8 +322,6 @@ export class TransactionModel {
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       const instance = new TransactionModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new TransactionModel(results)
     }))

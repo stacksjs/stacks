@@ -272,8 +272,12 @@ export class JobModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: JobType): Promise<JobType> {
-    return model
+  async mapWith(): Promise<JobType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<JobModel[]> {
@@ -281,8 +285,6 @@ export class JobModel {
 
     const data = await Promise.all(models.map(async (model: JobType) => {
       const instance = new JobModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new JobModel(results)
     }))

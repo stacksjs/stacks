@@ -263,8 +263,12 @@ export class ProjectModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: ProjectType): Promise<ProjectType> {
-    return model
+  async mapWith(): Promise<ProjectType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
+
+    return this
   }
 
   static async all(): Promise<ProjectModel[]> {
@@ -272,8 +276,6 @@ export class ProjectModel {
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       const instance = new ProjectModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new ProjectModel(results)
     }))

@@ -32,10 +32,6 @@ export async function generateModelString(
   const formattedTableName = pascalCase(tableName) // users -> Users
   const formattedModelName = modelName.toLowerCase() // User -> user
 
-  let relationStringThisBelong = ''
-
-  let relationStringThisMany = ''
-
   let instanceSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
   let instanceSoftDeleteStatementsUpdateFrom = ''
@@ -44,6 +40,7 @@ export async function generateModelString(
   let fieldString = ''
   let getFields = ''
   let setFields = ''
+  let mapWithStatements = ''
   // const constructorFields = ''
   let jsonFields = '{\n'
   let jsonRelations = ''
@@ -194,13 +191,15 @@ export async function generateModelString(
       // constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
 
-      relationStringThisMany += `
-          if (this.withRelations.includes('${snakeCase(relationName)}')) {
-            model.${snakeCase(relationName)} = await this.${relationName}HasMany()\n
-          }
-        `
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
+      mapWithStatements += ` 
+       .with(relation, (db: any) => {
+          db.selectFrom(relation)
+              .whereRef('${foreignKeyRelation}', '=', '${tableName}.id')
+              .selectAll()
+        })
+      `
       relationMethods += `
         async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
           if (this.id === undefined)
@@ -255,11 +254,6 @@ export async function generateModelString(
       // constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
 
-      relationStringThisBelong += `
-          if (this.withRelations.includes('${snakeCase(relationName)}')) {
-            model.${snakeCase(relationName)} = await this.${relationName}Belong()\n
-          }
-        `
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
       relationMethods += `
@@ -1045,20 +1039,20 @@ export async function generateModelString(
           return await instance.applyFirstOrFail()
         }
 
-        async mapWith(model: ${modelName}Type): Promise<${modelName}Type> {
-          ${relationStringThisMany}
-          ${relationStringThisBelong}
-  
-          return model
-        }
+        async mapWith(): Promise<${modelName}Type> {
+          this.withRelations.forEach((relation: string) => {
+            this.selectFromQuery = this.selectFromQuery
+            ${mapWithStatements}
+          })
+
+          return this
+      }
   
         static async all(): Promise<${modelName}Model[]> {
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
   
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             const instance = new ${modelName}Model(model)
-  
-            const results = await instance.mapWith(model)
   
             return new ${modelName}Model(results)
           }))

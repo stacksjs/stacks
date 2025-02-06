@@ -313,12 +313,12 @@ export class DeploymentModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: DeploymentType): Promise<DeploymentType> {
-    if (this.withRelations.includes('user')) {
-      model.user = await this.userBelong()
-    }
+  async mapWith(): Promise<DeploymentType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
 
-    return model
+    return this
   }
 
   static async all(): Promise<DeploymentModel[]> {
@@ -326,8 +326,6 @@ export class DeploymentModel {
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       const instance = new DeploymentModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new DeploymentModel(results)
     }))

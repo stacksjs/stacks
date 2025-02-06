@@ -258,12 +258,12 @@ export class PostModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: PostType): Promise<PostType> {
-    if (this.withRelations.includes('user')) {
-      model.user = await this.userBelong()
-    }
+  async mapWith(): Promise<PostType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
+    })
 
-    return model
+    return this
   }
 
   static async all(): Promise<PostModel[]> {
@@ -271,8 +271,6 @@ export class PostModel {
 
     const data = await Promise.all(models.map(async (model: PostType) => {
       const instance = new PostModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new PostModel(results)
     }))

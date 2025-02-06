@@ -309,12 +309,18 @@ export class TeamModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(model: TeamType): Promise<TeamType> {
-    if (this.withRelations.includes('personal_access_tokens')) {
-      model.personal_access_tokens = await this.personalAccessTokensHasMany()
-    }
+  async mapWith(): Promise<TeamType> {
+    this.withRelations.forEach((relation: string) => {
+      this.selectFromQuery = this.selectFromQuery
 
-    return model
+        .with(relation, (db: any) => {
+          db.selectFrom(relation)
+            .whereRef('team_id', '=', 'teams.id')
+            .selectAll()
+        })
+    })
+
+    return this
   }
 
   static async all(): Promise<TeamModel[]> {
@@ -322,8 +328,6 @@ export class TeamModel {
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       const instance = new TeamModel(model)
-
-      const results = await instance.mapWith(model)
 
       return new TeamModel(results)
     }))

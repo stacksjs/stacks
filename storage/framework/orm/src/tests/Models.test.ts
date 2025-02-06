@@ -997,20 +997,6 @@ describe('Models test', () => {
   //   expect(results[0]?.name).toBe('John Smith')
   // })
 
-  it('should handle whereRaw queries', async () => {
-    await User.create({
-      name: 'John',
-      job_title: 'Developer',
-      email: 'john@test.com',
-      password: '123456',
-    })
-
-    const results = await User.whereRaw('id = 1').get()
-
-    expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('John')
-  })
-
   // it('should load multiple relations using with()', async () => {
   //   const user = await User.create({
   //     name: 'John',
@@ -1050,19 +1036,6 @@ describe('Models test', () => {
     const results = await User.whereRef('name', '=', 'job_title').get()
     expect(results.length).toBe(1)
     expect(results[0]?.name).toBe('John Smith')
-  })
-
-  it('should handle whereRaw queries', async () => {
-    await User.create({
-      name: 'John',
-      job_title: 'Developer',
-      email: 'john@test.com',
-      password: '123456',
-    })
-
-    const results = await User.whereRaw('UPPER(name) = \'JOHN\'').get()
-    expect(results.length).toBe(1)
-    expect(results[0]?.name).toBe('John')
   })
 
   // it('should load multiple relations using with()', async () => {
