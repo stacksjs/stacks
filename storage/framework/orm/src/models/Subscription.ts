@@ -1122,40 +1122,48 @@ export class SubscriptionModel {
     return instance
   }
 
+  applyWhereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
-    return SubscriptionModel.whereBetween(column, range)
+    return this.applyWhereBetween(column, range)
+  }
+
+  static whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
+    const instance = new SubscriptionModel(null)
+
+    return instance.applyWhereBetween(column, range)
+  }
+
+  applyWhereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
   }
 
   whereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
-    return SubscriptionModel.whereLike(column, value)
+    return this.applyWhereLike(column, value)
   }
 
   static whereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return instance
-  }
-
-  static whereBetween(column: keyof SubscriptionType, range: [any, any]): SubscriptionModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const instance = new SubscriptionModel(null)
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    instance.selectFromQuery = instance.selectFromQuery.where(query)
-    instance.updateFromQuery = instance.updateFromQuery.where(query)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-
-    return instance
+    return instance.applyWhereLike(column, value)
   }
 
   applyWhereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {

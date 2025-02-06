@@ -1052,40 +1052,48 @@ export class ActivityModel {
     return instance
   }
 
+  applyWhereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
-    return ActivityModel.whereBetween(column, range)
+    return this.applyWhereBetween(column, range)
+  }
+
+  static whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
+    const instance = new ActivityModel(null)
+
+    return instance.applyWhereBetween(column, range)
+  }
+
+  applyWhereLike(column: keyof ActivityType, value: string): ActivityModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
   }
 
   whereLike(column: keyof ActivityType, value: string): ActivityModel {
-    return ActivityModel.whereLike(column, value)
+    return this.applyWhereLike(column, value)
   }
 
   static whereLike(column: keyof ActivityType, value: string): ActivityModel {
     const instance = new ActivityModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return instance
-  }
-
-  static whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const instance = new ActivityModel(null)
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    instance.selectFromQuery = instance.selectFromQuery.where(query)
-    instance.updateFromQuery = instance.updateFromQuery.where(query)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-
-    return instance
+    return instance.applyWhereLike(column, value)
   }
 
   applyWhereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {

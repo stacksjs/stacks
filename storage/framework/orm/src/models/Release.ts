@@ -938,40 +938,48 @@ export class ReleaseModel {
     return instance
   }
 
+  applyWhereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
   whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
-    return ReleaseModel.whereBetween(column, range)
+    return this.applyWhereBetween(column, range)
+  }
+
+  static whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    return instance.applyWhereBetween(column, range)
+  }
+
+  applyWhereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
   }
 
   whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
-    return ReleaseModel.whereLike(column, value)
+    return this.applyWhereLike(column, value)
   }
 
   static whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return instance
-  }
-
-  static whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const instance = new ReleaseModel(null)
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    instance.selectFromQuery = instance.selectFromQuery.where(query)
-    instance.updateFromQuery = instance.updateFromQuery.where(query)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-
-    return instance
+    return instance.applyWhereLike(column, value)
   }
 
   applyWhereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {

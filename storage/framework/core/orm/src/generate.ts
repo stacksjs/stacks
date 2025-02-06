@@ -1759,42 +1759,50 @@ export async function generateModelString(
           return instance
         }
 
+        applyWhereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+          if (range.length !== 2) {
+            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+          }
+  
+          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
+  
+          this.selectFromQuery = this.selectFromQuery.where(query)
+          this.updateFromQuery = this.updateFromQuery.where(query)
+          this.deleteFromQuery = this.deleteFromQuery.where(query)
+  
+          return this
+        }
+
         whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
-          return ${modelName}Model.whereBetween(column, range)
+          return this.applyWhereBetween(column, range)
+        }
+
+        static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+
+          return instance.applyWhereBetween(column, range)
+        }
+
+        applyWhereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
+  
+          this.updateFromQuery = this.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
+  
+          this.deleteFromQuery = this.deleteFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
+  
+          return this
         }
 
         whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
-          return ${modelName}Model.whereLike(column, value)
+          return this.applyWhereLike(column, value)
         }
           
         static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          instance.updateFromQuery = instance.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          return instance
+          return instance.applyWhereLike(column, value)
         }
   
-        static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
-          if (range.length !== 2) {
-            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-          }
-  
-          const instance = new ${modelName}Model(null)
-  
-          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
-  
-          instance.selectFromQuery = instance.selectFromQuery.where(query)
-          instance.updateFromQuery = instance.updateFromQuery.where(query)
-          instance.deleteFromQuery = instance.deleteFromQuery.where(query)
-  
-          return instance
-        }
-
         applyWhereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
   
