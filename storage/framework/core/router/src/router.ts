@@ -7,7 +7,7 @@ import { path as p } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
-import { StaticRouteManager } from './static'
+import { staticRoute } from './'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string
@@ -15,7 +15,6 @@ type ActionPath = string
 export class Router implements RouterInterface {
   private routes: Route[] = []
   private path = ''
-  private staticManager: StaticRouteManager = new StaticRouteManager()
 
   private addRoute(
     method: Route['method'],
@@ -142,7 +141,7 @@ export class Router implements RouterInterface {
     const uri = this.prepareUri(this.path)
 
     // Add to static manager
-    this.staticManager.addHtmlFile(uri, htmlFile)
+    staticRoute.addHtmlFile(uri, htmlFile)
 
     // Register as a route for consistency
     return this.addRoute('GET', uri, async () => htmlFile, 200)
@@ -150,7 +149,7 @@ export class Router implements RouterInterface {
 
   // New method to get static configuration
   public getStaticConfig(): Record<string, any> {
-    return this.staticManager.getStaticConfig()
+    return staticRoute.getStaticConfig()
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
@@ -255,10 +254,14 @@ export class Router implements RouterInterface {
   }
 
   public async getRoutes(): Promise<Route[]> {
-    await import('../../../../../routes/api') // user routes
-    await import('../../../orm/routes') // auto-generated routes
+    await this.importRoutes()
 
     return this.routes
+  }
+
+  public async importRoutes(): Promise<void> {
+    await import('../../../../../routes/api') // user routes
+    await import('../../../orm/routes') // auto-generated routes
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {

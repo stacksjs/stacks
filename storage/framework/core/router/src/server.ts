@@ -7,7 +7,7 @@ import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
-import { route, StaticRouteManager } from '.'
+import { route, staticRoute } from '.'
 
 import { middlewares } from './middleware'
 
@@ -28,8 +28,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
-  const staticManager: StaticRouteManager = new StaticRouteManager()
-  const staticFiles = staticManager.getStaticConfig()
+  const staticFiles = await staticRoute.getStaticConfig()
 
   if (options.timezone)
     process.env.TZ = options.timezone
@@ -62,6 +61,7 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
   const url: URL = new URL(trimmedUrl) as URL
   const routesList: Route[] = await route.getRoutes()
+
 
   log.info(`Routes List: ${JSON.stringify(routesList)}`)
   log.info(`URL: ${JSON.stringify(url)}`)

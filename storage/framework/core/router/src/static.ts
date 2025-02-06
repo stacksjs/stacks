@@ -1,3 +1,5 @@
+import { route } from './'
+
 export class StaticRouteManager {
   private staticRoutes: Record<string, any> = {}
 
@@ -8,7 +10,11 @@ export class StaticRouteManager {
     this.staticRoutes[normalizedUri] = htmlFile
   }
 
-  public getStaticConfig(): Record<string, any> {
+  public async getStaticConfig(): Promise<Record<string, any>> {
+    await route.importRoutes()
+
     return this.staticRoutes
   }
 }
+
+export const staticRoute: StaticRouteManager = new StaticRouteManager()
