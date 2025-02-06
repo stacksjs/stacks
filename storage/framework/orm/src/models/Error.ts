@@ -240,13 +240,13 @@ export class ErrorModel {
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<ErrorModel | undefined> {

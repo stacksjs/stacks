@@ -204,13 +204,13 @@ export class SubscriberModel {
   }
 
   async first(): Promise<SubscriberModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<SubscriberModel | undefined> {

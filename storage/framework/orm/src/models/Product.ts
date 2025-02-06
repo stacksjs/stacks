@@ -268,13 +268,13 @@ export class ProductModel {
   }
 
   async first(): Promise<ProductModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<ProductModel | undefined> {

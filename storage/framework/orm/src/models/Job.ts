@@ -240,13 +240,13 @@ export class JobModel {
   }
 
   async first(): Promise<JobModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<JobModel | undefined> {
     const instance = new JobModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<JobModel | undefined> {

@@ -281,13 +281,13 @@ export class DeploymentModel {
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<DeploymentModel | undefined> {

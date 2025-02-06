@@ -244,13 +244,13 @@ export class AccessTokenModel {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<AccessTokenModel | undefined> {

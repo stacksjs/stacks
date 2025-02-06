@@ -204,13 +204,13 @@ export class ReleaseModel {
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<ReleaseModel | undefined> {

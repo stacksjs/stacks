@@ -290,13 +290,13 @@ export class PaymentMethodModel {
   }
 
   async first(): Promise<PaymentMethodModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<PaymentMethodModel | undefined> {
     const instance = new PaymentMethodModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<PaymentMethodModel | undefined> {

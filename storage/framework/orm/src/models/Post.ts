@@ -226,13 +226,13 @@ export class PostModel {
   }
 
   async first(): Promise<PostModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<PostModel | undefined> {
     const instance = new PostModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<PostModel | undefined> {

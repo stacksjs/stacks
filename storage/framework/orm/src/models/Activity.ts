@@ -259,13 +259,13 @@ export class ActivityModel {
   }
 
   async first(): Promise<ActivityModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<ActivityModel | undefined> {
     const instance = new ActivityModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<ActivityModel | undefined> {

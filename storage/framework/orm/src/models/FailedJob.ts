@@ -240,13 +240,13 @@ export class FailedJobModel {
   }
 
   async first(): Promise<FailedJobModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<FailedJobModel | undefined> {

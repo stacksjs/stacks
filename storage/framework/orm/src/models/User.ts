@@ -302,13 +302,13 @@ export class UserModel {
   }
 
   async first(): Promise<UserModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<UserModel | undefined> {
     const instance = new UserModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<UserModel | undefined> {

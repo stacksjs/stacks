@@ -214,13 +214,13 @@ export class SubscriberEmailModel {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<SubscriberEmailModel | undefined> {

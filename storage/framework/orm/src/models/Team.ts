@@ -277,13 +277,13 @@ export class TeamModel {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<TeamModel | undefined> {

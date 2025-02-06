@@ -10,35 +10,6 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 
-interface RequestDataActivity {
-  id: number
-  title: string
-  description: string
-  address: string
-  latlng: string
-  info_source: string[]
-  were_detained: boolean
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ActivityRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'title' | 'description' | 'address' | 'latlng') => string) & ((key: 'info_source') => string[]) & ((key: 'were_detained') => boolean)
-
-  all: () => RequestDataActivity
-  id: number
-  title: string
-  description: string
-  address: string
-  latlng: string
-  info_source: string[]
-  were_detained: boolean
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataProject {
   id: number
   name: string
@@ -62,31 +33,6 @@ export interface ProjectRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataFailedJob {
-  id: number
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at: date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface FailedJobRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'connection' | 'queue' | 'payload' | 'exception') => string) & ((key: 'failed_at') => date)
-
-  all: () => RequestDataFailedJob
-  id: number
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at: date
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataSubscriberEmail {
   id: number
   email: string
@@ -102,35 +48,6 @@ export interface SubscriberEmailRequestType extends Request {
   id: number
   email: string
   deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataProduct {
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ProductRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'status' | 'image' | 'provider_id') => string) & ((key: 'description' | 'key' | 'unit_price') => number)
-
-  all: () => RequestDataProduct
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
   created_at?: Date
   updated_at?: Date
 }
@@ -156,37 +73,6 @@ export interface AccessTokenRequestType extends Request {
   plain_text_token: string
   abilities: string[]
   team_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataPaymentMethod {
-  id: number
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default: boolean
-  provider_id: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface PaymentMethodRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'type' | 'brand' | 'provider_id') => string) & ((key: 'last_four' | 'exp_month' | 'exp_year') => number) & ((key: 'is_default') => boolean) & ((key: 'user_id') => string)
-
-  all: () => RequestDataPaymentMethod
-  id: number
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default: boolean
-  provider_id: string
-  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -222,6 +108,35 @@ export interface TeamRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataActivity {
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ActivityRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'title' | 'description' | 'address' | 'latlng') => string) & ((key: 'info_source') => string[]) & ((key: 'were_detained') => boolean)
+
+  all: () => RequestDataActivity
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataSubscriber {
   id: number
   subscribed: boolean
@@ -241,6 +156,183 @@ export interface SubscriberRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataDeployment {
+  id: number
+  commit_sha: string
+  commit_message: string
+  branch: string
+  status: string
+  execution_time: number
+  deploy_script: string
+  terminal_output: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface DeploymentRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'commit_sha' | 'commit_message' | 'branch' | 'status' | 'deploy_script' | 'terminal_output') => string) & ((key: 'execution_time') => number) & ((key: 'user_id') => string)
+
+  all: () => RequestDataDeployment
+  id: number
+  commit_sha: string
+  commit_message: string
+  branch: string
+  status: string
+  execution_time: number
+  deploy_script: string
+  terminal_output: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataRelease {
+  id: number
+  version: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ReleaseRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'version') => string)
+
+  all: () => RequestDataRelease
+  id: number
+  version: string
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataUser {
+  id: number
+  name: string
+  email: string
+  job_title: string
+  password: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface UserRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string)
+
+  all: () => RequestDataUser
+  id: number
+  name: string
+  email: string
+  job_title: string
+  password: string
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataPost {
+  id: number
+  title: string
+  body: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PostRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'title' | 'body') => string) & ((key: 'user_id') => string)
+
+  all: () => RequestDataPost
+  id: number
+  title: string
+  body: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataFailedJob {
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface FailedJobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'connection' | 'queue' | 'payload' | 'exception') => string) & ((key: 'failed_at') => date)
+
+  all: () => RequestDataFailedJob
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataProduct {
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ProductRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'name' | 'status' | 'image' | 'provider_id') => string) & ((key: 'description' | 'key' | 'unit_price') => number)
+
+  all: () => RequestDataProduct
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataPaymentMethod {
+  id: number
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PaymentMethodRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'type' | 'brand' | 'provider_id') => string) & ((key: 'last_four' | 'exp_month' | 'exp_year') => number) & ((key: 'is_default') => boolean) & ((key: 'user_id') => string)
+
+  all: () => RequestDataPaymentMethod
+  id: number
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataTransaction {
   id: number
   name: string
@@ -248,14 +340,14 @@ interface RequestDataTransaction {
   amount: number
   type: string
   provider_id: string
-  payment_method_id: number
   user_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'payment_method_id') => string) & ((key: 'user_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'payment_method_id') => string)
 
   all: () => RequestDataTransaction
   id: number
@@ -264,8 +356,8 @@ export interface TransactionRequestType extends Request {
   amount: number
   type: string
   provider_id: string
-  payment_method_id: number
   user_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -332,37 +424,6 @@ export interface SubscriptionRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataDeployment {
-  id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface DeploymentRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'commit_sha' | 'commit_message' | 'branch' | 'status' | 'deploy_script' | 'terminal_output') => string) & ((key: 'execution_time') => number) & ((key: 'user_id') => string)
-
-  all: () => RequestDataDeployment
-  id: number
-  commit_sha: string
-  commit_message: string
-  branch: string
-  status: string
-  execution_time: number
-  deploy_script: string
-  terminal_output: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataError {
   id: number
   type: string
@@ -388,65 +449,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataRelease {
-  id: number
-  version: string
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ReleaseRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'version') => string)
-
-  all: () => RequestDataRelease
-  id: number
-  version: string
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataUser {
-  id: number
-  name: string
-  email: string
-  job_title: string
-  password: string
-  created_at?: Date
-  updated_at?: Date
-}
-export interface UserRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'job_title' | 'password') => string)
-
-  all: () => RequestDataUser
-  id: number
-  name: string
-  email: string
-  job_title: string
-  password: string
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataPost {
-  id: number
-  title: string
-  body: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface PostRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'title' | 'body') => string) & ((key: 'user_id') => string)
-
-  all: () => RequestDataPost
-  id: number
-  title: string
-  body: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-export type ModelRequest = ActivityRequestType | ProjectRequestType | FailedJobRequestType | SubscriberEmailRequestType | ProductRequestType | AccessTokenRequestType | PaymentMethodRequestType | TeamRequestType | SubscriberRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | DeploymentRequestType | ErrorRequestType | ReleaseRequestType | UserRequestType | PostRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | ProductRequestType | PaymentMethodRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | ErrorRequestType

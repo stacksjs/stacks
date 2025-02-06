@@ -308,13 +308,13 @@ export class SubscriptionModel {
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    return await this.first()
+    return await this.applyFirst()
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
     const instance = new SubscriptionModel(null)
 
-    return await instance.first()
+    return await instance.applyFirst()
   }
 
   async firstOrFail(): Promise<SubscriptionModel | undefined> {
