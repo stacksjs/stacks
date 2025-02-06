@@ -241,9 +241,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
@@ -269,9 +267,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }
@@ -292,9 +288,7 @@ export class TransactionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }
@@ -323,7 +317,7 @@ export class TransactionModel {
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       const instance = new TransactionModel(model)
 
-      return new TransactionModel(results)
+      return new TransactionModel(model)
     }))
 
     return data
@@ -336,16 +330,12 @@ export class TransactionModel {
   static async findOrFail(id: number): Promise<TransactionModel> {
     const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new TransactionModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No TransactionModel results for ${id}`)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }
@@ -542,11 +532,7 @@ export class TransactionModel {
     }
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {
-      const instance = new TransactionModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new TransactionModel(results)
+      return new TransactionModel(model)
     }))
 
     return data
@@ -1139,9 +1125,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(null)
-    const result = await instance.mapWith(model)
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }
@@ -1155,9 +1139,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(null)
-    const result = await instance.mapWith(model)
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }
@@ -1182,9 +1164,7 @@ export class TransactionModel {
       .executeTakeFirst()
 
     if (existingTransaction) {
-      const instance = new TransactionModel(null)
-      const result = await instance.mapWith(existingTransaction)
-      return new TransactionModel(result as TransactionType)
+      return new TransactionModel(existingTransaction as TransactionType)
     }
     else {
       return await this.create(newTransaction)
@@ -1228,11 +1208,9 @@ export class TransactionModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedTransaction)
-
       instance.hasSaved = true
 
-      return new TransactionModel(result as TransactionType)
+      return new TransactionModel(updatedTransaction as TransactionType)
     }
     else {
       // If not found, create a new record
@@ -1267,11 +1245,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const instance = new TransactionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TransactionModel(result as TransactionType)
+    const data = new TransactionModel(model as TransactionType)
 
     return data
   }

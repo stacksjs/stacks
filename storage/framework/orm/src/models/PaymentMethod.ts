@@ -254,9 +254,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
@@ -282,9 +280,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
@@ -305,9 +301,7 @@ export class PaymentMethodModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
@@ -342,7 +336,7 @@ export class PaymentMethodModel {
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       const instance = new PaymentMethodModel(model)
 
-      return new PaymentMethodModel(results)
+      return new PaymentMethodModel(model)
     }))
 
     return data
@@ -355,16 +349,12 @@ export class PaymentMethodModel {
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
     const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new PaymentMethodModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PaymentMethodModel results for ${id}`)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
@@ -561,11 +551,7 @@ export class PaymentMethodModel {
     }
 
     const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
-      const instance = new PaymentMethodModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new PaymentMethodModel(results)
+      return new PaymentMethodModel(model)
     }))
 
     return data
@@ -1174,9 +1160,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(null)
-    const result = await instance.mapWith(model)
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
@@ -1190,9 +1174,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(null)
-    const result = await instance.mapWith(model)
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
@@ -1217,9 +1199,7 @@ export class PaymentMethodModel {
       .executeTakeFirst()
 
     if (existingPaymentMethod) {
-      const instance = new PaymentMethodModel(null)
-      const result = await instance.mapWith(existingPaymentMethod)
-      return new PaymentMethodModel(result as PaymentMethodType)
+      return new PaymentMethodModel(existingPaymentMethod as PaymentMethodType)
     }
     else {
       return await this.create(newPaymentMethod)
@@ -1263,11 +1243,9 @@ export class PaymentMethodModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedPaymentMethod)
-
       instance.hasSaved = true
 
-      return new PaymentMethodModel(result as PaymentMethodType)
+      return new PaymentMethodModel(updatedPaymentMethod as PaymentMethodType)
     }
     else {
       // If not found, create a new record
@@ -1302,11 +1280,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    const instance = new PaymentMethodModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PaymentMethodModel(result as PaymentMethodType)
+    const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }

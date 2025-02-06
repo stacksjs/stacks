@@ -195,9 +195,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -223,9 +221,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }
@@ -246,9 +242,7 @@ export class ProjectModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }
@@ -277,7 +271,7 @@ export class ProjectModel {
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       const instance = new ProjectModel(model)
 
-      return new ProjectModel(results)
+      return new ProjectModel(model)
     }))
 
     return data
@@ -290,16 +284,12 @@ export class ProjectModel {
   static async findOrFail(id: number): Promise<ProjectModel> {
     const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new ProjectModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }
@@ -496,11 +486,7 @@ export class ProjectModel {
     }
 
     const data = await Promise.all(models.map(async (model: ProjectModel) => {
-      const instance = new ProjectModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProjectModel(results)
+      return new ProjectModel(model)
     }))
 
     return data
@@ -1081,9 +1067,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }
@@ -1097,9 +1081,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }
@@ -1124,9 +1106,7 @@ export class ProjectModel {
       .executeTakeFirst()
 
     if (existingProject) {
-      const instance = new ProjectModel(null)
-      const result = await instance.mapWith(existingProject)
-      return new ProjectModel(result as ProjectType)
+      return new ProjectModel(existingProject as ProjectType)
     }
     else {
       return await this.create(newProject)
@@ -1170,11 +1150,9 @@ export class ProjectModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedProject)
-
       instance.hasSaved = true
 
-      return new ProjectModel(result as ProjectType)
+      return new ProjectModel(updatedProject as ProjectType)
     }
     else {
       // If not found, create a new record
@@ -1209,11 +1187,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const instance = new ProjectModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProjectModel(result as ProjectType)
+    const data = new ProjectModel(model as ProjectType)
 
     return data
   }

@@ -204,9 +204,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
 
@@ -232,9 +230,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }
@@ -255,9 +251,7 @@ export class JobModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No JobModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }
@@ -286,7 +280,7 @@ export class JobModel {
     const data = await Promise.all(models.map(async (model: JobType) => {
       const instance = new JobModel(model)
 
-      return new JobModel(results)
+      return new JobModel(model)
     }))
 
     return data
@@ -299,16 +293,12 @@ export class JobModel {
   static async findOrFail(id: number): Promise<JobModel> {
     const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new JobModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No JobModel results for ${id}`)
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }
@@ -505,11 +495,7 @@ export class JobModel {
     }
 
     const data = await Promise.all(models.map(async (model: JobModel) => {
-      const instance = new JobModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new JobModel(results)
+      return new JobModel(model)
     }))
 
     return data
@@ -1098,9 +1084,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const instance = new JobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }
@@ -1114,9 +1098,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const instance = new JobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }
@@ -1141,9 +1123,7 @@ export class JobModel {
       .executeTakeFirst()
 
     if (existingJob) {
-      const instance = new JobModel(null)
-      const result = await instance.mapWith(existingJob)
-      return new JobModel(result as JobType)
+      return new JobModel(existingJob as JobType)
     }
     else {
       return await this.create(newJob)
@@ -1187,11 +1167,9 @@ export class JobModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedJob)
-
       instance.hasSaved = true
 
-      return new JobModel(result as JobType)
+      return new JobModel(updatedJob as JobType)
     }
     else {
       // If not found, create a new record
@@ -1226,11 +1204,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const instance = new JobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new JobModel(result as JobType)
+    const data = new JobModel(model as JobType)
 
     return data
   }

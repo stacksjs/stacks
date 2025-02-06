@@ -266,9 +266,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -294,9 +292,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }
@@ -317,9 +313,7 @@ export class UserModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No UserModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }
@@ -372,7 +366,7 @@ export class UserModel {
     const data = await Promise.all(models.map(async (model: UserType) => {
       const instance = new UserModel(model)
 
-      return new UserModel(results)
+      return new UserModel(model)
     }))
 
     return data
@@ -385,16 +379,12 @@ export class UserModel {
   static async findOrFail(id: number): Promise<UserModel> {
     const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new UserModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }
@@ -591,11 +581,7 @@ export class UserModel {
     }
 
     const data = await Promise.all(models.map(async (model: UserModel) => {
-      const instance = new UserModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new UserModel(results)
+      return new UserModel(model)
     }))
 
     return data
@@ -1190,9 +1176,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(null)
-    const result = await instance.mapWith(model)
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }
@@ -1206,9 +1190,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(null)
-    const result = await instance.mapWith(model)
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }
@@ -1233,9 +1215,7 @@ export class UserModel {
       .executeTakeFirst()
 
     if (existingUser) {
-      const instance = new UserModel(null)
-      const result = await instance.mapWith(existingUser)
-      return new UserModel(result as UserType)
+      return new UserModel(existingUser as UserType)
     }
     else {
       return await this.create(newUser)
@@ -1279,11 +1259,9 @@ export class UserModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedUser)
-
       instance.hasSaved = true
 
-      return new UserModel(result as UserType)
+      return new UserModel(updatedUser as UserType)
     }
     else {
       // If not found, create a new record
@@ -1318,11 +1296,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const instance = new UserModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new UserModel(result as UserType)
+    const data = new UserModel(model as UserType)
 
     return data
   }

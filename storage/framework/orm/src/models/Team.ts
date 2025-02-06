@@ -241,9 +241,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -269,9 +267,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }
@@ -292,9 +288,7 @@ export class TeamModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TeamModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }
@@ -329,7 +323,7 @@ export class TeamModel {
     const data = await Promise.all(models.map(async (model: TeamType) => {
       const instance = new TeamModel(model)
 
-      return new TeamModel(results)
+      return new TeamModel(model)
     }))
 
     return data
@@ -342,16 +336,12 @@ export class TeamModel {
   static async findOrFail(id: number): Promise<TeamModel> {
     const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new TeamModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }
@@ -548,11 +538,7 @@ export class TeamModel {
     }
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {
-      const instance = new TeamModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new TeamModel(results)
+      return new TeamModel(model)
     }))
 
     return data
@@ -1165,9 +1151,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const instance = new TeamModel(null)
-    const result = await instance.mapWith(model)
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }
@@ -1181,9 +1165,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const instance = new TeamModel(null)
-    const result = await instance.mapWith(model)
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }
@@ -1208,9 +1190,7 @@ export class TeamModel {
       .executeTakeFirst()
 
     if (existingTeam) {
-      const instance = new TeamModel(null)
-      const result = await instance.mapWith(existingTeam)
-      return new TeamModel(result as TeamType)
+      return new TeamModel(existingTeam as TeamType)
     }
     else {
       return await this.create(newTeam)
@@ -1254,11 +1234,9 @@ export class TeamModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedTeam)
-
       instance.hasSaved = true
 
-      return new TeamModel(result as TeamType)
+      return new TeamModel(updatedTeam as TeamType)
     }
     else {
       // If not found, create a new record
@@ -1293,11 +1271,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const instance = new TeamModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new TeamModel(result as TeamType)
+    const data = new TeamModel(model as TeamType)
 
     return data
   }

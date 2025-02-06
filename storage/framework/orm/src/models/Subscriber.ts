@@ -168,9 +168,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -196,9 +194,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
@@ -219,9 +215,7 @@ export class SubscriberModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
@@ -250,7 +244,7 @@ export class SubscriberModel {
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       const instance = new SubscriberModel(model)
 
-      return new SubscriberModel(results)
+      return new SubscriberModel(model)
     }))
 
     return data
@@ -263,16 +257,12 @@ export class SubscriberModel {
   static async findOrFail(id: number): Promise<SubscriberModel> {
     const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new SubscriberModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
@@ -469,11 +459,7 @@ export class SubscriberModel {
     }
 
     const data = await Promise.all(models.map(async (model: SubscriberModel) => {
-      const instance = new SubscriberModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriberModel(results)
+      return new SubscriberModel(model)
     }))
 
     return data
@@ -1030,9 +1016,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
@@ -1046,9 +1030,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
@@ -1073,9 +1055,7 @@ export class SubscriberModel {
       .executeTakeFirst()
 
     if (existingSubscriber) {
-      const instance = new SubscriberModel(null)
-      const result = await instance.mapWith(existingSubscriber)
-      return new SubscriberModel(result as SubscriberType)
+      return new SubscriberModel(existingSubscriber as SubscriberType)
     }
     else {
       return await this.create(newSubscriber)
@@ -1119,11 +1099,9 @@ export class SubscriberModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedSubscriber)
-
       instance.hasSaved = true
 
-      return new SubscriberModel(result as SubscriberType)
+      return new SubscriberModel(updatedSubscriber as SubscriberType)
     }
     else {
       // If not found, create a new record
@@ -1158,11 +1136,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberModel(result as SubscriberType)
+    const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }

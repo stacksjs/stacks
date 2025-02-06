@@ -204,9 +204,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
@@ -232,9 +230,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
@@ -255,9 +251,7 @@ export class ErrorModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
@@ -286,7 +280,7 @@ export class ErrorModel {
     const data = await Promise.all(models.map(async (model: ErrorType) => {
       const instance = new ErrorModel(model)
 
-      return new ErrorModel(results)
+      return new ErrorModel(model)
     }))
 
     return data
@@ -299,16 +293,12 @@ export class ErrorModel {
   static async findOrFail(id: number): Promise<ErrorModel> {
     const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new ErrorModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ErrorModel results for ${id}`)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
@@ -505,11 +495,7 @@ export class ErrorModel {
     }
 
     const data = await Promise.all(models.map(async (model: ErrorModel) => {
-      const instance = new ErrorModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ErrorModel(results)
+      return new ErrorModel(model)
     }))
 
     return data
@@ -1098,9 +1084,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
@@ -1114,9 +1098,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
@@ -1141,9 +1123,7 @@ export class ErrorModel {
       .executeTakeFirst()
 
     if (existingError) {
-      const instance = new ErrorModel(null)
-      const result = await instance.mapWith(existingError)
-      return new ErrorModel(result as ErrorType)
+      return new ErrorModel(existingError as ErrorType)
     }
     else {
       return await this.create(newError)
@@ -1187,11 +1167,9 @@ export class ErrorModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedError)
-
       instance.hasSaved = true
 
-      return new ErrorModel(result as ErrorType)
+      return new ErrorModel(updatedError as ErrorType)
     }
     else {
       // If not found, create a new record
@@ -1226,11 +1204,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }

@@ -190,9 +190,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -218,9 +216,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }
@@ -241,9 +237,7 @@ export class PostModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No PostModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }
@@ -272,7 +266,7 @@ export class PostModel {
     const data = await Promise.all(models.map(async (model: PostType) => {
       const instance = new PostModel(model)
 
-      return new PostModel(results)
+      return new PostModel(model)
     }))
 
     return data
@@ -285,16 +279,12 @@ export class PostModel {
   static async findOrFail(id: number): Promise<PostModel> {
     const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new PostModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PostModel results for ${id}`)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }
@@ -491,11 +481,7 @@ export class PostModel {
     }
 
     const data = await Promise.all(models.map(async (model: PostModel) => {
-      const instance = new PostModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new PostModel(results)
+      return new PostModel(model)
     }))
 
     return data
@@ -1060,9 +1046,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const instance = new PostModel(null)
-    const result = await instance.mapWith(model)
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }
@@ -1076,9 +1060,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const instance = new PostModel(null)
-    const result = await instance.mapWith(model)
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }
@@ -1103,9 +1085,7 @@ export class PostModel {
       .executeTakeFirst()
 
     if (existingPost) {
-      const instance = new PostModel(null)
-      const result = await instance.mapWith(existingPost)
-      return new PostModel(result as PostType)
+      return new PostModel(existingPost as PostType)
     }
     else {
       return await this.create(newPost)
@@ -1149,11 +1129,9 @@ export class PostModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedPost)
-
       instance.hasSaved = true
 
-      return new PostModel(result as PostType)
+      return new PostModel(updatedPost as PostType)
     }
     else {
       // If not found, create a new record
@@ -1188,11 +1166,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const instance = new PostModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new PostModel(result as PostType)
+    const data = new PostModel(model as PostType)
 
     return data
   }

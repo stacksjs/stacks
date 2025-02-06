@@ -245,9 +245,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -273,9 +271,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
@@ -296,9 +292,7 @@ export class DeploymentModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
@@ -327,7 +321,7 @@ export class DeploymentModel {
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       const instance = new DeploymentModel(model)
 
-      return new DeploymentModel(results)
+      return new DeploymentModel(model)
     }))
 
     return data
@@ -340,16 +334,12 @@ export class DeploymentModel {
   static async findOrFail(id: number): Promise<DeploymentModel> {
     const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new DeploymentModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
@@ -546,11 +536,7 @@ export class DeploymentModel {
     }
 
     const data = await Promise.all(models.map(async (model: DeploymentModel) => {
-      const instance = new DeploymentModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new DeploymentModel(results)
+      return new DeploymentModel(model)
     }))
 
     return data
@@ -1159,9 +1145,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(null)
-    const result = await instance.mapWith(model)
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
@@ -1175,9 +1159,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(null)
-    const result = await instance.mapWith(model)
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
@@ -1202,9 +1184,7 @@ export class DeploymentModel {
       .executeTakeFirst()
 
     if (existingDeployment) {
-      const instance = new DeploymentModel(null)
-      const result = await instance.mapWith(existingDeployment)
-      return new DeploymentModel(result as DeploymentType)
+      return new DeploymentModel(existingDeployment as DeploymentType)
     }
     else {
       return await this.create(newDeployment)
@@ -1248,11 +1228,9 @@ export class DeploymentModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedDeployment)
-
       instance.hasSaved = true
 
-      return new DeploymentModel(result as DeploymentType)
+      return new DeploymentModel(updatedDeployment as DeploymentType)
     }
     else {
       // If not found, create a new record
@@ -1287,11 +1265,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const instance = new DeploymentModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new DeploymentModel(result as DeploymentType)
+    const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }

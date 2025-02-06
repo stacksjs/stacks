@@ -223,9 +223,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
@@ -251,9 +249,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }
@@ -274,9 +270,7 @@ export class ActivityModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }
@@ -305,7 +299,7 @@ export class ActivityModel {
     const data = await Promise.all(models.map(async (model: ActivityType) => {
       const instance = new ActivityModel(model)
 
-      return new ActivityModel(results)
+      return new ActivityModel(model)
     }))
 
     return data
@@ -318,8 +312,6 @@ export class ActivityModel {
   static async findOrFail(id: number): Promise<ActivityModel> {
     const model = await DB.instance.selectFrom('activities').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new ActivityModel(null)
-
     if (instance.softDeletes) {
       instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
@@ -329,9 +321,7 @@ export class ActivityModel {
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }
@@ -532,11 +522,7 @@ export class ActivityModel {
     }
 
     const data = await Promise.all(models.map(async (model: ActivityModel) => {
-      const instance = new ActivityModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ActivityModel(results)
+      return new ActivityModel(model)
     }))
 
     return data
@@ -1144,9 +1130,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const instance = new ActivityModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }
@@ -1160,9 +1144,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const instance = new ActivityModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }
@@ -1187,9 +1169,7 @@ export class ActivityModel {
       .executeTakeFirst()
 
     if (existingActivity) {
-      const instance = new ActivityModel(null)
-      const result = await instance.mapWith(existingActivity)
-      return new ActivityModel(result as ActivityType)
+      return new ActivityModel(existingActivity as ActivityType)
     }
     else {
       return await this.create(newActivity)
@@ -1233,11 +1213,9 @@ export class ActivityModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedActivity)
-
       instance.hasSaved = true
 
-      return new ActivityModel(result as ActivityType)
+      return new ActivityModel(updatedActivity as ActivityType)
     }
     else {
       // If not found, create a new record
@@ -1272,11 +1250,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    const instance = new ActivityModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ActivityModel(result as ActivityType)
+    const data = new ActivityModel(model as ActivityType)
 
     return data
   }

@@ -168,9 +168,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -196,9 +194,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
@@ -219,9 +215,7 @@ export class ReleaseModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
@@ -250,7 +244,7 @@ export class ReleaseModel {
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       const instance = new ReleaseModel(model)
 
-      return new ReleaseModel(results)
+      return new ReleaseModel(model)
     }))
 
     return data
@@ -263,16 +257,12 @@ export class ReleaseModel {
   static async findOrFail(id: number): Promise<ReleaseModel> {
     const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new ReleaseModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
@@ -469,11 +459,7 @@ export class ReleaseModel {
     }
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
-      const instance = new ReleaseModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ReleaseModel(results)
+      return new ReleaseModel(model)
     }))
 
     return data
@@ -1030,9 +1016,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const instance = new ReleaseModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
@@ -1046,9 +1030,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const instance = new ReleaseModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
@@ -1073,9 +1055,7 @@ export class ReleaseModel {
       .executeTakeFirst()
 
     if (existingRelease) {
-      const instance = new ReleaseModel(null)
-      const result = await instance.mapWith(existingRelease)
-      return new ReleaseModel(result as ReleaseType)
+      return new ReleaseModel(existingRelease as ReleaseType)
     }
     else {
       return await this.create(newRelease)
@@ -1119,11 +1099,9 @@ export class ReleaseModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedRelease)
-
       instance.hasSaved = true
 
-      return new ReleaseModel(result as ReleaseType)
+      return new ReleaseModel(updatedRelease as ReleaseType)
     }
     else {
       // If not found, create a new record
@@ -1158,11 +1136,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const instance = new ReleaseModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ReleaseModel(result as ReleaseType)
+    const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }

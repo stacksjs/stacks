@@ -272,9 +272,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
@@ -300,9 +298,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
@@ -323,9 +319,7 @@ export class SubscriptionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
@@ -354,7 +348,7 @@ export class SubscriptionModel {
     const data = await Promise.all(models.map(async (model: SubscriptionType) => {
       const instance = new SubscriptionModel(model)
 
-      return new SubscriptionModel(results)
+      return new SubscriptionModel(model)
     }))
 
     return data
@@ -367,16 +361,12 @@ export class SubscriptionModel {
   static async findOrFail(id: number): Promise<SubscriptionModel> {
     const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new SubscriptionModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
@@ -573,11 +563,7 @@ export class SubscriptionModel {
     }
 
     const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
-      const instance = new SubscriptionModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriptionModel(results)
+      return new SubscriptionModel(model)
     }))
 
     return data
@@ -1210,9 +1196,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
@@ -1226,9 +1210,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
@@ -1253,9 +1235,7 @@ export class SubscriptionModel {
       .executeTakeFirst()
 
     if (existingSubscription) {
-      const instance = new SubscriptionModel(null)
-      const result = await instance.mapWith(existingSubscription)
-      return new SubscriptionModel(result as SubscriptionType)
+      return new SubscriptionModel(existingSubscription as SubscriptionType)
     }
     else {
       return await this.create(newSubscription)
@@ -1299,11 +1279,9 @@ export class SubscriptionModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedSubscription)
-
       instance.hasSaved = true
 
-      return new SubscriptionModel(result as SubscriptionType)
+      return new SubscriptionModel(updatedSubscription as SubscriptionType)
     }
     else {
       // If not found, create a new record
@@ -1338,11 +1316,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriptionModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriptionModel(result as SubscriptionType)
+    const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }

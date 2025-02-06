@@ -178,9 +178,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -206,9 +204,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
@@ -229,9 +225,7 @@ export class SubscriberEmailModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
@@ -260,7 +254,7 @@ export class SubscriberEmailModel {
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
       const instance = new SubscriberEmailModel(model)
 
-      return new SubscriberEmailModel(results)
+      return new SubscriberEmailModel(model)
     }))
 
     return data
@@ -273,8 +267,6 @@ export class SubscriberEmailModel {
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
     const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new SubscriberEmailModel(null)
-
     if (instance.softDeletes) {
       instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
@@ -284,9 +276,7 @@ export class SubscriberEmailModel {
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
@@ -487,11 +477,7 @@ export class SubscriberEmailModel {
     }
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
-      const instance = new SubscriberEmailModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriberEmailModel(results)
+      return new SubscriberEmailModel(model)
     }))
 
     return data
@@ -1059,9 +1045,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
@@ -1075,9 +1059,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-    const result = await instance.mapWith(model)
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
@@ -1102,9 +1084,7 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
 
     if (existingSubscriberEmail) {
-      const instance = new SubscriberEmailModel(null)
-      const result = await instance.mapWith(existingSubscriberEmail)
-      return new SubscriberEmailModel(result as SubscriberEmailType)
+      return new SubscriberEmailModel(existingSubscriberEmail as SubscriberEmailType)
     }
     else {
       return await this.create(newSubscriberEmail)
@@ -1148,11 +1128,9 @@ export class SubscriberEmailModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedSubscriberEmail)
-
       instance.hasSaved = true
 
-      return new SubscriberEmailModel(result as SubscriberEmailType)
+      return new SubscriberEmailModel(updatedSubscriberEmail as SubscriberEmailType)
     }
     else {
       // If not found, create a new record
@@ -1187,11 +1165,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }

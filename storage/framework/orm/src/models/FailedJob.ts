@@ -204,9 +204,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
@@ -232,9 +230,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
@@ -255,9 +251,7 @@ export class FailedJobModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
@@ -286,7 +280,7 @@ export class FailedJobModel {
     const data = await Promise.all(models.map(async (model: FailedJobType) => {
       const instance = new FailedJobModel(model)
 
-      return new FailedJobModel(results)
+      return new FailedJobModel(model)
     }))
 
     return data
@@ -299,16 +293,12 @@ export class FailedJobModel {
   static async findOrFail(id: number): Promise<FailedJobModel> {
     const model = await DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new FailedJobModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
@@ -505,11 +495,7 @@ export class FailedJobModel {
     }
 
     const data = await Promise.all(models.map(async (model: FailedJobModel) => {
-      const instance = new FailedJobModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new FailedJobModel(results)
+      return new FailedJobModel(model)
     }))
 
     return data
@@ -1098,9 +1084,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const instance = new FailedJobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
@@ -1114,9 +1098,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const instance = new FailedJobModel(null)
-    const result = await instance.mapWith(model)
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
@@ -1141,9 +1123,7 @@ export class FailedJobModel {
       .executeTakeFirst()
 
     if (existingFailedJob) {
-      const instance = new FailedJobModel(null)
-      const result = await instance.mapWith(existingFailedJob)
-      return new FailedJobModel(result as FailedJobType)
+      return new FailedJobModel(existingFailedJob as FailedJobType)
     }
     else {
       return await this.create(newFailedJob)
@@ -1187,11 +1167,9 @@ export class FailedJobModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedFailedJob)
-
       instance.hasSaved = true
 
-      return new FailedJobModel(result as FailedJobType)
+      return new FailedJobModel(updatedFailedJob as FailedJobType)
     }
     else {
       // If not found, create a new record
@@ -1226,11 +1204,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const instance = new FailedJobModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new FailedJobModel(result as FailedJobType)
+    const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }

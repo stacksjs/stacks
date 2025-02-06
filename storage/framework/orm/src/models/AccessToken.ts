@@ -208,9 +208,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -236,9 +234,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
@@ -259,9 +255,7 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
@@ -290,7 +284,7 @@ export class AccessTokenModel {
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       const instance = new AccessTokenModel(model)
 
-      return new AccessTokenModel(results)
+      return new AccessTokenModel(model)
     }))
 
     return data
@@ -303,16 +297,12 @@ export class AccessTokenModel {
   static async findOrFail(id: number): Promise<AccessTokenModel> {
     const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new AccessTokenModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No AccessTokenModel results for ${id}`)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
@@ -509,11 +499,7 @@ export class AccessTokenModel {
     }
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
-      const instance = new AccessTokenModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new AccessTokenModel(results)
+      return new AccessTokenModel(model)
     }))
 
     return data
@@ -1094,9 +1080,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(null)
-    const result = await instance.mapWith(model)
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
@@ -1110,9 +1094,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(null)
-    const result = await instance.mapWith(model)
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
@@ -1137,9 +1119,7 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     if (existingAccessToken) {
-      const instance = new AccessTokenModel(null)
-      const result = await instance.mapWith(existingAccessToken)
-      return new AccessTokenModel(result as AccessTokenType)
+      return new AccessTokenModel(existingAccessToken as AccessTokenType)
     }
     else {
       return await this.create(newAccessToken)
@@ -1183,11 +1163,9 @@ export class AccessTokenModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedAccessToken)
-
       instance.hasSaved = true
 
-      return new AccessTokenModel(result as AccessTokenType)
+      return new AccessTokenModel(updatedAccessToken as AccessTokenType)
     }
     else {
       // If not found, create a new record
@@ -1222,11 +1200,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const instance = new AccessTokenModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new AccessTokenModel(result as AccessTokenType)
+    const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }

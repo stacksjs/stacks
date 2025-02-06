@@ -971,9 +971,7 @@ export async function generateModelString(
           if (!model)
             return undefined
           
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
@@ -999,9 +997,7 @@ export async function generateModelString(
           if (! model)
             return undefined
   
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
         }
@@ -1022,9 +1018,7 @@ export async function generateModelString(
           if (model === undefined)
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
   
-          const result = await this.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
         }
@@ -1054,7 +1048,7 @@ export async function generateModelString(
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             const instance = new ${modelName}Model(model)
   
-            return new ${modelName}Model(results)
+            return new ${modelName}Model(model)
           }))
   
           return data
@@ -1068,8 +1062,6 @@ export async function generateModelString(
         static async findOrFail(id: number): Promise<${modelName}Model> {
           const model = await DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
-          const instance = new ${modelName}Model(null)
-  
           ${instanceSoftDeleteStatementsSelectFrom}
   
           if (model === undefined)
@@ -1077,9 +1069,7 @@ export async function generateModelString(
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
-          const result = await instance.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
         }
@@ -1277,11 +1267,7 @@ export async function generateModelString(
           }
   
           const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
-            const instance = new ${modelName}Model(model)
-  
-            const results = await instance.mapWith(model)
-  
-            return new ${modelName}Model(results)
+            return new ${modelName}Model(model)
           }))
           
           return data
@@ -1843,9 +1829,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          const instance = new ${modelName}Model(null)
-          const result = await instance.mapWith(model)
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
 
           return data
         }
@@ -1859,9 +1843,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          const instance = new ${modelName}Model(null)
-          const result = await instance.mapWith(model)
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
 
           return data
         }
@@ -1886,9 +1868,7 @@ export async function generateModelString(
             .executeTakeFirst()
   
           if (existing${modelName}) {
-            const instance = new ${modelName}Model(null)
-            const result = await instance.mapWith(existing${modelName})
-            return new ${modelName}Model(result as ${modelName}Type)
+            return new ${modelName}Model(existing${modelName} as ${modelName}Type)
           }
           else {
             return await this.create(new${modelName})
@@ -1932,11 +1912,9 @@ export async function generateModelString(
               throw new HttpError(500, 'Failed to fetch updated record')
             }
   
-            const result = await instance.mapWith(updated${modelName})
-
             instance.hasSaved = true
 
-            return new ${modelName}Model(result as ${modelName}Type)
+            return new ${modelName}Model(updated${modelName} as ${modelName}Type)
           } else {
             // If not found, create a new record
             return await this.create(new${modelName})
@@ -1970,11 +1948,7 @@ export async function generateModelString(
           if (!model)
             return undefined
   
-          const instance = new ${modelName}Model(null)
-  
-          const result = await instance.mapWith(model)
-  
-          const data = new ${modelName}Model(result as ${modelName}Type)
+          const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
         }

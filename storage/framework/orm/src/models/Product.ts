@@ -232,9 +232,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
@@ -260,9 +258,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
@@ -283,9 +279,7 @@ export class ProductModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ProductModel results found for query')
 
-    const result = await this.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
@@ -314,7 +308,7 @@ export class ProductModel {
     const data = await Promise.all(models.map(async (model: ProductType) => {
       const instance = new ProductModel(model)
 
-      return new ProductModel(results)
+      return new ProductModel(model)
     }))
 
     return data
@@ -327,16 +321,12 @@ export class ProductModel {
   static async findOrFail(id: number): Promise<ProductModel> {
     const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
-    const instance = new ProductModel(null)
-
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
@@ -533,11 +523,7 @@ export class ProductModel {
     }
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {
-      const instance = new ProductModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ProductModel(results)
+      return new ProductModel(model)
     }))
 
     return data
@@ -1146,9 +1132,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const instance = new ProductModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
@@ -1162,9 +1146,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const instance = new ProductModel(null)
-    const result = await instance.mapWith(model)
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
@@ -1189,9 +1171,7 @@ export class ProductModel {
       .executeTakeFirst()
 
     if (existingProduct) {
-      const instance = new ProductModel(null)
-      const result = await instance.mapWith(existingProduct)
-      return new ProductModel(result as ProductType)
+      return new ProductModel(existingProduct as ProductType)
     }
     else {
       return await this.create(newProduct)
@@ -1235,11 +1215,9 @@ export class ProductModel {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
-      const result = await instance.mapWith(updatedProduct)
-
       instance.hasSaved = true
 
-      return new ProductModel(result as ProductType)
+      return new ProductModel(updatedProduct as ProductType)
     }
     else {
       // If not found, create a new record
@@ -1274,11 +1252,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const instance = new ProductModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ProductModel(result as ProductType)
+    const data = new ProductModel(model as ProductType)
 
     return data
   }
