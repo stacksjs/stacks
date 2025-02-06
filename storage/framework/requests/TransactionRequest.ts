@@ -17,8 +17,8 @@ interface RequestDataTransaction {
   amount: number
   type: string
   provider_id: string
-  user_id: number
   payment_method_id: number
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -29,8 +29,8 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   public amount = 0
   public type = ''
   public provider_id = ''
-  public user_id = 0
   public payment_method_id = 0
+  public user_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

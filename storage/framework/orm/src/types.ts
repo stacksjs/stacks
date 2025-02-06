@@ -48,24 +48,24 @@ export interface PasskeysTable {
 }
 
 export interface Database {
+  activities: ActivitiesTable
   projects: ProjectsTable
+  failed_jobs: FailedJobsTable
   subscriber_emails: SubscriberEmailsTable
+  products: ProductsTable
   personal_access_tokens: PersonalAccessTokensTable
+  payment_methods: PaymentMethodsTable
   team_users: TeamUsersTable
   teams: TeamsTable
-  activities: ActivitiesTable
   subscribers: SubscribersTable
-  deployments: DeploymentsTable
-  releases: ReleasesTable
-  users: UsersTable
-  posts: PostsTable
-  failed_jobs: FailedJobsTable
-  products: ProductsTable
-  payment_methods: PaymentMethodsTable
   transactions: TransactionsTable
   jobs: JobsTable
   subscriptions: SubscriptionsTable
+  deployments: DeploymentsTable
   errors: ErrorsTable
+  releases: ReleasesTable
+  users: UsersTable
+  posts: PostsTable
   passkeys: PasskeysTable
   migrations: MigrationsTable
 }

@@ -67,18 +67,25 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
       for (const relationInstance of model[relation as keyof Model] as BaseRelation) {
         let relationModel = relationInstance.model
         let modelRelation: Model
+        let modelPath: string
         if (isString(relationInstance)) {
           relationModel = relationInstance
         }
 
         const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const modelPath = path.userModelsPath(`${modelName}.ts`)
+        const userModelPath = path.userModelsPath(`${modelName}.ts`)
+        const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
         const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
 
         if (fs.existsSync(modelRelationPath))
           modelRelation = (await import(modelRelationPath)).default as Model
         else
           modelRelation = (await import(coreModelRelationPath)).default as Model
+
+        if (fs.existsSync(userModelPath))
+          modelPath = userModelPath
+        else
+          modelPath = coreModelPath
 
         const modelRelationTable = getTableName(modelRelation, modelRelationPath)
         const table = getTableName(model, modelPath)
@@ -308,8 +315,6 @@ export async function writeModelNames(): Promise<void> {
       fileString += ' | '
     }
   }
-
-  fileString += ' | '
 
   // Ensure the directory exists
   const typesDir = path.dirname(path.typesPath(`src/model-names.ts`))
@@ -942,16 +947,6 @@ export async function generateKyselyTypes(): Promise<void> {
       text += `  ${pivotTable.table}: ${pivotFormatted}\n`
       pushedTables.push(pivotTable.table)
     }
-
-    const words = tableName.split('_')
-    const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`
-
-    text += `  ${tableName}: ${formattedTableName}\n`
-  }
-
-  for (const coreModelFile of coreModelFiles) {
-    const model = (await import(coreModelFile)).default as Model
-    const tableName = getTableName(model, coreModelFile)
 
     const words = tableName.split('_')
     const formattedTableName = `${words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')}Table`

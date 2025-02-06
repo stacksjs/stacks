@@ -50,7 +50,6 @@ export const manageCharge: ManageCharge = (() => {
     }
     catch (error) {
       log.error('Error creating refund:', error)
-      throw error
     }
   }
 
