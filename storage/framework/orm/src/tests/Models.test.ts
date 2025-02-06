@@ -978,4 +978,146 @@ describe('Models test', () => {
     expect(results.length).toBe(1)
     expect(results[0]?.name).toBe('Jane')
   })
+
+  it('should handle whereRef for column comparisons', async () => {
+    await User.create({
+      name: 'John Smith',
+      job_title: 'John Smith',  // Same as name
+      email: 'john@test.com',
+      password: '123456',
+    })
+    await User.create({
+      name: 'Jane Doe',
+      job_title: 'Developer',  // Different from name
+      email: 'jane@test.com',
+      password: '123456',
+    })
+
+    const results = await User.whereRef('name', '=', 'job_title').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('John Smith')
+  })
+
+  it('should handle whereRaw queries', async () => {
+    await User.create({
+      name: 'John',
+      job_title: 'Developer',
+      email: 'john@test.com',
+      password: '123456',
+    })
+
+    const results = await User.whereRaw('UPPER(name) = \'JOHN\'').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('John')
+  })
+
+  // it('should load multiple relations using with()', async () => {
+  //   const user = await User.create({
+  //     name: 'John',
+  //     job_title: 'Developer',
+  //     email: 'john@test.com',
+  //     password: '123456',
+  //   })
+
+  //   // Create some related records
+  //   await DB.instance.insertInto('posts').values([
+  //     { user_id: user.id, title: 'Post 1' }
+  //   ]).execute()
+
+  //   await DB.instance.insertInto('subscriptions').values([
+  //     { user_id: user.id, plan: 'basic' }
+  //   ]).execute()
+
+  //   const result = await User.with(['posts', 'subscriptions']).find(user.id!)
+  //   expect(result?.posts).toBeDefined()
+  //   expect(result?.subscriptions).toBeDefined()
+  // })
+
+  it('should handle whereRef for column comparisons', async () => {
+    await User.create({
+      name: 'John Smith',
+      job_title: 'John Smith',  // Same as name
+      email: 'john@test.com',
+      password: '123456',
+    })
+    await User.create({
+      name: 'Jane Doe',
+      job_title: 'Developer',  // Different from name
+      email: 'jane@test.com',
+      password: '123456',
+    })
+
+    const results = await User.whereRef('name', '=', 'job_title').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('John Smith')
+  })
+
+  it('should handle whereRaw queries', async () => {
+    await User.create({
+      name: 'John',
+      job_title: 'Developer',
+      email: 'john@test.com',
+      password: '123456',
+    })
+
+    const results = await User.whereRaw('UPPER(name) = \'JOHN\'').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('John')
+  })
+
+  // it('should load multiple relations using with()', async () => {
+  //   const user = await User.create({
+  //     name: 'John',
+  //     job_title: 'Developer',
+  //     email: 'john@test.com',
+  //     password: '123456',
+  //   })
+
+  //   // Create some related records
+  //   await DB.instance.insertInto('posts').values([
+  //     { user_id: user.id, title: 'Post 1' }
+  //   ]).execute()
+
+  //   await DB.instance.insertInto('subscriptions').values([
+  //     { user_id: user.id, plan: 'basic' }
+  //   ]).execute()
+
+  //   const result = await User.with(['posts', 'subscriptions']).find(user.id!)
+  //   expect(result?.posts).toBeDefined()
+  //   expect(result?.subscriptions).toBeDefined()
+  // })
+
+  it('should combine where and whereNull conditions', async () => {
+    await User.create({
+      name: 'John',
+      job_title: 'Developer',
+      email: 'john@test.com',
+      password: '123456',
+      updated_at: new Date()
+    })
+    await User.create({
+      name: 'Jane',
+      job_title: 'Designer',
+      email: 'jane@test.com',
+      password: '123456',
+    })
+
+    const results = await User.where('name', 'like', 'J%').whereNull('updated_at').get()
+    expect(results.length).toBe(1)
+    expect(results[0]?.name).toBe('Jane')
+  })
+
+  it('should handle select with specific columns', async () => {
+    await User.create({
+      name: 'John',
+      job_title: 'Developer',
+      email: 'john@test.com',
+      password: '123456',
+    })
+
+    const results = await User.select(['name', 'email']).first()
+    expect(results?.name).toBeDefined()
+    expect(results?.email).toBeDefined()
+    expect(results?.job_title).toBeUndefined()
+  })
 })
