@@ -1230,7 +1230,7 @@ export class DeploymentModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: DeploymentModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1239,16 +1239,16 @@ export class DeploymentModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('deployment_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: DeploymentModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.deployment_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

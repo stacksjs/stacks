@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: UserRequestType) {
     // const id = request.getParam('id')
 
-    const result = await User.get()
+    const result = await User.with(['posts']).get()
 
     return response.json(result)
   },

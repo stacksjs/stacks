@@ -1169,7 +1169,7 @@ export class ErrorModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: ErrorModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1178,16 +1178,16 @@ export class ErrorModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('error_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: ErrorModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.error_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

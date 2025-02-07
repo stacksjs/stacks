@@ -1,11 +1,9 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
-import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import AccessToken from './AccessToken'
@@ -1232,7 +1230,7 @@ export class TeamModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: TeamModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1241,16 +1239,16 @@ export class TeamModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('team_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: TeamModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.team_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

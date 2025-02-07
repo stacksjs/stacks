@@ -1911,7 +1911,7 @@ export async function generateModelString(
           }
         }
 
-        async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+        async loadRelationsHasMany(models: ${modelName}Model[]): Promise<void> {
           if (!models.length)
             return
 
@@ -1920,16 +1920,16 @@ export async function generateModelString(
           for (const relation of this.withRelations) {
             const relatedRecords = await DB.instance
               .selectFrom(relation)
-              .where('user_id', 'in', modelIds)
+              .where('${formattedModelName}_id', 'in', modelIds)
               .selectAll()
               .execute()
 
-            models.map((model: UserModel) => {
+            models.map((model: ${modelName}Model) => {
               const records = relatedRecords.filter((record: any) => {
                 return record.${formattedModelName}_id === model.id
               })
 
-              model[relation] = records
+              model[relation] = records.length === 1 ? records[0] : records
 
               return model
             })

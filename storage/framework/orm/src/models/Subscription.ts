@@ -1281,7 +1281,7 @@ export class SubscriptionModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: SubscriptionModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1290,16 +1290,16 @@ export class SubscriptionModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('subscription_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: SubscriptionModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.subscription_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

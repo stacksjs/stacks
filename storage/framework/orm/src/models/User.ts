@@ -1255,7 +1255,7 @@ export class UserModel {
           return record.user_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

@@ -1131,7 +1131,7 @@ export class PostModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: PostModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1140,16 +1140,16 @@ export class PostModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('post_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: PostModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.post_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

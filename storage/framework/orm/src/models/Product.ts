@@ -1217,7 +1217,7 @@ export class ProductModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: ProductModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1226,16 +1226,16 @@ export class ProductModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('product_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: ProductModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.product_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })

@@ -1130,7 +1130,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelationsHasMany(models: SubscriberEmailModel[]): Promise<void> {
     if (!models.length)
       return
 
@@ -1139,16 +1139,16 @@ export class SubscriberEmailModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('user_id', 'in', modelIds)
+        .where('subscriberemail_id', 'in', modelIds)
         .selectAll()
         .execute()
 
-      models.map((model: UserModel) => {
+      models.map((model: SubscriberEmailModel) => {
         const records = relatedRecords.filter((record: any) => {
           return record.subscriberemail_id === model.id
         })
 
-        model[relation] = records
+        model[relation] = records.length === 1 ? records[0] : records
 
         return model
       })
