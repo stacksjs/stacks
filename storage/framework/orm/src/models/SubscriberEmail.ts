@@ -258,12 +258,7 @@ export class SubscriberEmailModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    return await SubscriberEmailModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    const instance = new SubscriberEmailModel(null)
+  async applyFindOrFail(id: number): Promise<SubscriberEmailModel> {
     const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
@@ -275,11 +270,21 @@ export class SubscriberEmailModel {
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {

@@ -275,12 +275,7 @@ export class ProjectModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<ProjectModel> {
-    return await ProjectModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ProjectModel> {
-    const instance = new ProjectModel(null)
+  async applyFindOrFail(id: number): Promise<ProjectModel> {
     const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -288,11 +283,21 @@ export class ProjectModel {
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<ProjectModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<ProjectModel> {
+    const instance = new ProjectModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {

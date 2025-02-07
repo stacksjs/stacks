@@ -325,12 +325,7 @@ export class DeploymentModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<DeploymentModel> {
-    return await DeploymentModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
+  async applyFindOrFail(id: number): Promise<DeploymentModel> {
     const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -338,11 +333,21 @@ export class DeploymentModel {
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<DeploymentModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<DeploymentModel> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {

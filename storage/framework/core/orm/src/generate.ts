@@ -1050,12 +1050,7 @@ export async function generateModelString(
           return data
         }
 
-        async findOrFail(id: number): Promise<${modelName}Model> {
-          return await ${modelName}Model.findOrFail(id)
-        }
-  
-        static async findOrFail(id: number): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
+        async applyFindOrFail(id: number): Promise<${modelName}Model> {
           const model = await DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
           ${instanceSoftDeleteStatementsSelectFrom}
@@ -1065,11 +1060,21 @@ export async function generateModelString(
           
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-          await instance.loadRelations(model)
+          await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
+        }
+
+        async findOrFail(id: number): Promise<${modelName}Model> {
+          return await this.applyFindOrFail(id)
+        }
+  
+        static async findOrFail(id: number): Promise<${modelName}Model> {
+          const instance = new ${modelName}Model(null)
+          
+          return await instance.applyFindOrFail(id)
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {

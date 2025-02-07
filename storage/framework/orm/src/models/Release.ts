@@ -248,12 +248,7 @@ export class ReleaseModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<ReleaseModel> {
-    return await ReleaseModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
+  async applyFindOrFail(id: number): Promise<ReleaseModel> {
     const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -261,11 +256,21 @@ export class ReleaseModel {
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<ReleaseModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {

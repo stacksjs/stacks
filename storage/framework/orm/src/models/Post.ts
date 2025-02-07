@@ -270,12 +270,7 @@ export class PostModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<PostModel> {
-    return await PostModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<PostModel> {
-    const instance = new PostModel(null)
+  async applyFindOrFail(id: number): Promise<PostModel> {
     const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -283,11 +278,21 @@ export class PostModel {
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<PostModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<PostModel> {
+    const instance = new PostModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {

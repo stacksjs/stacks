@@ -321,12 +321,7 @@ export class TransactionModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<TransactionModel> {
-    return await TransactionModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
+  async applyFindOrFail(id: number): Promise<TransactionModel> {
     const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -334,11 +329,21 @@ export class TransactionModel {
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<TransactionModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<TransactionModel> {
+    const instance = new TransactionModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {

@@ -303,12 +303,7 @@ export class ActivityModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<ActivityModel> {
-    return await ActivityModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ActivityModel> {
-    const instance = new ActivityModel(null)
+  async applyFindOrFail(id: number): Promise<ActivityModel> {
     const model = await DB.instance.selectFrom('activities').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
@@ -320,11 +315,21 @@ export class ActivityModel {
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<ActivityModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<ActivityModel> {
+    const instance = new ActivityModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ActivityModel[]> {

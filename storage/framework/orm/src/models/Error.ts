@@ -284,12 +284,7 @@ export class ErrorModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<ErrorModel> {
-    return await ErrorModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ErrorModel> {
-    const instance = new ErrorModel(null)
+  async applyFindOrFail(id: number): Promise<ErrorModel> {
     const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -297,11 +292,21 @@ export class ErrorModel {
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<ErrorModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {

@@ -284,12 +284,7 @@ export class FailedJobModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<FailedJobModel> {
-    return await FailedJobModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
+  async applyFindOrFail(id: number): Promise<FailedJobModel> {
     const model = await DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -297,11 +292,21 @@ export class FailedJobModel {
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<FailedJobModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<FailedJobModel> {
+    const instance = new FailedJobModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {

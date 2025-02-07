@@ -334,12 +334,7 @@ export class PaymentMethodModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<PaymentMethodModel> {
-    return await PaymentMethodModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<PaymentMethodModel> {
-    const instance = new PaymentMethodModel(null)
+  async applyFindOrFail(id: number): Promise<PaymentMethodModel> {
     const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -347,11 +342,21 @@ export class PaymentMethodModel {
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<PaymentMethodModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<PaymentMethodModel> {
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {

@@ -321,12 +321,7 @@ export class TeamModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<TeamModel> {
-    return await TeamModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<TeamModel> {
-    const instance = new TeamModel(null)
+  async applyFindOrFail(id: number): Promise<TeamModel> {
     const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -334,11 +329,21 @@ export class TeamModel {
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<TeamModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<TeamModel> {
+    const instance = new TeamModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {

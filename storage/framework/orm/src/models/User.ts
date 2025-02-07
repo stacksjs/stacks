@@ -346,12 +346,7 @@ export class UserModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<UserModel> {
-    return await UserModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<UserModel> {
-    const instance = new UserModel(null)
+  async applyFindOrFail(id: number): Promise<UserModel> {
     const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -359,11 +354,21 @@ export class UserModel {
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<UserModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<UserModel> {
+    const instance = new UserModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {

@@ -288,12 +288,7 @@ export class AccessTokenModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<AccessTokenModel> {
-    return await AccessTokenModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<AccessTokenModel> {
-    const instance = new AccessTokenModel(null)
+  async applyFindOrFail(id: number): Promise<AccessTokenModel> {
     const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -301,11 +296,21 @@ export class AccessTokenModel {
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<AccessTokenModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<AccessTokenModel> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {

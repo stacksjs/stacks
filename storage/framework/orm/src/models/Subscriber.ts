@@ -248,12 +248,7 @@ export class SubscriberModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<SubscriberModel> {
-    return await SubscriberModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
+  async applyFindOrFail(id: number): Promise<SubscriberModel> {
     const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -261,11 +256,21 @@ export class SubscriberModel {
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<SubscriberModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<SubscriberModel> {
+    const instance = new SubscriberModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {

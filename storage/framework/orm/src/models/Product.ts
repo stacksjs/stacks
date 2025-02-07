@@ -312,12 +312,7 @@ export class ProductModel {
     return data
   }
 
-  async findOrFail(id: number): Promise<ProductModel> {
-    return await ProductModel.findOrFail(id)
-  }
-
-  static async findOrFail(id: number): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+  async applyFindOrFail(id: number): Promise<ProductModel> {
     const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
@@ -325,11 +320,21 @@ export class ProductModel {
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    await instance.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
 
     return data
+  }
+
+  async findOrFail(id: number): Promise<ProductModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<ProductModel> {
+    const instance = new ProductModel(null)
+
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
