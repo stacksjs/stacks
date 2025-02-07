@@ -47,8 +47,8 @@ export class ReleaseModel {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
-  protected attributes: Partial<ReleaseType> = {}
-  protected originalAttributes: Partial<ReleaseType> = {}
+  protected attributes: Partial<ReleaseJsonResponse> = {}
+  protected originalAttributes: Partial<ReleaseJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

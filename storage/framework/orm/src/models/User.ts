@@ -81,8 +81,8 @@ export class UserModel {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
   private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
-  protected attributes: Partial<UserType> = {}
-  protected originalAttributes: Partial<UserType> = {}
+  protected attributes: Partial<UserJsonResponse> = {}
+  protected originalAttributes: Partial<UserJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

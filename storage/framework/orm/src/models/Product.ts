@@ -55,8 +55,8 @@ export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
-  protected attributes: Partial<ProductType> = {}
-  protected originalAttributes: Partial<ProductType> = {}
+  protected attributes: Partial<ProductJsonResponse> = {}
+  protected originalAttributes: Partial<ProductJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

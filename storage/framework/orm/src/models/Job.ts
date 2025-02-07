@@ -51,8 +51,8 @@ export class JobModel {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
-  protected attributes: Partial<JobType> = {}
-  protected originalAttributes: Partial<JobType> = {}
+  protected attributes: Partial<JobJsonResponse> = {}
+  protected originalAttributes: Partial<JobJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

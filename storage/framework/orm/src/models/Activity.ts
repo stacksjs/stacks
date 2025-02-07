@@ -54,8 +54,8 @@ export class ActivityModel {
   private readonly hidden: Array<keyof ActivityJsonResponse> = []
   private readonly fillable: Array<keyof ActivityJsonResponse> = ['title', 'description', 'address', 'latlng', 'info_source', 'were_detained', 'uuid']
   private readonly guarded: Array<keyof ActivityJsonResponse> = []
-  protected attributes: Partial<ActivityType> = {}
-  protected originalAttributes: Partial<ActivityType> = {}
+  protected attributes: Partial<ActivityJsonResponse> = {}
+  protected originalAttributes: Partial<ActivityJsonResponse> = {}
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]

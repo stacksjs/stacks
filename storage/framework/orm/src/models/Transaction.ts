@@ -64,8 +64,8 @@ export class TransactionModel {
   private readonly hidden: Array<keyof TransactionJsonResponse> = []
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'payment_method_id']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
-  protected attributes: Partial<TransactionType> = {}
-  protected originalAttributes: Partial<TransactionType> = {}
+  protected attributes: Partial<TransactionJsonResponse> = {}
+  protected originalAttributes: Partial<TransactionJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

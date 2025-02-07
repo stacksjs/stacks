@@ -63,8 +63,8 @@ export class SubscriptionModel {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
-  protected attributes: Partial<SubscriptionType> = {}
-  protected originalAttributes: Partial<SubscriptionType> = {}
+  protected attributes: Partial<SubscriptionJsonResponse> = {}
+  protected originalAttributes: Partial<SubscriptionJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

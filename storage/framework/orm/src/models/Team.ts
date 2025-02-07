@@ -60,8 +60,8 @@ export class TeamModel {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
-  protected attributes: Partial<TeamType> = {}
-  protected originalAttributes: Partial<TeamType> = {}
+  protected attributes: Partial<TeamJsonResponse> = {}
+  protected originalAttributes: Partial<TeamJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

@@ -51,8 +51,8 @@ export class FailedJobModel {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
-  protected attributes: Partial<FailedJobType> = {}
-  protected originalAttributes: Partial<FailedJobType> = {}
+  protected attributes: Partial<FailedJobJsonResponse> = {}
+  protected originalAttributes: Partial<FailedJobJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

@@ -869,8 +869,8 @@ export async function generateModelString(
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
-        protected attributes: Partial<${modelName}Type> = {}
-        protected originalAttributes: Partial<${modelName}Type> = {}
+        protected attributes: Partial<${modelName}JsonResponse> = {}
+        protected originalAttributes: Partial<${modelName}JsonResponse> = {}
         ${privateSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]

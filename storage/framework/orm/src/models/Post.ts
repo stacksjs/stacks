@@ -53,8 +53,8 @@ export class PostModel {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
-  protected attributes: Partial<PostType> = {}
-  protected originalAttributes: Partial<PostType> = {}
+  protected attributes: Partial<PostJsonResponse> = {}
+  protected originalAttributes: Partial<PostJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]

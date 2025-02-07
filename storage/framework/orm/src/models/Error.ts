@@ -51,8 +51,8 @@ export class ErrorModel {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
-  protected attributes: Partial<ErrorType> = {}
-  protected originalAttributes: Partial<ErrorType> = {}
+  protected attributes: Partial<ErrorJsonResponse> = {}
+  protected originalAttributes: Partial<ErrorJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
