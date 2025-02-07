@@ -1,6 +1,7 @@
 import type {
   Model,
   ModelElement,
+  RelationConfig,
 } from '@stacksjs/types'
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
@@ -21,6 +22,12 @@ function getUpvoteForeignKey(model: Model, modelName: string): string {
   return typeof traits?.likeable === 'object'
     ? traits.likeable.foreignKey || defaultForeignKey
     : defaultForeignKey
+}
+
+export async function findRelation(model: Model, modelName: string, relationName: string): Promise<RelationConfig | undefined> {
+  const relations = await getRelations(model, modelName)
+
+  return relations.find(relationStr => relationStr.relationName === relationName)
 }
 
 export async function generateModelString(
@@ -1901,6 +1908,31 @@ export async function generateModelString(
           } else {
             // If not found, create a new record
             return await this.create(new${modelName})
+          }
+        }
+
+        async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+          if (!models.length)
+            return
+
+          const modelIds = models.map(model => model.id)
+
+          for (const relation of this.withRelations) {
+            const relatedRecords = await DB.instance
+              .selectFrom(relation)
+              .where('user_id', 'in', modelIds)
+              .selectAll()
+              .execute()
+
+            models.map((model: UserModel) => {
+              const records = relatedRecords.filter((record: any) => {
+                return record.${formattedModelName}_id === model.id
+              })
+
+              model[relation] = records
+
+              return model
+            })
           }
         }
   

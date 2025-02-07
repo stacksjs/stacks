@@ -1152,6 +1152,31 @@ export class ProjectModel {
     }
   }
 
+  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+    if (!models.length)
+      return
+
+    const modelIds = models.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('user_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      models.map((model: UserModel) => {
+        const records = relatedRecords.filter((record: any) => {
+          return record.project_id === model.id
+        })
+
+        model[relation] = records
+
+        return model
+      })
+    }
+  }
+
   with(relations: string[]): ProjectModel {
     this.withRelations = relations
 

@@ -1,9 +1,11 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { AccessTokenModel } from './AccessToken'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import AccessToken from './AccessToken'
@@ -1227,6 +1229,31 @@ export class TeamModel {
     else {
       // If not found, create a new record
       return await this.create(newTeam)
+    }
+  }
+
+  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+    if (!models.length)
+      return
+
+    const modelIds = models.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('user_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      models.map((model: UserModel) => {
+        const records = relatedRecords.filter((record: any) => {
+          return record.team_id === model.id
+        })
+
+        model[relation] = records
+
+        return model
+      })
     }
   }
 
