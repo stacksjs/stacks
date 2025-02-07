@@ -1196,10 +1196,9 @@ export class FailedJobModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: FailedJobModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.failedjob__id === model.id
+            return record.failedjob_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1207,9 +1206,8 @@ export class FailedJobModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.failedjob__id === models.id
+          return record.failedjob_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

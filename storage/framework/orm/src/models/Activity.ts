@@ -1242,10 +1242,9 @@ export class ActivityModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: ActivityModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.activity__id === model.id
+            return record.activity_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1253,9 +1252,8 @@ export class ActivityModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.activity__id === models.id
+          return record.activity_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

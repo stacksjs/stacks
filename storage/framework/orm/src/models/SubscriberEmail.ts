@@ -1157,10 +1157,9 @@ export class SubscriberEmailModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: SubscriberEmailModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.subscriberemail__id === model.id
+            return record.subscriberemail_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1168,9 +1167,8 @@ export class SubscriberEmailModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.subscriberemail__id === models.id
+          return record.subscriberemail_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

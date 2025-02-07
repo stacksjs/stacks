@@ -1192,10 +1192,9 @@ export class AccessTokenModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: AccessTokenModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.accesstoken__id === model.id
+            return record.accesstoken_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1203,9 +1202,8 @@ export class AccessTokenModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.accesstoken__id === models.id
+          return record.accesstoken_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

@@ -1179,10 +1179,9 @@ export class ProjectModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: ProjectModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.project__id === model.id
+            return record.project_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1190,9 +1189,8 @@ export class ProjectModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.project__id === models.id
+          return record.project_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

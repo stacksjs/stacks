@@ -1244,10 +1244,9 @@ export class ProductModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: ProductModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.product__id === model.id
+            return record.product_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1255,9 +1254,8 @@ export class ProductModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.product__id === models.id
+          return record.product_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

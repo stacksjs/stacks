@@ -1158,10 +1158,9 @@ export class PostModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: PostModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.post__id === model.id
+            return record.post_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1169,9 +1168,8 @@ export class PostModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.post__id === models.id
+          return record.post_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

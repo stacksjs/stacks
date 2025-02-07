@@ -1257,10 +1257,9 @@ export class DeploymentModel {
         .execute()
 
       if (Array.isArray(models)) {
-        // If array, map through all models
         models.map((model: DeploymentModel) => {
           const records = relatedRecords.filter((record: any) => {
-            return record.deployment__id === model.id
+            return record.deployment_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1268,9 +1267,8 @@ export class DeploymentModel {
         })
       }
       else {
-        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.deployment__id === models.id
+          return record.deployment_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records

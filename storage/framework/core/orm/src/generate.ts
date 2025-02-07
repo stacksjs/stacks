@@ -1936,19 +1936,17 @@ export async function generateModelString(
               .execute()
         
             if (Array.isArray(models)) {
-              // If array, map through all models
               models.map((model: ${modelName}Model) => {
                 const records = relatedRecords.filter((record: any) => {
-                  return record.${formattedModelName}__id === model.id
+                  return record.${formattedModelName}_id === model.id
                 })
 
                 model[relation] = records.length === 1 ? records[0] : records
                 return model
               })
             } else {
-              // If single model, just filter once
               const records = relatedRecords.filter((record: any) => {
-                return record.${formattedModelName}__id === models.id
+                return record.${formattedModelName}_id === models.id
               })
         
               models[relation] = records.length === 1 ? records[0] : records
