@@ -7,9 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    'Carbon:cafe': typeof import('~icons/carbon/cafe')['default']
-    'Carbon:logoTwitter': typeof import('~icons/carbon/logo-twitter')['default']
-    'Mdi:heart': typeof import('~icons/mdi/heart')['default']
+    Dialog: typeof import('./src/components/Dialog.vue')['default']
+    DialogPanel: typeof import('./src/components/DialogPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
