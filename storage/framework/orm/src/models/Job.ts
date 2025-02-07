@@ -232,7 +232,8 @@ export class JobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 
@@ -254,6 +255,9 @@ export class JobModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No JobModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 

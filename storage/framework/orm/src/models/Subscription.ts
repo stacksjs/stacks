@@ -300,7 +300,8 @@ export class SubscriptionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -322,6 +323,9 @@ export class SubscriptionModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 

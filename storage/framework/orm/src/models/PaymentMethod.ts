@@ -282,7 +282,8 @@ export class PaymentMethodModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -304,6 +305,9 @@ export class PaymentMethodModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 

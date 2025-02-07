@@ -236,7 +236,8 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -258,6 +259,9 @@ export class AccessTokenModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 

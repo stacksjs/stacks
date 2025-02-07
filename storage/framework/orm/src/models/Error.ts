@@ -232,7 +232,8 @@ export class ErrorModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -254,6 +255,9 @@ export class ErrorModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 

@@ -196,7 +196,8 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -218,6 +219,9 @@ export class ReleaseModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 

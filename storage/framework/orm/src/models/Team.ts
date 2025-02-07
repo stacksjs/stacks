@@ -269,7 +269,8 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -291,6 +292,9 @@ export class TeamModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TeamModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 

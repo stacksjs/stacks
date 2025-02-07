@@ -232,7 +232,8 @@ export class FailedJobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -254,6 +255,9 @@ export class FailedJobModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 

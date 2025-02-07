@@ -269,7 +269,8 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -291,6 +292,9 @@ export class TransactionModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 

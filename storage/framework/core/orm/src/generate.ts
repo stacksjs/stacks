@@ -998,7 +998,8 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().executeTakeFirst()
           }
 
-          await this.loadRelations(model)
+          if (model)
+            await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1021,6 +1022,9 @@ export async function generateModelString(
           if (model === undefined)
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
           
+          if (model)
+            await this.loadRelations(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1038,14 +1042,13 @@ export async function generateModelString(
   
         static async all(): Promise<${modelName}Model[]> {
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
-  
+
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             return new ${modelName}Model(model)
           }))
   
           return data
         }
-
 
         async findOrFail(id: number): Promise<${modelName}Model> {
           return await ${modelName}Model.findOrFail(id)

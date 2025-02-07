@@ -294,7 +294,8 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 
@@ -316,6 +317,9 @@ export class UserModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No UserModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 

@@ -251,7 +251,8 @@ export class ActivityModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    await this.loadRelations(model)
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -273,6 +274,9 @@ export class ActivityModel {
 
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
