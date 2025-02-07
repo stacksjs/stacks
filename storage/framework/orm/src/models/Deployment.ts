@@ -309,20 +309,10 @@ export class DeploymentModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<DeploymentType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<DeploymentModel[]> {
     const models = await DB.instance.selectFrom('deployments').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
-      const instance = new DeploymentModel(model)
-
       return new DeploymentModel(model)
     }))
 

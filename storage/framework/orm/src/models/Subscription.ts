@@ -336,20 +336,10 @@ export class SubscriptionModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<SubscriptionType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<SubscriptionModel[]> {
     const models = await DB.instance.selectFrom('subscriptions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriptionType) => {
-      const instance = new SubscriptionModel(model)
-
       return new SubscriptionModel(model)
     }))
 

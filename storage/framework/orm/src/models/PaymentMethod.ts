@@ -318,26 +318,10 @@ export class PaymentMethodModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<PaymentMethodType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('payment_method_id', '=', 'payment_methods.id')
-            .selectAll()
-        })
-    })
-
-    return this
-  }
-
   static async all(): Promise<PaymentMethodModel[]> {
     const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
-      const instance = new PaymentMethodModel(model)
-
       return new PaymentMethodModel(model)
     }))
 

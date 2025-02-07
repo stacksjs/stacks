@@ -242,20 +242,10 @@ export class SubscriberEmailModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<SubscriberEmailType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<SubscriberEmailModel[]> {
     const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
-      const instance = new SubscriberEmailModel(model)
-
       return new SubscriberEmailModel(model)
     }))
 

@@ -1,7 +1,7 @@
 import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
-import User from '../../orm/src/models/User'
 
 export default new Action({
   name: 'User Show',
@@ -10,7 +10,13 @@ export default new Action({
   async handle(request: UserRequestType) {
     // const id = request.getParam('id')
 
-    const result = await User.find(1)
+    const result = await db
+      .with('posts', db => db
+        .selectFrom('posts')
+        .selectAll())
+      .selectFrom('users')
+      .selectAll()
+      .execute()
 
     return response.json(result)
   },

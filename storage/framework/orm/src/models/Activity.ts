@@ -287,20 +287,10 @@ export class ActivityModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<ActivityType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<ActivityModel[]> {
     const models = await DB.instance.selectFrom('activities').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ActivityType) => {
-      const instance = new ActivityModel(model)
-
       return new ActivityModel(model)
     }))
 

@@ -305,26 +305,10 @@ export class TeamModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<TeamType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('team_id', '=', 'teams.id')
-            .selectAll()
-        })
-    })
-
-    return this
-  }
-
   static async all(): Promise<TeamModel[]> {
     const models = await DB.instance.selectFrom('teams').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
-      const instance = new TeamModel(model)
-
       return new TeamModel(model)
     }))
 

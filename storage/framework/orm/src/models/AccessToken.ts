@@ -272,20 +272,10 @@ export class AccessTokenModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<AccessTokenType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<AccessTokenModel[]> {
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
-      const instance = new AccessTokenModel(model)
-
       return new AccessTokenModel(model)
     }))
 

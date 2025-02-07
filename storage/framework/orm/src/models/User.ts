@@ -330,44 +330,10 @@ export class UserModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<UserType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('user_id', '=', 'users.id')
-            .selectAll()
-        })
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('user_id', '=', 'users.id')
-            .selectAll()
-        })
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('user_id', '=', 'users.id')
-            .selectAll()
-        })
-
-        .with(relation, (db: any) => {
-          db.selectFrom(relation)
-            .whereRef('user_id', '=', 'users.id')
-            .selectAll()
-        })
-    })
-
-    return this
-  }
-
   static async all(): Promise<UserModel[]> {
     const models = await DB.instance.selectFrom('users').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: UserType) => {
-      const instance = new UserModel(model)
-
       return new UserModel(model)
     }))
 

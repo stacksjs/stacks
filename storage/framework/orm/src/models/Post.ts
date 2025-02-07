@@ -254,20 +254,10 @@ export class PostModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<PostType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<PostModel[]> {
     const models = await DB.instance.selectFrom('posts').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: PostType) => {
-      const instance = new PostModel(model)
-
       return new PostModel(model)
     }))
 

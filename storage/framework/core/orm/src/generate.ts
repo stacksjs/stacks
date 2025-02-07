@@ -40,7 +40,6 @@ export async function generateModelString(
   let fieldString = ''
   let getFields = ''
   let setFields = ''
-  let mapWithStatements = ''
   // const constructorFields = ''
   let jsonFields = '{\n'
   let jsonRelations = ''
@@ -193,13 +192,6 @@ export async function generateModelString(
 
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
 
-      mapWithStatements += ` 
-       .with(relation, (db: any) => {
-          db.selectFrom(relation)
-              .whereRef('${foreignKeyRelation}', '=', '${tableName}.id')
-              .selectAll()
-        })
-      `
       relationMethods += `
         async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
           if (this.id === undefined)
@@ -1034,22 +1026,11 @@ export async function generateModelString(
 
           return await instance.applyFirstOrFail()
         }
-
-        async mapWith(): Promise<${modelName}Type> {
-          this.withRelations.forEach((relation: string) => {
-            this.selectFromQuery = this.selectFromQuery
-            ${mapWithStatements}
-          })
-
-          return this
-      }
   
         static async all(): Promise<${modelName}Model[]> {
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
   
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
-            const instance = new ${modelName}Model(model)
-  
             return new ${modelName}Model(model)
           }))
   

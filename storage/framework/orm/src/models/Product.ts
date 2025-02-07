@@ -296,20 +296,10 @@ export class ProductModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<ProductType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<ProductModel[]> {
     const models = await DB.instance.selectFrom('products').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
-      const instance = new ProductModel(model)
-
       return new ProductModel(model)
     }))
 

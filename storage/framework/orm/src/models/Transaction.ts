@@ -305,20 +305,10 @@ export class TransactionModel {
     return await instance.applyFirstOrFail()
   }
 
-  async mapWith(): Promise<TransactionType> {
-    this.withRelations.forEach((relation: string) => {
-      this.selectFromQuery = this.selectFromQuery
-    })
-
-    return this
-  }
-
   static async all(): Promise<TransactionModel[]> {
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
-      const instance = new TransactionModel(model)
-
       return new TransactionModel(model)
     }))
 
