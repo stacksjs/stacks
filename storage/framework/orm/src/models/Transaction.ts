@@ -175,7 +175,7 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TransactionType): Partial<TransactionType> | any {
+  getOriginal(column?: keyof TransactionType): Partial<TransactionType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -269,6 +269,8 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new TransactionModel(model as TransactionType)
 
     return data
@@ -320,12 +322,15 @@ export class TransactionModel {
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
+    const instance = new TransactionModel(null)
     const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No TransactionModel results for ${id}`)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -339,11 +344,14 @@ export class TransactionModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): TransactionModel {
     return TransactionModel.skip(count)
   }
@@ -522,6 +530,8 @@ export class TransactionModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {
       return new TransactionModel(model)
@@ -1210,7 +1220,7 @@ export class TransactionModel {
     }
   }
 
-  async loadRelationsHasMany(models: TransactionModel[]): Promise<void> {
+  async loadRelations(models: TransactionModel[]): Promise<void> {
     if (!models.length)
       return
 

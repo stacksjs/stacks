@@ -102,7 +102,7 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ReleaseType): Partial<ReleaseType> | any {
+  getOriginal(column?: keyof ReleaseType): Partial<ReleaseType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -196,6 +196,8 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
@@ -247,12 +249,15 @@ export class ReleaseModel {
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
     const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ReleaseModel results for ${id}`)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -266,11 +271,14 @@ export class ReleaseModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): ReleaseModel {
     return ReleaseModel.skip(count)
   }
@@ -449,6 +457,8 @@ export class ReleaseModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
       return new ReleaseModel(model)
@@ -1101,7 +1111,7 @@ export class ReleaseModel {
     }
   }
 
-  async loadRelationsHasMany(models: ReleaseModel[]): Promise<void> {
+  async loadRelations(models: ReleaseModel[]): Promise<void> {
     if (!models.length)
       return
 

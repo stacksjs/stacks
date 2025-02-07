@@ -102,7 +102,7 @@ export class SubscriberModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriberType): Partial<SubscriberType> | any {
+  getOriginal(column?: keyof SubscriberType): Partial<SubscriberType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -196,6 +196,8 @@ export class SubscriberModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new SubscriberModel(model as SubscriberType)
 
     return data
@@ -247,12 +249,15 @@ export class SubscriberModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
+    const instance = new SubscriberModel(null)
     const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -266,11 +271,14 @@ export class SubscriberModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): SubscriberModel {
     return SubscriberModel.skip(count)
   }
@@ -449,6 +457,8 @@ export class SubscriberModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberModel) => {
       return new SubscriberModel(model)
@@ -1101,7 +1111,7 @@ export class SubscriberModel {
     }
   }
 
-  async loadRelationsHasMany(models: SubscriberModel[]): Promise<void> {
+  async loadRelations(models: SubscriberModel[]): Promise<void> {
     if (!models.length)
       return
 

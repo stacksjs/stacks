@@ -142,7 +142,7 @@ export class AccessTokenModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof AccessTokenType): Partial<AccessTokenType> | any {
+  getOriginal(column?: keyof AccessTokenType): Partial<AccessTokenType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -236,6 +236,8 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
@@ -287,12 +289,15 @@ export class AccessTokenModel {
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {
+    const instance = new AccessTokenModel(null)
     const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No AccessTokenModel results for ${id}`)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -306,11 +311,14 @@ export class AccessTokenModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): AccessTokenModel {
     return AccessTokenModel.skip(count)
   }
@@ -489,6 +497,8 @@ export class AccessTokenModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
       return new AccessTokenModel(model)
@@ -1165,7 +1175,7 @@ export class AccessTokenModel {
     }
   }
 
-  async loadRelationsHasMany(models: AccessTokenModel[]): Promise<void> {
+  async loadRelations(models: AccessTokenModel[]): Promise<void> {
     if (!models.length)
       return
 

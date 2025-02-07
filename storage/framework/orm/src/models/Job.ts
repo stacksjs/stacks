@@ -138,7 +138,7 @@ export class JobModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof JobType): Partial<JobType> | any {
+  getOriginal(column?: keyof JobType): Partial<JobType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -232,6 +232,8 @@ export class JobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new JobModel(model as JobType)
 
     return data
@@ -283,12 +285,15 @@ export class JobModel {
   }
 
   static async findOrFail(id: number): Promise<JobModel> {
+    const instance = new JobModel(null)
     const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No JobModel results for ${id}`)
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 
@@ -302,11 +307,14 @@ export class JobModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): JobModel {
     return JobModel.skip(count)
   }
@@ -485,6 +493,8 @@ export class JobModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: JobModel) => {
       return new JobModel(model)
@@ -1169,7 +1179,7 @@ export class JobModel {
     }
   }
 
-  async loadRelationsHasMany(models: JobModel[]): Promise<void> {
+  async loadRelations(models: JobModel[]): Promise<void> {
     if (!models.length)
       return
 

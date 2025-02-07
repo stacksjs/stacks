@@ -188,7 +188,7 @@ export class PaymentMethodModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PaymentMethodType): Partial<PaymentMethodType> | any {
+  getOriginal(column?: keyof PaymentMethodType): Partial<PaymentMethodType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -282,6 +282,8 @@ export class PaymentMethodModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
@@ -333,12 +335,15 @@ export class PaymentMethodModel {
   }
 
   static async findOrFail(id: number): Promise<PaymentMethodModel> {
+    const instance = new PaymentMethodModel(null)
     const model = await DB.instance.selectFrom('payment_methods').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PaymentMethodModel results for ${id}`)
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -352,11 +357,14 @@ export class PaymentMethodModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): PaymentMethodModel {
     return PaymentMethodModel.skip(count)
   }
@@ -535,6 +543,8 @@ export class PaymentMethodModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
       return new PaymentMethodModel(model)
@@ -1239,7 +1249,7 @@ export class PaymentMethodModel {
     }
   }
 
-  async loadRelationsHasMany(models: PaymentMethodModel[]): Promise<void> {
+  async loadRelations(models: PaymentMethodModel[]): Promise<void> {
     if (!models.length)
       return
 

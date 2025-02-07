@@ -138,7 +138,7 @@ export class FailedJobModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof FailedJobType): Partial<FailedJobType> | any {
+  getOriginal(column?: keyof FailedJobType): Partial<FailedJobType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -232,6 +232,8 @@ export class FailedJobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new FailedJobModel(model as FailedJobType)
 
     return data
@@ -283,12 +285,15 @@ export class FailedJobModel {
   }
 
   static async findOrFail(id: number): Promise<FailedJobModel> {
+    const instance = new FailedJobModel(null)
     const model = await DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -302,11 +307,14 @@ export class FailedJobModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): FailedJobModel {
     return FailedJobModel.skip(count)
   }
@@ -485,6 +493,8 @@ export class FailedJobModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: FailedJobModel) => {
       return new FailedJobModel(model)
@@ -1169,7 +1179,7 @@ export class FailedJobModel {
     }
   }
 
-  async loadRelationsHasMany(models: FailedJobModel[]): Promise<void> {
+  async loadRelations(models: FailedJobModel[]): Promise<void> {
     if (!models.length)
       return
 

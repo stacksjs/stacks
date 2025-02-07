@@ -175,7 +175,7 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TeamType): Partial<TeamType> | any {
+  getOriginal(column?: keyof TeamType): Partial<TeamType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -269,6 +269,8 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new TeamModel(model as TeamType)
 
     return data
@@ -320,12 +322,15 @@ export class TeamModel {
   }
 
   static async findOrFail(id: number): Promise<TeamModel> {
+    const instance = new TeamModel(null)
     const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No TeamModel results for ${id}`)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -339,11 +344,14 @@ export class TeamModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): TeamModel {
     return TeamModel.skip(count)
   }
@@ -522,6 +530,8 @@ export class TeamModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {
       return new TeamModel(model)
@@ -1230,7 +1240,7 @@ export class TeamModel {
     }
   }
 
-  async loadRelationsHasMany(models: TeamModel[]): Promise<void> {
+  async loadRelations(models: TeamModel[]): Promise<void> {
     if (!models.length)
       return
 

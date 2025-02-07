@@ -138,7 +138,7 @@ export class ErrorModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ErrorType): Partial<ErrorType> | any {
+  getOriginal(column?: keyof ErrorType): Partial<ErrorType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -232,6 +232,8 @@ export class ErrorModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new ErrorModel(model as ErrorType)
 
     return data
@@ -283,12 +285,15 @@ export class ErrorModel {
   }
 
   static async findOrFail(id: number): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
     const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ErrorModel results for ${id}`)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -302,11 +307,14 @@ export class ErrorModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): ErrorModel {
     return ErrorModel.skip(count)
   }
@@ -485,6 +493,8 @@ export class ErrorModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ErrorModel) => {
       return new ErrorModel(model)
@@ -1169,7 +1179,7 @@ export class ErrorModel {
     }
   }
 
-  async loadRelationsHasMany(models: ErrorModel[]): Promise<void> {
+  async loadRelations(models: ErrorModel[]): Promise<void> {
     if (!models.length)
       return
 

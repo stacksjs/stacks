@@ -206,7 +206,7 @@ export class SubscriptionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriptionType): Partial<SubscriptionType> | any {
+  getOriginal(column?: keyof SubscriptionType): Partial<SubscriptionType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -300,6 +300,8 @@ export class SubscriptionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
@@ -351,12 +353,15 @@ export class SubscriptionModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
+    const instance = new SubscriptionModel(null)
     const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No SubscriptionModel results for ${id}`)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -370,11 +375,14 @@ export class SubscriptionModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: SubscriptionModel) => instance.parseResult(new SubscriptionModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: SubscriptionModel) => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): SubscriptionModel {
     return SubscriptionModel.skip(count)
   }
@@ -553,6 +561,8 @@ export class SubscriptionModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
       return new SubscriptionModel(model)
@@ -1281,7 +1291,7 @@ export class SubscriptionModel {
     }
   }
 
-  async loadRelationsHasMany(models: SubscriptionModel[]): Promise<void> {
+  async loadRelations(models: SubscriptionModel[]): Promise<void> {
     if (!models.length)
       return
 

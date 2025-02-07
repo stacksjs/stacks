@@ -166,7 +166,7 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductType): Partial<ProductType> | any {
+  getOriginal(column?: keyof ProductType): Partial<ProductType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -260,6 +260,8 @@ export class ProductModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new ProductModel(model as ProductType)
 
     return data
@@ -311,12 +313,15 @@ export class ProductModel {
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {
+    const instance = new ProductModel(null)
     const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -330,11 +335,14 @@ export class ProductModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): ProductModel {
     return ProductModel.skip(count)
   }
@@ -513,6 +521,8 @@ export class ProductModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {
       return new ProductModel(model)
@@ -1217,7 +1227,7 @@ export class ProductModel {
     }
   }
 
-  async loadRelationsHasMany(models: ProductModel[]): Promise<void> {
+  async loadRelations(models: ProductModel[]): Promise<void> {
     if (!models.length)
       return
 

@@ -904,7 +904,7 @@ export async function generateModelString(
         ${getFields}
         ${setFields}
         
-        getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> | any {
+        getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {
           if (column) {
             return this.originalAttributes[column]
           }
@@ -998,6 +998,8 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().executeTakeFirst()
           }
 
+          await this.loadRelations(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1018,7 +1020,7 @@ export async function generateModelString(
   
           if (model === undefined)
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
-  
+          
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1050,15 +1052,18 @@ export async function generateModelString(
         }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {
+          const instance = new ${modelName}Model(null)
           const model = await DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
   
           ${instanceSoftDeleteStatementsSelectFrom}
   
           if (model === undefined)
             throw new ModelNotFoundException(404, \`No ${modelName}Model results for \${id}\`)
-  
+          
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-  
+
+          await instance.loadRelations(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1073,11 +1078,14 @@ export async function generateModelString(
   
           query = query.selectAll()
   
-          const model = await query.execute()
+          const models = await query.execute()
+
+          await instance.loadRelations(models)
   
-          return model.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
+          return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
-           
+        
+        //TODO: fix
         skip(count: number): ${modelName}Model {
           return ${modelName}Model.skip(count)
         }
@@ -1255,6 +1263,8 @@ export async function generateModelString(
           } else {
             models = await this.selectFromQuery.selectAll().execute()
           }
+
+          await this.loadRelations(models)
   
           const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
             return new ${modelName}Model(model)
@@ -1911,7 +1921,7 @@ export async function generateModelString(
           }
         }
 
-        async loadRelationsHasMany(models: ${modelName}Model[]): Promise<void> {
+        async loadRelations(models: ${modelName}Model[]): Promise<void> {
           if (!models.length)
             return
 

@@ -157,7 +157,7 @@ export class ActivityModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof ActivityType): Partial<ActivityType> | any {
+  getOriginal(column?: keyof ActivityType): Partial<ActivityType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -251,6 +251,8 @@ export class ActivityModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new ActivityModel(model as ActivityType)
 
     return data
@@ -302,6 +304,7 @@ export class ActivityModel {
   }
 
   static async findOrFail(id: number): Promise<ActivityModel> {
+    const instance = new ActivityModel(null)
     const model = await DB.instance.selectFrom('activities').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
@@ -312,6 +315,8 @@ export class ActivityModel {
       throw new ModelNotFoundException(404, `No ActivityModel results for ${id}`)
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -329,11 +334,14 @@ export class ActivityModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: ActivityModel) => instance.parseResult(new ActivityModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ActivityModel) => instance.parseResult(new ActivityModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): ActivityModel {
     return ActivityModel.skip(count)
   }
@@ -512,6 +520,8 @@ export class ActivityModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ActivityModel) => {
       return new ActivityModel(model)
@@ -1215,7 +1225,7 @@ export class ActivityModel {
     }
   }
 
-  async loadRelationsHasMany(models: ActivityModel[]): Promise<void> {
+  async loadRelations(models: ActivityModel[]): Promise<void> {
     if (!models.length)
       return
 

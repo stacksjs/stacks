@@ -129,7 +129,7 @@ export class ProjectModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProjectType): Partial<ProjectType> | any {
+  getOriginal(column?: keyof ProjectType): Partial<ProjectType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -223,6 +223,8 @@ export class ProjectModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new ProjectModel(model as ProjectType)
 
     return data
@@ -274,12 +276,15 @@ export class ProjectModel {
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {
+    const instance = new ProjectModel(null)
     const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -293,11 +298,14 @@ export class ProjectModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): ProjectModel {
     return ProjectModel.skip(count)
   }
@@ -476,6 +484,8 @@ export class ProjectModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProjectModel) => {
       return new ProjectModel(model)
@@ -1152,7 +1162,7 @@ export class ProjectModel {
     }
   }
 
-  async loadRelationsHasMany(models: ProjectModel[]): Promise<void> {
+  async loadRelations(models: ProjectModel[]): Promise<void> {
     if (!models.length)
       return
 

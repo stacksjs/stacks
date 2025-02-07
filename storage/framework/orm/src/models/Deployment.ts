@@ -179,7 +179,7 @@ export class DeploymentModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof DeploymentType): Partial<DeploymentType> | any {
+  getOriginal(column?: keyof DeploymentType): Partial<DeploymentType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -273,6 +273,8 @@ export class DeploymentModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
@@ -324,12 +326,15 @@ export class DeploymentModel {
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
+    const instance = new DeploymentModel(null)
     const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -343,11 +348,14 @@ export class DeploymentModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): DeploymentModel {
     return DeploymentModel.skip(count)
   }
@@ -526,6 +534,8 @@ export class DeploymentModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: DeploymentModel) => {
       return new DeploymentModel(model)
@@ -1230,7 +1240,7 @@ export class DeploymentModel {
     }
   }
 
-  async loadRelationsHasMany(models: DeploymentModel[]): Promise<void> {
+  async loadRelations(models: DeploymentModel[]): Promise<void> {
     if (!models.length)
       return
 

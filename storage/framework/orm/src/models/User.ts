@@ -200,7 +200,7 @@ export class UserModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof UserType): Partial<UserType> | any {
+  getOriginal(column?: keyof UserType): Partial<UserType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -294,6 +294,8 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new UserModel(model as UserType)
 
     return data
@@ -345,12 +347,15 @@ export class UserModel {
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
+    const instance = new UserModel(null)
     const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
       throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 
@@ -364,11 +369,14 @@ export class UserModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): UserModel {
     return UserModel.skip(count)
   }
@@ -547,6 +555,8 @@ export class UserModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: UserModel) => {
       return new UserModel(model)
@@ -1237,7 +1247,7 @@ export class UserModel {
     }
   }
 
-  async loadRelationsHasMany(models: UserModel[]): Promise<void> {
+  async loadRelations(models: UserModel[]): Promise<void> {
     if (!models.length)
       return
 

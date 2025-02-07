@@ -112,7 +112,7 @@ export class SubscriberEmailModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof SubscriberEmailType): Partial<SubscriberEmailType> | any {
+  getOriginal(column?: keyof SubscriberEmailType): Partial<SubscriberEmailType> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -206,6 +206,8 @@ export class SubscriberEmailModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
+    await this.loadRelations(model)
+
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
@@ -257,6 +259,7 @@ export class SubscriberEmailModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    const instance = new SubscriberEmailModel(null)
     const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
@@ -267,6 +270,8 @@ export class SubscriberEmailModel {
       throw new ModelNotFoundException(404, `No SubscriberEmailModel results for ${id}`)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+
+    await instance.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -284,11 +289,14 @@ export class SubscriberEmailModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
+  // TODO: fix
   skip(count: number): SubscriberEmailModel {
     return SubscriberEmailModel.skip(count)
   }
@@ -467,6 +475,8 @@ export class SubscriberEmailModel {
     else {
       models = await this.selectFromQuery.selectAll().execute()
     }
+
+    await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
       return new SubscriberEmailModel(model)
@@ -1130,7 +1140,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  async loadRelationsHasMany(models: SubscriberEmailModel[]): Promise<void> {
+  async loadRelations(models: SubscriberEmailModel[]): Promise<void> {
     if (!models.length)
       return
 
