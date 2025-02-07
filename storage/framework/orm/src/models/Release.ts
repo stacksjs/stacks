@@ -278,9 +278,10 @@ export class ReleaseModel {
     return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): ReleaseModel {
-    return ReleaseModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): ReleaseModel {

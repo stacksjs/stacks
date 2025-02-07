@@ -342,9 +342,10 @@ export class ProductModel {
     return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): ProductModel {
-    return ProductModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): ProductModel {

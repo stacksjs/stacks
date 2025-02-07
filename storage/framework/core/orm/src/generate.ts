@@ -1084,10 +1084,10 @@ export async function generateModelString(
   
           return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
-        
-        //TODO: fix
         skip(count: number): ${modelName}Model {
-          return ${modelName}Model.skip(count)
+          this.selectFromQuery = this.selectFromQuery.offset(count)
+
+          return this
         }
 
         static skip(count: number): ${modelName}Model {

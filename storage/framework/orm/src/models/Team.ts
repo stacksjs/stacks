@@ -351,9 +351,10 @@ export class TeamModel {
     return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): TeamModel {
-    return TeamModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): TeamModel {

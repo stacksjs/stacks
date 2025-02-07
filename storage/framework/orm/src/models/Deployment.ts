@@ -355,9 +355,10 @@ export class DeploymentModel {
     return models.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): DeploymentModel {
-    return DeploymentModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): DeploymentModel {

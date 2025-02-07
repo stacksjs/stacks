@@ -364,9 +364,10 @@ export class PaymentMethodModel {
     return models.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): PaymentMethodModel {
-    return PaymentMethodModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): PaymentMethodModel {

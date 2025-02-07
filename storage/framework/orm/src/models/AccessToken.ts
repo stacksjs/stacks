@@ -318,9 +318,10 @@ export class AccessTokenModel {
     return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): AccessTokenModel {
-    return AccessTokenModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): AccessTokenModel {

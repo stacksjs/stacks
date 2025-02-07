@@ -314,9 +314,10 @@ export class FailedJobModel {
     return models.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): FailedJobModel {
-    return FailedJobModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): FailedJobModel {

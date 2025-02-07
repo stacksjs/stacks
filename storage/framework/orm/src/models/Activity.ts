@@ -341,9 +341,10 @@ export class ActivityModel {
     return models.map((modelItem: ActivityModel) => instance.parseResult(new ActivityModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): ActivityModel {
-    return ActivityModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): ActivityModel {

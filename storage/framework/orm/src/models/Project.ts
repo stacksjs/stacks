@@ -305,9 +305,10 @@ export class ProjectModel {
     return models.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): ProjectModel {
-    return ProjectModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): ProjectModel {

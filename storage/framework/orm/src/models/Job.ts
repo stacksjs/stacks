@@ -314,9 +314,10 @@ export class JobModel {
     return models.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): JobModel {
-    return JobModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): JobModel {

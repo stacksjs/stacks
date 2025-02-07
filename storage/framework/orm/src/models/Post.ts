@@ -300,9 +300,10 @@ export class PostModel {
     return models.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): PostModel {
-    return PostModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): PostModel {

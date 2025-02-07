@@ -376,9 +376,10 @@ export class UserModel {
     return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): UserModel {
-    return UserModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): UserModel {

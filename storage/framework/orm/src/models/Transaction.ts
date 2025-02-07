@@ -351,9 +351,10 @@ export class TransactionModel {
     return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): TransactionModel {
-    return TransactionModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): TransactionModel {

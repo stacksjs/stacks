@@ -314,9 +314,10 @@ export class ErrorModel {
     return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): ErrorModel {
-    return ErrorModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): ErrorModel {

@@ -296,9 +296,10 @@ export class SubscriberEmailModel {
     return models.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  // TODO: fix
   skip(count: number): SubscriberEmailModel {
-    return SubscriberEmailModel.skip(count)
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
   }
 
   static skip(count: number): SubscriberEmailModel {
