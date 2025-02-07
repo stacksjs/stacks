@@ -1241,11 +1241,13 @@ export class DeploymentModel {
     }
   }
 
-  async loadRelations(models: DeploymentModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: DeploymentModel | DeploymentModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1254,15 +1256,25 @@ export class DeploymentModel {
         .selectAll()
         .execute()
 
-      models.map((model: DeploymentModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: DeploymentModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.deployment__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.deployment_id === model.id
+          return record.deployment__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

@@ -1180,11 +1180,13 @@ export class ErrorModel {
     }
   }
 
-  async loadRelations(models: ErrorModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: ErrorModel | ErrorModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1193,15 +1195,25 @@ export class ErrorModel {
         .selectAll()
         .execute()
 
-      models.map((model: ErrorModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: ErrorModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.error__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.error_id === model.id
+          return record.error__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

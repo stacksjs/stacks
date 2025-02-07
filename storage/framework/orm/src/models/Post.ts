@@ -1142,11 +1142,13 @@ export class PostModel {
     }
   }
 
-  async loadRelations(models: PostModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: PostModel | PostModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1155,15 +1157,25 @@ export class PostModel {
         .selectAll()
         .execute()
 
-      models.map((model: PostModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: PostModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.post__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.post_id === model.id
+          return record.post__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

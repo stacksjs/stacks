@@ -1228,11 +1228,13 @@ export class ProductModel {
     }
   }
 
-  async loadRelations(models: ProductModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: ProductModel | ProductModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1241,15 +1243,25 @@ export class ProductModel {
         .selectAll()
         .execute()
 
-      models.map((model: ProductModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: ProductModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.product__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.product_id === model.id
+          return record.product__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

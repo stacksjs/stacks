@@ -1221,11 +1221,13 @@ export class TransactionModel {
     }
   }
 
-  async loadRelations(models: TransactionModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: TransactionModel | TransactionModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1234,15 +1236,25 @@ export class TransactionModel {
         .selectAll()
         .execute()
 
-      models.map((model: TransactionModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: TransactionModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.transaction__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.transaction_id === model.id
+          return record.transaction__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

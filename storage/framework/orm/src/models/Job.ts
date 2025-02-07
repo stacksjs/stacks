@@ -1180,11 +1180,13 @@ export class JobModel {
     }
   }
 
-  async loadRelations(models: JobModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: JobModel | JobModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1193,15 +1195,25 @@ export class JobModel {
         .selectAll()
         .execute()
 
-      models.map((model: JobModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: JobModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.job__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.job_id === model.id
+          return record.job__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

@@ -1141,11 +1141,13 @@ export class SubscriberEmailModel {
     }
   }
 
-  async loadRelations(models: SubscriberEmailModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: SubscriberEmailModel | SubscriberEmailModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1154,15 +1156,25 @@ export class SubscriberEmailModel {
         .selectAll()
         .execute()
 
-      models.map((model: SubscriberEmailModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: SubscriberEmailModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.subscriberemail__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.subscriberemail_id === model.id
+          return record.subscriberemail__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 

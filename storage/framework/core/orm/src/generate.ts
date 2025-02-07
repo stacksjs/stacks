@@ -1921,11 +1921,12 @@ export async function generateModelString(
           }
         }
 
-        async loadRelations(models: ${modelName}Model[]): Promise<void> {
-          if (!models.length)
-            return
-
-          const modelIds = models.map(model => model.id)
+        async loadRelations(models: ${modelName}Model | ${modelName}Model[]): Promise<void> {
+          // Handle both single model and array of models
+          const modelArray = Array.isArray(models) ? models : [models]
+          if (!modelArray.length) return
+        
+          const modelIds = modelArray.map(model => model.id)
 
           for (const relation of this.withRelations) {
             const relatedRecords = await DB.instance
@@ -1933,16 +1934,25 @@ export async function generateModelString(
               .where('${formattedModelName}_id', 'in', modelIds)
               .selectAll()
               .execute()
+        
+            if (Array.isArray(models)) {
+              // If array, map through all models
+              models.map((model: ${modelName}Model) => {
+                const records = relatedRecords.filter((record: any) => {
+                  return record.${formattedModelName}__id === model.id
+                })
 
-            models.map((model: ${modelName}Model) => {
-              const records = relatedRecords.filter((record: any) => {
-                return record.${formattedModelName}_id === model.id
+                model[relation] = records.length === 1 ? records[0] : records
+                return model
               })
-
-              model[relation] = records.length === 1 ? records[0] : records
-
-              return model
-            })
+            } else {
+              // If single model, just filter once
+              const records = relatedRecords.filter((record: any) => {
+                return record.${formattedModelName}__id === models.id
+              })
+        
+              models[relation] = records.length === 1 ? records[0] : records
+            }
           }
         }
   

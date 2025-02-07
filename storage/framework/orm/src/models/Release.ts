@@ -1112,11 +1112,13 @@ export class ReleaseModel {
     }
   }
 
-  async loadRelations(models: ReleaseModel[]): Promise<void> {
-    if (!models.length)
+  async loadRelations(models: ReleaseModel | ReleaseModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
       return
 
-    const modelIds = models.map(model => model.id)
+    const modelIds = modelArray.map(model => model.id)
 
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
@@ -1125,15 +1127,25 @@ export class ReleaseModel {
         .selectAll()
         .execute()
 
-      models.map((model: ReleaseModel) => {
+      if (Array.isArray(models)) {
+        // If array, map through all models
+        models.map((model: ReleaseModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.release__id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        // If single model, just filter once
         const records = relatedRecords.filter((record: any) => {
-          return record.release_id === model.id
+          return record.release__id === models.id
         })
 
-        model[relation] = records.length === 1 ? records[0] : records
-
-        return model
-      })
+        models[relation] = records.length === 1 ? records[0] : records
+      }
     }
   }
 
