@@ -208,27 +208,29 @@ export class PostModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<PostModel | undefined> {
-    const model = await DB.instance.selectFrom('posts')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<PostModel | undefined> {
+    let model: PostModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new PostModel(model as PostType)
 
     return data
   }
 
-  async first(): Promise<PostModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+    const model = await DB.instance.selectFrom('posts')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<PostModel | undefined> {

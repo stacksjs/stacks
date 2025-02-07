@@ -186,27 +186,29 @@ export class ReleaseModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<ReleaseModel | undefined> {
-    const model = await DB.instance.selectFrom('releases')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<ReleaseModel | undefined> {
+    let model: ReleaseModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
 
-  async first(): Promise<ReleaseModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<ReleaseModel | undefined> {
-    const instance = new ReleaseModel(null)
+    const model = await DB.instance.selectFrom('releases')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new ReleaseModel(model as ReleaseType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<ReleaseModel | undefined> {

@@ -263,27 +263,29 @@ export class DeploymentModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<DeploymentModel | undefined> {
-    const model = await DB.instance.selectFrom('deployments')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<DeploymentModel | undefined> {
+    let model: DeploymentModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
 
-  async first(): Promise<DeploymentModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentModel(null)
+    const model = await DB.instance.selectFrom('deployments')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<DeploymentModel | undefined> {

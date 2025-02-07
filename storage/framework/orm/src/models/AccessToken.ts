@@ -226,27 +226,29 @@ export class AccessTokenModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<AccessTokenModel | undefined> {
-    const model = await DB.instance.selectFrom('personal_access_tokens')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<AccessTokenModel | undefined> {
+    let model: AccessTokenModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
 
-  async first(): Promise<AccessTokenModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(null)
+    const model = await DB.instance.selectFrom('personal_access_tokens')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new AccessTokenModel(model as AccessTokenType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<AccessTokenModel | undefined> {

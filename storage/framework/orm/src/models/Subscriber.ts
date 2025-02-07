@@ -186,27 +186,29 @@ export class SubscriberModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<SubscriberModel | undefined> {
-    const model = await DB.instance.selectFrom('subscribers')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<SubscriberModel | undefined> {
+    let model: SubscriberModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
 
-  async first(): Promise<SubscriberModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<SubscriberModel | undefined> {
-    const instance = new SubscriberModel(null)
+    const model = await DB.instance.selectFrom('subscribers')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new SubscriberModel(model as SubscriberType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<SubscriberModel | undefined> {

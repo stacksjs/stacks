@@ -222,27 +222,29 @@ export class ErrorModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<ErrorModel | undefined> {
-    const model = await DB.instance.selectFrom('errors')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<ErrorModel | undefined> {
+    let model: ErrorModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new ErrorModel(model as ErrorType)
 
     return data
   }
 
-  async first(): Promise<ErrorModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<ErrorModel | undefined> {
-    const instance = new ErrorModel(null)
+    const model = await DB.instance.selectFrom('errors')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<ErrorModel | undefined> {

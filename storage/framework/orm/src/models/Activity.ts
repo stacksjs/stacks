@@ -241,27 +241,29 @@ export class ActivityModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<ActivityModel | undefined> {
-    const model = await DB.instance.selectFrom('activities')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<ActivityModel | undefined> {
+    let model: ActivityModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new ActivityModel(model as ActivityType)
 
     return data
   }
 
-  async first(): Promise<ActivityModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<ActivityModel | undefined> {
-    const instance = new ActivityModel(null)
+    const model = await DB.instance.selectFrom('activities')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new ActivityModel(model as ActivityType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<ActivityModel | undefined> {

@@ -272,27 +272,29 @@ export class PaymentMethodModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<PaymentMethodModel | undefined> {
-    const model = await DB.instance.selectFrom('payment_methods')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<PaymentMethodModel | undefined> {
+    let model: PaymentMethodModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
 
-  async first(): Promise<PaymentMethodModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<PaymentMethodModel | undefined> {
-    const instance = new PaymentMethodModel(null)
+    const model = await DB.instance.selectFrom('payment_methods')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<PaymentMethodModel | undefined> {

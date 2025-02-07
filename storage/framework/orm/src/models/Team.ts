@@ -259,27 +259,29 @@ export class TeamModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<TeamModel | undefined> {
-    const model = await DB.instance.selectFrom('teams')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<TeamModel | undefined> {
+    let model: TeamModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new TeamModel(model as TeamType)
 
     return data
   }
 
-  async first(): Promise<TeamModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<TeamModel | undefined> {
-    const instance = new TeamModel(null)
+    const model = await DB.instance.selectFrom('teams')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<TeamModel | undefined> {

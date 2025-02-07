@@ -259,27 +259,29 @@ export class TransactionModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<TransactionModel | undefined> {
-    const model = await DB.instance.selectFrom('transactions')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<TransactionModel | undefined> {
+    let model: TransactionModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
     return data
   }
 
-  async first(): Promise<TransactionModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<TransactionModel | undefined> {
-    const instance = new TransactionModel(null)
+    const model = await DB.instance.selectFrom('transactions')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<TransactionModel | undefined> {

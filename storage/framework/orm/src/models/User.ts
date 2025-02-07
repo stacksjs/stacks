@@ -284,27 +284,29 @@ export class UserModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<UserModel | undefined> {
-    const model = await DB.instance.selectFrom('users')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<UserModel | undefined> {
+    let model: UserModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new UserModel(model as UserType)
 
     return data
   }
 
-  async first(): Promise<UserModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<UserModel | undefined> {
-    const instance = new UserModel(null)
+    const model = await DB.instance.selectFrom('users')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<UserModel | undefined> {

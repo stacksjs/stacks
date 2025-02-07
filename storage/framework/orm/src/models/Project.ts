@@ -213,27 +213,29 @@ export class ProjectModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<ProjectModel | undefined> {
-    const model = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<ProjectModel | undefined> {
+    let model: ProjectModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new ProjectModel(model as ProjectType)
 
     return data
   }
 
-  async first(): Promise<ProjectModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<ProjectModel | undefined> {
-    const instance = new ProjectModel(null)
+    const model = await DB.instance.selectFrom('projects')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<ProjectModel | undefined> {

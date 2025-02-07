@@ -250,27 +250,29 @@ export class ProductModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<ProductModel | undefined> {
-    const model = await DB.instance.selectFrom('products')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<ProductModel | undefined> {
+    let model: ProductModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new ProductModel(model as ProductType)
 
     return data
   }
 
-  async first(): Promise<ProductModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+    const model = await DB.instance.selectFrom('products')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new ProductModel(model as ProductType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<ProductModel | undefined> {

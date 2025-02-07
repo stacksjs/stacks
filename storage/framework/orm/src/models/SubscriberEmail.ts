@@ -196,27 +196,29 @@ export class SubscriberEmailModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<SubscriberEmailModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriber_emails')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    let model: SubscriberEmailModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
 
-  async first(): Promise<SubscriberEmailModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<SubscriberEmailModel | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const model = await DB.instance.selectFrom('subscriber_emails')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<SubscriberEmailModel | undefined> {

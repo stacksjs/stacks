@@ -290,27 +290,29 @@ export class SubscriptionModel {
     return await instance.applyFind(id)
   }
 
-  async applyFirst(): Promise<SubscriptionModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriptions')
-      .selectAll()
-      .executeTakeFirst()
+  async first(): Promise<SubscriptionModel | undefined> {
+    let model: SubscriptionModel | undefined
 
-    if (!model)
-      return undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
 
-  async first(): Promise<SubscriptionModel | undefined> {
-    return await this.applyFirst()
-  }
-
   static async first(): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionModel(null)
+    const model = await DB.instance.selectFrom('subscriptions')
+      .selectAll()
+      .executeTakeFirst()
 
-    return await instance.applyFirst()
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   async applyFirstOrFail(): Promise<SubscriptionModel | undefined> {
