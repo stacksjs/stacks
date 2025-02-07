@@ -168,6 +168,9 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new SubscriberModel(model as SubscriberType)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))

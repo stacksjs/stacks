@@ -168,6 +168,9 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new ReleaseModel(model as ReleaseType)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))

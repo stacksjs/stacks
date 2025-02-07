@@ -204,6 +204,9 @@ export class JobModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new JobModel(model as JobType)
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))

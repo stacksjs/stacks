@@ -241,6 +241,9 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new TransactionModel(model as TransactionType)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))

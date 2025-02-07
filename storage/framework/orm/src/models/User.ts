@@ -266,6 +266,9 @@ export class UserModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new UserModel(model as UserType)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))

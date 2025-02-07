@@ -190,6 +190,9 @@ export class PostModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new PostModel(model as PostType)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))

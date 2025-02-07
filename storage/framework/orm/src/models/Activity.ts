@@ -223,6 +223,9 @@ export class ActivityModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new ActivityModel(model as ActivityType)
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))

@@ -241,6 +241,9 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new TeamModel(model as TeamType)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))

@@ -272,6 +272,9 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    if (model)
+      await this.loadRelations(model)
+
     const data = new SubscriptionModel(model as SubscriptionType)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
