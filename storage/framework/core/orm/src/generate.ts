@@ -198,20 +198,6 @@ export async function generateModelString(
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
 
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
-
-      relationMethods += `
-        async ${relationName}HasMany(): Promise<${modelRelation}Model[]> {
-          if (this.id === undefined)
-            throw new HttpError(500, 'Relation Error!')
-          
-          const results = await DB.instance.selectFrom('${tableRelation}')
-            .where('${foreignKeyRelation}', '=', this.id)
-            .limit(5)
-            .selectAll()
-            .execute()
-  
-            return results.map((modelItem: ${modelName}Model) => new ${modelRelation}(modelItem))
-        }\n\n`
     }
 
     if (relationType === 'hasType' && relationCount === 'one') {

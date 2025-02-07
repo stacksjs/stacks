@@ -2,11 +2,13 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
+import type { PostModel } from './Post'
 import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
+
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
@@ -15,25 +17,16 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
 
-import Deployment from './Deployment'
-
-import PaymentMethod from './PaymentMethod'
-
-import Post from './Post'
-
 import Subscriber from './Subscriber'
 
-import Subscription from './Subscription'
-
 import Team from './Team'
-
-import Transaction from './Transaction'
 
 export interface UsersTable {
   id?: number
   deployments?: DeploymentModel[] | undefined
   subscriptions?: SubscriptionModel[] | undefined
   payment_methods?: PaymentMethodModel[] | undefined
+  posts?: PostModel[] | undefined
   transactions?: TransactionModel[] | undefined
   name?: string
   email?: string
@@ -122,6 +115,10 @@ export class UserModel {
 
   get payment_methods(): PaymentMethodModel[] | undefined {
     return this.attributes.payment_methods
+  }
+
+  get posts(): PostModel[] | undefined {
+    return this.attributes.posts
   }
 
   get transactions(): TransactionModel[] | undefined {
@@ -1520,20 +1517,6 @@ export class UserModel {
       .execute()
   }
 
-  async post() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = Post
-      .where('user_id', '=', this.id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
-  }
-
   async subscriber() {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1546,58 +1529,6 @@ export class UserModel {
       throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
-  }
-
-  async deploymentsHasMany(): Promise<DeploymentModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('deployments')
-      .where('user_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: UserModel) => new Deployment(modelItem))
-  }
-
-  async subscriptionsHasMany(): Promise<SubscriptionModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('subscriptions')
-      .where('user_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: UserModel) => new Subscription(modelItem))
-  }
-
-  async paymentMethodsHasMany(): Promise<PaymentMethodModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('payment_methods')
-      .where('user_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: UserModel) => new PaymentMethod(modelItem))
-  }
-
-  async transactionsHasMany(): Promise<TransactionModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('transactions')
-      .where('user_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: UserModel) => new Transaction(modelItem))
   }
 
   async userTeams() {
@@ -1919,6 +1850,7 @@ export class UserModel {
       deployments: this.deployments,
       subscriptions: this.subscriptions,
       payment_methods: this.payment_methods,
+      posts: this.posts,
       transactions: this.transactions,
       ...this.customColumns,
     }

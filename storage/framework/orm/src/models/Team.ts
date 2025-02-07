@@ -6,8 +6,6 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import AccessToken from './AccessToken'
-
 import User from './User'
 
 export interface TeamsTable {
@@ -1502,19 +1500,6 @@ export class TeamModel {
     return await DB.instance.deleteFrom('teams')
       .where('id', '=', this.id)
       .execute()
-  }
-
-  async personalAccessTokensHasMany(): Promise<AccessTokenModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('personal_access_tokens')
-      .where('team_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: TeamModel) => new AccessToken(modelItem))
   }
 
   async teamUsers() {

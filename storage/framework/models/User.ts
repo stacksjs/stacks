@@ -41,8 +41,8 @@ export default {
     billable: true,
   },
 
-  hasOne: ['Post', 'Subscriber'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Transaction'],
+  hasOne: ['Subscriber'],
+  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'Transaction'],
 
   belongsToMany: ['Team'],
 

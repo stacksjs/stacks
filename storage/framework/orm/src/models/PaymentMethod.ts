@@ -9,8 +9,6 @@ import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import Transaction from './Transaction'
-
 import User from './User'
 
 export interface PaymentMethodsTable {
@@ -1525,19 +1523,6 @@ export class PaymentMethodModel {
       throw new HttpError(500, 'Model Relation Not Found!')
 
     return model
-  }
-
-  async transactionsHasMany(): Promise<TransactionModel[]> {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const results = await DB.instance.selectFrom('transactions')
-      .where('payment_method_id', '=', this.id)
-      .limit(5)
-      .selectAll()
-      .execute()
-
-    return results.map((modelItem: PaymentMethodModel) => new Transaction(modelItem))
   }
 
   distinct(column: keyof PaymentMethodType): PaymentMethodModel {
