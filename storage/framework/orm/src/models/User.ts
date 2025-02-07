@@ -3,10 +3,12 @@ import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { PostModel } from './Post'
+import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -16,8 +18,6 @@ import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
-
-import Subscriber from './Subscriber'
 
 import Team from './Team'
 
@@ -103,6 +103,10 @@ export class UserModel {
     this.deleteFromQuery = DB.instance.deleteFrom('users')
     this.hasSelect = false
     this.hasSaved = false
+  }
+
+  get subscriber(): SubscriberModel | undefined {
+    return this.attributes.subscriber
   }
 
   get deployments(): DeploymentModel[] | undefined {
@@ -1515,20 +1519,6 @@ export class UserModel {
     return await DB.instance.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
-  }
-
-  async subscriber() {
-    if (this.id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = Subscriber
-      .where('user_id', '=', this.id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
   }
 
   async userTeams() {

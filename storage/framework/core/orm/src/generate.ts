@@ -202,19 +202,10 @@ export async function generateModelString(
 
     if (relationType === 'hasType' && relationCount === 'one') {
       const relationName = relation.relationName || formattedModelRelation
-      relationMethods += `
-        async ${relationName}() {
-          if (this.id === undefined)
-             throw new HttpError(500, 'Relation Error!')
-  
-          const model = ${modelRelation}
-          .where('${foreignKeyRelation}', '=', this.id).first()
-  
-          if (! model)
-            throw new HttpError(500, 'Model Relation Not Found!')
-  
-          return model
-        }\n\n`
+
+      getFields += `get ${snakeCase(relationName)}():${modelRelation}Model | undefined {
+        return this.attributes.${snakeCase(relationName)}
+      }\n\n`
     }
 
     if (relationType === 'belongsType' && !relationCount) {
