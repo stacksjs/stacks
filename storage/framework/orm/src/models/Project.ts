@@ -195,8 +195,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 

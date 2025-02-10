@@ -245,8 +245,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 

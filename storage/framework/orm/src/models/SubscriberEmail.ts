@@ -178,8 +178,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
