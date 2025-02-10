@@ -3,6 +3,7 @@ import Footer from './Footer.vue'
 import Hero from './Hero.vue'
 import Installation from './Installation.vue'
 import Styling from './Styling.vue'
+import Usage from './Usage.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()

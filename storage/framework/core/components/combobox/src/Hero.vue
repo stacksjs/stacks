@@ -27,16 +27,16 @@ const people = ref<Person[]>([
 
 const selected = ref<Person | null>(null)
 const query = ref<string>('')
-const filteredPeople = computed(() =>
-  query.value === ''
-    ? people
+const filteredPeople = computed(() =>{
+  return  query.value === ''
+    ? people.value
     : people.value.filter((person: Person) =>
         person.name
           .toLowerCase()
           .replace(/\s+/g, '')
           .includes(query.value.toLowerCase().replace(/\s+/g, '')),
-      ),
-) as Ref<Person[]>
+      )
+}) as Ref<Person[]>
 </script>
 
 <template>
