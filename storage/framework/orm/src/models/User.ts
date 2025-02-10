@@ -1540,7 +1540,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map(result => result.team_id)
+    const tableRelationIds = results.map((result: { team_id: number }) => result.team_id)
 
     if (!tableRelationIds.length)
       throw new HttpError(500, 'Relation Error!')
