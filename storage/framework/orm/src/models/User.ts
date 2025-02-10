@@ -169,6 +169,10 @@ export class UserModel {
     return this.attributes.updated_at
   }
 
+  get firstName(name) {
+    return name.split(' ')[0]
+  }
+
   set stripe_id(value: string) {
     this.attributes.stripe_id = value
   }

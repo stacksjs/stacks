@@ -6,6 +6,23 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
+async function generateCustomAccessors(model: Model) {
+  let output = ''
+
+  if (model.get) {
+    for (const [methodName, getter] of Object.entries(model.get)) {
+      const getterStr = removeArrow(getter.toString())
+      output += `get ${methodName}${getterStr}\n`
+    }
+  }
+
+  return output
+}
+
+function removeArrow(fnStr: string) {
+  return fnStr.replace('=>', '')
+}
+
 function getUpvoteTableName(model: Model, tableName: string): string {
   const defaultTable = `${tableName}_likes`
   const traits = model.traits
@@ -68,6 +85,8 @@ export async function generateModelString(
   let mittDeleteStaticFindStatement = ''
   let mittDeleteFindStatement = ''
   let privateSoftDeletes = ''
+
+  const getterOutput = await generateCustomAccessors(model)
 
   const relations = await getRelations(model, modelName)
 
@@ -879,6 +898,7 @@ export async function generateModelString(
         }
 
         ${getFields}
+        ${getterOutput}
         ${setFields}
         
         getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {
