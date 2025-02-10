@@ -1255,7 +1255,7 @@ export class ProductModel {
     }
   }
 
-  async loadRelations(models: ProductModel | ProductModel[]): Promise<void> {
+  async loadRelations(models: ProductJsonResponse | ProductJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1271,7 +1271,7 @@ export class ProductModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProductModel) => {
+        models.map((model: ProductJsonResponse) => {
           const records = relatedRecords.filter((record: { product_id: number }) => {
             return record.product_id === model.id
           })

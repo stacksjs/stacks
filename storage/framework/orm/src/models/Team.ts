@@ -1266,7 +1266,7 @@ export class TeamModel {
     }
   }
 
-  async loadRelations(models: TeamModel | TeamModel[]): Promise<void> {
+  async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1282,7 +1282,7 @@ export class TeamModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: TeamModel) => {
+        models.map((model: TeamJsonResponse) => {
           const records = relatedRecords.filter((record: { team_id: number }) => {
             return record.team_id === model.id
           })

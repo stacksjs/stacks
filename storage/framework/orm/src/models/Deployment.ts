@@ -1268,7 +1268,7 @@ export class DeploymentModel {
     }
   }
 
-  async loadRelations(models: DeploymentModel | DeploymentModel[]): Promise<void> {
+  async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1284,7 +1284,7 @@ export class DeploymentModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: DeploymentModel) => {
+        models.map((model: DeploymentJsonResponse) => {
           const records = relatedRecords.filter((record: { deployment_id: number }) => {
             return record.deployment_id === model.id
           })

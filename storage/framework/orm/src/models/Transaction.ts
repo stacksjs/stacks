@@ -1248,7 +1248,7 @@ export class TransactionModel {
     }
   }
 
-  async loadRelations(models: TransactionModel | TransactionModel[]): Promise<void> {
+  async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1264,7 +1264,7 @@ export class TransactionModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: TransactionModel) => {
+        models.map((model: TransactionJsonResponse) => {
           const records = relatedRecords.filter((record: { transaction_id: number }) => {
             return record.transaction_id === model.id
           })

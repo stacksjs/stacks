@@ -1207,7 +1207,7 @@ export class JobModel {
     }
   }
 
-  async loadRelations(models: JobModel | JobModel[]): Promise<void> {
+  async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1223,7 +1223,7 @@ export class JobModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: JobModel) => {
+        models.map((model: JobJsonResponse) => {
           const records = relatedRecords.filter((record: { job_id: number }) => {
             return record.job_id === model.id
           })

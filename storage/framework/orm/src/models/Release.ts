@@ -1139,7 +1139,7 @@ export class ReleaseModel {
     }
   }
 
-  async loadRelations(models: ReleaseModel | ReleaseModel[]): Promise<void> {
+  async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1155,7 +1155,7 @@ export class ReleaseModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ReleaseModel) => {
+        models.map((model: ReleaseJsonResponse) => {
           const records = relatedRecords.filter((record: { release_id: number }) => {
             return record.release_id === model.id
           })

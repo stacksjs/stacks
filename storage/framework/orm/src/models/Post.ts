@@ -1169,7 +1169,7 @@ export class PostModel {
     }
   }
 
-  async loadRelations(models: PostModel | PostModel[]): Promise<void> {
+  async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1185,7 +1185,7 @@ export class PostModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: PostModel) => {
+        models.map((model: PostJsonResponse) => {
           const records = relatedRecords.filter((record: { post_id: number }) => {
             return record.post_id === model.id
           })

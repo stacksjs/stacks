@@ -1923,7 +1923,7 @@ export async function generateModelString(
           }
         }
 
-        async loadRelations(models: ${modelName}Model | ${modelName}Model[]): Promise<void> {
+        async loadRelations(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): Promise<void> {
           // Handle both single model and array of models
           const modelArray = Array.isArray(models) ? models : [models]
           if (!modelArray.length) return
@@ -1938,7 +1938,7 @@ export async function generateModelString(
               .execute()
         
             if (Array.isArray(models)) {
-              models.map((model: ${modelName}Model) => {
+              models.map((model: ${modelName}JsonResponse) => {
                 const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                   return record.${formattedModelName}_id === model.id
                 })

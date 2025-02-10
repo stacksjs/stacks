@@ -1276,7 +1276,7 @@ export class UserModel {
     }
   }
 
-  async loadRelations(models: UserModel | UserModel[]): Promise<void> {
+  async loadRelations(models: UserJsonResponse | UserJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1292,7 +1292,7 @@ export class UserModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: UserModel) => {
+        models.map((model: UserJsonResponse) => {
           const records = relatedRecords.filter((record: { user_id: number }) => {
             return record.user_id === model.id
           })

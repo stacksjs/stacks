@@ -1253,7 +1253,7 @@ export class ActivityModel {
     }
   }
 
-  async loadRelations(models: ActivityModel | ActivityModel[]): Promise<void> {
+  async loadRelations(models: ActivityJsonResponse | ActivityJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1269,7 +1269,7 @@ export class ActivityModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ActivityModel) => {
+        models.map((model: ActivityJsonResponse) => {
           const records = relatedRecords.filter((record: { activity_id: number }) => {
             return record.activity_id === model.id
           })

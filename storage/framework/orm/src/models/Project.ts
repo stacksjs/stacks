@@ -1190,7 +1190,7 @@ export class ProjectModel {
     }
   }
 
-  async loadRelations(models: ProjectModel | ProjectModel[]): Promise<void> {
+  async loadRelations(models: ProjectJsonResponse | ProjectJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1206,7 +1206,7 @@ export class ProjectModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProjectModel) => {
+        models.map((model: ProjectJsonResponse) => {
           const records = relatedRecords.filter((record: { project_id: number }) => {
             return record.project_id === model.id
           })

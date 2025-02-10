@@ -1203,7 +1203,7 @@ export class AccessTokenModel {
     }
   }
 
-  async loadRelations(models: AccessTokenModel | AccessTokenModel[]): Promise<void> {
+  async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1219,7 +1219,7 @@ export class AccessTokenModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: AccessTokenModel) => {
+        models.map((model: AccessTokenJsonResponse) => {
           const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
             return record.accesstoken_id === model.id
           })

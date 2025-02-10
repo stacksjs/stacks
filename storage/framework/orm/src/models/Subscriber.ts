@@ -1139,7 +1139,7 @@ export class SubscriberModel {
     }
   }
 
-  async loadRelations(models: SubscriberModel | SubscriberModel[]): Promise<void> {
+  async loadRelations(models: SubscriberJsonResponse | SubscriberJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1155,7 +1155,7 @@ export class SubscriberModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: SubscriberModel) => {
+        models.map((model: SubscriberJsonResponse) => {
           const records = relatedRecords.filter((record: { subscriber_id: number }) => {
             return record.subscriber_id === model.id
           })

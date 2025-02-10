@@ -1207,7 +1207,7 @@ export class ErrorModel {
     }
   }
 
-  async loadRelations(models: ErrorModel | ErrorModel[]): Promise<void> {
+  async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1223,7 +1223,7 @@ export class ErrorModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ErrorModel) => {
+        models.map((model: ErrorJsonResponse) => {
           const records = relatedRecords.filter((record: { error_id: number }) => {
             return record.error_id === model.id
           })

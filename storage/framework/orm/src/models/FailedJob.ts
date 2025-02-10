@@ -1207,7 +1207,7 @@ export class FailedJobModel {
     }
   }
 
-  async loadRelations(models: FailedJobModel | FailedJobModel[]): Promise<void> {
+  async loadRelations(models: FailedJobJsonResponse | FailedJobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1223,7 +1223,7 @@ export class FailedJobModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: FailedJobModel) => {
+        models.map((model: FailedJobJsonResponse) => {
           const records = relatedRecords.filter((record: { failedjob_id: number }) => {
             return record.failedjob_id === model.id
           })

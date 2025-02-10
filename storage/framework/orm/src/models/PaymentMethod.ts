@@ -1275,7 +1275,7 @@ export class PaymentMethodModel {
     }
   }
 
-  async loadRelations(models: PaymentMethodModel | PaymentMethodModel[]): Promise<void> {
+  async loadRelations(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1291,7 +1291,7 @@ export class PaymentMethodModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: PaymentMethodModel) => {
+        models.map((model: PaymentMethodJsonResponse) => {
           const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
             return record.paymentmethod_id === model.id
           })
