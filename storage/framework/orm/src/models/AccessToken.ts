@@ -86,6 +86,16 @@ export class AccessTokenModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: AccessTokenJsonResponse): AccessTokenJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get team_id(): number | undefined {
     return this.attributes.team_id
   }

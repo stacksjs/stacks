@@ -1,4 +1,4 @@
-import type { Model } from '@stacksjs/types'
+import type { Attributes, Model } from '@stacksjs/types'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
@@ -107,8 +107,8 @@ export default {
     },
   },
   get: {
-    firstName: (name: string) => {
-      const nameParts = name.split(' ')
+    firstName: (attributes: Attributes) => {
+      const nameParts = attributes.name.split(' ')
 
       return nameParts[0]
     },

@@ -94,6 +94,16 @@ export class SubscriptionModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: SubscriptionJsonResponse): SubscriptionJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }

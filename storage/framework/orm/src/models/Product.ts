@@ -86,6 +86,16 @@ export class ProductModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: ProductJsonResponse): ProductJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

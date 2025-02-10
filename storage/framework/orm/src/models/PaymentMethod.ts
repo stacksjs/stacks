@@ -94,6 +94,16 @@ export class PaymentMethodModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: PaymentMethodJsonResponse): PaymentMethodJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }

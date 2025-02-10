@@ -82,6 +82,16 @@ export class ErrorModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: ErrorJsonResponse): ErrorJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

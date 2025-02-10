@@ -6,21 +6,24 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
-async function generateCustomAccessors(model: Model) {
+function generateCustomAccessors(model: Model): { output: string, getterString: string } {
   let output = ''
+  let getterString = ''
 
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
-      const getterStr = removeArrow(getter.toString())
-      output += `get ${methodName}${getterStr}\n`
+      const getterStr = getter.toString()
+      output += `${methodName}: ${getterStr}, \n`
+
+      getterString += `${methodName}: customGetter.${methodName}(), \n`
     }
   }
 
-  return output
+  return { output, getterString }
 }
 
-function removeArrow(fnStr: string) {
-  return fnStr.replace('=>', '')
+function removeAttrString(getterFn: string): string {
+  return getterFn.replace('(attributes)', '()').replace('attributes', 'model')
 }
 
 function getUpvoteTableName(model: Model, tableName: string): string {
@@ -897,8 +900,17 @@ export async function generateModelString(
           this.hasSaved = false
         }
 
+        mapCustomGetters(model: ${modelName}JsonResponse): ${modelName}JsonResponse {
+          const customGetter = {
+            ${removeAttrString(getterOutput.output)}
+          }
+
+          for (const [key, fn] of Object.entries(customGetter)) {
+            model[key] = fn()
+          }
+        }
+
         ${getFields}
-        ${getterOutput}
         ${setFields}
         
         getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {

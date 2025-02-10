@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: UserRequestType) {
     // const id = request.getParam('id')
 
-    const result = await User.with(['posts']).last()
+    const result = await User.find(1)
 
     return response.json(result)
   },

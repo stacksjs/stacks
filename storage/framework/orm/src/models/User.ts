@@ -105,6 +105,18 @@ export class UserModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: UserJsonResponse): UserJsonResponse {
+    const customGetter = {
+      firstName: () => {
+        return model.name.split(' ')[0]
+      },
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get subscriber(): SubscriberModel | undefined {
     return this.attributes.subscriber
   }
@@ -167,10 +179,6 @@ export class UserModel {
 
   get updated_at(): Date | undefined {
     return this.attributes.updated_at
-  }
-
-  get firstName(name) {
-    return name.split(' ')[0]
   }
 
   set stripe_id(value: string) {
@@ -271,6 +279,7 @@ export class UserModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)

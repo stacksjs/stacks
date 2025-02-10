@@ -89,6 +89,16 @@ export class TeamModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: TeamJsonResponse): TeamJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get personal_access_tokens(): AccessTokenModel[] | undefined {
     return this.attributes.personal_access_tokens
   }

@@ -91,6 +91,16 @@ export class DeploymentModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: DeploymentJsonResponse): DeploymentJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }

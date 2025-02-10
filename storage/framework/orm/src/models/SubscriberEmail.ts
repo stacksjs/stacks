@@ -80,6 +80,16 @@ export class SubscriberEmailModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: SubscriberEmailJsonResponse): SubscriberEmailJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

@@ -95,6 +95,16 @@ export class TransactionModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: TransactionJsonResponse): TransactionJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }

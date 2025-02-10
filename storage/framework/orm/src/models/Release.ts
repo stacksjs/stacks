@@ -78,6 +78,16 @@ export class ReleaseModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(model: ReleaseJsonResponse): ReleaseJsonResponse {
+    const customGetter = {
+
+    }
+
+    for (const [key, fn] of Object.entries(customGetter)) {
+      model[key] = fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }
