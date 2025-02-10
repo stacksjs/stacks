@@ -1208,7 +1208,7 @@ export class FailedJobModel {
 
       if (Array.isArray(models)) {
         models.map((model: FailedJobModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { failedjob_id: number }) => {
             return record.failedjob_id === model.id
           })
 
@@ -1217,7 +1217,7 @@ export class FailedJobModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { failedjob_id: number }) => {
           return record.failedjob_id === models.id
         })
 

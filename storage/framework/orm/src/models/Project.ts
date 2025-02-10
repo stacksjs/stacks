@@ -1191,7 +1191,7 @@ export class ProjectModel {
 
       if (Array.isArray(models)) {
         models.map((model: ProjectModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { project_id: number }) => {
             return record.project_id === model.id
           })
 
@@ -1200,7 +1200,7 @@ export class ProjectModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { project_id: number }) => {
           return record.project_id === models.id
         })
 

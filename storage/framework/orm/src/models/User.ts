@@ -1277,7 +1277,7 @@ export class UserModel {
 
       if (Array.isArray(models)) {
         models.map((model: UserModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { user_id: number }) => {
             return record.user_id === model.id
           })
 
@@ -1286,7 +1286,7 @@ export class UserModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { user_id: number }) => {
           return record.user_id === models.id
         })
 

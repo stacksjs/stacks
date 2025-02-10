@@ -1924,7 +1924,7 @@ export async function generateModelString(
         
             if (Array.isArray(models)) {
               models.map((model: ${modelName}Model) => {
-                const records = relatedRecords.filter((record: any) => {
+                const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                   return record.${formattedModelName}_id === model.id
                 })
 
@@ -1932,7 +1932,7 @@ export async function generateModelString(
                 return model
               })
             } else {
-              const records = relatedRecords.filter((record: any) => {
+              const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                 return record.${formattedModelName}_id === models.id
               })
         

@@ -1140,7 +1140,7 @@ export class SubscriberModel {
 
       if (Array.isArray(models)) {
         models.map((model: SubscriberModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { subscriber_id: number }) => {
             return record.subscriber_id === model.id
           })
 
@@ -1149,7 +1149,7 @@ export class SubscriberModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { subscriber_id: number }) => {
           return record.subscriber_id === models.id
         })
 

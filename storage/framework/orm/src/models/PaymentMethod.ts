@@ -1276,7 +1276,7 @@ export class PaymentMethodModel {
 
       if (Array.isArray(models)) {
         models.map((model: PaymentMethodModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
             return record.paymentmethod_id === model.id
           })
 
@@ -1285,7 +1285,7 @@ export class PaymentMethodModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
           return record.paymentmethod_id === models.id
         })
 

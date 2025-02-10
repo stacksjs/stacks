@@ -1269,7 +1269,7 @@ export class DeploymentModel {
 
       if (Array.isArray(models)) {
         models.map((model: DeploymentModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { deployment_id: number }) => {
             return record.deployment_id === model.id
           })
 
@@ -1278,7 +1278,7 @@ export class DeploymentModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { deployment_id: number }) => {
           return record.deployment_id === models.id
         })
 

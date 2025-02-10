@@ -1249,7 +1249,7 @@ export class TransactionModel {
 
       if (Array.isArray(models)) {
         models.map((model: TransactionModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { transaction_id: number }) => {
             return record.transaction_id === model.id
           })
 
@@ -1258,7 +1258,7 @@ export class TransactionModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { transaction_id: number }) => {
           return record.transaction_id === models.id
         })
 

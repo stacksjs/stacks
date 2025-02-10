@@ -1208,7 +1208,7 @@ export class ErrorModel {
 
       if (Array.isArray(models)) {
         models.map((model: ErrorModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { error_id: number }) => {
             return record.error_id === model.id
           })
 
@@ -1217,7 +1217,7 @@ export class ErrorModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { error_id: number }) => {
           return record.error_id === models.id
         })
 

@@ -1140,7 +1140,7 @@ export class ReleaseModel {
 
       if (Array.isArray(models)) {
         models.map((model: ReleaseModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { release_id: number }) => {
             return record.release_id === model.id
           })
 
@@ -1149,7 +1149,7 @@ export class ReleaseModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { release_id: number }) => {
           return record.release_id === models.id
         })
 

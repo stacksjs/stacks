@@ -1170,7 +1170,7 @@ export class PostModel {
 
       if (Array.isArray(models)) {
         models.map((model: PostModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { post_id: number }) => {
             return record.post_id === model.id
           })
 
@@ -1179,7 +1179,7 @@ export class PostModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { post_id: number }) => {
           return record.post_id === models.id
         })
 

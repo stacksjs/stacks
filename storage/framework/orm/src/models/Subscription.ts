@@ -1320,7 +1320,7 @@ export class SubscriptionModel {
 
       if (Array.isArray(models)) {
         models.map((model: SubscriptionModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { subscription_id: number }) => {
             return record.subscription_id === model.id
           })
 
@@ -1329,7 +1329,7 @@ export class SubscriptionModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { subscription_id: number }) => {
           return record.subscription_id === models.id
         })
 

@@ -1204,7 +1204,7 @@ export class AccessTokenModel {
 
       if (Array.isArray(models)) {
         models.map((model: AccessTokenModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
             return record.accesstoken_id === model.id
           })
 
@@ -1213,7 +1213,7 @@ export class AccessTokenModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
           return record.accesstoken_id === models.id
         })
 

@@ -1208,7 +1208,7 @@ export class JobModel {
 
       if (Array.isArray(models)) {
         models.map((model: JobModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { job_id: number }) => {
             return record.job_id === model.id
           })
 
@@ -1217,7 +1217,7 @@ export class JobModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { job_id: number }) => {
           return record.job_id === models.id
         })
 

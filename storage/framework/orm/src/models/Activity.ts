@@ -1254,7 +1254,7 @@ export class ActivityModel {
 
       if (Array.isArray(models)) {
         models.map((model: ActivityModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { activity_id: number }) => {
             return record.activity_id === model.id
           })
 
@@ -1263,7 +1263,7 @@ export class ActivityModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { activity_id: number }) => {
           return record.activity_id === models.id
         })
 

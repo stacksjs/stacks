@@ -1256,7 +1256,7 @@ export class ProductModel {
 
       if (Array.isArray(models)) {
         models.map((model: ProductModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { product_id: number }) => {
             return record.product_id === model.id
           })
 
@@ -1265,7 +1265,7 @@ export class ProductModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { product_id: number }) => {
           return record.product_id === models.id
         })
 

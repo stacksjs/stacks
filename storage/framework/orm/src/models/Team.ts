@@ -1267,7 +1267,7 @@ export class TeamModel {
 
       if (Array.isArray(models)) {
         models.map((model: TeamModel) => {
-          const records = relatedRecords.filter((record: any) => {
+          const records = relatedRecords.filter((record: { team_id: number }) => {
             return record.team_id === model.id
           })
 
@@ -1276,7 +1276,7 @@ export class TeamModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { team_id: number }) => {
           return record.team_id === models.id
         })
 
