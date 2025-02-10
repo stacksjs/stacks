@@ -1081,6 +1081,8 @@ export class ProjectModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new ProjectModel(model as ProjectType)
 
     return data
@@ -1094,6 +1096,8 @@ export class ProjectModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 

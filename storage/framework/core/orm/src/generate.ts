@@ -1808,6 +1808,8 @@ export async function generateModelString(
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'desc')
@@ -1815,6 +1817,8 @@ export async function generateModelString(
 
           if (!model)
             return undefined
+
+          await instance.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1829,6 +1833,8 @@ export async function generateModelString(
 
           if (!model)
             return undefined
+
+          await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 

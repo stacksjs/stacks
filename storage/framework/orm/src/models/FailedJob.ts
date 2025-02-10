@@ -1098,6 +1098,8 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new FailedJobModel(model as FailedJobType)
 
     return data
@@ -1111,6 +1113,8 @@ export class FailedJobModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 

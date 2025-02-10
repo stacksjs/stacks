@@ -1166,6 +1166,8 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
@@ -1179,6 +1181,8 @@ export class PaymentMethodModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 

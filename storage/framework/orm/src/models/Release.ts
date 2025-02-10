@@ -1030,6 +1030,8 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
@@ -1043,6 +1045,8 @@ export class ReleaseModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 

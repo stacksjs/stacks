@@ -1094,6 +1094,8 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
@@ -1107,6 +1109,8 @@ export class AccessTokenModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 

@@ -1139,6 +1139,8 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new TransactionModel(model as TransactionType)
 
     return data
@@ -1152,6 +1154,8 @@ export class TransactionModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 

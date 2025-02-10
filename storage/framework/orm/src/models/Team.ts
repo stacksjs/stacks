@@ -1157,6 +1157,8 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new TeamModel(model as TeamType)
 
     return data
@@ -1170,6 +1172,8 @@ export class TeamModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 

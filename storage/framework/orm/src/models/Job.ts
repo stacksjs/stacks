@@ -1098,6 +1098,8 @@ export class JobModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new JobModel(model as JobType)
 
     return data
@@ -1111,6 +1113,8 @@ export class JobModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 

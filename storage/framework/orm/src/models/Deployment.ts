@@ -1159,6 +1159,8 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
@@ -1172,6 +1174,8 @@ export class DeploymentModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 

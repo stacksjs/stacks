@@ -1167,6 +1167,8 @@ export class UserModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new UserModel(model as UserType)
 
     return data
@@ -1180,6 +1182,8 @@ export class UserModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 

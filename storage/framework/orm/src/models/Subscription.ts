@@ -1210,6 +1210,8 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
@@ -1223,6 +1225,8 @@ export class SubscriptionModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 

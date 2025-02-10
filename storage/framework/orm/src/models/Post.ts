@@ -1060,6 +1060,8 @@ export class PostModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new PostModel(model as PostType)
 
     return data
@@ -1073,6 +1075,8 @@ export class PostModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
 

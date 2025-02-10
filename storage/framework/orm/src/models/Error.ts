@@ -1098,6 +1098,8 @@ export class ErrorModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new ErrorModel(model as ErrorType)
 
     return data
@@ -1111,6 +1113,8 @@ export class ErrorModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 

@@ -1146,6 +1146,8 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new ProductModel(model as ProductType)
 
     return data
@@ -1159,6 +1161,8 @@ export class ProductModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
 

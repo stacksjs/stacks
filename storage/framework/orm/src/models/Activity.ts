@@ -1144,6 +1144,8 @@ export class ActivityModel {
     if (!model)
       return undefined
 
+    await this.loadRelations(model)
+
     const data = new ActivityModel(model as ActivityType)
 
     return data
@@ -1157,6 +1159,8 @@ export class ActivityModel {
 
     if (!model)
       return undefined
+
+    await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
