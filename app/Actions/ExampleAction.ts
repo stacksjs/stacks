@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { log } from '@stacksjs/logging'
 
 export default new Action({
   name: 'SendWelcomeEmail',
@@ -15,5 +16,5 @@ export default new Action({
 
 function sendEmail({ to, subject, text }: { to: string, subject: string, text: string }) {
   log.info('Sending email', { to, subject, text })
-  return `Welcome email sent to ${email}`
+  return `Welcome email sent to ${to}`
 }

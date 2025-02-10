@@ -1,0 +1,178 @@
+{
+  // Disable the default formatter, use eslint instead
+  "prettier.enable": false,
+  "biome.enabled": false,
+  "editor.formatOnSave": false,
+  // Auto fix
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+  // Silent the stylistic rules in you IDE, but still auto fix them
+  "eslint.rules.customizations": [
+    {
+      "rule": "style/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "format/*",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-indent",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spacing",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-spaces",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-order",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-dangle",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*-newline",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*quotes",
+      "severity": "off",
+      "fixable": true
+    },
+    {
+      "rule": "*semi",
+      "severity": "off",
+      "fixable": true
+    }
+  ],
+  // Enable eslint for all supported languages
+  "eslint.validate": [
+    "javascript",
+    "typescript",
+    "vue",
+    "html",
+    "markdown",
+    "json",
+    "jsonc",
+    "yaml",
+    "toml",
+    "xml",
+    "gql",
+    "graphql",
+    "css",
+    "less",
+    "scss",
+    "pcss",
+    "postcss"
+  ],
+  "[stx]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  // TypeScript
+  "typescript.tsdk": "${workspaceFolder}/node_modules/typescript/lib",
+  "unocss.root": "${workspaceFolder}/storage/framework/core/ui/src/uno.config.ts",
+  // Shell
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  // Markdown
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.formatOnSave": true
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "markdownlint.config": {
+    "default": false,
+    // "MD033": {
+    //   "allowed_elements": [
+    //     "h3",
+    //     "div",
+    //     "details",
+    //     "summary",
+    //     "VPTeamPage",
+    //     "VPTeamPageTitle",
+    //     "VPTeamMembers",
+    //     "script"
+    //   ]
+    // },
+    "MD041": false
+  },
+  // Stacks
+  "vue.inlayHints.missingProps": true,
+  "typescript.preferGoToSourceDefinition": true,
+  "files.associations": {
+    "buddy": "typescript",
+    "*.stx": "vue"
+  },
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "vsicons.associations.files": [
+    {
+      "icon": "${workspaceFolder}/public/favicon.svg",
+      "extensions": [
+        "stx"
+      ],
+      "format": "svg"
+    }
+  ],
+  "git.enableSmartCommit": true,
+  "npm.enableRunFromFolder": true,
+  "npm.packageManager": "bun",
+  "editor.gotoLocation.multipleDefinitions": "goto",
+  "search.exclude": {
+    "**/bun.lock": true,
+    "**/node_modules": true,
+    "**/cdk.out": true,
+    "**/dist": true,
+    "**/storage/public": true,
+    "CHANGELOG.md": true
+  },
+  "explorer.confirmDragAndDrop": false,
+  "todo-tree.highlights.enabled": true,
+  "cSpell.ignorePaths": [
+    "cdk.out",
+    "node_modules",
+    "lang/de.yml"
+  ],
+  "cSpell.dictionaries": [
+    "stacks-dictionary"
+  ],
+  "cSpell.diagnosticLevel": "Hint",
+  "cSpell.customDictionaries": {
+    "stacks": {
+      "name": "stacks-dictionary",
+      "path": "./storage/framework/defaults/ide/dictionary.txt",
+      "scope": "user",
+      "addWords": true
+    },
+    "custom": true // enable the `custom` dictionary
+  },
+  "terminal.integrated.scrollback": 10000,
+  "grammarly.files.include": [
+    "**/README.md",
+    "**/readme.md",
+    "**/*.txt"
+  ],
+  "grammarly.files.exclude": [
+    "**/dictionary.txt"
+  ],
+}

@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Menu, MenuButton, MenuItem, MenuItems } from './components'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 
 const plugin: Plugin = {
   install(app) {
@@ -9,5 +9,14 @@ const plugin: Plugin = {
   },
 }
 
-export { Menu, MenuButton, MenuItem, MenuItems }
+export {
+  Menu as Dropdown,
+  MenuButton as DropdownButton,
+  MenuItem as DropdownItem,
+  MenuItems as DropdownItems,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+}
 export default plugin

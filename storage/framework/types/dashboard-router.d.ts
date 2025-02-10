@@ -43,7 +43,6 @@ declare module 'vue-router/auto-routes' {
     '/packages/': RouteRecordInfo<'/packages/', '/packages', Record<never, never>, Record<never, never>>,
     '/releases/': RouteRecordInfo<'/releases/', '/releases', Record<never, never>, Record<never, never>>,
     '/requests/': RouteRecordInfo<'/requests/', '/requests', Record<never, never>, Record<never, never>>,
-    '/settings/[name]': RouteRecordInfo<'/settings/[name]', '/settings/:name', { name: ParamValue<true> }, { name: ParamValue<false> }>,
     '/settings/billing': RouteRecordInfo<'/settings/billing', '/settings/billing', Record<never, never>, Record<never, never>>,
     '/settings/mail': RouteRecordInfo<'/settings/mail', '/settings/mail', Record<never, never>, Record<never, never>>,
     '/teams/[id]': RouteRecordInfo<'/teams/[id]', '/teams/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,

@@ -1,6 +1,6 @@
 import type { DeploymentRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -46,4 +46,4 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   }
 }
 
-export const request = new DeploymentRequest()
+export const deploymentRequest = new DeploymentRequest()

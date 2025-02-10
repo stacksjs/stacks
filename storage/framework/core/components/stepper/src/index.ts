@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Stepper } from './components'
+import Stepper from './components/Stepper.vue'
 
 const plugin: Plugin = {
   install(app) {

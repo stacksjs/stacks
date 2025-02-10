@@ -1,5 +1,6 @@
 import type { ViteConfig } from '@stacksjs/types'
 import { alias } from '@stacksjs/alias'
+import { env } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { server } from '@stacksjs/server'
 import {
@@ -28,6 +29,16 @@ export const viewsConfig: ViteConfig = {
   build: {
     rollupOptions: {
       external: [
+        'fs',
+        'node:fs',
+        'node:fs/promises',
+        'node:module',
+        'node:path',
+        'node:process',
+        'node:url',
+        'node:assert',
+        'node:v8',
+        'node:util',
         '@iconify/utils',
         '@antfu/install-pkg',
       ],
@@ -54,7 +65,7 @@ export const viewsConfig: ViteConfig = {
 
   plugins: [
     Local({
-      domain: 'stacks.localhost', // default: stacks.localhost
+      domain: env.APP_URL ?? 'stacks.localhost',
       https: true, // Use default SSL config, pass TlsConfig options to customize
       cleanup: {
         hosts: true, // Clean up relating /etc/hosts entry
@@ -69,11 +80,7 @@ export const viewsConfig: ViteConfig = {
       type: 'views',
     }),
 
-    layouts({
-      extensions: ['stx', 'vue'],
-      layoutsDirs: p.layoutsPath('', { relative: true }),
-    }),
-
+    layouts(),
     autoImports(),
     components(),
     cssEngine(),

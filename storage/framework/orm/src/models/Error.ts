@@ -1,14 +1,16 @@
-import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { sql } from '@stacksjs/database'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
   id?: number
   type?: string
   message?: string
   stack?: string
-  status?: boolean
+  status?: number
   additional_info?: string
 
   created_at?: Date
@@ -18,7 +20,7 @@ export interface ErrorsTable {
 }
 
 interface ErrorResponse {
-  data: Errors
+  data: ErrorJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -27,15 +29,15 @@ interface ErrorResponse {
   next_cursor: number | null
 }
 
+export interface ErrorJsonResponse extends Omit<ErrorsTable, 'password'> {
+  [key: string]: any
+}
+
 export type ErrorType = Selectable<ErrorsTable>
 export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
-export type Errors = ErrorType[]
 
-export type ErrorColumn = Errors
-export type ErrorColumns = Array<keyof Errors>
-
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: ErrorType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -46,256 +48,687 @@ interface QueryOptions {
 }
 
 export class ErrorModel {
-  private hidden = []
-  private fillable = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
-  private softDeletes = false
+  private readonly hidden: Array<keyof ErrorJsonResponse> = []
+  private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
+  private readonly guarded: Array<keyof ErrorJsonResponse> = []
+  protected attributes: Partial<ErrorJsonResponse> = {}
+  protected originalAttributes: Partial<ErrorJsonResponse> = {}
+
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number
-  public type: string | undefined
-  public message: string | undefined
-  public stack: string | undefined
-  public status: boolean | undefined
-  public additional_info: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
+  private hasSaved: boolean
+  private customColumns: Record<string, unknown> = {}
 
   constructor(error: Partial<ErrorType> | null) {
-    this.id = error?.id || 1
-    this.type = error?.type
-    this.message = error?.message
-    this.stack = error?.stack
-    this.status = error?.status
-    this.additional_info = error?.additional_info
+    if (error) {
+      this.attributes = { ...error }
+      this.originalAttributes = { ...error }
 
-    this.created_at = error?.created_at
-
-    this.updated_at = error?.updated_at
+      Object.keys(error).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (error as ErrorJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('errors')
-    this.updateFromQuery = db.updateTable('errors')
-    this.deleteFromQuery = db.deleteFrom('errors')
+    this.selectFromQuery = DB.instance.selectFrom('errors')
+    this.updateFromQuery = DB.instance.updateTable('errors')
+    this.deleteFromQuery = DB.instance.deleteFrom('errors')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
-  // Method to find a Error by ID
-  async find(id: number): Promise<ErrorModel | undefined> {
-    const query = db.selectFrom('errors').where('id', '=', id).selectAll()
+  get id(): number | undefined {
+    return this.attributes.id
+  }
 
-    const model = await query.executeTakeFirst()
+  get type(): string | undefined {
+    return this.attributes.type
+  }
+
+  get message(): string | undefined {
+    return this.attributes.message
+  }
+
+  get stack(): string | undefined {
+    return this.attributes.stack
+  }
+
+  get status(): number | undefined {
+    return this.attributes.status
+  }
+
+  get additional_info(): string | undefined {
+    return this.attributes.additional_info
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  set type(value: string) {
+    this.attributes.type = value
+  }
+
+  set message(value: string) {
+    this.attributes.message = value
+  }
+
+  set stack(value: string) {
+    this.attributes.stack = value
+  }
+
+  set status(value: number) {
+    this.attributes.status = value
+  }
+
+  set additional_info(value: string) {
+    this.attributes.additional_info = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  getOriginal(column?: keyof ErrorType): Partial<ErrorType> {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
+  getChanges(): Partial<ErrorJsonResponse> {
+    return this.fillable.reduce<Partial<ErrorJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ErrorsTable]
+      const originalValue = this.originalAttributes[key as keyof ErrorsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
+      }
+
+      return changes
+    }, {})
+  }
+
+  isDirty(column?: keyof ErrorType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof ErrorType): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof ErrorType): boolean {
+    return this.hasSaved && this.isDirty(column)
+  }
+
+  select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
+  async applyFind(id: number): Promise<ErrorModel | undefined> {
+    const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    if (model)
+      await this.loadRelations(model)
 
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<ErrorModel | undefined> {
+    return await this.applyFind(id)
   }
 
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
     const instance = new ErrorModel(null)
 
-    const result = await instance.mapWith(model)
+    return await instance.applyFind(id)
+  }
 
-    const data = new ErrorModel(result as ErrorType)
+  async first(): Promise<ErrorModel | undefined> {
+    let model: ErrorModel | undefined
 
-    cache.getOrSet(`error:${id}`, JSON.stringify(model))
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
 
-  async mapWith(model: ErrorType): Promise<ErrorType> {
-    return model
+  static async first(): Promise<ErrorModel | undefined> {
+    const model = await DB.instance.selectFrom('errors')
+      .selectAll()
+      .executeTakeFirst()
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
+  }
+
+  async applyFirstOrFail(): Promise<ErrorModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<ErrorModel | undefined> {
+    return await this.applyFirstOrFail()
+  }
+
+  static async firstOrFail(): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<ErrorModel[]> {
-    const models = await db.selectFrom('errors').selectAll().execute()
+    const models = await DB.instance.selectFrom('errors').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
-      const instance = new ErrorModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ErrorModel(results)
+      return new ErrorModel(model)
     }))
 
     return data
   }
 
-  static async findOrFail(id: number): Promise<ErrorModel> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
-
-    const instance = new ErrorModel(null)
+  async applyFindOrFail(id: number): Promise<ErrorModel> {
+    const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new HttpError(404, `No ErrorModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ErrorModel results for ${id}`)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
+    await this.loadRelations(model)
 
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
   }
 
   async findOrFail(id: number): Promise<ErrorModel> {
-    const model = await db.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
+    return await this.applyFindOrFail(id)
+  }
 
-    if (model === undefined)
-      throw new HttpError(404, `No ErrorModel results for ${id}`)
+  static async findOrFail(id: number): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
 
-    cache.getOrSet(`error:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
-    let query = db.selectFrom('errors').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('errors').where('id', 'in', ids)
 
     const instance = new ErrorModel(null)
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new ErrorModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
-  static async get(): Promise<ErrorModel[]> {
+  skip(count: number): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static skip(count: number): ErrorModel {
     const instance = new ErrorModel(null)
 
-    let models
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
-    if (instance.hasSelect) {
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: ErrorModel) => {
-      const instance = new ErrorModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new ErrorModel(results)
-    }))
-
-    return data
+    return instance
   }
 
-  // Method to get a Error by criteria
-  async get(): Promise<ErrorModel[]> {
-    if (this.hasSelect) {
-      const model = await this.selectFromQuery.execute()
+  async applyChunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
 
-      return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+    while (hasMore) {
+      // Get one batch
+      const models = await this.selectFromQuery
+        .selectAll()
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
+      }
+
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
+
+      page++
+    }
+  }
+
+  async chunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
+    const instance = new ErrorModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
+  take(count: number): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
+  static take(count: number): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  static async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
+    const instance = new ErrorModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: ErrorModel) => modelItem[field])
     }
 
-    const model = await this.selectFromQuery.selectAll().execute()
+    const model = await instance.selectFromQuery.selectAll().execute()
 
-    return model.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+    return model.map((modelItem: ErrorModel) => modelItem[field])
+  }
+
+  async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
+    return ErrorModel.pluck(field)
   }
 
   static async count(): Promise<number> {
     const instance = new ErrorModel(null)
 
-    const results = await instance.selectFromQuery.selectAll().execute()
+    const result = await instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
 
-    return results.length
+    return result.count || 0
   }
 
   async count(): Promise<number> {
-    if (this.hasSelect) {
-      const results = await this.selectFromQuery.execute()
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
 
-      return results.length
-    }
-
-    const results = await this.selectFromQuery.execute()
-
-    return results.length
+    return result.count || 0
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
-    const totalRecordsResult = await db.selectFrom('errors')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+  static async max(field: keyof ErrorModel): Promise<number> {
+    const instance = new ErrorModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max `)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  async max(field: keyof ErrorModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  static async min(field: keyof ErrorModel): Promise<number> {
+    const instance = new ErrorModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  async min(field: keyof ErrorModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  static async avg(field: keyof ErrorModel): Promise<number> {
+    const instance = new ErrorModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  async avg(field: keyof ErrorModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  static async sum(field: keyof ErrorModel): Promise<number> {
+    const instance = new ErrorModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async sum(field: keyof ErrorModel): Promise<number> {
+    const result = this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async applyGet(): Promise<ErrorModel[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    await this.loadRelations(models)
+
+    const data = await Promise.all(models.map(async (model: ErrorModel) => {
+      return new ErrorModel(model)
+    }))
+
+    return data
+  }
+
+  async get(): Promise<ErrorModel[]> {
+    return await this.applyGet()
+  }
+
+  static async get(): Promise<ErrorModel[]> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyGet()
+  }
+
+  has(relation: string): ErrorModel {
+    return ErrorModel.has(relation)
+  }
+
+  static has(relation: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static whereExists(callback: (qb: any) => any): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
+    return ErrorModel.whereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
+    const instance = new ErrorModel(null)
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    instance.selectFromQuery = instance.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
+
+    return instance
+  }
+
+  applyDoesntHave(relation: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): ErrorModel {
+    return this.applyDoesntHave(relation)
+  }
+
+  static doesntHave(relation: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return not(exists(subquery))
+      })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('errors')
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    if (this.hasSelect) {
-      const errorsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (errorsWithExtra.length > (options.limit ?? 10))
-        nextCursor = errorsWithExtra.pop()?.id ?? null
-
-      return {
-        data: errorsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    const errorsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (errorsWithExtra.length > (options.limit ?? 10))
-      nextCursor = errorsWithExtra.pop()?.id ?? null
-
-    return {
-      data: errorsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to get all errors
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
-    const totalRecordsResult = await db.selectFrom('errors')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const errorsWithExtra = await db.selectFrom('errors')
+    const errorsWithExtra = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -317,39 +750,58 @@ export class ErrorModel {
     }
   }
 
-  // Method to create a new error
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all errors
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ErrorResponse> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyPaginate(options)
+  }
+
   static async create(newError: NewError): Promise<ErrorModel> {
     const instance = new ErrorModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newError).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newError).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewError
 
-    const result = await db.insertInto('errors')
+    const result = await DB.instance.insertInto('errors')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+
+    if (model)
+      dispatch('error:created', model)
 
     return model
   }
 
-  static async createMany(newErrors: NewError[]): Promise<void> {
+  static async createMany(newError: NewError[]): Promise<void> {
     const instance = new ErrorModel(null)
 
-    const filteredValues = newErrors.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewError,
-    )
+    const valuesFiltered = newError.map((newError: NewError) => {
+      const filteredValues = Object.fromEntries(
+        Object.entries(newError).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewError
 
-    await db.insertInto('errors')
-      .values(filteredValues)
+      return filteredValues
+    })
+
+    await DB.instance.insertInto('errors')
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newError: NewError): Promise<ErrorModel> {
-    const result = await db.insertInto('errors')
+    const result = await DB.instance.insertInto('errors')
       .values(newError)
       .executeTakeFirst()
 
@@ -360,116 +812,119 @@ export class ErrorModel {
 
   // Method to remove a Error
   static async remove(id: number): Promise<any> {
-    return await db.deleteFrom('errors')
+    return await DB.instance.deleteFrom('errors')
       .where('id', '=', id)
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): ErrorModel {
-    let column: any
-    let operator: any
-    let value: any
+  applyWhere(instance: ErrorModel, column: string, ...args: any[]): ErrorModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  orWhere(...args: Array<[string, string, any]>): ErrorModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
-  }
-
-  static orWhere(...args: Array<[string, string, any]>): ErrorModel {
-    const instance = new ErrorModel(null)
-
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): ErrorModel {
-    let column: any
-    let operator: any
-    let value: any
+  where(column: string, ...args: any[]): ErrorModel {
+    return this.applyWhere(this, column, ...args)
+  }
 
+  static where(column: string, ...args: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
+    return instance.applyWhere(instance, column, ...args)
+  }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+  whereColumn(first: string, operator: string, second: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+    return this
+  }
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  static whereColumn(first: string, operator: string, second: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
+  }
+
+  applyWhereRef(column: string, ...args: string[]): ErrorModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    const instance = new ErrorModel(null)
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return instance
+  }
+
+  whereRef(column: string, ...args: string[]): ErrorModel {
+    return this.applyWhereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  whereRaw(sqlStatement: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  static whereRaw(sqlStatement: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return instance
+  }
+
+  applyOrWhere(...conditions: [string, any][]): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  orWhere(...conditions: [string, any][]): ErrorModel {
+    return this.applyOrWhere(...conditions)
+  }
+
+  static orWhere(...conditions: [string, any][]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: ErrorModel) => ErrorModel,
+  ): ErrorModel {
+    return ErrorModel.when(condition, callback)
   }
 
   static when(
@@ -484,14 +939,8 @@ export class ErrorModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: ErrorModel) => ErrorModel,
-  ): ErrorModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+  whereNull(column: string): ErrorModel {
+    return ErrorModel.whereNull(column)
   }
 
   static whereNull(column: string): ErrorModel {
@@ -506,18 +955,6 @@ export class ErrorModel {
     )
 
     return instance
-  }
-
-  whereNull(column: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
   }
 
   static whereType(value: string): ErrorModel {
@@ -560,6 +997,10 @@ export class ErrorModel {
     return instance
   }
 
+  whereIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    return ErrorModel.whereIn(column, values)
+  }
+
   static whereIn(column: keyof ErrorType, values: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
@@ -572,55 +1013,218 @@ export class ErrorModel {
     return instance
   }
 
-  async first(): Promise<ErrorModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  applyWhereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
 
-    if (!model)
-      return undefined
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
 
-    const result = await this.mapWith(model)
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
 
-    const data = new ErrorModel(result as ErrorType)
-
-    return data
+    return this
   }
 
-  async firstOrFail(): Promise<ErrorModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+  whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
+    return this.applyWhereBetween(column, range)
+  }
 
-    if (model === undefined)
-      throw new HttpError(404, 'No ErrorModel results found for query')
-
+  static whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
     const instance = new ErrorModel(null)
 
-    const result = await instance.mapWith(model)
+    return instance.applyWhereBetween(column, range)
+  }
 
-    const data = new ErrorModel(result as ErrorType)
+  applyWhereLike(column: keyof ErrorType, value: string): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    return data
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
+  }
+
+  whereLike(column: keyof ErrorType, value: string): ErrorModel {
+    return this.applyWhereLike(column, value)
+  }
+
+  static whereLike(column: keyof ErrorType, value: string): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  applyWhereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
+  whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    return this.applyWhereNotIn(column, values)
+  }
+
+  static whereNotIn(column: keyof ErrorType, values: any[]): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    let model
 
-    return model !== null || model !== undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
   }
 
-  static async first(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors')
+  static async latest(): Promise<ErrorType | undefined> {
+    const model = await DB.instance.selectFrom('errors')
       .selectAll()
+      .orderBy('id', 'desc')
       .executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
+  }
+
+  static async oldest(): Promise<ErrorType | undefined> {
+    const model = await DB.instance.selectFrom('errors')
+      .selectAll()
+      .orderBy('id', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
+  }
+
+  static async firstOrCreate(
+    condition: Partial<ErrorType>,
+    newError: NewError,
+  ): Promise<ErrorModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof ErrorType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingError = await DB.instance.selectFrom('errors')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingError) {
+      return new ErrorModel(existingError as ErrorType)
+    }
+    else {
+      return await this.create(newError)
+    }
+  }
+
+  static async updateOrCreate(
+    condition: Partial<ErrorType>,
+    newError: NewError,
+  ): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
+
+    const key = Object.keys(condition)[0] as keyof ErrorType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingError = await DB.instance.selectFrom('errors')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingError) {
+      // If found, update the existing record
+      await DB.instance.updateTable('errors')
+        .set(newError)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedError = await DB.instance.selectFrom('errors')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedError) {
+        throw new HttpError(500, 'Failed to fetch updated record')
+      }
+
+      instance.hasSaved = true
+
+      return new ErrorModel(updatedError as ErrorType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newError)
+    }
+  }
+
+  async loadRelations(models: ErrorModel | ErrorModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('error_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ErrorModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.error_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: any) => {
+          return record.error_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
   }
 
   with(relations: string[]): ErrorModel {
@@ -638,25 +1242,27 @@ export class ErrorModel {
   }
 
   async last(): Promise<ErrorType | undefined> {
-    return await db.selectFrom('errors')
+    return await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<ErrorType | undefined> {
-    const model = await db.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new ErrorModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new ErrorModel(result as ErrorType)
+    const data = new ErrorModel(model as ErrorType)
 
     return data
+  }
+
+  orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
@@ -667,8 +1273,50 @@ export class ErrorModel {
     return instance
   }
 
-  orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+  groupBy(column: keyof ErrorType): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
+  }
+
+  static groupBy(column: keyof ErrorType): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
+  }
+
+  static having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
+
+    return instance
+  }
+
+  inRandomOrder(): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
+  static inRandomOrder(): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  orderByDesc(column: keyof ErrorType): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -681,8 +1329,8 @@ export class ErrorModel {
     return instance
   }
 
-  orderByDesc(column: keyof ErrorType): ErrorModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
+  orderByAsc(column: keyof ErrorType): ErrorModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
@@ -695,29 +1343,27 @@ export class ErrorModel {
     return instance
   }
 
-  orderByAsc(column: keyof ErrorType): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  async update(error: ErrorUpdate): Promise<ErrorModel | undefined> {
+  async update(newError: ErrorUpdate): Promise<ErrorModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(error).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newError).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
     ) as NewError
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
-    await db.updateTable('errors')
+    await DB.instance.updateTable('errors')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
   }
 
   async forceUpdate(error: ErrorUpdate): Promise<ErrorModel | undefined> {
@@ -725,28 +1371,66 @@ export class ErrorModel {
       this.updateFromQuery.set(error).execute()
     }
 
-    await db.updateTable('errors')
+    await DB.instance.updateTable('errors')
       .set(error)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      this.hasSaved = true
+
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {
     if (!this)
       throw new HttpError(500, 'Error data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this.attributes).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewError
+
     if (this.id === undefined) {
-      await db.insertInto('errors')
-        .values(this as NewError)
+      await DB.instance.insertInto('errors')
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {
-      await this.update(this)
+      await this.update(this.attributes)
     }
+
+    this.hasSaved = true
+  }
+
+  fill(data: Partial<ErrorType>): ErrorModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewError
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<ErrorType>): ErrorModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
   }
 
   // Method to delete (soft delete) the error instance
@@ -754,7 +1438,7 @@ export class ErrorModel {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await db.deleteFrom('errors')
+    return await DB.instance.deleteFrom('errors')
       .where('id', '=', this.id)
       .execute()
   }
@@ -778,7 +1462,7 @@ export class ErrorModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
@@ -791,12 +1475,8 @@ export class ErrorModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
-  }
-
-  toJSON() {
-    const output: Partial<ErrorType> = {
+  toJSON(): Partial<ErrorJsonResponse> {
+    const output: Partial<ErrorJsonResponse> = {
 
       id: this.id,
       type: this.type,
@@ -809,11 +1489,10 @@ export class ErrorModel {
 
       updated_at: this.updated_at,
 
+      ...this.customColumns,
     }
 
-        type Error = Omit<ErrorType, 'password'>
-
-        return output as Error
+    return output
   }
 
   parseResult(model: ErrorModel): ErrorModel {
@@ -826,7 +1505,7 @@ export class ErrorModel {
 }
 
 async function find(id: number): Promise<ErrorModel | undefined> {
-  const query = db.selectFrom('errors').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('errors').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -843,7 +1522,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newError: NewError): Promise<ErrorModel> {
-  const result = await db.insertInto('errors')
+  const result = await DB.instance.insertInto('errors')
     .values(newError)
     .executeTakeFirstOrThrow()
 
@@ -851,48 +1530,48 @@ export async function create(newError: NewError): Promise<ErrorModel> {
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('errors')
+  await DB.instance.deleteFrom('errors')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereType(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('type', '=', value)
+  const query = DB.instance.selectFrom('errors').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereMessage(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('message', '=', value)
+  const query = DB.instance.selectFrom('errors').where('message', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereStack(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('stack', '=', value)
+  const query = DB.instance.selectFrom('errors').where('stack', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
-export async function whereStatus(value: boolean): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('status', '=', value)
+export async function whereStatus(value: number): Promise<ErrorModel[]> {
+  const query = DB.instance.selectFrom('errors').where('status', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export async function whereAdditionalInfo(value: string): Promise<ErrorModel[]> {
-  const query = db.selectFrom('errors').where('additional_info', '=', value)
+  const query = DB.instance.selectFrom('errors').where('additional_info', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
 }
 
 export const Error = ErrorModel

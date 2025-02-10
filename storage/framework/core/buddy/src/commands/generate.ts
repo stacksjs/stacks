@@ -13,6 +13,7 @@ import {
 } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { generateModelFiles } from '@stacksjs/orm'
+import { initiateImports } from '@stacksjs/server'
 import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
 
 export function generate(buddy: CLI): void {
@@ -150,6 +151,8 @@ export function generate(buddy: CLI): void {
 
       try {
         await generateModelFiles()
+
+        await initiateImports()
 
         outro('Generated Model files', {
           startTime: perf,

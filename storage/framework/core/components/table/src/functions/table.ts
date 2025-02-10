@@ -111,7 +111,10 @@ watchDebounced(
 )
 
 function determineState(): TableStore {
-  const ls = localStorage.getItem('table')
+  let ls
+  if (typeof localStorage !== 'undefined') {
+    ls = localStorage.getItem('table')
+  }
 
   if (isString(ls))
     return JSON.parse(ls) as TableStore

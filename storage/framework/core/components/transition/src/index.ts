@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { TransitionChild, TransitionRoot } from './components'
+import { TransitionChild, TransitionRoot } from '@headlessui/vue'
 
 const plugin: Plugin = {
   install(app) {

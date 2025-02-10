@@ -1,9 +1,9 @@
+import type { QueueOption } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { log } from '@stacksjs/cli'
 import { appPath } from '@stacksjs/path'
 import { storeJob } from './utils'
-import type { QueueOption } from '@stacksjs/types'
 
 const queueDriver = 'database'
 
@@ -22,52 +22,46 @@ interface Dispatchable {
 }
 
 export async function runJob(name: string, options: QueueOption = {}): Promise<void> {
-  try {
-    const jobModule = await import(appPath(`Jobs/${name}.ts`))
-    const job = jobModule.default as JobConfig
+  const jobModule = await import(appPath(`Jobs/${name}.ts`))
+  const job = jobModule.default as JobConfig
 
-    if (options.payload) {
-      // Attach payload to the job instance if it exists
-      Object.assign(job, { payload: options.payload })
-    }
+  if (options.payload) {
+    // Attach payload to the job instance if it exists
+    Object.assign(job, { payload: options.payload })
+  }
 
-    if (options.context) {
-      // Attach context to the job instance if it exists
-      Object.assign(job, { context: options.context })
-    }
+  if (options.context) {
+    // Attach context to the job instance if it exists
+    Object.assign(job, { context: options.context })
+  }
 
-    if (job.action) {
-      // If action is a string, run it via runAction
-      if (typeof job.action === 'string') {
-        await runAction(job.action)
-      }
-      // If action is a function, execute it directly
-      else if (typeof job.action === 'function') {
-        await job.action()
-      }
+  if (job.action) {
+    // If action is a string, run it via runAction
+    if (typeof job.action === 'string') {
+      await runAction(job.action)
     }
-    // If handle is defined, execute it
-    else if (job.handle) {
-      await job.handle(options.payload)
-    }
-    // If no handle or action, try to execute the module directly
-    else if (typeof jobModule.default === 'function') {
-      await jobModule.default(options.payload, options.context)
-    }
-    else {
-      // Try to execute the file itself if it exports a function
-      const possibleFunction = Object.values(jobModule).find(exp => typeof exp === 'function')
-      if (possibleFunction) {
-        await possibleFunction(options.payload, options.context)
-      }
-      else {
-        throw new Error(`Job ${name} must export a function, or define either a handle function or an action`)
-      }
+    // If action is a function, execute it directly
+    else if (typeof job.action === 'function') {
+      await job.action()
     }
   }
-  catch (error) {
-    log.error(`Job ${name} failed:`, error)
-    throw error
+  // If handle is defined, execute it
+  else if (job.handle) {
+    await job.handle(options.payload)
+  }
+  // If no handle or action, try to execute the module directly
+  else if (typeof jobModule.default === 'function') {
+    await jobModule.default(options.payload, options.context)
+  }
+  else {
+    // Try to execute the file itself if it exports a function
+    const possibleFunction = Object.values(jobModule).find(exp => typeof exp === 'function')
+    if (possibleFunction) {
+      await possibleFunction(options.payload, options.context)
+    }
+    else {
+      throw new Error(`Job ${name} must export a function, or define either a handle function or an action`)
+    }
   }
 }
 
@@ -131,7 +125,7 @@ export class Queue implements Dispatchable {
   private deferWithDelay(): void {
     setTimeout(async () => {
       await this.dispatchNow()
-    }, this.options.delay || 0 * 1000)
+    }, this.options.delay || 0)
   }
 
   private async runJobImmediately(jobPayload: any): Promise<void> {

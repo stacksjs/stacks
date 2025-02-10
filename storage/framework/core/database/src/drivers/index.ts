@@ -32,12 +32,12 @@ export async function deleteMigrationFiles(): Promise<void> {
 }
 
 export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
+        const modelPath = path.frameworkPath(`models/${modelFile}`)
 
         if (fs.existsSync(modelPath))
           await Bun.$`rm ${modelPath}`
@@ -47,7 +47,7 @@ export async function deleteFrameworkModels(): Promise<void> {
 }
 
 export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
-  const oldModelPath = path.frameworkPath(`database/models/${modelName}`)
+  const oldModelPath = path.frameworkPath(`models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model
   let fields = {} as Attributes
 
@@ -79,7 +79,7 @@ export async function hasMigrationBeenCreated(tableName: string): Promise<boolea
 
   const migrations = globSync([path.userMigrationsPath('*.ts')], { absolute: true })
 
-  return migrations.some(path => path.includes('create-jobs-'))
+  return migrations.some(path => path.includes(`create-${tableName}`))
 }
 
 export async function getExecutedMigrations(): Promise<{ name: string }[]> {
@@ -287,24 +287,28 @@ export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: num
 }
 
 export async function fetchTables(): Promise<string[]> {
-  const modelFiles = globSync(path.userModelsPath('*.ts'), { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {
     const model = (await import(modelPath)).default as Model
     const tableName = getTableName(model, modelPath)
-
-    tables.push(tableName)
-  }
-
-  for (const coreModelPath of coreModelFiles) {
-    const model = (await import(coreModelPath)).default as Model
-    const tableName = getTableName(model, coreModelPath)
+    const upvoteTable = getUpvoteTableName(model, tableName)
+    if (upvoteTable)
+      tables.push(upvoteTable)
 
     tables.push(tableName)
   }
 
   return tables
+}
+
+function getUpvoteTableName(model: Model, tableName: string): string | undefined {
+  const defaultTable = `${tableName}_likes`
+  const traits = model.traits
+
+  return typeof traits?.likeable === 'object'
+    ? traits.likeable.table || defaultTable
+    : undefined
 }

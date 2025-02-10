@@ -1,6 +1,6 @@
 import type { JobRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -40,4 +40,4 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
   }
 }
 
-export const request = new JobRequest()
+export const jobRequest = new JobRequest()

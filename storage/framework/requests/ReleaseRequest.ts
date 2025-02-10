@@ -1,6 +1,6 @@
 import type { ReleaseRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -32,4 +32,4 @@ export class ReleaseRequest extends Request<RequestDataRelease> implements Relea
   }
 }
 
-export const request = new ReleaseRequest()
+export const releaseRequest = new ReleaseRequest()

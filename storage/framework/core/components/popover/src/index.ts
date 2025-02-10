@@ -1,5 +1,5 @@
 import type { Plugin } from 'vue'
-import { Popover, PopoverButton, PopoverPanel } from './components'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 
 const plugin: Plugin = {
   install(app) {

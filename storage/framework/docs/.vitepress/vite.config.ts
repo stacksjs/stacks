@@ -41,7 +41,7 @@ export default defineConfig({
 
     // plugins
     Components({
-      dirs: path.projectPath('resources/components/Docs'),
+      dirs: [path.resourcesPath('components/Docs'), path.frameworkPath('defaults/components/Docs')],
       include: [/\.vue$/, /\.vue\?vue/, /\.md$/],
       resolvers: [
         IconsResolver({

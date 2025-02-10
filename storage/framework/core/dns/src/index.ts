@@ -17,3 +17,4 @@
 // }
 
 export * from './drivers/aws'
+export * from '@stacksjs/dnsx'

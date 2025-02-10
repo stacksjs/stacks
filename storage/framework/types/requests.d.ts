@@ -108,6 +108,35 @@ export interface TeamRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataActivity {
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ActivityRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'title' | 'description' | 'address' | 'latlng') => string) & ((key: 'info_source') => string[]) & ((key: 'were_detained') => boolean)
+
+  all: () => RequestDataActivity
+  id: number
+  title: string
+  description: string
+  address: string
+  latlng: string
+  info_source: string[]
+  were_detained: boolean
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataSubscriber {
   id: number
   subscribed: boolean
@@ -312,13 +341,13 @@ interface RequestDataTransaction {
   type: string
   provider_id: string
   user_id: number
-  paymentmethod_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'paymentmethod_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'payment_method_id') => string)
 
   all: () => RequestDataTransaction
   id: number
@@ -328,7 +357,7 @@ export interface TransactionRequestType extends Request {
   type: string
   provider_id: string
   user_id: number
-  paymentmethod_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -400,24 +429,24 @@ interface RequestDataError {
   type: string
   message: string
   stack: string
-  status: boolean
+  status: number
   additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'type' | 'message' | 'stack' | 'additional_info') => string) & ((key: 'status') => boolean)
+  get: ((key: 'id') => number) & ((key: 'type' | 'message' | 'stack' | 'additional_info') => string) & ((key: 'status') => number)
 
   all: () => RequestDataError
   id: number
   type: string
   message: string
   stack: string
-  status: boolean
+  status: number
   additional_info: string
   created_at?: Date
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestTypeFailedJobRequestTypeProductRequestTypePaymentMethodRequestTypeTransactionRequestTypeJobRequestTypeSubscriptionRequestTypeErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | ProductRequestType | PaymentMethodRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | ErrorRequestType

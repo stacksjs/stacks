@@ -149,7 +149,7 @@ export interface UiOptions {
    * are displayed utilizing a technique called "icons in pure css."
    * Learn more here https://antfu.me/posts/icons-in-pure-css.
    *
-   * @see https://stacks.ow3.org/config/icons — list of available icon sets
+   * @see https://stacksjs.org/config/icons — list of available icon sets
    * @todo implement this into Vite build flow
    * @example
    * ```ts

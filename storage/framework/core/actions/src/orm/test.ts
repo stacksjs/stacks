@@ -30,7 +30,7 @@
 
 //   queryBuilder = db.selectFrom('users') // Initialize queryBuilder
 //   queryBuilderStore = db.insertInto('users') // Initialize queryBuilder
-//   queryBuilderUpdate = db.updateTable('users') // Initialize queryBuilder
+//   queryBuilderUpdate = DB.instance.updateTable('users') // Initialize queryBuilder
 //   queryBuilderDelete = db.deleteFrom('users') // Initialize queryBuilder
 
 //   public async find(id: number | number[]): Promise<User | Collection<User>> {

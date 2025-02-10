@@ -1,6 +1,6 @@
 import type { SubscriberRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -34,4 +34,4 @@ export class SubscriberRequest extends Request<RequestDataSubscriber> implements
   }
 }
 
-export const request = new SubscriberRequest()
+export const subscriberRequest = new SubscriberRequest()

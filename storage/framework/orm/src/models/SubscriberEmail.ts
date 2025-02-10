@@ -1,7 +1,9 @@
-import type { Insertable, Selectable, Updateable } from 'kysely'
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { cache } from '@stacksjs/cache'
-import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
+import { sql } from '@stacksjs/database'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
   id?: number
@@ -16,7 +18,7 @@ export interface SubscriberEmailsTable {
 }
 
 interface SubscriberEmailResponse {
-  data: SubscriberEmails
+  data: SubscriberEmailJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -25,15 +27,15 @@ interface SubscriberEmailResponse {
   next_cursor: number | null
 }
 
+export interface SubscriberEmailJsonResponse extends Omit<SubscriberEmailsTable, 'password'> {
+  [key: string]: any
+}
+
 export type SubscriberEmailType = Selectable<SubscriberEmailsTable>
 export type NewSubscriberEmail = Partial<Insertable<SubscriberEmailsTable>>
 export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
-export type SubscriberEmails = SubscriberEmailType[]
 
-export type SubscriberEmailColumn = SubscriberEmails
-export type SubscriberEmailColumns = Array<keyof SubscriberEmails>
-
-    type SortDirection = 'asc' | 'desc'
+      type SortDirection = 'asc' | 'desc'
 interface SortOptions { column: SubscriberEmailType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
@@ -44,135 +46,252 @@ interface QueryOptions {
 }
 
 export class SubscriberEmailModel {
-  private hidden = []
-  private fillable = ['email', 'uuid']
-  private softDeletes = true
+  private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
+  private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
+  private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
+  protected attributes: Partial<SubscriberEmailJsonResponse> = {}
+  protected originalAttributes: Partial<SubscriberEmailJsonResponse> = {}
+  private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  public id: number
-  public email: string | undefined
-
-  public created_at: Date | undefined
-  public updated_at: Date | undefined
-
-  public deleted_at: Date | undefined
+  private hasSaved: boolean
+  private customColumns: Record<string, unknown> = {}
 
   constructor(subscriberemail: Partial<SubscriberEmailType> | null) {
-    this.id = subscriberemail?.id || 1
-    this.email = subscriberemail?.email
+    if (subscriberemail) {
+      this.attributes = { ...subscriberemail }
+      this.originalAttributes = { ...subscriberemail }
 
-    this.created_at = subscriberemail?.created_at
-
-    this.updated_at = subscriberemail?.updated_at
-
-    this.deleted_at = subscriberemail?.deleted_at
+      Object.keys(subscriberemail).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (subscriberemail as SubscriberEmailJsonResponse)[key]
+        }
+      })
+    }
 
     this.withRelations = []
-    this.selectFromQuery = db.selectFrom('subscriber_emails')
-    this.updateFromQuery = db.updateTable('subscriber_emails')
-    this.deleteFromQuery = db.deleteFrom('subscriber_emails')
+    this.selectFromQuery = DB.instance.selectFrom('subscriber_emails')
+    this.updateFromQuery = DB.instance.updateTable('subscriber_emails')
+    this.deleteFromQuery = DB.instance.deleteFrom('subscriber_emails')
     this.hasSelect = false
+    this.hasSaved = false
   }
 
-  // Method to find a SubscriberEmail by ID
-  async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+  get id(): number | undefined {
+    return this.attributes.id
+  }
 
-    const model = await query.executeTakeFirst()
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  get deleted_at(): Date | undefined {
+    return this.attributes.deleted_at
+  }
+
+  set email(value: string) {
+    this.attributes.email = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  set deleted_at(value: Date) {
+    this.attributes.deleted_at = value
+  }
+
+  getOriginal(column?: keyof SubscriberEmailType): Partial<SubscriberEmailType> {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
+  getChanges(): Partial<SubscriberEmailJsonResponse> {
+    return this.fillable.reduce<Partial<SubscriberEmailJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof SubscriberEmailsTable]
+      const originalValue = this.originalAttributes[key as keyof SubscriberEmailsTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
+      }
+
+      return changes
+    }, {})
+  }
+
+  isDirty(column?: keyof SubscriberEmailType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof SubscriberEmailType): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof SubscriberEmailType): boolean {
+    return this.hasSaved && this.isDirty(column)
+  }
+
+  select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
+  async applyFind(id: number): Promise<SubscriberEmailModel | undefined> {
+    const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const result = await this.mapWith(model)
+    if (model)
+      await this.loadRelations(model)
 
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
     return data
+  }
+
+  async find(id: number): Promise<SubscriberEmailModel | undefined> {
+    return await this.applyFind(id)
   }
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
     const instance = new SubscriberEmailModel(null)
 
-    const result = await instance.mapWith(model)
+    return await instance.applyFind(id)
+  }
 
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+  async first(): Promise<SubscriberEmailModel | undefined> {
+    let model: SubscriberEmailModel | undefined
 
-    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
 
-  async mapWith(model: SubscriberEmailType): Promise<SubscriberEmailType> {
-    return model
+  static async first(): Promise<SubscriberEmailModel | undefined> {
+    const model = await DB.instance.selectFrom('subscriber_emails')
+      .selectAll()
+      .executeTakeFirst()
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
+  }
+
+  async applyFirstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    return await this.applyFirstOrFail()
+  }
+
+  static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
-    const models = await db.selectFrom('subscriber_emails').selectAll().execute()
+    const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
-      const instance = new SubscriberEmailModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriberEmailModel(results)
+      return new SubscriberEmailModel(model)
     }))
 
     return data
   }
 
-  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
-
-    const instance = new SubscriberEmailModel(null)
+  async applyFindOrFail(id: number): Promise<SubscriberEmailModel> {
+    const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (instance.softDeletes) {
-      query = query.where('deleted_at', 'is', null)
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
     }
 
     if (model === undefined)
-      throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No SubscriberEmailModel results for ${id}`)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
-    const result = await instance.mapWith(model)
+    await this.loadRelations(model)
 
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
 
   async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    const model = await db.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
+    return await this.applyFindOrFail(id)
+  }
 
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-    }
+  static async findOrFail(id: number): Promise<SubscriberEmailModel> {
+    const instance = new SubscriberEmailModel(null)
 
-    if (model === undefined)
-      throw new HttpError(404, `No SubscriberEmailModel results for ${id}`)
-
-    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
-
-    const result = await this.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
+    return await instance.applyFindOrFail(id)
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    let query = db.selectFrom('subscriber_emails').where('id', 'in', ids)
+    let query = DB.instance.selectFrom('subscriber_emails').where('id', 'in', ids)
 
     const instance = new SubscriberEmailModel(null)
 
@@ -182,158 +301,416 @@ export class SubscriberEmailModel {
 
     query = query.selectAll()
 
-    const model = await query.execute()
+    const models = await query.execute()
 
-    return model.map(modelItem => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
-  static async get(): Promise<SubscriberEmailModel[]> {
+  skip(count: number): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static skip(count: number): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    let models
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
-    if (instance.hasSelect) {
-      if (instance.softDeletes) {
-        query = query.where('deleted_at', 'is', null)
-      }
-
-      models = await instance.selectFromQuery.execute()
-    }
-    else {
-      if (instance.softDeletes) {
-        query = query.where('deleted_at', 'is', null)
-      }
-
-      models = await instance.selectFromQuery.selectAll().execute()
-    }
-
-    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
-      const instance = new SubscriberEmailModel(model)
-
-      const results = await instance.mapWith(model)
-
-      return new SubscriberEmailModel(results)
-    }))
-
-    return data
+    return instance
   }
 
-  // Method to get a SubscriberEmail by criteria
-  async get(): Promise<SubscriberEmailModel[]> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
+  async applyChunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      // Get one batch
+      const models = await this.selectFromQuery
+        .selectAll()
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
       }
 
-      const model = await this.selectFromQuery.execute()
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
 
-      return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+      page++
+    }
+  }
+
+  async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
+    const instance = new SubscriberEmailModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
+  take(count: number): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
+  static take(count: number): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  static async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
+    const instance = new SubscriberEmailModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
     }
 
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-    }
+    const model = await instance.selectFromQuery.selectAll().execute()
 
-    const model = await this.selectFromQuery.selectAll().execute()
+    return model.map((modelItem: SubscriberEmailModel) => modelItem[field])
+  }
 
-    return model.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+  async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
+    return SubscriberEmailModel.pluck(field)
   }
 
   static async count(): Promise<number> {
     const instance = new SubscriberEmailModel(null)
 
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
+    const result = await instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
 
-    const results = await instance.selectFromQuery.selectAll().execute()
-
-    return results.length
+    return result.count || 0
   }
 
   async count(): Promise<number> {
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
 
-      const results = await this.selectFromQuery.execute()
-
-      return results.length
-    }
-
-    const results = await this.selectFromQuery.execute()
-
-    return results.length
+    return result.count || 0
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-    const totalRecordsResult = await db.selectFrom('subscriber_emails')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
+  static async max(field: keyof SubscriberEmailModel): Promise<number> {
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max `)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  async max(field: keyof SubscriberEmailModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  static async min(field: keyof SubscriberEmailModel): Promise<number> {
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  async min(field: keyof SubscriberEmailModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  static async avg(field: keyof SubscriberEmailModel): Promise<number> {
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  async avg(field: keyof SubscriberEmailModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  static async sum(field: keyof SubscriberEmailModel): Promise<number> {
+    const instance = new SubscriberEmailModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async sum(field: keyof SubscriberEmailModel): Promise<number> {
+    const result = this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async applyGet(): Promise<SubscriberEmailModel[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    await this.loadRelations(models)
+
+    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+      return new SubscriberEmailModel(model)
+    }))
+
+    return data
+  }
+
+  async get(): Promise<SubscriberEmailModel[]> {
+    return await this.applyGet()
+  }
+
+  static async get(): Promise<SubscriberEmailModel[]> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyGet()
+  }
+
+  has(relation: string): SubscriberEmailModel {
+    return SubscriberEmailModel.has(relation)
+  }
+
+  static has(relation: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static whereExists(callback: (qb: any) => any): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberEmailModel {
+    return SubscriberEmailModel.whereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    instance.selectFromQuery = instance.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
+
+    return instance
+  }
+
+  applyDoesntHave(relation: string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): SubscriberEmailModel {
+    return this.applyDoesntHave(relation)
+  }
+
+  static doesntHave(relation: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.doesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberEmailModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values!)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values!)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return not(exists(subquery))
+      })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberEmailModel {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('subscriber_emails')
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    if (this.hasSelect) {
-      if (this.softDeletes) {
-        this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-      }
-
-      const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-        .limit((options.limit ?? 10) + 1)
-        .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-        .execute()
-
-      let nextCursor = null
-      if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
-        nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
-
-      return {
-        data: subscriber_emailsWithExtra,
-        paging: {
-          total_records: totalRecords,
-          page: options.page || 1,
-          total_pages: totalPages,
-        },
-        next_cursor: nextCursor,
-      }
-    }
-
-    if (this.softDeletes) {
-      this.selectFromQuery = this.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
-    const subscriber_emailsWithExtra = await this.selectFromQuery.orderBy('id', 'asc')
-      .limit((options.limit ?? 10) + 1)
-      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
-      .execute()
-
-    let nextCursor = null
-    if (subscriber_emailsWithExtra.length > (options.limit ?? 10))
-      nextCursor = subscriber_emailsWithExtra.pop()?.id ?? null
-
-    return {
-      data: subscriber_emailsWithExtra,
-      paging: {
-        total_records: totalRecords,
-        page: options.page || 1,
-        total_pages: totalPages,
-      },
-      next_cursor: nextCursor,
-    }
-  }
-
-  // Method to get all subscriber_emails
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-    const totalRecordsResult = await db.selectFrom('subscriber_emails')
-      .select(db.fn.count('id').as('total')) // Use 'id' or another actual column name
-      .executeTakeFirst()
-
-    const totalRecords = Number(totalRecordsResult?.total) || 0
-    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
-
-    const subscriber_emailsWithExtra = await db.selectFrom('subscriber_emails')
+    const subscriber_emailsWithExtra = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -355,39 +732,58 @@ export class SubscriberEmailModel {
     }
   }
 
-  // Method to create a new subscriberemail
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all subscriber_emails
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyPaginate(options)
+  }
+
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const instance = new SubscriberEmailModel(null)
 
     const filteredValues = Object.fromEntries(
-      Object.entries(newSubscriberEmail).filter(([key]) => instance.fillable.includes(key)),
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !instance.guarded.includes(key) && instance.fillable.includes(key),
+      ),
     ) as NewSubscriberEmail
 
-    const result = await db.insertInto('subscriber_emails')
+    const result = await DB.instance.insertInto('subscriber_emails')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
+    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
+
+    if (model)
+      dispatch('subscriberemail:created', model)
 
     return model
   }
 
-  static async createMany(newSubscriberEmails: NewSubscriberEmail[]): Promise<void> {
+  static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(null)
 
-    const filteredValues = newSubscriberEmails.map(newUser =>
-      Object.fromEntries(
-        Object.entries(newUser).filter(([key]) => instance.fillable.includes(key)),
-      ) as NewSubscriberEmail,
-    )
+    const valuesFiltered = newSubscriberEmail.map((newSubscriberEmail: NewSubscriberEmail) => {
+      const filteredValues = Object.fromEntries(
+        Object.entries(newSubscriberEmail).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewSubscriberEmail
 
-    await db.insertInto('subscriber_emails')
-      .values(filteredValues)
+      return filteredValues
+    })
+
+    await DB.instance.insertInto('subscriber_emails')
+      .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-    const result = await db.insertInto('subscriber_emails')
+    const result = await DB.instance.insertInto('subscriber_emails')
       .values(newSubscriberEmail)
       .executeTakeFirst()
 
@@ -401,7 +797,7 @@ export class SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     if (instance.softDeletes) {
-      return await db.updateTable('transactions')
+      return await DB.instance.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
@@ -409,116 +805,119 @@ export class SubscriberEmailModel {
         .execute()
     }
 
-    return await db.deleteFrom('subscriber_emails')
+    return await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', id)
       .execute()
   }
 
-  where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-    let column: any
-    let operator: any
-    let value: any
+  applyWhere(instance: SubscriberEmailModel, column: string, ...args: any[]): SubscriberEmailModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
-    this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-    this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-
-    return this
-  }
-
-  orWhere(...args: Array<[string, string, any]>): SubscriberEmailModel {
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    return this
-  }
-
-  static orWhere(...args: Array<[string, string, any]>): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
-
-    if (args.length === 0) {
-      throw new HttpError(500, 'At least one condition must be provided')
-    }
-
-    // Use the expression builder to append the OR conditions
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb.or(
-        args.map(([column, operator, value]) => eb(column, operator, value)),
-      ),
-    )
+    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
+    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
+    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
 
     return instance
   }
 
-  static where(...args: (string | number | boolean | undefined | null)[]): SubscriberEmailModel {
-    let column: any
-    let operator: any
-    let value: any
+  where(column: string, ...args: any[]): SubscriberEmailModel {
+    return this.applyWhere(this, column, ...args)
+  }
 
+  static where(column: string, ...args: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
+    return instance.applyWhere(instance, column, ...args)
+  }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, value)
+  whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, value)
+    return this
+  }
 
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, value)
+  static whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
+  }
+
+  applyWhereRef(column: string, ...args: string[]): SubscriberEmailModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    const instance = new SubscriberEmailModel(null)
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return instance
+  }
+
+  whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+    return this.applyWhereRef(column, ...args)
+  }
+
+  static whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  whereRaw(sqlStatement: string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  static whereRaw(sqlStatement: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return instance
+  }
+
+  applyOrWhere(...conditions: [string, any][]): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  orWhere(...conditions: [string, any][]): SubscriberEmailModel {
+    return this.applyOrWhere(...conditions)
+  }
+
+  static orWhere(...conditions: [string, any][]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
+  ): SubscriberEmailModel {
+    return SubscriberEmailModel.when(condition, callback)
   }
 
   static when(
@@ -533,14 +932,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  when(
-    condition: boolean,
-    callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
-  ): SubscriberEmailModel {
-    if (condition)
-      callback(this.selectFromQuery)
-
-    return this
+  whereNull(column: string): SubscriberEmailModel {
+    return SubscriberEmailModel.whereNull(column)
   }
 
   static whereNull(column: string): SubscriberEmailModel {
@@ -557,24 +950,16 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereNull(column: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
-  }
-
   static whereEmail(value: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
     return instance
+  }
+
+  whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    return SubscriberEmailModel.whereIn(column, values)
   }
 
   static whereIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
@@ -589,55 +974,218 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  async first(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.selectAll().executeTakeFirst()
+  applyWhereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
 
-    if (!model)
-      return undefined
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
 
-    const result = await this.mapWith(model)
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
 
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
-
-    return data
+    return this
   }
 
-  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+  whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
+    return this.applyWhereBetween(column, range)
+  }
 
-    if (model === undefined)
-      throw new HttpError(404, 'No SubscriberEmailModel results found for query')
-
+  static whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    const result = await instance.mapWith(model)
+    return instance.applyWhereBetween(column, range)
+  }
 
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+  applyWhereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
-    return data
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
+  }
+
+  whereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+    return this.applyWhereLike(column, value)
+  }
+
+  static whereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  applyWhereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
+  whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    return this.applyWhereNotIn(column, values)
+  }
+
+  static whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyWhereNotIn(column, values)
   }
 
   async exists(): Promise<boolean> {
-    const model = await this.selectFromQuery.executeTakeFirst()
+    let model
 
-    return model !== null || model !== undefined
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
   }
 
-  static async first(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails')
+  static async latest(): Promise<SubscriberEmailType | undefined> {
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
+      .orderBy('id', 'desc')
       .executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
+  }
+
+  static async oldest(): Promise<SubscriberEmailType | undefined> {
+    const model = await DB.instance.selectFrom('subscriber_emails')
+      .selectAll()
+      .orderBy('id', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
+  }
+
+  static async firstOrCreate(
+    condition: Partial<SubscriberEmailType>,
+    newSubscriberEmail: NewSubscriberEmail,
+  ): Promise<SubscriberEmailModel> {
+    // Get the key and value from the condition object
+    const key = Object.keys(condition)[0] as keyof SubscriberEmailType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingSubscriberEmail) {
+      return new SubscriberEmailModel(existingSubscriberEmail as SubscriberEmailType)
+    }
+    else {
+      return await this.create(newSubscriberEmail)
+    }
+  }
+
+  static async updateOrCreate(
+    condition: Partial<SubscriberEmailType>,
+    newSubscriberEmail: NewSubscriberEmail,
+  ): Promise<SubscriberEmailModel> {
+    const instance = new SubscriberEmailModel(null)
+
+    const key = Object.keys(condition)[0] as keyof SubscriberEmailType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingSubscriberEmail) {
+      // If found, update the existing record
+      await DB.instance.updateTable('subscriber_emails')
+        .set(newSubscriberEmail)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedSubscriberEmail = await DB.instance.selectFrom('subscriber_emails')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedSubscriberEmail) {
+        throw new HttpError(500, 'Failed to fetch updated record')
+      }
+
+      instance.hasSaved = true
+
+      return new SubscriberEmailModel(updatedSubscriberEmail as SubscriberEmailType)
+    }
+    else {
+      // If not found, create a new record
+      return await this.create(newSubscriberEmail)
+    }
+  }
+
+  async loadRelations(models: SubscriberEmailModel | SubscriberEmailModel[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('subscriberemail_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: SubscriberEmailModel) => {
+          const records = relatedRecords.filter((record: any) => {
+            return record.subscriberemail_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: any) => {
+          return record.subscriberemail_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
   }
 
   with(relations: string[]): SubscriberEmailModel {
@@ -655,25 +1203,27 @@ export class SubscriberEmailModel {
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
-    return await db.selectFrom('subscriber_emails')
+    return await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
   }
 
   static async last(): Promise<SubscriberEmailType | undefined> {
-    const model = await db.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const model = await DB.instance.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const instance = new SubscriberEmailModel(null)
-
-    const result = await instance.mapWith(model)
-
-    const data = new SubscriberEmailModel(result as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
+  }
+
+  orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
   }
 
   static orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
@@ -684,8 +1234,50 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderBy(column: keyof SubscriberEmailType, order: 'asc' | 'desc'): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+  groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
+  }
+
+  static groupBy(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
+  }
+
+  static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
+
+    return instance
+  }
+
+  inRandomOrder(): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
+  static inRandomOrder(): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
@@ -698,8 +1290,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.orderBy(column, 'desc')
+  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
@@ -712,29 +1304,27 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
-  }
-
-  async update(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+  async update(newSubscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(subscriberemail).filter(([key]) => this.fillable.includes(key)),
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
     ) as NewSubscriberEmail
 
-    if (this.id === undefined) {
-      this.updateFromQuery.set(filteredValues).execute()
-    }
-
-    await db.updateTable('subscriber_emails')
+    await DB.instance.updateTable('subscriber_emails')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
   }
 
   async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
@@ -742,28 +1332,66 @@ export class SubscriberEmailModel {
       this.updateFromQuery.set(subscriberemail).execute()
     }
 
-    await db.updateTable('subscriber_emails')
+    await DB.instance.updateTable('subscriber_emails')
       .set(subscriberemail)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
-    const model = await this.find(this.id)
+    if (this.id) {
+      const model = await this.find(this.id)
 
-    return model
+      this.hasSaved = true
+
+      return model
+    }
+
+    return undefined
   }
 
   async save(): Promise<void> {
     if (!this)
       throw new HttpError(500, 'SubscriberEmail data is undefined')
 
+    const filteredValues = Object.fromEntries(
+      Object.entries(this.attributes).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewSubscriberEmail
+
     if (this.id === undefined) {
-      await db.insertInto('subscriber_emails')
-        .values(this as NewSubscriberEmail)
+      await DB.instance.insertInto('subscriber_emails')
+        .values(filteredValues)
         .executeTakeFirstOrThrow()
     }
     else {
-      await this.update(this)
+      await this.update(this.attributes)
     }
+
+    this.hasSaved = true
+  }
+
+  fill(data: Partial<SubscriberEmailType>): SubscriberEmailModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewSubscriberEmail
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<SubscriberEmailType>): SubscriberEmailModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
   }
 
   // Method to delete (soft delete) the subscriberemail instance
@@ -772,7 +1400,7 @@ export class SubscriberEmailModel {
       this.deleteFromQuery.execute()
 
     if (this.softDeletes) {
-      return await db.updateTable('subscriber_emails')
+      return await DB.instance.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
@@ -780,7 +1408,7 @@ export class SubscriberEmailModel {
         .execute()
     }
 
-    return await db.deleteFrom('subscriber_emails')
+    return await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', this.id)
       .execute()
   }
@@ -804,7 +1432,7 @@ export class SubscriberEmailModel {
   }
 
   join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery(table, firstCol, secondCol)
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
@@ -817,12 +1445,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  static async rawQuery(rawQuery: string): Promise<any> {
-    return await sql`${rawQuery}`.execute(db)
-  }
-
-  toJSON() {
-    const output: Partial<SubscriberEmailType> = {
+  toJSON(): Partial<SubscriberEmailJsonResponse> {
+    const output: Partial<SubscriberEmailJsonResponse> = {
 
       id: this.id,
       email: this.email,
@@ -833,11 +1457,10 @@ export class SubscriberEmailModel {
 
       deleted_at: this.deleted_at,
 
+      ...this.customColumns,
     }
 
-        type SubscriberEmail = Omit<SubscriberEmailType, 'password'>
-
-        return output as SubscriberEmail
+    return output
   }
 
   parseResult(model: SubscriberEmailModel): SubscriberEmailModel {
@@ -850,7 +1473,7 @@ export class SubscriberEmailModel {
 }
 
 async function find(id: number): Promise<SubscriberEmailModel | undefined> {
-  const query = db.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -867,7 +1490,7 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-  const result = await db.insertInto('subscriber_emails')
+  const result = await DB.instance.insertInto('subscriber_emails')
     .values(newSubscriberEmail)
     .executeTakeFirstOrThrow()
 
@@ -875,20 +1498,20 @@ export async function create(newSubscriberEmail: NewSubscriberEmail): Promise<Su
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
-  return await sql`${rawQuery}`.execute(db)
+  return await sql`${rawQuery}`.execute(DB.instance)
 }
 
 export async function remove(id: number): Promise<void> {
-  await db.deleteFrom('subscriber_emails')
+  await DB.instance.deleteFrom('subscriber_emails')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereEmail(value: string): Promise<SubscriberEmailModel[]> {
-  const query = db.selectFrom('subscriber_emails').where('email', '=', value)
+  const query = DB.instance.selectFrom('subscriber_emails').where('email', '=', value)
   const results = await query.execute()
 
-  return results.map(modelItem => new SubscriberEmailModel(modelItem))
+  return results.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
 }
 
 export const SubscriberEmail = SubscriberEmailModel

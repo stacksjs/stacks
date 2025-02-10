@@ -1,4 +1,4 @@
-import type { UserRequestType } from '../../types/requests'
+import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import User from '../../orm/src/models/User'
@@ -8,10 +8,10 @@ export default new Action({
   description: 'User Show ORM Action',
   method: 'GET',
   async handle(request: UserRequestType) {
-    const id = await request.getParam('id')
+    // const id = request.getParam('id')
 
-    const user = await User.with(['transactions', 'test', 'deployments']).findOrFail(Number(id))
+    const result = await User.with(['posts']).find(1)
 
-    return response.json(user)
+    return response.json(result)
   },
 })

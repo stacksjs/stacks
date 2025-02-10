@@ -8,9 +8,10 @@ export class Job {
   rate: JobOptions['rate']
   tries: JobOptions['tries']
   backoff: JobOptions['backoff']
+  backoffConfig: JobOptions['backoffConfig']
   enabled: JobOptions['enabled']
 
-  constructor({ name, description, handle, rate, tries, backoff, action, enabled }: JobOptions) {
+  constructor({ name, description, handle, rate, tries, backoff, backoffConfig, action, enabled }: JobOptions) {
     this.name = name
     this.description = description
     this.handle = handle
@@ -18,6 +19,7 @@ export class Job {
     this.action = action
     this.tries = tries
     this.backoff = backoff
+    this.backoffConfig = backoffConfig
     this.enabled = enabled
   }
 }

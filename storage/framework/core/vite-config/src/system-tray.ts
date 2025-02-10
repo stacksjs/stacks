@@ -53,7 +53,7 @@ export const systemTrayConfig: ViteConfig = {
 
     layouts({
       extensions: ['stx'],
-      layoutsDirs: p.layoutsPath('system-tray', { relative: true }),
+      layoutsDirs: [p.layoutsPath('system-tray', { relative: true }), p.frameworkPath('defaults/layouts/system-tray')],
     }),
     // autoImports(),
     // components(),

@@ -12,8 +12,8 @@ const result = await Bun.build({
   target: 'browser',
   // sourcemap: 'linked',
   external: ['@stacksjs/path', '@stacksjs/error-handling'],
-  minify: true,
-  plugins: [dts({ root: './src', outdir: './dist' })],
+  // minify: true,
+  plugins: [dts()],
 })
 
 await outro({

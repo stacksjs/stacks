@@ -10,6 +10,7 @@ import type { Team } from '@stacksjs/types'
 export default {
   name: 'Stacks',
 
+  // Our group of awesome team members
   members: {
     chris: 'chris@stacksjs.org',
     blake: 'blake@stacksjs.org',
@@ -19,5 +20,8 @@ export default {
     dorell: 'dorell@stacksjs.org',
     avery: 'avery@stacksjs.org',
     adelino: 'adelino@stacksjs.org',
+    germaine: 'germaine@stacksjs.org',
+    harley: 'harley@stacksjs.org',
+    michael: 'michael@stacksjs.org',
   },
 } satisfies Team

@@ -1,6 +1,6 @@
 import type { TeamRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -46,4 +46,4 @@ export class TeamRequest extends Request<RequestDataTeam> implements TeamRequest
   }
 }
 
-export const request = new TeamRequest()
+export const teamRequest = new TeamRequest()

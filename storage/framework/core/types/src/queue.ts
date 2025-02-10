@@ -1,3 +1,4 @@
+import type { JobOptions } from './cron-jobs'
 import type { DeepPartial } from './utils'
 
 export interface QueueOptions {
@@ -35,29 +36,12 @@ export interface QueueOptions {
   }
 }
 
-
-export interface JobOptions {
-  /** Queue to run the job on */
-  queue?: string
-  /** Data to be passed to the job */
-  payload?: any
-  /** Additional context for the job */
-  context?: any
-  /** Maximum number of retry attempts */
-  maxTries?: number
-  /** Timeout in seconds */
-  timeout?: number
-  /** Backoff timing between retries in seconds */
-  backoff?: number[]
-  /** Whether to execute immediately */
-  immediate?: boolean
-  /** Custom job options */
-  [key: string]: any
-}
-
 export interface QueueOption extends JobOptions {
   delay?: number
+  payload?: any
+  afterResponse?: any
+  context?: string
+  maxTries?: number
 }
-
 
 export type QueueConfig = DeepPartial<QueueOptions>

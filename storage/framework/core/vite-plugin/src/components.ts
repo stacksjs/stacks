@@ -8,8 +8,8 @@ export function components(options?: ComponentOptions): Plugin {
     extensions: ['stx', 'vue', 'md'],
     include: /\.(stx|vue|md)($|\?)/,
     dirs: [
-      p.componentsPath(),
-      p.uiPath('src/components/'),
+      p.resourcesPath('components/'),
+      p.frameworkPath('defaults/components/'),
       // viewsPath(),
     ],
     dts: p.frameworkPath('types/components.d.ts'),

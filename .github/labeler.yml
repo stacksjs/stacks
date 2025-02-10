@@ -8,13 +8,13 @@ core:
   - 'storage/framework/core/**'
 
 ide:
-  - 'storage/framework/ide/**'
+  - 'storage/framework/defaults/ide/**'
 
 jetbrains:
-  - 'storage/framework/ide/jetbrains/**'
+  - 'storage/framework/defaults/ide/jetbrains/**'
 
 vscode:
-  - 'storage/framework/ide/vscode/**'
+  - 'storage/framework/defaults/ide/vscode/**'
 
 libs:
   - 'storage/framework/libs/**'

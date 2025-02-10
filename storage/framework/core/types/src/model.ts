@@ -5,7 +5,7 @@ import type { SearchOptions } from './search-engine'
 
 export type Model = Partial<ModelOptions>
 
-interface BaseRelation {
+export interface BaseRelation {
   foreignKey?: string
   relationName?: string
 }
@@ -17,7 +17,12 @@ interface Relation<T = string> extends BaseRelation {
 interface HasOne<T = string> extends Array<Relation<T>> {}
 interface HasMany<T = string> extends Array<Relation<T>> {}
 interface BelongsTo<T = string> extends Array<Relation<T>> {}
-interface BelongsToMany<T = string> extends Array<T> {}
+interface BelongsToMany<T = string> extends Array<{
+  model: T
+  firstForeignKey?: string
+  secondForeignKey?: string
+  pivotTable?: string
+} | T> {}
 
 interface HasOneThrough<T = string> extends Array<{
   model: T
@@ -44,6 +49,10 @@ export interface AuthOptions {
   useTwoFactor?: boolean
   usePasskey?: boolean
 }
+export interface LikeableOptions {
+  table?: string
+  foreignKey?: string
+}
 
 type ActionPath = string
 type ActionName = string
@@ -65,11 +74,10 @@ interface ActivityLogOption {
 }
 
 export interface Relations {
-  hasOne?: HasOne<ModelNames> | string[]
+  hasOne?: HasOne<ModelNames> | ModelNames[]
   hasMany?: HasMany<ModelNames> | ModelNames[]
   belongsTo?: BelongsTo<ModelNames> | ModelNames[]
   belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
-  hasOneThrough?: HasOneThrough<ModelNames>
 }
 
 export interface ApiSettings {
@@ -135,12 +143,14 @@ export interface ModelOptions extends Base {
     observe?: string[] | boolean
     billable?: boolean
     useActivityLog?: boolean | ActivityLogOption
+
+    likeable?: boolean | LikeableOptions
   }
 
   attributes?: Attributes
 
   // relationships
-  hasOne?: HasOne<ModelNames> | string[]
+  hasOne?: HasOne<ModelNames> | ModelNames[]
 
   hasMany?: HasMany<ModelNames> | ModelNames[]
 
@@ -170,6 +180,7 @@ export interface Attribute {
   required?: boolean
   hidden?: boolean
   fillable?: boolean
+  guarded?: boolean
   factory?: () => any
   validation?: {
     rule: VineType

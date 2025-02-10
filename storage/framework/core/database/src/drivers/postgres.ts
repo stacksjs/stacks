@@ -25,9 +25,9 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.schema.dropTable('migration_locks').ifExists().execute()
 
   const files = await fs.readdir(path.userMigrationsPath())
-  const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+  const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
-  const userModelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const userModel of userModelFiles) {
     const userModelPath = (await import(userModel)).default
@@ -40,7 +40,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`database/models/${modelFile}`)
+        const modelPath = path.frameworkPath(`models/${modelFile}`)
 
         if (fs.existsSync(modelPath))
           await Bun.$`rm ${modelPath}`
@@ -69,15 +69,15 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   if (files.length === 0) {
     log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
 
-    // delete the *.ts files in the database/models folder
-    const modelFiles = await fs.readdir(path.frameworkPath('database/models'))
+    // delete the *.ts files in the models folder
+    const modelFiles = await fs.readdir(path.frameworkPath('models'))
 
     if (modelFiles.length) {
       log.debug('No existing model files in framework path...')
 
       for (const file of modelFiles) {
         if (file.endsWith('.ts'))
-          await fs.unlink(path.frameworkPath(`database/models/${file}`))
+          await fs.unlink(path.frameworkPath(`models/${file}`))
       }
     }
   }
@@ -87,7 +87,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const tableName = getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`database/models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
 
   let haveFieldsChanged = false
 
@@ -271,7 +271,7 @@ async function createAlterTableMigration(modelPath: string) {
 }
 
 export async function fetchPostgresTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')])
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')])
   const tables: string[] = []
 
   for (const modelPath of modelFiles) {

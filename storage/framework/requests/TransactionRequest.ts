@@ -1,6 +1,6 @@
 import type { TransactionRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -18,7 +18,7 @@ interface RequestDataTransaction {
   type: string
   provider_id: string
   user_id: number
-  paymentmethod_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -30,7 +30,7 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   public type = ''
   public provider_id = ''
   public user_id = 0
-  public paymentmethod_id = 0
+  public payment_method_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''
@@ -44,4 +44,4 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   }
 }
 
-export const request = new TransactionRequest()
+export const transactionRequest = new TransactionRequest()

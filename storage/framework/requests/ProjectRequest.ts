@@ -1,6 +1,6 @@
 import type { ProjectRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -38,4 +38,4 @@ export class ProjectRequest extends Request<RequestDataProject> implements Proje
   }
 }
 
-export const request = new ProjectRequest()
+export const projectRequest = new ProjectRequest()

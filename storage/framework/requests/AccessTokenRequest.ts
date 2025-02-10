@@ -1,6 +1,6 @@
 import type { AccessTokenRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
-import { customValidate, validateField } from '@stacksjs/validation'
+import { customValidate, type schema, validateField } from '@stacksjs/validation'
 
 interface ValidationField {
   rule: ReturnType<typeof schema.string>
@@ -40,4 +40,4 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   }
 }
 
-export const request = new AccessTokenRequest()
+export const accesstokenRequest = new AccessTokenRequest()

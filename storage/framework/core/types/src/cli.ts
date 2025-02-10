@@ -386,7 +386,7 @@ export interface MigrateOptions extends CliOptions {
   diff?: boolean
 }
 
-export interface QueueOptions extends CliOptions {
+export interface CliQueueOptions extends CliOptions {
   queue?: string
 }
 

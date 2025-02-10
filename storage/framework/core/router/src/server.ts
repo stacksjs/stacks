@@ -5,10 +5,12 @@ import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
-import { globSync } from '@stacksjs/storage'
+import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
-import { route } from '.'
+import { route, staticRoute } from '.'
+
 import { middlewares } from './middleware'
+
 import { request as RequestParam } from './request'
 
 interface ServeOptions {
@@ -26,11 +28,13 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
   const port = options.port || 3000
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
+  const staticFiles = await staticRoute.getStaticConfig()
 
   if (options.timezone)
     process.env.TZ = options.timezone
 
   Bun.serve({
+    static: staticFiles,
     hostname,
     port,
     development,
@@ -364,7 +368,8 @@ function noCache(response: Response): Response {
 }
 
 async function addRouteQuery(url: URL): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
     const modelName = getModelName(model, modelFile)
@@ -381,7 +386,7 @@ async function addRouteQuery(url: URL): Promise<void> {
 }
 
 async function addBody(params: any): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default
@@ -399,7 +404,7 @@ async function addBody(params: any): Promise<void> {
 }
 
 async function addRouteParam(param: RouteParam): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -417,7 +422,7 @@ async function addRouteParam(param: RouteParam): Promise<void> {
 }
 
 async function addHeaders(headers: Headers): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const modelFile of modelFiles) {
     const model = (await import(modelFile)).default as Model
@@ -440,7 +445,11 @@ async function executeMiddleware(route: Route): Promise<any> {
   if (middleware && await middlewares() && isObjectNotEmpty(await middlewares())) {
     // let middlewareItem: MiddlewareOptions
     if (isString(middleware)) {
-      const middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+      let middlewarePath = path.userMiddlewarePath(`${middleware}.ts`)
+
+      if (!fs.existsSync(middlewarePath)) {
+        middlewarePath = path.storagePath(`framework/defaults/middleware/${middleware}.ts`)
+      }
 
       const middlewareInstance = (await import(middlewarePath)).default
 
@@ -453,7 +462,11 @@ async function executeMiddleware(route: Route): Promise<any> {
     }
     else {
       for (const middlewareElement of middleware) {
-        const middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+        let middlewarePath = path.userMiddlewarePath(`${middlewareElement}.ts`)
+
+        if (!fs.existsSync(middlewarePath)) {
+          middlewarePath = path.storagePath(`framework/defaults/middleware/${middlewareElement}.ts`)
+        }
 
         const middlewareInstance = (await import(middlewarePath)).default
 

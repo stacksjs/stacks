@@ -1,5 +1,6 @@
 import type { Plugin } from 'vue'
-import { Dialog, DialogPanel } from './components'
+import Dialog from './components/Dialog.vue'
+import DialogPanel from './components/DialogPanel.vue'
 
 const plugin: Plugin = {
   install(app) {

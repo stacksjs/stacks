@@ -4,8 +4,10 @@ import { db } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 import { kebabCase, pascalCase } from '@stacksjs/strings'
 import { customValidate, isObjectNotEmpty } from '@stacksjs/validation'
+import { staticRoute } from './'
 import { extractDefaultRequest, findRequestInstance } from './utils'
 
 type ActionPath = string
@@ -76,7 +78,13 @@ export class Router implements RouterInterface {
   }
 
   public async health(): Promise<this> {
-    const healthModule = (await import(p.userActionsPath('HealthAction'))).default as Action
+    let healthPath = p.userActionsPath('HealthAction')
+
+    if (!fs.existsSync(healthPath))
+      healthPath = p.storagePath('framework/defaults/actions/HealthAction')
+
+    const healthModule = (await import(healthPath)).default as Action
+
     const callback = healthModule.handle
     const path = healthModule.path ?? `/health`
 
@@ -128,12 +136,20 @@ export class Router implements RouterInterface {
     return this.addRoute('POST', uri, callback, 201)
   }
 
-  public view(path: Route['url'], callback: Route['callback']): this {
+  public view(path: Route['url'], htmlFile: any): this {
     this.path = this.normalizePath(path)
-
     const uri = this.prepareUri(this.path)
 
-    return this.addRoute('GET', uri, callback, 200)
+    // Add to static manager
+    staticRoute.addHtmlFile(uri, htmlFile)
+
+    // Register as a route for consistency
+    return this.addRoute('GET', uri, async () => htmlFile, 200)
+  }
+
+  // New method to get static configuration
+  public getStaticConfig(): Record<string, any> {
+    return staticRoute.getStaticConfig()
   }
 
   public redirect(path: Route['url'], callback: Route['callback'], _status?: RedirectCode): this {
@@ -199,7 +215,7 @@ export class Router implements RouterInterface {
 
         const prefix = options.prefix || '/'
         const formattedPrefix = prefix.startsWith('/') ? prefix : `/${prefix}`
-        console.log(r.uri)
+
         if (options.prefix) {
           r.path = formattedPrefix + r.uri
           r.uri = formattedPrefix + r.uri
@@ -213,39 +229,11 @@ export class Router implements RouterInterface {
       })
     }
 
-    // this.prepareGroupPrefix(this.routes, options, middleware)
-
     // Restore the original routes array.
     this.routes = originalRoutes
 
     return this
   }
-
-  // private prepareGroupPrefix(routes: Route[], options: string | RouteGroupOptions, middleware: string | string[]): void {
-  //   if (typeof options !== 'string') {
-  //     routes.forEach((r) => {
-  //       // Add middleware if any
-  //       if (middleware.length)
-  //         r.middleware = middleware
-
-  //       // Add the prefix to the route path
-  //       if (options.prefix) {
-  //         r.path = `/${options.prefix}${r.path}`
-  //       }
-
-  //       // Push the modified route to the original routes array
-  //       originalRoutes.push(r)
-  //       return this
-  //     })
-
-  //     return
-  //   }
-
-  //   if (typeof options === 'string') {
-
-  //     return
-  //   }
-  // }
 
   public name(name: string): this {
     this.routes[this.routes.length - 1].name = name
@@ -266,10 +254,14 @@ export class Router implements RouterInterface {
   }
 
   public async getRoutes(): Promise<Route[]> {
-    await import('../../../../../routes/api') // user routes
-    await import('../../../orm/routes') // auto-generated routes
+    await this.importRoutes()
 
     return this.routes
+  }
+
+  public async importRoutes(): Promise<void> {
+    await import('../../../../../routes/api') // user routes
+    await import('../../../orm/routes') // auto-generated routes
   }
 
   public async resolveCallback(callback: Route['callback']): Promise<Route['callback']> {

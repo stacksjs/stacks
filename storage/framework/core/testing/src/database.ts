@@ -50,15 +50,10 @@ export async function truncateSqlite(): Promise<void> {
   await dropSqliteTables()
   await deleteFrameworkModels()
 
-  const modelFiles = globSync([path.userModelsPath('*.ts')], { absolute: true })
-  const coreModelFiles = globSync([path.storagePath('framework/database/models/generated/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
   for (const file of modelFiles) {
     await copyModelFiles(file)
-  }
-
-  for (const coreFile of coreModelFiles) {
-    await copyModelFiles(coreFile)
   }
 
   await runDatabaseMigration()

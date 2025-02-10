@@ -1,5 +1,11 @@
 import type { Plugin } from 'vue'
-import { Combobox, ComboboxButton, ComboboxInput, ComboboxOption, ComboboxOptions } from './components'
+import {
+  Combobox,
+  ComboboxButton,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+} from '@headlessui/vue'
 
 const plugin: Plugin = {
   install(app) {

@@ -1,0 +1,61 @@
+{
+  "publisher": "Stacks",
+  "name": "vscode-stacks",
+  "displayName": "Stacks",
+  "version": "0.68.2",
+  "description": "A modern Stacks development environment.",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "sponsor": {
+    "url": "https://github.com/sponsors/chrisbbreuer"
+  },
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ide/vscode",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/defaults/ide/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "stacks",
+    "stacksjs",
+    "extension pack",
+    "stacks extension collection"
+  ],
+  "categories": ["Extension Packs"],
+  "icon": "logo.png",
+  "files": ["LICENSE.md", "logo.png"],
+  "engines": {
+    "vscode": "^1.96.4"
+  },
+  "scripts": {
+    "package": "bunx --bun vsce package",
+    "release": "bunx --bun vsce publish"
+  },
+  "galleryBanner": {
+    "color": "#d7e4f5",
+    "theme": "light"
+  },
+  "extensionPack": [
+    "amazonwebservices.aws-toolkit-vscode",
+    "antfu.unocss",
+    "antfu.goto-alias",
+    "dbaeumer.vscode-eslint",
+    "christian-kohler.npm-intellisense",
+    "davidanson.vscode-markdownlint",
+    "foxundermoon.shell-format",
+    "mattpocock.ts-error-translator",
+    "mikestead.dotenv",
+    "mylesmurphy.prettify-ts",
+    "nhoizey.gremlins",
+    "Orta.vscode-twoslash-queries",
+    "oven.bun-vscode",
+    "streetsidesoftware.code-spell-checker",
+    "vue.volar"
+  ],
+  "devDependencies": {
+    "@vscode/vsce": "^3.2.2"
+  }
+}
