@@ -561,7 +561,15 @@ export class TeamModel {
   }
 
   has(relation: string): TeamModel {
-    return TeamModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): TeamModel {
@@ -588,24 +596,16 @@ export class TeamModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): TeamModel {
-    return TeamModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): TeamModel {
-    const instance = new TeamModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -655,7 +655,23 @@ export class TeamModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TeamModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TeamModel {
+    const instance = new TeamModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): TeamModel {

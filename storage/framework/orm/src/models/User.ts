@@ -589,7 +589,15 @@ export class UserModel {
   }
 
   has(relation: string): UserModel {
-    return UserModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): UserModel {
@@ -616,24 +624,16 @@ export class UserModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): UserModel {
-    return UserModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): UserModel {
-    const instance = new UserModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -683,7 +683,23 @@ export class UserModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
+    const instance = new UserModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): UserModel {

@@ -574,7 +574,15 @@ export class PaymentMethodModel {
   }
 
   has(relation: string): PaymentMethodModel {
-    return PaymentMethodModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): PaymentMethodModel {
@@ -601,24 +609,16 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): PaymentMethodModel {
-    return PaymentMethodModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): PaymentMethodModel {
-    const instance = new PaymentMethodModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -668,7 +668,23 @@ export class PaymentMethodModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): PaymentMethodModel {

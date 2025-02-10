@@ -526,7 +526,15 @@ export class FailedJobModel {
   }
 
   has(relation: string): FailedJobModel {
-    return FailedJobModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): FailedJobModel {
@@ -553,24 +561,16 @@ export class FailedJobModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): FailedJobModel {
-    return FailedJobModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): FailedJobModel {
-    const instance = new FailedJobModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -620,7 +620,23 @@ export class FailedJobModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): FailedJobModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): FailedJobModel {

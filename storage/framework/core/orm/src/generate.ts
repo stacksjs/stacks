@@ -1271,7 +1271,15 @@ export async function generateModelString(
         }
 
         has(relation: string): ${modelName}Model {
-          return ${modelName}Model.has(relation)
+          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              selectFrom(relation)
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
+            ),
+          )
+
+          return this
         }
 
         static has(relation: string): ${modelName}Model {
@@ -1298,24 +1306,16 @@ export async function generateModelString(
           return instance
         }
 
-        whereHas(
+        applyWhereHas(
           relation: string,
           callback: (query: SubqueryBuilder) => void
         ): ${modelName}Model {
-          return ${modelName}Model.whereHas(relation, callback)
-        }
-
-        static whereHas(
-          relation: string,
-          callback: (query: SubqueryBuilder) => void
-        ): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
           const subqueryBuilder = new SubqueryBuilder()
           
           callback(subqueryBuilder)
           const conditions = subqueryBuilder.getConditions()
         
-          instance.selectFromQuery = instance.selectFromQuery
+          this.selectFromQuery = this.selectFromQuery
             .where(({ exists, selectFrom }: any) => {
               let subquery = selectFrom(relation)
                 .select('1')
@@ -1363,7 +1363,22 @@ export async function generateModelString(
             return exists(subquery)
           })
             
-          return instance
+          return this
+        }
+        whereHas(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
+          return this.applyWhereHas(relation, callback)
+        }
+
+        static whereHas(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+          
+          return instance.applyWhereHas(relation, callback)
         }
 
         applyDoesntHave(relation: string): ${modelName}Model {

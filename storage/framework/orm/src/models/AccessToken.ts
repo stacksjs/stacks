@@ -530,7 +530,15 @@ export class AccessTokenModel {
   }
 
   has(relation: string): AccessTokenModel {
-    return AccessTokenModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): AccessTokenModel {
@@ -557,24 +565,16 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): AccessTokenModel {
-    return AccessTokenModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): AccessTokenModel {
-    const instance = new AccessTokenModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -624,7 +624,23 @@ export class AccessTokenModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): AccessTokenModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): AccessTokenModel {
