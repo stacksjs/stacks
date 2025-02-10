@@ -1146,8 +1146,6 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new ProductModel(model as ProductType)
 
     return data
@@ -1161,8 +1159,6 @@ export class ProductModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -1293,10 +1289,21 @@ export class ProductModel {
   }
 
   async last(): Promise<ProductType | undefined> {
-    return await DB.instance.selectFrom('products')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ProductModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ProductModel(model as ProductType)
+
+    return data
   }
 
   static async last(): Promise<ProductType | undefined> {

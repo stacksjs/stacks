@@ -1159,8 +1159,6 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
@@ -1174,8 +1172,6 @@ export class DeploymentModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -1306,10 +1302,21 @@ export class DeploymentModel {
   }
 
   async last(): Promise<DeploymentType | undefined> {
-    return await DB.instance.selectFrom('deployments')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: DeploymentModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   static async last(): Promise<DeploymentType | undefined> {

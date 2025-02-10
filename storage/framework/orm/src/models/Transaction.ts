@@ -1139,8 +1139,6 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new TransactionModel(model as TransactionType)
 
     return data
@@ -1154,8 +1152,6 @@ export class TransactionModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1286,10 +1282,21 @@ export class TransactionModel {
   }
 
   async last(): Promise<TransactionType | undefined> {
-    return await DB.instance.selectFrom('transactions')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: TransactionModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   static async last(): Promise<TransactionType | undefined> {

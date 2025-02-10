@@ -1166,8 +1166,6 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
@@ -1181,8 +1179,6 @@ export class PaymentMethodModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -1313,10 +1309,21 @@ export class PaymentMethodModel {
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
-    return await DB.instance.selectFrom('payment_methods')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: PaymentMethodModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {

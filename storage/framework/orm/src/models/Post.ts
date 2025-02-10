@@ -1060,8 +1060,6 @@ export class PostModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new PostModel(model as PostType)
 
     return data
@@ -1075,8 +1073,6 @@ export class PostModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
 
@@ -1207,10 +1203,21 @@ export class PostModel {
   }
 
   async last(): Promise<PostType | undefined> {
-    return await DB.instance.selectFrom('posts')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: PostModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   static async last(): Promise<PostType | undefined> {

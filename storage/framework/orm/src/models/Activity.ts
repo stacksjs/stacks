@@ -1144,8 +1144,6 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new ActivityModel(model as ActivityType)
 
     return data
@@ -1159,8 +1157,6 @@ export class ActivityModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -1291,10 +1287,21 @@ export class ActivityModel {
   }
 
   async last(): Promise<ActivityType | undefined> {
-    return await DB.instance.selectFrom('activities')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ActivityModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ActivityModel(model as ActivityType)
+
+    return data
   }
 
   static async last(): Promise<ActivityType | undefined> {

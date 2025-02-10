@@ -1094,8 +1094,6 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
@@ -1109,8 +1107,6 @@ export class AccessTokenModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1241,10 +1237,21 @@ export class AccessTokenModel {
   }
 
   async last(): Promise<AccessTokenType | undefined> {
-    return await DB.instance.selectFrom('personal_access_tokens')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: AccessTokenModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new AccessTokenModel(model as AccessTokenType)
+
+    return data
   }
 
   static async last(): Promise<AccessTokenType | undefined> {

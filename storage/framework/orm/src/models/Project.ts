@@ -1081,8 +1081,6 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new ProjectModel(model as ProjectType)
 
     return data
@@ -1096,8 +1094,6 @@ export class ProjectModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -1228,10 +1224,21 @@ export class ProjectModel {
   }
 
   async last(): Promise<ProjectType | undefined> {
-    return await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ProjectModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   static async last(): Promise<ProjectType | undefined> {

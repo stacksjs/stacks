@@ -1098,8 +1098,6 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new ErrorModel(model as ErrorType)
 
     return data
@@ -1113,8 +1111,6 @@ export class ErrorModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -1245,10 +1241,21 @@ export class ErrorModel {
   }
 
   async last(): Promise<ErrorType | undefined> {
-    return await DB.instance.selectFrom('errors')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ErrorModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   static async last(): Promise<ErrorType | undefined> {

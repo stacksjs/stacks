@@ -1210,8 +1210,6 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
@@ -1225,8 +1223,6 @@ export class SubscriptionModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -1357,10 +1353,21 @@ export class SubscriptionModel {
   }
 
   async last(): Promise<SubscriptionType | undefined> {
-    return await DB.instance.selectFrom('subscriptions')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: SubscriptionModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriptionModel(model as SubscriptionType)
+
+    return data
   }
 
   static async last(): Promise<SubscriptionType | undefined> {

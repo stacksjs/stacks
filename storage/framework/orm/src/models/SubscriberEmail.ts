@@ -1059,8 +1059,6 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
@@ -1074,8 +1072,6 @@ export class SubscriberEmailModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -1206,10 +1202,21 @@ export class SubscriberEmailModel {
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
-    return await DB.instance.selectFrom('subscriber_emails')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: SubscriberEmailModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   static async last(): Promise<SubscriberEmailType | undefined> {

@@ -1098,8 +1098,6 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new FailedJobModel(model as FailedJobType)
 
     return data
@@ -1113,8 +1111,6 @@ export class FailedJobModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -1245,10 +1241,21 @@ export class FailedJobModel {
   }
 
   async last(): Promise<FailedJobType | undefined> {
-    return await DB.instance.selectFrom('failed_jobs')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: FailedJobModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new FailedJobModel(model as FailedJobType)
+
+    return data
   }
 
   static async last(): Promise<FailedJobType | undefined> {

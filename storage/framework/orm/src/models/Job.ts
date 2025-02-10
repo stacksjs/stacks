@@ -1098,8 +1098,6 @@ export class JobModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new JobModel(model as JobType)
 
     return data
@@ -1113,8 +1111,6 @@ export class JobModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 
@@ -1245,10 +1241,21 @@ export class JobModel {
   }
 
   async last(): Promise<JobType | undefined> {
-    return await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: JobModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new JobModel(model as JobType)
+
+    return data
   }
 
   static async last(): Promise<JobType | undefined> {

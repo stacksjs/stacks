@@ -1030,8 +1030,6 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
@@ -1045,8 +1043,6 @@ export class ReleaseModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1177,10 +1173,21 @@ export class ReleaseModel {
   }
 
   async last(): Promise<ReleaseType | undefined> {
-    return await DB.instance.selectFrom('releases')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ReleaseModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ReleaseModel(model as ReleaseType)
+
+    return data
   }
 
   static async last(): Promise<ReleaseType | undefined> {

@@ -1167,8 +1167,6 @@ export class UserModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new UserModel(model as UserType)
 
     return data
@@ -1182,8 +1180,6 @@ export class UserModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 
@@ -1314,10 +1310,21 @@ export class UserModel {
   }
 
   async last(): Promise<UserType | undefined> {
-    return await DB.instance.selectFrom('users')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: UserModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   static async last(): Promise<UserType | undefined> {

@@ -1157,8 +1157,6 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    await this.loadRelations(model)
-
     const data = new TeamModel(model as TeamType)
 
     return data
@@ -1172,8 +1170,6 @@ export class TeamModel {
 
     if (!model)
       return undefined
-
-    await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -1304,10 +1300,21 @@ export class TeamModel {
   }
 
   async last(): Promise<TeamType | undefined> {
-    return await DB.instance.selectFrom('teams')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: TeamModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   static async last(): Promise<TeamType | undefined> {
