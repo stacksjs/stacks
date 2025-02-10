@@ -94,13 +94,9 @@ export class PaymentMethodModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: PaymentMethodJsonResponse): PaymentMethodJsonResponse {
+  mapCustomGetters(model: PaymentMethodJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

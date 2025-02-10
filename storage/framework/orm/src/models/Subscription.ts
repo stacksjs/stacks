@@ -94,13 +94,9 @@ export class SubscriptionModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: SubscriptionJsonResponse): SubscriptionJsonResponse {
+  mapCustomGetters(model: SubscriptionJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

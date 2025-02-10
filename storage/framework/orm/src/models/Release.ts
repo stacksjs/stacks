@@ -78,13 +78,9 @@ export class ReleaseModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ReleaseJsonResponse): ReleaseJsonResponse {
+  mapCustomGetters(model: ReleaseJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

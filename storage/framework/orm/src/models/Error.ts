@@ -82,13 +82,9 @@ export class ErrorModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ErrorJsonResponse): ErrorJsonResponse {
+  mapCustomGetters(model: ErrorJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

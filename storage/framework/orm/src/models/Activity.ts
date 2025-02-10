@@ -85,13 +85,9 @@ export class ActivityModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ActivityJsonResponse): ActivityJsonResponse {
+  mapCustomGetters(model: ActivityJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

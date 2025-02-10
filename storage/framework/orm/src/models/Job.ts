@@ -82,13 +82,9 @@ export class JobModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: JobJsonResponse): JobJsonResponse {
+  mapCustomGetters(model: JobJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

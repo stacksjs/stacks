@@ -84,13 +84,9 @@ export class PostModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: PostJsonResponse): PostJsonResponse {
+  mapCustomGetters(model: PostJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

@@ -81,13 +81,9 @@ export class ProjectModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ProjectJsonResponse): ProjectJsonResponse {
+  mapCustomGetters(model: ProjectJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

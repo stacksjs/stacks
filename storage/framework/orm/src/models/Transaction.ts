@@ -95,13 +95,9 @@ export class TransactionModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: TransactionJsonResponse): TransactionJsonResponse {
+  mapCustomGetters(model: TransactionJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

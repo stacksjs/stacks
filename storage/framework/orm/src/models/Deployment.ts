@@ -91,13 +91,9 @@ export class DeploymentModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: DeploymentJsonResponse): DeploymentJsonResponse {
+  mapCustomGetters(model: DeploymentJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

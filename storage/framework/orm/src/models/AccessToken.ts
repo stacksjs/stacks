@@ -86,13 +86,9 @@ export class AccessTokenModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: AccessTokenJsonResponse): AccessTokenJsonResponse {
+  mapCustomGetters(model: AccessTokenJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

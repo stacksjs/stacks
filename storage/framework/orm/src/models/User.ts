@@ -105,11 +105,12 @@ export class UserModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: UserJsonResponse): UserJsonResponse {
+  mapCustomGetters(model: UserJsonResponse): void {
     const customGetter = {
       firstName: () => {
         return model.name.split(' ')[0]
       },
+
     }
 
     for (const [key, fn] of Object.entries(customGetter)) {
@@ -279,7 +280,6 @@ export class UserModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)

@@ -80,13 +80,9 @@ export class SubscriberEmailModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: SubscriberEmailJsonResponse): SubscriberEmailJsonResponse {
+  mapCustomGetters(model: SubscriberEmailJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

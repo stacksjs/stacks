@@ -89,13 +89,9 @@ export class TeamModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: TeamJsonResponse): TeamJsonResponse {
+  mapCustomGetters(model: TeamJsonResponse): void {
     const customGetter = {
 
-    }
-
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
     }
   }
 

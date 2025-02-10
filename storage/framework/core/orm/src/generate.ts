@@ -6,20 +6,23 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
-function generateCustomAccessors(model: Model): { output: string, getterString: string } {
+function generateCustomAccessors(model: Model): { output: string, loopString: string } {
   let output = ''
-  let getterString = ''
+  let loopString = ''
 
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
       const getterStr = getter.toString()
       output += `${methodName}: ${getterStr}, \n`
-
-      getterString += `${methodName}: customGetter.${methodName}(), \n`
     }
+
+    loopString += `
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }`
   }
 
-  return { output, getterString }
+  return { output, loopString }
 }
 
 function removeAttrString(getterFn: string): string {
@@ -900,14 +903,12 @@ export async function generateModelString(
           this.hasSaved = false
         }
 
-        mapCustomGetters(model: ${modelName}JsonResponse): ${modelName}JsonResponse {
+        mapCustomGetters(model: ${modelName}JsonResponse): void {
           const customGetter = {
             ${removeAttrString(getterOutput.output)}
           }
 
-          for (const [key, fn] of Object.entries(customGetter)) {
-            model[key] = fn()
-          }
+          ${getterOutput.loopString}
         }
 
         ${getFields}
