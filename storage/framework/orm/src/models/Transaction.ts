@@ -241,8 +241,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -564,7 +563,15 @@ export class TransactionModel {
   }
 
   has(relation: string): TransactionModel {
-    return TransactionModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.transaction_id`, '=', 'transactions.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): TransactionModel {
@@ -591,24 +598,16 @@ export class TransactionModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): TransactionModel {
-    return TransactionModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): TransactionModel {
-    const instance = new TransactionModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -658,7 +657,23 @@ export class TransactionModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TransactionModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): TransactionModel {
@@ -1233,7 +1248,7 @@ export class TransactionModel {
     }
   }
 
-  async loadRelations(models: TransactionModel | TransactionModel[]): Promise<void> {
+  async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1249,8 +1264,8 @@ export class TransactionModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: TransactionModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: TransactionJsonResponse) => {
+          const records = relatedRecords.filter((record: { transaction_id: number }) => {
             return record.transaction_id === model.id
           })
 
@@ -1259,7 +1274,7 @@ export class TransactionModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { transaction_id: number }) => {
           return record.transaction_id === models.id
         })
 
@@ -1283,10 +1298,21 @@ export class TransactionModel {
   }
 
   async last(): Promise<TransactionType | undefined> {
-    return await DB.instance.selectFrom('transactions')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: TransactionModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new TransactionModel(model as TransactionType)
+
+    return data
   }
 
   static async last(): Promise<TransactionType | undefined> {

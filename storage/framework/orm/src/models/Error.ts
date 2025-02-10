@@ -204,8 +204,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -527,7 +526,15 @@ export class ErrorModel {
   }
 
   has(relation: string): ErrorModel {
-    return ErrorModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.error_id`, '=', 'errors.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): ErrorModel {
@@ -554,24 +561,16 @@ export class ErrorModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): ErrorModel {
-    return ErrorModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ErrorModel {
-    const instance = new ErrorModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -621,7 +620,23 @@ export class ErrorModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ErrorModel {
+    const instance = new ErrorModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): ErrorModel {
@@ -1192,7 +1207,7 @@ export class ErrorModel {
     }
   }
 
-  async loadRelations(models: ErrorModel | ErrorModel[]): Promise<void> {
+  async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1208,8 +1223,8 @@ export class ErrorModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ErrorModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: ErrorJsonResponse) => {
+          const records = relatedRecords.filter((record: { error_id: number }) => {
             return record.error_id === model.id
           })
 
@@ -1218,7 +1233,7 @@ export class ErrorModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { error_id: number }) => {
           return record.error_id === models.id
         })
 
@@ -1242,10 +1257,21 @@ export class ErrorModel {
   }
 
   async last(): Promise<ErrorType | undefined> {
-    return await DB.instance.selectFrom('errors')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ErrorModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ErrorModel(model as ErrorType)
+
+    return data
   }
 
   static async last(): Promise<ErrorType | undefined> {

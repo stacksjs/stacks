@@ -204,8 +204,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -527,7 +526,15 @@ export class FailedJobModel {
   }
 
   has(relation: string): FailedJobModel {
-    return FailedJobModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): FailedJobModel {
@@ -554,24 +561,16 @@ export class FailedJobModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): FailedJobModel {
-    return FailedJobModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): FailedJobModel {
-    const instance = new FailedJobModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -621,7 +620,23 @@ export class FailedJobModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): FailedJobModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): FailedJobModel {
+    const instance = new FailedJobModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): FailedJobModel {
@@ -1192,7 +1207,7 @@ export class FailedJobModel {
     }
   }
 
-  async loadRelations(models: FailedJobModel | FailedJobModel[]): Promise<void> {
+  async loadRelations(models: FailedJobJsonResponse | FailedJobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1208,8 +1223,8 @@ export class FailedJobModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: FailedJobModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: FailedJobJsonResponse) => {
+          const records = relatedRecords.filter((record: { failedjob_id: number }) => {
             return record.failedjob_id === model.id
           })
 
@@ -1218,7 +1233,7 @@ export class FailedJobModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { failedjob_id: number }) => {
           return record.failedjob_id === models.id
         })
 
@@ -1242,10 +1257,21 @@ export class FailedJobModel {
   }
 
   async last(): Promise<FailedJobType | undefined> {
-    return await DB.instance.selectFrom('failed_jobs')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: FailedJobModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new FailedJobModel(model as FailedJobType)
+
+    return data
   }
 
   static async last(): Promise<FailedJobType | undefined> {

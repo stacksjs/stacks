@@ -168,8 +168,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -491,7 +490,15 @@ export class ReleaseModel {
   }
 
   has(relation: string): ReleaseModel {
-    return ReleaseModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.release_id`, '=', 'releases.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): ReleaseModel {
@@ -518,24 +525,16 @@ export class ReleaseModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): ReleaseModel {
-    return ReleaseModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ReleaseModel {
-    const instance = new ReleaseModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -585,7 +584,23 @@ export class ReleaseModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ReleaseModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): ReleaseModel {
@@ -1124,7 +1139,7 @@ export class ReleaseModel {
     }
   }
 
-  async loadRelations(models: ReleaseModel | ReleaseModel[]): Promise<void> {
+  async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1140,8 +1155,8 @@ export class ReleaseModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ReleaseModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: ReleaseJsonResponse) => {
+          const records = relatedRecords.filter((record: { release_id: number }) => {
             return record.release_id === model.id
           })
 
@@ -1150,7 +1165,7 @@ export class ReleaseModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { release_id: number }) => {
           return record.release_id === models.id
         })
 
@@ -1174,10 +1189,21 @@ export class ReleaseModel {
   }
 
   async last(): Promise<ReleaseType | undefined> {
-    return await DB.instance.selectFrom('releases')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ReleaseModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ReleaseModel(model as ReleaseType)
+
+    return data
   }
 
   static async last(): Promise<ReleaseType | undefined> {

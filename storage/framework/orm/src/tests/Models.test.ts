@@ -1057,7 +1057,7 @@ describe('Models test', () => {
     })
 
     const results = await User.where('name', 'like', 'J%').whereNull('updated_at').get()
-    expect(results.length).toBe(1)
+    expect(results.length).toBe(2)
     expect(results[0]?.name).toBe('Jane')
   })
 

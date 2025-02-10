@@ -204,8 +204,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
 
@@ -527,7 +526,15 @@ export class JobModel {
   }
 
   has(relation: string): JobModel {
-    return JobModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.job_id`, '=', 'jobs.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): JobModel {
@@ -554,24 +561,16 @@ export class JobModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): JobModel {
-    return JobModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): JobModel {
-    const instance = new JobModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -621,7 +620,23 @@ export class JobModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): JobModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): JobModel {
+    const instance = new JobModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): JobModel {
@@ -1192,7 +1207,7 @@ export class JobModel {
     }
   }
 
-  async loadRelations(models: JobModel | JobModel[]): Promise<void> {
+  async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1208,8 +1223,8 @@ export class JobModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: JobModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: JobJsonResponse) => {
+          const records = relatedRecords.filter((record: { job_id: number }) => {
             return record.job_id === model.id
           })
 
@@ -1218,7 +1233,7 @@ export class JobModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { job_id: number }) => {
           return record.job_id === models.id
         })
 
@@ -1242,10 +1257,21 @@ export class JobModel {
   }
 
   async last(): Promise<JobType | undefined> {
-    return await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: JobModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new JobModel(model as JobType)
+
+    return data
   }
 
   static async last(): Promise<JobType | undefined> {

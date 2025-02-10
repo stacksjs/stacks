@@ -195,8 +195,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -518,7 +517,15 @@ export class ProjectModel {
   }
 
   has(relation: string): ProjectModel {
-    return ProjectModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.project_id`, '=', 'projects.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): ProjectModel {
@@ -545,24 +552,16 @@ export class ProjectModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): ProjectModel {
-    return ProjectModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProjectModel {
-    const instance = new ProjectModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -612,7 +611,23 @@ export class ProjectModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProjectModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProjectModel {
+    const instance = new ProjectModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): ProjectModel {
@@ -1175,7 +1190,7 @@ export class ProjectModel {
     }
   }
 
-  async loadRelations(models: ProjectModel | ProjectModel[]): Promise<void> {
+  async loadRelations(models: ProjectJsonResponse | ProjectJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1191,8 +1206,8 @@ export class ProjectModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProjectModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: ProjectJsonResponse) => {
+          const records = relatedRecords.filter((record: { project_id: number }) => {
             return record.project_id === model.id
           })
 
@@ -1201,7 +1216,7 @@ export class ProjectModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { project_id: number }) => {
           return record.project_id === models.id
         })
 
@@ -1225,10 +1240,21 @@ export class ProjectModel {
   }
 
   async last(): Promise<ProjectType | undefined> {
-    return await DB.instance.selectFrom('projects')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ProjectModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ProjectModel(model as ProjectType)
+
+    return data
   }
 
   static async last(): Promise<ProjectType | undefined> {

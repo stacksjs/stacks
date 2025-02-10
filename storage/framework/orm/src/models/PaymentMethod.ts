@@ -252,8 +252,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -575,7 +574,15 @@ export class PaymentMethodModel {
   }
 
   has(relation: string): PaymentMethodModel {
-    return PaymentMethodModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): PaymentMethodModel {
@@ -602,24 +609,16 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): PaymentMethodModel {
-    return PaymentMethodModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): PaymentMethodModel {
-    const instance = new PaymentMethodModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -669,7 +668,23 @@ export class PaymentMethodModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PaymentMethodModel {
+    const instance = new PaymentMethodModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): PaymentMethodModel {
@@ -1260,7 +1275,7 @@ export class PaymentMethodModel {
     }
   }
 
-  async loadRelations(models: PaymentMethodModel | PaymentMethodModel[]): Promise<void> {
+  async loadRelations(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1276,8 +1291,8 @@ export class PaymentMethodModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: PaymentMethodModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: PaymentMethodJsonResponse) => {
+          const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
             return record.paymentmethod_id === model.id
           })
 
@@ -1286,7 +1301,7 @@ export class PaymentMethodModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
           return record.paymentmethod_id === models.id
         })
 
@@ -1310,10 +1325,21 @@ export class PaymentMethodModel {
   }
 
   async last(): Promise<PaymentMethodType | undefined> {
-    return await DB.instance.selectFrom('payment_methods')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: PaymentMethodModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new PaymentMethodModel(model as PaymentMethodType)
+
+    return data
   }
 
   static async last(): Promise<PaymentMethodType | undefined> {

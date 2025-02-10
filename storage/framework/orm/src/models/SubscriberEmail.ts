@@ -178,8 +178,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -509,7 +508,15 @@ export class SubscriberEmailModel {
   }
 
   has(relation: string): SubscriberEmailModel {
-    return SubscriberEmailModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): SubscriberEmailModel {
@@ -536,24 +543,16 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): SubscriberEmailModel {
-    return SubscriberEmailModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -603,7 +602,23 @@ export class SubscriberEmailModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberEmailModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): SubscriberEmailModel {
@@ -1153,7 +1168,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  async loadRelations(models: SubscriberEmailModel | SubscriberEmailModel[]): Promise<void> {
+  async loadRelations(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1169,8 +1184,8 @@ export class SubscriberEmailModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: SubscriberEmailModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: SubscriberEmailJsonResponse) => {
+          const records = relatedRecords.filter((record: { subscriberemail_id: number }) => {
             return record.subscriberemail_id === model.id
           })
 
@@ -1179,7 +1194,7 @@ export class SubscriberEmailModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { subscriberemail_id: number }) => {
           return record.subscriberemail_id === models.id
         })
 
@@ -1203,10 +1218,21 @@ export class SubscriberEmailModel {
   }
 
   async last(): Promise<SubscriberEmailType | undefined> {
-    return await DB.instance.selectFrom('subscriber_emails')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: SubscriberEmailModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+
+    return data
   }
 
   static async last(): Promise<SubscriberEmailType | undefined> {

@@ -232,8 +232,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -555,7 +554,15 @@ export class ProductModel {
   }
 
   has(relation: string): ProductModel {
-    return ProductModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): ProductModel {
@@ -582,24 +589,16 @@ export class ProductModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): ProductModel {
-    return ProductModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ProductModel {
-    const instance = new ProductModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -649,7 +648,23 @@ export class ProductModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProductModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ProductModel {
+    const instance = new ProductModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): ProductModel {
@@ -1240,7 +1255,7 @@ export class ProductModel {
     }
   }
 
-  async loadRelations(models: ProductModel | ProductModel[]): Promise<void> {
+  async loadRelations(models: ProductJsonResponse | ProductJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1256,8 +1271,8 @@ export class ProductModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProductModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: ProductJsonResponse) => {
+          const records = relatedRecords.filter((record: { product_id: number }) => {
             return record.product_id === model.id
           })
 
@@ -1266,7 +1281,7 @@ export class ProductModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { product_id: number }) => {
           return record.product_id === models.id
         })
 
@@ -1290,10 +1305,21 @@ export class ProductModel {
   }
 
   async last(): Promise<ProductType | undefined> {
-    return await DB.instance.selectFrom('products')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ProductModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ProductModel(model as ProductType)
+
+    return data
   }
 
   static async last(): Promise<ProductType | undefined> {

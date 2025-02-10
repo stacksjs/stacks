@@ -239,8 +239,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -562,7 +561,15 @@ export class TeamModel {
   }
 
   has(relation: string): TeamModel {
-    return TeamModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.team_id`, '=', 'teams.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): TeamModel {
@@ -589,24 +596,16 @@ export class TeamModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): TeamModel {
-    return TeamModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): TeamModel {
-    const instance = new TeamModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -656,7 +655,23 @@ export class TeamModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TeamModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): TeamModel {
+    const instance = new TeamModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): TeamModel {
@@ -1251,7 +1266,7 @@ export class TeamModel {
     }
   }
 
-  async loadRelations(models: TeamModel | TeamModel[]): Promise<void> {
+  async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1267,8 +1282,8 @@ export class TeamModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: TeamModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: TeamJsonResponse) => {
+          const records = relatedRecords.filter((record: { team_id: number }) => {
             return record.team_id === model.id
           })
 
@@ -1277,7 +1292,7 @@ export class TeamModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { team_id: number }) => {
           return record.team_id === models.id
         })
 
@@ -1301,10 +1316,21 @@ export class TeamModel {
   }
 
   async last(): Promise<TeamType | undefined> {
-    return await DB.instance.selectFrom('teams')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: TeamModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new TeamModel(model as TeamType)
+
+    return data
   }
 
   static async last(): Promise<TeamType | undefined> {
@@ -1511,7 +1537,7 @@ export class TeamModel {
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map(result => result.user_id)
+    const tableRelationIds = results.map((result: { user_id: number }) => result.user_id)
 
     if (!tableRelationIds.length)
       throw new HttpError(500, 'Relation Error!')

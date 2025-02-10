@@ -223,8 +223,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -554,7 +553,15 @@ export class ActivityModel {
   }
 
   has(relation: string): ActivityModel {
-    return ActivityModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.activity_id`, '=', 'activities.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): ActivityModel {
@@ -581,24 +588,16 @@ export class ActivityModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): ActivityModel {
-    return ActivityModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): ActivityModel {
-    const instance = new ActivityModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -648,7 +647,23 @@ export class ActivityModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ActivityModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): ActivityModel {
+    const instance = new ActivityModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): ActivityModel {
@@ -1238,7 +1253,7 @@ export class ActivityModel {
     }
   }
 
-  async loadRelations(models: ActivityModel | ActivityModel[]): Promise<void> {
+  async loadRelations(models: ActivityJsonResponse | ActivityJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1254,8 +1269,8 @@ export class ActivityModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ActivityModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: ActivityJsonResponse) => {
+          const records = relatedRecords.filter((record: { activity_id: number }) => {
             return record.activity_id === model.id
           })
 
@@ -1264,7 +1279,7 @@ export class ActivityModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { activity_id: number }) => {
           return record.activity_id === models.id
         })
 
@@ -1288,10 +1303,21 @@ export class ActivityModel {
   }
 
   async last(): Promise<ActivityType | undefined> {
-    return await DB.instance.selectFrom('activities')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: ActivityModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new ActivityModel(model as ActivityType)
+
+    return data
   }
 
   static async last(): Promise<ActivityType | undefined> {

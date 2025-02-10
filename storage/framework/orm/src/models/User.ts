@@ -169,6 +169,10 @@ export class UserModel {
     return this.attributes.updated_at
   }
 
+  get firstName(name) {
+    return name.split(' ')[0]
+  }
+
   set stripe_id(value: string) {
     this.attributes.stripe_id = value
   }
@@ -267,8 +271,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
 
@@ -590,7 +593,15 @@ export class UserModel {
   }
 
   has(relation: string): UserModel {
-    return UserModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.user_id`, '=', 'users.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): UserModel {
@@ -617,24 +628,16 @@ export class UserModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): UserModel {
-    return UserModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): UserModel {
-    const instance = new UserModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -684,7 +687,23 @@ export class UserModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): UserModel {
+    const instance = new UserModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): UserModel {
@@ -1261,7 +1280,7 @@ export class UserModel {
     }
   }
 
-  async loadRelations(models: UserModel | UserModel[]): Promise<void> {
+  async loadRelations(models: UserJsonResponse | UserJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1277,8 +1296,8 @@ export class UserModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: UserModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: UserJsonResponse) => {
+          const records = relatedRecords.filter((record: { user_id: number }) => {
             return record.user_id === model.id
           })
 
@@ -1287,7 +1306,7 @@ export class UserModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { user_id: number }) => {
           return record.user_id === models.id
         })
 
@@ -1311,10 +1330,21 @@ export class UserModel {
   }
 
   async last(): Promise<UserType | undefined> {
-    return await DB.instance.selectFrom('users')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: UserModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new UserModel(model as UserType)
+
+    return data
   }
 
   static async last(): Promise<UserType | undefined> {
@@ -1530,7 +1560,7 @@ export class UserModel {
       .selectAll()
       .execute()
 
-    const tableRelationIds = results.map(result => result.team_id)
+    const tableRelationIds = results.map((result: { team_id: number }) => result.team_id)
 
     if (!tableRelationIds.length)
       throw new HttpError(500, 'Relation Error!')

@@ -208,8 +208,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -531,7 +530,15 @@ export class AccessTokenModel {
   }
 
   has(relation: string): AccessTokenModel {
-    return AccessTokenModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): AccessTokenModel {
@@ -558,24 +565,16 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): AccessTokenModel {
-    return AccessTokenModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): AccessTokenModel {
-    const instance = new AccessTokenModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -625,7 +624,23 @@ export class AccessTokenModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): AccessTokenModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): AccessTokenModel {
@@ -1188,7 +1203,7 @@ export class AccessTokenModel {
     }
   }
 
-  async loadRelations(models: AccessTokenModel | AccessTokenModel[]): Promise<void> {
+  async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1204,8 +1219,8 @@ export class AccessTokenModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: AccessTokenModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: AccessTokenJsonResponse) => {
+          const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
             return record.accesstoken_id === model.id
           })
 
@@ -1214,7 +1229,7 @@ export class AccessTokenModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
           return record.accesstoken_id === models.id
         })
 
@@ -1238,10 +1253,21 @@ export class AccessTokenModel {
   }
 
   async last(): Promise<AccessTokenType | undefined> {
-    return await DB.instance.selectFrom('personal_access_tokens')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: AccessTokenModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new AccessTokenModel(model as AccessTokenType)
+
+    return data
   }
 
   static async last(): Promise<AccessTokenType | undefined> {

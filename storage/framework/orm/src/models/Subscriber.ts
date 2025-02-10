@@ -168,8 +168,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -491,7 +490,15 @@ export class SubscriberModel {
   }
 
   has(relation: string): SubscriberModel {
-    return SubscriberModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): SubscriberModel {
@@ -518,24 +525,16 @@ export class SubscriberModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): SubscriberModel {
-    return SubscriberModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): SubscriberModel {
-    const instance = new SubscriberModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -585,7 +584,23 @@ export class SubscriberModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): SubscriberModel {
@@ -1124,7 +1139,7 @@ export class SubscriberModel {
     }
   }
 
-  async loadRelations(models: SubscriberModel | SubscriberModel[]): Promise<void> {
+  async loadRelations(models: SubscriberJsonResponse | SubscriberJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1140,8 +1155,8 @@ export class SubscriberModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: SubscriberModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: SubscriberJsonResponse) => {
+          const records = relatedRecords.filter((record: { subscriber_id: number }) => {
             return record.subscriber_id === model.id
           })
 
@@ -1150,7 +1165,7 @@ export class SubscriberModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { subscriber_id: number }) => {
           return record.subscriber_id === models.id
         })
 
@@ -1174,10 +1189,21 @@ export class SubscriberModel {
   }
 
   async last(): Promise<SubscriberType | undefined> {
-    return await DB.instance.selectFrom('subscribers')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: SubscriberModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new SubscriberModel(model as SubscriberType)
+
+    return data
   }
 
   static async last(): Promise<SubscriberType | undefined> {

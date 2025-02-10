@@ -190,8 +190,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
 
@@ -513,7 +512,15 @@ export class PostModel {
   }
 
   has(relation: string): PostModel {
-    return PostModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): PostModel {
@@ -540,24 +547,16 @@ export class PostModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): PostModel {
-    return PostModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): PostModel {
-    const instance = new PostModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -607,7 +606,23 @@ export class PostModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PostModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): PostModel {
+    const instance = new PostModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): PostModel {
@@ -1154,7 +1169,7 @@ export class PostModel {
     }
   }
 
-  async loadRelations(models: PostModel | PostModel[]): Promise<void> {
+  async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1170,8 +1185,8 @@ export class PostModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: PostModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: PostJsonResponse) => {
+          const records = relatedRecords.filter((record: { post_id: number }) => {
             return record.post_id === model.id
           })
 
@@ -1180,7 +1195,7 @@ export class PostModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { post_id: number }) => {
           return record.post_id === models.id
         })
 
@@ -1204,10 +1219,21 @@ export class PostModel {
   }
 
   async last(): Promise<PostType | undefined> {
-    return await DB.instance.selectFrom('posts')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: PostModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new PostModel(model as PostType)
+
+    return data
   }
 
   static async last(): Promise<PostType | undefined> {

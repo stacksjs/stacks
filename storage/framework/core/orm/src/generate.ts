@@ -6,6 +6,23 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
+async function generateCustomAccessors(model: Model) {
+  let output = ''
+
+  if (model.get) {
+    for (const [methodName, getter] of Object.entries(model.get)) {
+      const getterStr = removeArrow(getter.toString())
+      output += `get ${methodName}${getterStr}\n`
+    }
+  }
+
+  return output
+}
+
+function removeArrow(fnStr: string) {
+  return fnStr.replace('=>', '')
+}
+
 function getUpvoteTableName(model: Model, tableName: string): string {
   const defaultTable = `${tableName}_likes`
   const traits = model.traits
@@ -68,6 +85,8 @@ export async function generateModelString(
   let mittDeleteStaticFindStatement = ''
   let mittDeleteFindStatement = ''
   let privateSoftDeletes = ''
+
+  const getterOutput = await generateCustomAccessors(model)
 
   const relations = await getRelations(model, modelName)
 
@@ -263,7 +282,7 @@ export async function generateModelString(
             .selectAll()
             .execute()
   
-            const tableRelationIds = results.map((result) => result.${singular(tableRelation)}_id)
+            const tableRelationIds = results.map((result: { ${singular(tableRelation)}_id: number }) => result.${singular(tableRelation)}_id)
   
             if (! tableRelationIds.length)
               throw new HttpError(500, 'Relation Error!')
@@ -879,6 +898,7 @@ export async function generateModelString(
         }
 
         ${getFields}
+        ${getterOutput}
         ${setFields}
         
         getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {
@@ -947,8 +967,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          if (model)
-            await this.loadRelations(model)
+          await this.loadRelations(model)
           
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1272,7 +1291,15 @@ export async function generateModelString(
         }
 
         has(relation: string): ${modelName}Model {
-          return ${modelName}Model.has(relation)
+          this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+            exists(
+              selectFrom(relation)
+                .select('1')
+                .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id'),
+            ),
+          )
+
+          return this
         }
 
         static has(relation: string): ${modelName}Model {
@@ -1299,24 +1326,16 @@ export async function generateModelString(
           return instance
         }
 
-        whereHas(
+        applyWhereHas(
           relation: string,
           callback: (query: SubqueryBuilder) => void
         ): ${modelName}Model {
-          return ${modelName}Model.whereHas(relation, callback)
-        }
-
-        static whereHas(
-          relation: string,
-          callback: (query: SubqueryBuilder) => void
-        ): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
           const subqueryBuilder = new SubqueryBuilder()
           
           callback(subqueryBuilder)
           const conditions = subqueryBuilder.getConditions()
         
-          instance.selectFromQuery = instance.selectFromQuery
+          this.selectFromQuery = this.selectFromQuery
             .where(({ exists, selectFrom }: any) => {
               let subquery = selectFrom(relation)
                 .select('1')
@@ -1364,7 +1383,22 @@ export async function generateModelString(
             return exists(subquery)
           })
             
-          return instance
+          return this
+        }
+        whereHas(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
+          return this.applyWhereHas(relation, callback)
+        }
+
+        static whereHas(
+          relation: string,
+          callback: (query: SubqueryBuilder) => void
+        ): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+          
+          return instance.applyWhereHas(relation, callback)
         }
 
         applyDoesntHave(relation: string): ${modelName}Model {
@@ -1909,7 +1943,7 @@ export async function generateModelString(
           }
         }
 
-        async loadRelations(models: ${modelName}Model | ${modelName}Model[]): Promise<void> {
+        async loadRelations(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): Promise<void> {
           // Handle both single model and array of models
           const modelArray = Array.isArray(models) ? models : [models]
           if (!modelArray.length) return
@@ -1924,8 +1958,8 @@ export async function generateModelString(
               .execute()
         
             if (Array.isArray(models)) {
-              models.map((model: ${modelName}Model) => {
-                const records = relatedRecords.filter((record: any) => {
+              models.map((model: ${modelName}JsonResponse) => {
+                const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                   return record.${formattedModelName}_id === model.id
                 })
 
@@ -1933,7 +1967,7 @@ export async function generateModelString(
                 return model
               })
             } else {
-              const records = relatedRecords.filter((record: any) => {
+              const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                 return record.${formattedModelName}_id === models.id
               })
         
@@ -1957,10 +1991,21 @@ export async function generateModelString(
         }
   
         async last(): Promise<${modelName}Type | undefined> {
-          return await DB.instance.selectFrom('${tableName}')
-            .selectAll()
-            .orderBy('id', 'desc')
-            .executeTakeFirst()
+          let model: ${modelName}Model | undefined
+
+          if (this.hasSelect) {
+            model = await this.selectFromQuery.executeTakeFirst()
+          }
+          else {
+            model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+          }
+
+          if (model)
+            await this.loadRelations(model)
+
+          const data = new ${modelName}Model(model as ${modelName}Type)
+  
+          return data
         }
   
         static async last(): Promise<${modelName}Type | undefined> {

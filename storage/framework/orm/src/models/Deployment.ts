@@ -245,8 +245,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    if (model)
-      await this.loadRelations(model)
+    await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -568,7 +567,15 @@ export class DeploymentModel {
   }
 
   has(relation: string): DeploymentModel {
-    return DeploymentModel.has(relation)
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.deployment_id`, '=', 'deployments.id'),
+      ),
+    )
+
+    return this
   }
 
   static has(relation: string): DeploymentModel {
@@ -595,24 +602,16 @@ export class DeploymentModel {
     return instance
   }
 
-  whereHas(
+  applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
   ): DeploymentModel {
-    return DeploymentModel.whereHas(relation, callback)
-  }
-
-  static whereHas(
-    relation: string,
-    callback: (query: SubqueryBuilder) => void,
-  ): DeploymentModel {
-    const instance = new DeploymentModel(null)
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
-    instance.selectFromQuery = instance.selectFromQuery
+    this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
@@ -662,7 +661,23 @@ export class DeploymentModel {
         return exists(subquery)
       })
 
-    return instance
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder) => void,
+  ): DeploymentModel {
+    const instance = new DeploymentModel(null)
+
+    return instance.applyWhereHas(relation, callback)
   }
 
   applyDoesntHave(relation: string): DeploymentModel {
@@ -1253,7 +1268,7 @@ export class DeploymentModel {
     }
   }
 
-  async loadRelations(models: DeploymentModel | DeploymentModel[]): Promise<void> {
+  async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1269,8 +1284,8 @@ export class DeploymentModel {
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: DeploymentModel) => {
-          const records = relatedRecords.filter((record: any) => {
+        models.map((model: DeploymentJsonResponse) => {
+          const records = relatedRecords.filter((record: { deployment_id: number }) => {
             return record.deployment_id === model.id
           })
 
@@ -1279,7 +1294,7 @@ export class DeploymentModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: any) => {
+        const records = relatedRecords.filter((record: { deployment_id: number }) => {
           return record.deployment_id === models.id
         })
 
@@ -1303,10 +1318,21 @@ export class DeploymentModel {
   }
 
   async last(): Promise<DeploymentType | undefined> {
-    return await DB.instance.selectFrom('deployments')
-      .selectAll()
-      .orderBy('id', 'desc')
-      .executeTakeFirst()
+    let model: DeploymentModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model)
+      await this.loadRelations(model)
+
+    const data = new DeploymentModel(model as DeploymentType)
+
+    return data
   }
 
   static async last(): Promise<DeploymentType | undefined> {
