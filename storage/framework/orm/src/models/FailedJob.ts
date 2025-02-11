@@ -303,7 +303,11 @@ export class FailedJobModel {
   }
 
   static async all(): Promise<FailedJobModel[]> {
+    const instance = new FailedJobModel(null)
+
     const models = await DB.instance.selectFrom('failed_jobs').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: FailedJobType) => {
       return new FailedJobModel(model)
@@ -544,6 +548,7 @@ export class FailedJobModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: FailedJobModel) => {

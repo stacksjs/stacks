@@ -277,7 +277,11 @@ export class SubscriberEmailModel {
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
+    const instance = new SubscriberEmailModel(null)
+
     const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
       return new SubscriberEmailModel(model)
@@ -526,6 +530,7 @@ export class SubscriberEmailModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {

@@ -307,7 +307,11 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(null)
+
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       return new AccessTokenModel(model)
@@ -548,6 +552,7 @@ export class AccessTokenModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {

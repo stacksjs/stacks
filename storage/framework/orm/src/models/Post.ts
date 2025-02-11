@@ -289,7 +289,11 @@ export class PostModel {
   }
 
   static async all(): Promise<PostModel[]> {
+    const instance = new PostModel(null)
+
     const models = await DB.instance.selectFrom('posts').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: PostType) => {
       return new PostModel(model)
@@ -530,6 +534,7 @@ export class PostModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: PostModel) => {

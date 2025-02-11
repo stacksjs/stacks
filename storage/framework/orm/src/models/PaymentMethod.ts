@@ -351,7 +351,11 @@ export class PaymentMethodModel {
   }
 
   static async all(): Promise<PaymentMethodModel[]> {
+    const instance = new PaymentMethodModel(null)
+
     const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       return new PaymentMethodModel(model)
@@ -592,6 +596,7 @@ export class PaymentMethodModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {

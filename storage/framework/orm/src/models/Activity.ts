@@ -322,7 +322,11 @@ export class ActivityModel {
   }
 
   static async all(): Promise<ActivityModel[]> {
+    const instance = new ActivityModel(null)
+
     const models = await DB.instance.selectFrom('activities').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ActivityType) => {
       return new ActivityModel(model)
@@ -571,6 +575,7 @@ export class ActivityModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ActivityModel) => {

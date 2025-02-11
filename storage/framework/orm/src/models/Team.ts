@@ -338,7 +338,11 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
+    const instance = new TeamModel(null)
+
     const models = await DB.instance.selectFrom('teams').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       return new TeamModel(model)
@@ -579,6 +583,7 @@ export class TeamModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {

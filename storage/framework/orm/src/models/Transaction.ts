@@ -340,7 +340,11 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(null)
+
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       return new TransactionModel(model)
@@ -581,6 +585,7 @@ export class TransactionModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {

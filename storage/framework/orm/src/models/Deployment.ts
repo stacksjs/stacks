@@ -344,7 +344,11 @@ export class DeploymentModel {
   }
 
   static async all(): Promise<DeploymentModel[]> {
+    const instance = new DeploymentModel(null)
+
     const models = await DB.instance.selectFrom('deployments').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       return new DeploymentModel(model)
@@ -585,6 +589,7 @@ export class DeploymentModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: DeploymentModel) => {

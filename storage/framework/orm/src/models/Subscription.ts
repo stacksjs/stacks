@@ -371,7 +371,11 @@ export class SubscriptionModel {
   }
 
   static async all(): Promise<SubscriptionModel[]> {
+    const instance = new SubscriptionModel(null)
+
     const models = await DB.instance.selectFrom('subscriptions').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: SubscriptionType) => {
       return new SubscriptionModel(model)
@@ -612,6 +616,7 @@ export class SubscriptionModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriptionModel) => {

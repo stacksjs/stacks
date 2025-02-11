@@ -303,7 +303,11 @@ export class JobModel {
   }
 
   static async all(): Promise<JobModel[]> {
+    const instance = new JobModel(null)
+
     const models = await DB.instance.selectFrom('jobs').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: JobType) => {
       return new JobModel(model)
@@ -544,6 +548,7 @@ export class JobModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: JobModel) => {

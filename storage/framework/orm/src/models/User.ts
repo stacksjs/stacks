@@ -380,7 +380,11 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
     const models = await DB.instance.selectFrom('users').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: UserType) => {
       return new UserModel(model)
@@ -621,6 +625,7 @@ export class UserModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: UserModel) => {

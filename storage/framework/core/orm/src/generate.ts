@@ -1080,7 +1080,11 @@ export async function generateModelString(
         }
   
         static async all(): Promise<${modelName}Model[]> {
+          const instance = new ${modelName}Model(null)
+
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
+
+          await instance.mapCustomGetters(model)
 
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             return new ${modelName}Model(model)
@@ -1324,6 +1328,7 @@ export async function generateModelString(
             models = await this.selectFromQuery.selectAll().execute()
           }
 
+          await this.mapCustomGetters(model)
           await this.loadRelations(models)
   
           const data = await Promise.all(models.map(async (model: ${modelName}Model) => {

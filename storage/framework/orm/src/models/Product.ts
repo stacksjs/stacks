@@ -331,7 +331,11 @@ export class ProductModel {
   }
 
   static async all(): Promise<ProductModel[]> {
+    const instance = new ProductModel(null)
+
     const models = await DB.instance.selectFrom('products').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       return new ProductModel(model)
@@ -572,6 +576,7 @@ export class ProductModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {

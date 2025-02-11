@@ -294,7 +294,11 @@ export class ProjectModel {
   }
 
   static async all(): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(null)
+
     const models = await DB.instance.selectFrom('projects').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       return new ProjectModel(model)
@@ -535,6 +539,7 @@ export class ProjectModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProjectModel) => {

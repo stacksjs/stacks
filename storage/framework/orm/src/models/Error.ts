@@ -303,7 +303,11 @@ export class ErrorModel {
   }
 
   static async all(): Promise<ErrorModel[]> {
+    const instance = new ErrorModel(null)
+
     const models = await DB.instance.selectFrom('errors').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
       return new ErrorModel(model)
@@ -544,6 +548,7 @@ export class ErrorModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ErrorModel) => {

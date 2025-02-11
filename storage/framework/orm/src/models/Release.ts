@@ -267,7 +267,11 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
+    const instance = new ReleaseModel(null)
+
     const models = await DB.instance.selectFrom('releases').selectAll().execute()
+
+    await instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       return new ReleaseModel(model)
@@ -508,6 +512,7 @@ export class ReleaseModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
