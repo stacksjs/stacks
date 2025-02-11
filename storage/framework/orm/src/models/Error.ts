@@ -83,19 +83,19 @@ export class ErrorModel {
   }
 
   mapCustomGetters(models: ErrorJsonResponse | ErrorJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: ErrorJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: ErrorJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -221,7 +221,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
@@ -253,7 +253,7 @@ export class ErrorModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -269,7 +269,7 @@ export class ErrorModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -283,7 +283,7 @@ export class ErrorModel {
       throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -307,7 +307,7 @@ export class ErrorModel {
 
     const models = await DB.instance.selectFrom('errors').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ErrorType) => {
       return new ErrorModel(model)
@@ -324,7 +324,7 @@ export class ErrorModel {
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
@@ -351,7 +351,7 @@ export class ErrorModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
@@ -548,7 +548,7 @@ export class ErrorModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ErrorModel) => {
@@ -1159,7 +1159,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -1177,7 +1177,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -1205,7 +1205,7 @@ export class ErrorModel {
       .executeTakeFirst()
 
     if (existingError) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new ErrorModel(existingError as ErrorType)
@@ -1322,7 +1322,7 @@ export class ErrorModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

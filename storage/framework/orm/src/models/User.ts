@@ -106,15 +106,20 @@ export class UserModel {
   }
 
   mapCustomGetters(models: UserJsonResponse | UserJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: UserJsonResponse) => {
-        const customGetter = {
-          firstName: () => {
-            return model.name.split(' ')[0]
-          },
+    const data = models
 
-        }
+    const customGetter = {
+      firstName: () => {
+        return model.name.split(' ')[0]
+      },
+      salutationName: () => {
+        return `Mr. ${model.name}`
+      },
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: UserJsonResponse) => {
         for (const [key, fn] of Object.entries(customGetter)) {
           model[key] = fn()
         }
@@ -123,15 +128,10 @@ export class UserModel {
       })
     }
     else {
-      const customGetter = {
-        firstName: () => {
-          return model.name.split(' ')[0]
-        },
-
-      }
+      const model = data
 
       for (const [key, fn] of Object.entries(customGetter)) {
-        models[key] = fn()
+        model[key] = fn()
       }
     }
   }
@@ -298,7 +298,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
@@ -330,7 +330,7 @@ export class UserModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -346,7 +346,7 @@ export class UserModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -360,7 +360,7 @@ export class UserModel {
       throw new ModelNotFoundException(404, 'No UserModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -384,7 +384,7 @@ export class UserModel {
 
     const models = await DB.instance.selectFrom('users').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: UserType) => {
       return new UserModel(model)
@@ -401,7 +401,7 @@ export class UserModel {
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
@@ -428,7 +428,7 @@ export class UserModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
@@ -625,7 +625,7 @@ export class UserModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: UserModel) => {
@@ -1242,7 +1242,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -1260,7 +1260,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -1288,7 +1288,7 @@ export class UserModel {
       .executeTakeFirst()
 
     if (existingUser) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new UserModel(existingUser as UserType)
@@ -1405,7 +1405,7 @@ export class UserModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

@@ -87,19 +87,19 @@ export class ProductModel {
   }
 
   mapCustomGetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: ProductJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: ProductJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -249,7 +249,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
@@ -281,7 +281,7 @@ export class ProductModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -297,7 +297,7 @@ export class ProductModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -311,7 +311,7 @@ export class ProductModel {
       throw new ModelNotFoundException(404, 'No ProductModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -335,7 +335,7 @@ export class ProductModel {
 
     const models = await DB.instance.selectFrom('products').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       return new ProductModel(model)
@@ -352,7 +352,7 @@ export class ProductModel {
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
@@ -379,7 +379,7 @@ export class ProductModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
@@ -576,7 +576,7 @@ export class ProductModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {
@@ -1207,7 +1207,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -1225,7 +1225,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -1253,7 +1253,7 @@ export class ProductModel {
       .executeTakeFirst()
 
     if (existingProduct) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new ProductModel(existingProduct as ProductType)
@@ -1370,7 +1370,7 @@ export class ProductModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

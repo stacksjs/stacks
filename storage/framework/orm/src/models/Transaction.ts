@@ -96,19 +96,19 @@ export class TransactionModel {
   }
 
   mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: TransactionJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: TransactionJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -258,7 +258,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
@@ -290,7 +290,7 @@ export class TransactionModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -306,7 +306,7 @@ export class TransactionModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -320,7 +320,7 @@ export class TransactionModel {
       throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -344,7 +344,7 @@ export class TransactionModel {
 
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       return new TransactionModel(model)
@@ -361,7 +361,7 @@ export class TransactionModel {
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
@@ -388,7 +388,7 @@ export class TransactionModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
@@ -585,7 +585,7 @@ export class TransactionModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {
@@ -1200,7 +1200,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1218,7 +1218,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1246,7 +1246,7 @@ export class TransactionModel {
       .executeTakeFirst()
 
     if (existingTransaction) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new TransactionModel(existingTransaction as TransactionType)
@@ -1363,7 +1363,7 @@ export class TransactionModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

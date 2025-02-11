@@ -86,19 +86,19 @@ export class ActivityModel {
   }
 
   mapCustomGetters(models: ActivityJsonResponse | ActivityJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: ActivityJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: ActivityJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -240,7 +240,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
@@ -272,7 +272,7 @@ export class ActivityModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -288,7 +288,7 @@ export class ActivityModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -302,7 +302,7 @@ export class ActivityModel {
       throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -326,7 +326,7 @@ export class ActivityModel {
 
     const models = await DB.instance.selectFrom('activities').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ActivityType) => {
       return new ActivityModel(model)
@@ -347,7 +347,7 @@ export class ActivityModel {
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
@@ -378,7 +378,7 @@ export class ActivityModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ActivityModel) => instance.parseResult(new ActivityModel(modelItem)))
@@ -575,7 +575,7 @@ export class ActivityModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ActivityModel) => {
@@ -1205,7 +1205,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -1223,7 +1223,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -1251,7 +1251,7 @@ export class ActivityModel {
       .executeTakeFirst()
 
     if (existingActivity) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new ActivityModel(existingActivity as ActivityType)
@@ -1368,7 +1368,7 @@ export class ActivityModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

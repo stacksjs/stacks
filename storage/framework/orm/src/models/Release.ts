@@ -79,19 +79,19 @@ export class ReleaseModel {
   }
 
   mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: ReleaseJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: ReleaseJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -185,7 +185,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
@@ -217,7 +217,7 @@ export class ReleaseModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -233,7 +233,7 @@ export class ReleaseModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -247,7 +247,7 @@ export class ReleaseModel {
       throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -271,7 +271,7 @@ export class ReleaseModel {
 
     const models = await DB.instance.selectFrom('releases').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       return new ReleaseModel(model)
@@ -288,7 +288,7 @@ export class ReleaseModel {
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
@@ -315,7 +315,7 @@ export class ReleaseModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
@@ -512,7 +512,7 @@ export class ReleaseModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
@@ -1091,7 +1091,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1109,7 +1109,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1137,7 +1137,7 @@ export class ReleaseModel {
       .executeTakeFirst()
 
     if (existingRelease) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new ReleaseModel(existingRelease as ReleaseType)
@@ -1254,7 +1254,7 @@ export class ReleaseModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

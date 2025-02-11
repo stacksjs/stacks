@@ -87,19 +87,19 @@ export class AccessTokenModel {
   }
 
   mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: AccessTokenJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: AccessTokenJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -225,7 +225,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
@@ -257,7 +257,7 @@ export class AccessTokenModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -273,7 +273,7 @@ export class AccessTokenModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -287,7 +287,7 @@ export class AccessTokenModel {
       throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -311,7 +311,7 @@ export class AccessTokenModel {
 
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       return new AccessTokenModel(model)
@@ -328,7 +328,7 @@ export class AccessTokenModel {
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
@@ -355,7 +355,7 @@ export class AccessTokenModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
@@ -552,7 +552,7 @@ export class AccessTokenModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
@@ -1155,7 +1155,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1173,7 +1173,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1201,7 +1201,7 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     if (existingAccessToken) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new AccessTokenModel(existingAccessToken as AccessTokenType)
@@ -1318,7 +1318,7 @@ export class AccessTokenModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

@@ -83,19 +83,19 @@ export class JobModel {
   }
 
   mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: JobJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: JobJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -221,7 +221,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
@@ -253,7 +253,7 @@ export class JobModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -269,7 +269,7 @@ export class JobModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new JobModel(model as JobType)
 
@@ -283,7 +283,7 @@ export class JobModel {
       throw new ModelNotFoundException(404, 'No JobModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -307,7 +307,7 @@ export class JobModel {
 
     const models = await DB.instance.selectFrom('jobs').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: JobType) => {
       return new JobModel(model)
@@ -324,7 +324,7 @@ export class JobModel {
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
@@ -351,7 +351,7 @@ export class JobModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
@@ -548,7 +548,7 @@ export class JobModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: JobModel) => {
@@ -1159,7 +1159,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new JobModel(model as JobType)
 
@@ -1177,7 +1177,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new JobModel(model as JobType)
 
@@ -1205,7 +1205,7 @@ export class JobModel {
       .executeTakeFirst()
 
     if (existingJob) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new JobModel(existingJob as JobType)
@@ -1322,7 +1322,7 @@ export class JobModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

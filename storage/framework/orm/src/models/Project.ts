@@ -82,19 +82,19 @@ export class ProjectModel {
   }
 
   mapCustomGetters(models: ProjectJsonResponse | ProjectJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: ProjectJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: ProjectJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -212,7 +212,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
@@ -244,7 +244,7 @@ export class ProjectModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -260,7 +260,7 @@ export class ProjectModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -274,7 +274,7 @@ export class ProjectModel {
       throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -298,7 +298,7 @@ export class ProjectModel {
 
     const models = await DB.instance.selectFrom('projects').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       return new ProjectModel(model)
@@ -315,7 +315,7 @@ export class ProjectModel {
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
@@ -342,7 +342,7 @@ export class ProjectModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
@@ -539,7 +539,7 @@ export class ProjectModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProjectModel) => {
@@ -1142,7 +1142,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -1160,7 +1160,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -1188,7 +1188,7 @@ export class ProjectModel {
       .executeTakeFirst()
 
     if (existingProject) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new ProjectModel(existingProject as ProjectType)
@@ -1305,7 +1305,7 @@ export class ProjectModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

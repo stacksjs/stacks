@@ -6,29 +6,23 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
-function generateCustomAccessors(model: Model): { output: string, loopString: string, loopStringPlural: string } {
+function generateCustomAccessors(model: Model): { output: string, loopString: string } {
   let output = ''
   let loopString = ''
-  let loopStringPlural = ''
 
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
       const getterStr = getter.toString()
-      output += `${methodName}: ${getterStr}, \n`
+      output += removeAttrString(`${methodName}: ${getterStr}, \n`)
     }
 
     loopString += `
       for (const [key, fn] of Object.entries(customGetter)) {
         model[key] = fn()
       }`
-
-    loopStringPlural += `
-      for (const [key, fn] of Object.entries(customGetter)) {
-        models[key] = fn()
-      }`
   }
 
-  return { output, loopString, loopStringPlural }
+  return { output, loopString }
 }
 
 function removeAttrString(getterFn: string): string {
@@ -910,22 +904,24 @@ export async function generateModelString(
         }
 
         mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
-          if (Array.isArray(models)) {
-            models.map((model: ${modelName}JsonResponse) => {
-              const customGetter = {
-                ${removeAttrString(getterOutput.output)}
-              }
+          const data = models
+          
+          const customGetter = {
+            ${getterOutput.output}
+          }
+              
+          if (Array.isArray(data)) {
+            data.map((model: ${modelName}JsonResponse) => {
+             
 
               ${getterOutput.loopString}
 
               return model
             })
           } else {
-            const customGetter = {
-              ${removeAttrString(getterOutput.output)}
-            }
+            const model = data
 
-            ${getterOutput.loopStringPlural}
+            ${getterOutput.loopString}
           }
         }
 
@@ -998,7 +994,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          await this.mapCustomGetters(model)
+          this.mapCustomGetters(model)
           await this.loadRelations(model)
           
           const data = new ${modelName}Model(model as ${modelName}Type)
@@ -1030,7 +1026,7 @@ export async function generateModelString(
           }
 
           if (model) {
-            await this.mapCustomGetters(model)
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
           }
 
@@ -1046,7 +1042,7 @@ export async function generateModelString(
             .selectAll()
             .executeTakeFirst()
 
-          await instance.mapCustomGetters(model)
+          instance.mapCustomGetters(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1060,7 +1056,7 @@ export async function generateModelString(
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
           
           if (model) {
-            await this.mapCustomGetters(model)
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
           }
 
@@ -1084,7 +1080,7 @@ export async function generateModelString(
 
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
 
-          await instance.mapCustomGetters(model)
+          instance.mapCustomGetters(model)
 
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             return new ${modelName}Model(model)
@@ -1103,7 +1099,7 @@ export async function generateModelString(
           
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
-          await this.mapCustomGetters(model)
+          this.mapCustomGetters(model)
           await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
@@ -1132,7 +1128,7 @@ export async function generateModelString(
   
           const models = await query.execute()
 
-          await instance.mapCustomGetters(models)
+          instance.mapCustomGetters(models)
           await instance.loadRelations(models)
   
           return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
@@ -1328,7 +1324,7 @@ export async function generateModelString(
             models = await this.selectFromQuery.selectAll().execute()
           }
 
-          await this.mapCustomGetters(model)
+          this.mapCustomGetters(models)
           await this.loadRelations(models)
   
           const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
@@ -1911,7 +1907,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          await instance.mapCustomGetters(model)
+          instance.mapCustomGetters(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1929,7 +1925,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
-          await instance.mapCustomGetters(model)
+          instance.mapCustomGetters(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1957,7 +1953,7 @@ export async function generateModelString(
             .executeTakeFirst()
   
           if (existing${modelName}) {
-            await instance.mapCustomGetters(model)
+            instance.mapCustomGetters(model)
             await instance.loadRelations(model)
             
             return new ${modelName}Model(existing${modelName} as ${modelName}Type)
@@ -2071,7 +2067,7 @@ export async function generateModelString(
           }
 
           if (model) {
-            await this.mapCustomGetters(model)
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
           }
            

@@ -83,19 +83,19 @@ export class FailedJobModel {
   }
 
   mapCustomGetters(models: FailedJobJsonResponse | FailedJobJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: FailedJobJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: FailedJobJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -221,7 +221,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
@@ -253,7 +253,7 @@ export class FailedJobModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -269,7 +269,7 @@ export class FailedJobModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -283,7 +283,7 @@ export class FailedJobModel {
       throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -307,7 +307,7 @@ export class FailedJobModel {
 
     const models = await DB.instance.selectFrom('failed_jobs').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: FailedJobType) => {
       return new FailedJobModel(model)
@@ -324,7 +324,7 @@ export class FailedJobModel {
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
@@ -351,7 +351,7 @@ export class FailedJobModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
@@ -548,7 +548,7 @@ export class FailedJobModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: FailedJobModel) => {
@@ -1159,7 +1159,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -1177,7 +1177,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -1205,7 +1205,7 @@ export class FailedJobModel {
       .executeTakeFirst()
 
     if (existingFailedJob) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new FailedJobModel(existingFailedJob as FailedJobType)
@@ -1322,7 +1322,7 @@ export class FailedJobModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

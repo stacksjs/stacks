@@ -112,6 +112,9 @@ export default {
 
       return nameParts[0]
     },
+    salutationName: (attributes: Attributes) => {
+      return `Mr. ${attributes.name}`
+    },
   },
 
   set: {

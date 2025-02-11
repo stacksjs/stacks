@@ -90,19 +90,19 @@ export class TeamModel {
   }
 
   mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: TeamJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: TeamJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -256,7 +256,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
@@ -288,7 +288,7 @@ export class TeamModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -304,7 +304,7 @@ export class TeamModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -318,7 +318,7 @@ export class TeamModel {
       throw new ModelNotFoundException(404, 'No TeamModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -342,7 +342,7 @@ export class TeamModel {
 
     const models = await DB.instance.selectFrom('teams').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       return new TeamModel(model)
@@ -359,7 +359,7 @@ export class TeamModel {
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
@@ -386,7 +386,7 @@ export class TeamModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
@@ -583,7 +583,7 @@ export class TeamModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {
@@ -1218,7 +1218,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -1236,7 +1236,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -1264,7 +1264,7 @@ export class TeamModel {
       .executeTakeFirst()
 
     if (existingTeam) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new TeamModel(existingTeam as TeamType)
@@ -1381,7 +1381,7 @@ export class TeamModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

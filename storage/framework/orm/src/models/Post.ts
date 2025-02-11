@@ -85,19 +85,19 @@ export class PostModel {
   }
 
   mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: PostJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: PostJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -207,7 +207,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
@@ -239,7 +239,7 @@ export class PostModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -255,7 +255,7 @@ export class PostModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PostModel(model as PostType)
 
@@ -269,7 +269,7 @@ export class PostModel {
       throw new ModelNotFoundException(404, 'No PostModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -293,7 +293,7 @@ export class PostModel {
 
     const models = await DB.instance.selectFrom('posts').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: PostType) => {
       return new PostModel(model)
@@ -310,7 +310,7 @@ export class PostModel {
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
@@ -337,7 +337,7 @@ export class PostModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
@@ -534,7 +534,7 @@ export class PostModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: PostModel) => {
@@ -1121,7 +1121,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PostModel(model as PostType)
 
@@ -1139,7 +1139,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PostModel(model as PostType)
 
@@ -1167,7 +1167,7 @@ export class PostModel {
       .executeTakeFirst()
 
     if (existingPost) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new PostModel(existingPost as PostType)
@@ -1284,7 +1284,7 @@ export class PostModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

@@ -95,19 +95,19 @@ export class PaymentMethodModel {
   }
 
   mapCustomGetters(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: PaymentMethodJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: PaymentMethodJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -269,7 +269,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -301,7 +301,7 @@ export class PaymentMethodModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -317,7 +317,7 @@ export class PaymentMethodModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -331,7 +331,7 @@ export class PaymentMethodModel {
       throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -355,7 +355,7 @@ export class PaymentMethodModel {
 
     const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       return new PaymentMethodModel(model)
@@ -372,7 +372,7 @@ export class PaymentMethodModel {
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -399,7 +399,7 @@ export class PaymentMethodModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
@@ -596,7 +596,7 @@ export class PaymentMethodModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodModel) => {
@@ -1227,7 +1227,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -1245,7 +1245,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -1273,7 +1273,7 @@ export class PaymentMethodModel {
       .executeTakeFirst()
 
     if (existingPaymentMethod) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new PaymentMethodModel(existingPaymentMethod as PaymentMethodType)
@@ -1390,7 +1390,7 @@ export class PaymentMethodModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 

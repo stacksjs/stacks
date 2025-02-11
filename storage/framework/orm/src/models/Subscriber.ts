@@ -79,19 +79,19 @@ export class SubscriberModel {
   }
 
   mapCustomGetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
-    if (Array.isArray(models)) {
-      models.map((model: SubscriberJsonResponse) => {
-        const customGetter = {
+    const data = models
 
-        }
+    const customGetter = {
 
+    }
+
+    if (Array.isArray(data)) {
+      data.map((model: SubscriberJsonResponse) => {
         return model
       })
     }
     else {
-      const customGetter = {
-
-      }
+      const model = data
     }
   }
 
@@ -185,7 +185,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
@@ -217,7 +217,7 @@ export class SubscriberModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -233,7 +233,7 @@ export class SubscriberModel {
       .selectAll()
       .executeTakeFirst()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -247,7 +247,7 @@ export class SubscriberModel {
       throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
@@ -271,7 +271,7 @@ export class SubscriberModel {
 
     const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       return new SubscriberModel(model)
@@ -288,7 +288,7 @@ export class SubscriberModel {
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
@@ -315,7 +315,7 @@ export class SubscriberModel {
 
     const models = await query.execute()
 
-    await instance.mapCustomGetters(models)
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
@@ -512,7 +512,7 @@ export class SubscriberModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
-    await this.mapCustomGetters(model)
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberModel) => {
@@ -1091,7 +1091,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -1109,7 +1109,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    await instance.mapCustomGetters(model)
+    instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -1137,7 +1137,7 @@ export class SubscriberModel {
       .executeTakeFirst()
 
     if (existingSubscriber) {
-      await instance.mapCustomGetters(model)
+      instance.mapCustomGetters(model)
       await instance.loadRelations(model)
 
       return new SubscriberModel(existingSubscriber as SubscriberType)
@@ -1254,7 +1254,7 @@ export class SubscriberModel {
     }
 
     if (model) {
-      await this.mapCustomGetters(model)
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
