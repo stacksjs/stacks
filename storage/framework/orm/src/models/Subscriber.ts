@@ -302,7 +302,7 @@ export class SubscriberModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<SubscriberModel[]> {
+  async applyFindMany(ids: number[]): Promise<SubscriberModel[]> {
     let query = DB.instance.selectFrom('subscribers').where('id', 'in', ids)
 
     const instance = new SubscriberModel(null)
@@ -311,9 +311,20 @@ export class SubscriberModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<SubscriberModel[]> {
+    const instance = new SubscriberModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<SubscriberModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): SubscriberModel {

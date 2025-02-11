@@ -366,7 +366,7 @@ export class ProductModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ProductModel[]> {
+  async applyFindMany(ids: number[]): Promise<ProductModel[]> {
     let query = DB.instance.selectFrom('products').where('id', 'in', ids)
 
     const instance = new ProductModel(null)
@@ -375,9 +375,20 @@ export class ProductModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ProductModel[]> {
+    const instance = new ProductModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ProductModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ProductModel {

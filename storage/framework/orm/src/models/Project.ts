@@ -329,7 +329,7 @@ export class ProjectModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ProjectModel[]> {
+  async applyFindMany(ids: number[]): Promise<ProjectModel[]> {
     let query = DB.instance.selectFrom('projects').where('id', 'in', ids)
 
     const instance = new ProjectModel(null)
@@ -338,9 +338,20 @@ export class ProjectModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ProjectModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ProjectModel {

@@ -379,7 +379,7 @@ export class DeploymentModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<DeploymentModel[]> {
+  async applyFindMany(ids: number[]): Promise<DeploymentModel[]> {
     let query = DB.instance.selectFrom('deployments').where('id', 'in', ids)
 
     const instance = new DeploymentModel(null)
@@ -388,9 +388,20 @@ export class DeploymentModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<DeploymentModel[]> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<DeploymentModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): DeploymentModel {

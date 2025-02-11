@@ -415,7 +415,7 @@ export class UserModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<UserModel[]> {
+  async applyFindMany(ids: number[]): Promise<UserModel[]> {
     let query = DB.instance.selectFrom('users').where('id', 'in', ids)
 
     const instance = new UserModel(null)
@@ -424,9 +424,20 @@ export class UserModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<UserModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): UserModel {

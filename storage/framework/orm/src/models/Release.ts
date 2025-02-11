@@ -302,7 +302,7 @@ export class ReleaseModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
+  async applyFindMany(ids: number[]): Promise<ReleaseModel[]> {
     let query = DB.instance.selectFrom('releases').where('id', 'in', ids)
 
     const instance = new ReleaseModel(null)
@@ -311,9 +311,20 @@ export class ReleaseModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ReleaseModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ReleaseModel {

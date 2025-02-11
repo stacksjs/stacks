@@ -375,7 +375,7 @@ export class TransactionModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<TransactionModel[]> {
+  async applyFindMany(ids: number[]): Promise<TransactionModel[]> {
     let query = DB.instance.selectFrom('transactions').where('id', 'in', ids)
 
     const instance = new TransactionModel(null)
@@ -384,9 +384,20 @@ export class TransactionModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<TransactionModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): TransactionModel {

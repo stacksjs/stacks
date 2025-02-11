@@ -373,7 +373,7 @@ export class TeamModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<TeamModel[]> {
+  async applyFindMany(ids: number[]): Promise<TeamModel[]> {
     let query = DB.instance.selectFrom('teams').where('id', 'in', ids)
 
     const instance = new TeamModel(null)
@@ -382,9 +382,20 @@ export class TeamModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<TeamModel[]> {
+    const instance = new TeamModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<TeamModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): TeamModel {

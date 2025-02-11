@@ -338,7 +338,7 @@ export class ErrorModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ErrorModel[]> {
+  async applyFindMany(ids: number[]): Promise<ErrorModel[]> {
     let query = DB.instance.selectFrom('errors').where('id', 'in', ids)
 
     const instance = new ErrorModel(null)
@@ -347,9 +347,20 @@ export class ErrorModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ErrorModel[]> {
+    const instance = new ErrorModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ErrorModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ErrorModel {

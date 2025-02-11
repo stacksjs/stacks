@@ -342,7 +342,7 @@ export class AccessTokenModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+  async applyFindMany(ids: number[]): Promise<AccessTokenModel[]> {
     let query = DB.instance.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
     const instance = new AccessTokenModel(null)
@@ -351,9 +351,20 @@ export class AccessTokenModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): AccessTokenModel {

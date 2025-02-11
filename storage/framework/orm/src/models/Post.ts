@@ -324,7 +324,7 @@ export class PostModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<PostModel[]> {
+  async applyFindMany(ids: number[]): Promise<PostModel[]> {
     let query = DB.instance.selectFrom('posts').where('id', 'in', ids)
 
     const instance = new PostModel(null)
@@ -333,9 +333,20 @@ export class PostModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<PostModel[]> {
+    const instance = new PostModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<PostModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): PostModel {

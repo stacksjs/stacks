@@ -338,7 +338,7 @@ export class JobModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<JobModel[]> {
+  async applyFindMany(ids: number[]): Promise<JobModel[]> {
     let query = DB.instance.selectFrom('jobs').where('id', 'in', ids)
 
     const instance = new JobModel(null)
@@ -347,9 +347,20 @@ export class JobModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<JobModel[]> {
+    const instance = new JobModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<JobModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): JobModel {

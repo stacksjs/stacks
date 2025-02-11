@@ -386,7 +386,7 @@ export class PaymentMethodModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
+  async applyFindMany(ids: number[]): Promise<PaymentMethodModel[]> {
     let query = DB.instance.selectFrom('payment_methods').where('id', 'in', ids)
 
     const instance = new PaymentMethodModel(null)
@@ -395,9 +395,20 @@ export class PaymentMethodModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: PaymentMethodModel) => instance.parseResult(new PaymentMethodModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<PaymentMethodModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): PaymentMethodModel {

@@ -1116,8 +1116,8 @@ export async function generateModelString(
           
           return await instance.applyFindOrFail(id)
         }
-  
-        static async findMany(ids: number[]): Promise<${modelName}Model[]> {
+
+        async applyFindMany(ids: number[]): Promise<${modelName}Model[]> {
           let query = DB.instance.selectFrom('${tableName}').where('id', 'in', ids)
   
           const instance = new ${modelName}Model(null)
@@ -1128,10 +1128,22 @@ export async function generateModelString(
   
           const models = await query.execute()
 
+          await instance.mapCustomGetters(models)
           await instance.loadRelations(models)
   
           return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
+  
+        static async findMany(ids: number[]): Promise<${modelName}Model[]> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.applyFindMany(ids)
+        }
+
+        async findMany(ids: number[]): Promise<${modelName}Model[]> {
+          return await this.applyFindMany(ids)
+        }
+
         skip(count: number): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.offset(count)
 

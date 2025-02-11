@@ -316,7 +316,7 @@ export class SubscriberEmailModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
+  async applyFindMany(ids: number[]): Promise<SubscriberEmailModel[]> {
     let query = DB.instance.selectFrom('subscriber_emails').where('id', 'in', ids)
 
     const instance = new SubscriberEmailModel(null)
@@ -329,9 +329,20 @@ export class SubscriberEmailModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
+    const instance = new SubscriberEmailModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): SubscriberEmailModel {

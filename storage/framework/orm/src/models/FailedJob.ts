@@ -338,7 +338,7 @@ export class FailedJobModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<FailedJobModel[]> {
+  async applyFindMany(ids: number[]): Promise<FailedJobModel[]> {
     let query = DB.instance.selectFrom('failed_jobs').where('id', 'in', ids)
 
     const instance = new FailedJobModel(null)
@@ -347,9 +347,20 @@ export class FailedJobModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<FailedJobModel[]> {
+    const instance = new FailedJobModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<FailedJobModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): FailedJobModel {

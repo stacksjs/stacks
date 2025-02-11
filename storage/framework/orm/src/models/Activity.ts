@@ -361,7 +361,7 @@ export class ActivityModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ActivityModel[]> {
+  async applyFindMany(ids: number[]): Promise<ActivityModel[]> {
     let query = DB.instance.selectFrom('activities').where('id', 'in', ids)
 
     const instance = new ActivityModel(null)
@@ -374,9 +374,20 @@ export class ActivityModel {
 
     const models = await query.execute()
 
+    await instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ActivityModel) => instance.parseResult(new ActivityModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ActivityModel[]> {
+    const instance = new ActivityModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ActivityModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ActivityModel {
