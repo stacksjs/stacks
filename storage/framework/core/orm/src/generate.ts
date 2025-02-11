@@ -29,6 +29,25 @@ function generateCustomAccessors(model: Model): { output: string, loopString: st
   return { output, loopString }
 }
 
+function generateCustomSetters(model: Model): { output: string, loopString: string } {
+  let output = ''
+  let loopString = ''
+
+  if (model.set) {
+    for (const [methodName, getter] of Object.entries(model.set)) {
+      const getterStr = getter.toString()
+      output += removeAttrString(`${methodName}: ${getterStr}, \n`)
+    }
+
+    loopString += `
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }`
+  }
+
+  return { output, loopString }
+}
+
 function removeAttrString(getterFn: string): string {
   return getterFn.replace('(attributes)', '()').replace('attributes', 'model')
 }
@@ -97,6 +116,7 @@ export async function generateModelString(
   let privateSoftDeletes = ''
 
   const getterOutput = await generateCustomAccessors(model)
+  const setterOutput = await generateCustomSetters(model)
 
   const relations = await getRelations(model, modelName)
 
@@ -929,6 +949,31 @@ export async function generateModelString(
             }
 
             ${getterOutput.loopString}
+          }
+        }
+
+        mapCustomSetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
+          const data = models
+              
+          if (Array.isArray(data)) {
+            data.map((model: ${modelName}JsonResponse) => {
+               
+              const customGetter = {
+                ${setterOutput.output}
+              }
+
+              ${setterOutput.loopString}
+
+              return model
+            })
+          } else {
+            const model = data
+
+            const customGetter = {
+              ${setterOutput.output}
+            }
+
+            ${setterOutput.loopString}
           }
         }
 

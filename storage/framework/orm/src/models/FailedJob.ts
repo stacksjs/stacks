@@ -103,6 +103,27 @@ export class FailedJobModel {
     }
   }
 
+  mapCustomSetters(models: FailedJobJsonResponse | FailedJobJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: FailedJobJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

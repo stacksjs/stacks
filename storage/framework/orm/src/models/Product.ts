@@ -107,6 +107,27 @@ export class ProductModel {
     }
   }
 
+  mapCustomSetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ProductJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

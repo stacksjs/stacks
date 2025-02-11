@@ -115,6 +115,27 @@ export class SubscriptionModel {
     }
   }
 
+  mapCustomSetters(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: SubscriptionJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }

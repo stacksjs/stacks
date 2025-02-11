@@ -99,6 +99,27 @@ export class SubscriberModel {
     }
   }
 
+  mapCustomSetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: SubscriberJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

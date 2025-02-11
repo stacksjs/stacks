@@ -110,6 +110,27 @@ export class TeamModel {
     }
   }
 
+  mapCustomSetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: TeamJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get personal_access_tokens(): AccessTokenModel[] | undefined {
     return this.attributes.personal_access_tokens
   }

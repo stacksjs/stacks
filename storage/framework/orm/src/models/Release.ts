@@ -99,6 +99,27 @@ export class ReleaseModel {
     }
   }
 
+  mapCustomSetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ReleaseJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }

@@ -140,6 +140,37 @@ export class UserModel {
     }
   }
 
+  mapCustomSetters(models: UserJsonResponse | UserJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: UserJsonResponse) => {
+        const customGetter = {
+          password: () => Bun.password.hash(model.password),
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        password: () => Bun.password.hash(model.password),
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
   get subscriber(): SubscriberModel | undefined {
     return this.attributes.subscriber
   }

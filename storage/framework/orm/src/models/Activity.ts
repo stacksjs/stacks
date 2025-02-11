@@ -106,6 +106,27 @@ export class ActivityModel {
     }
   }
 
+  mapCustomSetters(models: ActivityJsonResponse | ActivityJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ActivityJsonResponse) => {
+        const customGetter = {
+
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+
+      }
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }
