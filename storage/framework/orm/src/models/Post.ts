@@ -87,17 +87,21 @@ export class PostModel {
   mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: PostJsonResponse) => {
+        const customGetter = {
+
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+
+      }
     }
   }
 

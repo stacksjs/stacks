@@ -905,14 +905,13 @@ export async function generateModelString(
 
         mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
           const data = models
-          
-          const customGetter = {
-            ${getterOutput.output}
-          }
               
           if (Array.isArray(data)) {
             data.map((model: ${modelName}JsonResponse) => {
-             
+               
+              const customGetter = {
+                ${getterOutput.output}
+              }
 
               ${getterOutput.loopString}
 
@@ -920,6 +919,10 @@ export async function generateModelString(
             })
           } else {
             const model = data
+          
+            const customGetter = {
+              ${getterOutput.output}
+            }
 
             ${getterOutput.loopString}
           }

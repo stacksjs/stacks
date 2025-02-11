@@ -97,17 +97,21 @@ export class PaymentMethodModel {
   mapCustomGetters(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: PaymentMethodJsonResponse) => {
+        const customGetter = {
+
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+
+      }
     }
   }
 

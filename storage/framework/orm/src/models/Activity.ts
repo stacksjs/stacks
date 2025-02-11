@@ -88,17 +88,21 @@ export class ActivityModel {
   mapCustomGetters(models: ActivityJsonResponse | ActivityJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: ActivityJsonResponse) => {
+        const customGetter = {
+
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+
+      }
     }
   }
 

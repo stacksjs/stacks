@@ -89,17 +89,21 @@ export class AccessTokenModel {
   mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: AccessTokenJsonResponse) => {
+        const customGetter = {
+
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+
+      }
     }
   }
 

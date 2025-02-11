@@ -117,6 +117,7 @@ export class UserModel {
           salutationName: () => {
             return `Mr. ${model.name}`
           },
+
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -128,6 +129,16 @@ export class UserModel {
     }
     else {
       const model = data
+
+      const customGetter = {
+        firstName: () => {
+          return model.name.split(' ')[0]
+        },
+        salutationName: () => {
+          return `Mr. ${model.name}`
+        },
+
+      }
 
       for (const [key, fn] of Object.entries(customGetter)) {
         model[key] = fn()

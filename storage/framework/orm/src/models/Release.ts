@@ -81,17 +81,21 @@ export class ReleaseModel {
   mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: ReleaseJsonResponse) => {
+        const customGetter = {
+
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+
+      }
     }
   }
 
