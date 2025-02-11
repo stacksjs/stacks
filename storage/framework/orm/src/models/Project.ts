@@ -81,9 +81,20 @@ export class ProjectModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ProjectJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: ProjectJsonResponse | ProjectJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: ProjectJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

@@ -94,9 +94,20 @@ export class PaymentMethodModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: PaymentMethodJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: PaymentMethodJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

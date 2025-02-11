@@ -85,9 +85,20 @@ export class ActivityModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ActivityJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: ActivityJsonResponse | ActivityJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: ActivityJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

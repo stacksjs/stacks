@@ -91,9 +91,20 @@ export class DeploymentModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: DeploymentJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: DeploymentJsonResponse | DeploymentJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: DeploymentJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

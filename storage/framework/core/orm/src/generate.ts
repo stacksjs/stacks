@@ -6,9 +6,10 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
-function generateCustomAccessors(model: Model): { output: string, loopString: string } {
+function generateCustomAccessors(model: Model): { output: string, loopString: string, loopStringPlural: string } {
   let output = ''
   let loopString = ''
+  let loopStringPlural = ''
 
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
@@ -20,9 +21,14 @@ function generateCustomAccessors(model: Model): { output: string, loopString: st
       for (const [key, fn] of Object.entries(customGetter)) {
         model[key] = fn()
       }`
+
+    loopStringPlural += `
+      for (const [key, fn] of Object.entries(customGetter)) {
+        models[key] = fn()
+      }`
   }
 
-  return { output, loopString }
+  return { output, loopString, loopStringPlural }
 }
 
 function removeAttrString(getterFn: string): string {
@@ -903,12 +909,24 @@ export async function generateModelString(
           this.hasSaved = false
         }
 
-        mapCustomGetters(model: ${modelName}JsonResponse): void {
-          const customGetter = {
-            ${removeAttrString(getterOutput.output)}
-          }
+        mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
+          if (Array.isArray(models)) {
+            models.map((model: ${modelName}JsonResponse) => {
+              const customGetter = {
+                ${removeAttrString(getterOutput.output)}
+              }
 
-          ${getterOutput.loopString}
+              ${getterOutput.loopString}
+
+              return model
+            })
+          } else {
+            const customGetter = {
+              ${removeAttrString(getterOutput.output)}
+            }
+
+            ${getterOutput.loopStringPlural}
+          }
         }
 
         ${getFields}

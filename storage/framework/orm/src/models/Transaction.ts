@@ -95,9 +95,20 @@ export class TransactionModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: TransactionJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: TransactionJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

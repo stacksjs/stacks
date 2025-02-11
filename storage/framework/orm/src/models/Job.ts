@@ -82,9 +82,20 @@ export class JobModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: JobJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: JobJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

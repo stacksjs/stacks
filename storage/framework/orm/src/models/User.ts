@@ -105,16 +105,34 @@ export class UserModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: UserJsonResponse): void {
-    const customGetter = {
-      firstName: () => {
-        return model.name.split(' ')[0]
-      },
+  mapCustomGetters(models: UserJsonResponse | UserJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: UserJsonResponse) => {
+        const customGetter = {
+          firstName: () => {
+            return model.name.split(' ')[0]
+          },
 
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
     }
+    else {
+      const customGetter = {
+        firstName: () => {
+          return model.name.split(' ')[0]
+        },
 
-    for (const [key, fn] of Object.entries(customGetter)) {
-      model[key] = fn()
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        models[key] = fn()
+      }
     }
   }
 

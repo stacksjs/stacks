@@ -86,9 +86,20 @@ export class AccessTokenModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: AccessTokenJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: AccessTokenJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

@@ -86,9 +86,20 @@ export class ProductModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ProductJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: ProductJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

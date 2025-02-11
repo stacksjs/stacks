@@ -89,9 +89,20 @@ export class TeamModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: TeamJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: TeamJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

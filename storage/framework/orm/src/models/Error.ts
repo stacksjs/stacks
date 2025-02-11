@@ -82,9 +82,20 @@ export class ErrorModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ErrorJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: ErrorJsonResponse | ErrorJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: ErrorJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

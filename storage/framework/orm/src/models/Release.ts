@@ -78,9 +78,20 @@ export class ReleaseModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: ReleaseJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: ReleaseJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

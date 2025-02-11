@@ -84,9 +84,20 @@ export class PostModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: PostJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: PostJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

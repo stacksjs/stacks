@@ -80,9 +80,20 @@ export class SubscriberEmailModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: SubscriberEmailJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: SubscriberEmailJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 

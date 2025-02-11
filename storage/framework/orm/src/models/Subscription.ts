@@ -94,9 +94,20 @@ export class SubscriptionModel {
     this.hasSaved = false
   }
 
-  mapCustomGetters(model: SubscriptionJsonResponse): void {
-    const customGetter = {
+  mapCustomGetters(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): void {
+    if (Array.isArray(models)) {
+      models.map((model: SubscriptionJsonResponse) => {
+        const customGetter = {
 
+        }
+
+        return model
+      })
+    }
+    else {
+      const customGetter = {
+
+      }
     }
   }
 
