@@ -271,7 +271,7 @@ export class SubscriberModel {
 
     const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       return new SubscriberModel(model)

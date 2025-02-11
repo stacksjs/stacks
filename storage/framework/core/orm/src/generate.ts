@@ -1080,7 +1080,7 @@ export async function generateModelString(
 
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
 
-          instance.mapCustomGetters(model)
+          instance.mapCustomGetters(models)
 
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             return new ${modelName}Model(model)

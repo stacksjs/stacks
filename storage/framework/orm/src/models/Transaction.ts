@@ -344,7 +344,7 @@ export class TransactionModel {
 
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       return new TransactionModel(model)

@@ -271,7 +271,7 @@ export class ReleaseModel {
 
     const models = await DB.instance.selectFrom('releases').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       return new ReleaseModel(model)

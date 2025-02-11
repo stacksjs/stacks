@@ -293,7 +293,7 @@ export class PostModel {
 
     const models = await DB.instance.selectFrom('posts').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: PostType) => {
       return new PostModel(model)

@@ -281,7 +281,7 @@ export class SubscriberEmailModel {
 
     const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberEmailType) => {
       return new SubscriberEmailModel(model)

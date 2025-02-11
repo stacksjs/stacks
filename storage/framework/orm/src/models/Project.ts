@@ -298,7 +298,7 @@ export class ProjectModel {
 
     const models = await DB.instance.selectFrom('projects').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ProjectType) => {
       return new ProjectModel(model)

@@ -326,7 +326,7 @@ export class ActivityModel {
 
     const models = await DB.instance.selectFrom('activities').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ActivityType) => {
       return new ActivityModel(model)

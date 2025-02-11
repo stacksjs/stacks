@@ -342,7 +342,7 @@ export class TeamModel {
 
     const models = await DB.instance.selectFrom('teams').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       return new TeamModel(model)

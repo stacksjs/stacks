@@ -307,7 +307,7 @@ export class FailedJobModel {
 
     const models = await DB.instance.selectFrom('failed_jobs').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: FailedJobType) => {
       return new FailedJobModel(model)

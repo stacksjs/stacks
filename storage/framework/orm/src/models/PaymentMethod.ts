@@ -355,7 +355,7 @@ export class PaymentMethodModel {
 
     const models = await DB.instance.selectFrom('payment_methods').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
       return new PaymentMethodModel(model)

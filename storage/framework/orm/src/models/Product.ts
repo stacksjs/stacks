@@ -335,7 +335,7 @@ export class ProductModel {
 
     const models = await DB.instance.selectFrom('products').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       return new ProductModel(model)

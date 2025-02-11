@@ -348,7 +348,7 @@ export class DeploymentModel {
 
     const models = await DB.instance.selectFrom('deployments').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: DeploymentType) => {
       return new DeploymentModel(model)

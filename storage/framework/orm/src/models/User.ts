@@ -108,18 +108,17 @@ export class UserModel {
   mapCustomGetters(models: UserJsonResponse | UserJsonResponse[]): void {
     const data = models
 
-    const customGetter = {
-      firstName: () => {
-        return model.name.split(' ')[0]
-      },
-      salutationName: () => {
-        return `Mr. ${model.name}`
-      },
-
-    }
-
     if (Array.isArray(data)) {
       data.map((model: UserJsonResponse) => {
+        const customGetter = {
+          firstName: () => {
+            return model.name.split(' ')[0]
+          },
+          salutationName: () => {
+            return `Mr. ${model.name}`
+          },
+        }
+
         for (const [key, fn] of Object.entries(customGetter)) {
           model[key] = fn()
         }
@@ -384,7 +383,7 @@ export class UserModel {
 
     const models = await DB.instance.selectFrom('users').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: UserType) => {
       return new UserModel(model)

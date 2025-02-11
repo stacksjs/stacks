@@ -311,7 +311,7 @@ export class AccessTokenModel {
 
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
 
-    instance.mapCustomGetters(model)
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       return new AccessTokenModel(model)
