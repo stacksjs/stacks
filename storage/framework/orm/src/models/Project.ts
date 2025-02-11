@@ -1105,6 +1105,8 @@ export class ProjectModel {
   }
 
   static async latest(): Promise<ProjectType | undefined> {
+    const instance = new ProjectModel(null)
+
     const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1113,12 +1115,16 @@ export class ProjectModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new ProjectModel(model as ProjectType)
 
     return data
   }
 
   static async oldest(): Promise<ProjectType | undefined> {
+    const instance = new ProjectModel(null)
+
     const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1126,6 +1132,8 @@ export class ProjectModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -1136,7 +1144,8 @@ export class ProjectModel {
     condition: Partial<ProjectType>,
     newProject: NewProject,
   ): Promise<ProjectModel> {
-    // Get the key and value from the condition object
+    const instance = new ProjectModel(null)
+
     const key = Object.keys(condition)[0] as keyof ProjectType
 
     if (!key) {
@@ -1152,10 +1161,13 @@ export class ProjectModel {
       .executeTakeFirst()
 
     if (existingProject) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new ProjectModel(existingProject as ProjectType)
     }
     else {
-      return await this.create(newProject)
+      return await instance.create(newProject)
     }
   }
 
@@ -1202,7 +1214,7 @@ export class ProjectModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newProject)
+      return await instance.create(newProject)
     }
   }
 
@@ -1265,8 +1277,10 @@ export class ProjectModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProjectModel(model as ProjectType)
 

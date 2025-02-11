@@ -1198,6 +1198,8 @@ export class UserModel {
   }
 
   static async latest(): Promise<UserType | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1206,12 +1208,16 @@ export class UserModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new UserModel(model as UserType)
 
     return data
   }
 
   static async oldest(): Promise<UserType | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1219,6 +1225,8 @@ export class UserModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -1229,7 +1237,8 @@ export class UserModel {
     condition: Partial<UserType>,
     newUser: NewUser,
   ): Promise<UserModel> {
-    // Get the key and value from the condition object
+    const instance = new UserModel(null)
+
     const key = Object.keys(condition)[0] as keyof UserType
 
     if (!key) {
@@ -1245,10 +1254,13 @@ export class UserModel {
       .executeTakeFirst()
 
     if (existingUser) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new UserModel(existingUser as UserType)
     }
     else {
-      return await this.create(newUser)
+      return await instance.create(newUser)
     }
   }
 
@@ -1295,7 +1307,7 @@ export class UserModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newUser)
+      return await instance.create(newUser)
     }
   }
 
@@ -1358,8 +1370,10 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 

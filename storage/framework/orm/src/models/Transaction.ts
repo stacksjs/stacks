@@ -1163,6 +1163,8 @@ export class TransactionModel {
   }
 
   static async latest(): Promise<TransactionType | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1171,12 +1173,16 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new TransactionModel(model as TransactionType)
 
     return data
   }
 
   static async oldest(): Promise<TransactionType | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1184,6 +1190,8 @@ export class TransactionModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1194,7 +1202,8 @@ export class TransactionModel {
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
-    // Get the key and value from the condition object
+    const instance = new TransactionModel(null)
+
     const key = Object.keys(condition)[0] as keyof TransactionType
 
     if (!key) {
@@ -1210,10 +1219,13 @@ export class TransactionModel {
       .executeTakeFirst()
 
     if (existingTransaction) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new TransactionModel(existingTransaction as TransactionType)
     }
     else {
-      return await this.create(newTransaction)
+      return await instance.create(newTransaction)
     }
   }
 
@@ -1260,7 +1272,7 @@ export class TransactionModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newTransaction)
+      return await instance.create(newTransaction)
     }
   }
 
@@ -1323,8 +1335,10 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 

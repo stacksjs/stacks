@@ -1054,6 +1054,8 @@ export class ReleaseModel {
   }
 
   static async latest(): Promise<ReleaseType | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1062,12 +1064,16 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
 
   static async oldest(): Promise<ReleaseType | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1075,6 +1081,8 @@ export class ReleaseModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1085,7 +1093,8 @@ export class ReleaseModel {
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
-    // Get the key and value from the condition object
+    const instance = new ReleaseModel(null)
+
     const key = Object.keys(condition)[0] as keyof ReleaseType
 
     if (!key) {
@@ -1101,10 +1110,13 @@ export class ReleaseModel {
       .executeTakeFirst()
 
     if (existingRelease) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new ReleaseModel(existingRelease as ReleaseType)
     }
     else {
-      return await this.create(newRelease)
+      return await instance.create(newRelease)
     }
   }
 
@@ -1151,7 +1163,7 @@ export class ReleaseModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newRelease)
+      return await instance.create(newRelease)
     }
   }
 
@@ -1214,8 +1226,10 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 

@@ -1181,6 +1181,8 @@ export class TeamModel {
   }
 
   static async latest(): Promise<TeamType | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1189,12 +1191,16 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new TeamModel(model as TeamType)
 
     return data
   }
 
   static async oldest(): Promise<TeamType | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1202,6 +1208,8 @@ export class TeamModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -1212,7 +1220,8 @@ export class TeamModel {
     condition: Partial<TeamType>,
     newTeam: NewTeam,
   ): Promise<TeamModel> {
-    // Get the key and value from the condition object
+    const instance = new TeamModel(null)
+
     const key = Object.keys(condition)[0] as keyof TeamType
 
     if (!key) {
@@ -1228,10 +1237,13 @@ export class TeamModel {
       .executeTakeFirst()
 
     if (existingTeam) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new TeamModel(existingTeam as TeamType)
     }
     else {
-      return await this.create(newTeam)
+      return await instance.create(newTeam)
     }
   }
 
@@ -1278,7 +1290,7 @@ export class TeamModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newTeam)
+      return await instance.create(newTeam)
     }
   }
 
@@ -1341,8 +1353,10 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 

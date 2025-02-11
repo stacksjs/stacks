@@ -1234,6 +1234,8 @@ export class SubscriptionModel {
   }
 
   static async latest(): Promise<SubscriptionType | undefined> {
+    const instance = new SubscriptionModel(null)
+
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1242,12 +1244,16 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new SubscriptionModel(model as SubscriptionType)
 
     return data
   }
 
   static async oldest(): Promise<SubscriptionType | undefined> {
+    const instance = new SubscriptionModel(null)
+
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1255,6 +1261,8 @@ export class SubscriptionModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -1265,7 +1273,8 @@ export class SubscriptionModel {
     condition: Partial<SubscriptionType>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
-    // Get the key and value from the condition object
+    const instance = new SubscriptionModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
     if (!key) {
@@ -1281,10 +1290,13 @@ export class SubscriptionModel {
       .executeTakeFirst()
 
     if (existingSubscription) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new SubscriptionModel(existingSubscription as SubscriptionType)
     }
     else {
-      return await this.create(newSubscription)
+      return await instance.create(newSubscription)
     }
   }
 
@@ -1331,7 +1343,7 @@ export class SubscriptionModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newSubscription)
+      return await instance.create(newSubscription)
     }
   }
 
@@ -1394,8 +1406,10 @@ export class SubscriptionModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriptionModel(model as SubscriptionType)
 

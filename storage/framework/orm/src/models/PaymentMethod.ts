@@ -1190,6 +1190,8 @@ export class PaymentMethodModel {
   }
 
   static async latest(): Promise<PaymentMethodType | undefined> {
+    const instance = new PaymentMethodModel(null)
+
     const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1198,12 +1200,16 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
     return data
   }
 
   static async oldest(): Promise<PaymentMethodType | undefined> {
+    const instance = new PaymentMethodModel(null)
+
     const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1211,6 +1217,8 @@ export class PaymentMethodModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -1221,7 +1229,8 @@ export class PaymentMethodModel {
     condition: Partial<PaymentMethodType>,
     newPaymentMethod: NewPaymentMethod,
   ): Promise<PaymentMethodModel> {
-    // Get the key and value from the condition object
+    const instance = new PaymentMethodModel(null)
+
     const key = Object.keys(condition)[0] as keyof PaymentMethodType
 
     if (!key) {
@@ -1237,10 +1246,13 @@ export class PaymentMethodModel {
       .executeTakeFirst()
 
     if (existingPaymentMethod) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new PaymentMethodModel(existingPaymentMethod as PaymentMethodType)
     }
     else {
-      return await this.create(newPaymentMethod)
+      return await instance.create(newPaymentMethod)
     }
   }
 
@@ -1287,7 +1299,7 @@ export class PaymentMethodModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newPaymentMethod)
+      return await instance.create(newPaymentMethod)
     }
   }
 
@@ -1350,8 +1362,10 @@ export class PaymentMethodModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 

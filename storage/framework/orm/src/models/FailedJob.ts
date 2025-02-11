@@ -1122,6 +1122,8 @@ export class FailedJobModel {
   }
 
   static async latest(): Promise<FailedJobType | undefined> {
+    const instance = new FailedJobModel(null)
+
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1130,12 +1132,16 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new FailedJobModel(model as FailedJobType)
 
     return data
   }
 
   static async oldest(): Promise<FailedJobType | undefined> {
+    const instance = new FailedJobModel(null)
+
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1143,6 +1149,8 @@ export class FailedJobModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -1153,7 +1161,8 @@ export class FailedJobModel {
     condition: Partial<FailedJobType>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
-    // Get the key and value from the condition object
+    const instance = new FailedJobModel(null)
+
     const key = Object.keys(condition)[0] as keyof FailedJobType
 
     if (!key) {
@@ -1169,10 +1178,13 @@ export class FailedJobModel {
       .executeTakeFirst()
 
     if (existingFailedJob) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new FailedJobModel(existingFailedJob as FailedJobType)
     }
     else {
-      return await this.create(newFailedJob)
+      return await instance.create(newFailedJob)
     }
   }
 
@@ -1219,7 +1231,7 @@ export class FailedJobModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newFailedJob)
+      return await instance.create(newFailedJob)
     }
   }
 
@@ -1282,8 +1294,10 @@ export class FailedJobModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new FailedJobModel(model as FailedJobType)
 

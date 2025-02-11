@@ -1084,6 +1084,8 @@ export class PostModel {
   }
 
   static async latest(): Promise<PostType | undefined> {
+    const instance = new PostModel(null)
+
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1092,12 +1094,16 @@ export class PostModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new PostModel(model as PostType)
 
     return data
   }
 
   static async oldest(): Promise<PostType | undefined> {
+    const instance = new PostModel(null)
+
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1105,6 +1111,8 @@ export class PostModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new PostModel(model as PostType)
 
@@ -1115,7 +1123,8 @@ export class PostModel {
     condition: Partial<PostType>,
     newPost: NewPost,
   ): Promise<PostModel> {
-    // Get the key and value from the condition object
+    const instance = new PostModel(null)
+
     const key = Object.keys(condition)[0] as keyof PostType
 
     if (!key) {
@@ -1131,10 +1140,13 @@ export class PostModel {
       .executeTakeFirst()
 
     if (existingPost) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new PostModel(existingPost as PostType)
     }
     else {
-      return await this.create(newPost)
+      return await instance.create(newPost)
     }
   }
 
@@ -1181,7 +1193,7 @@ export class PostModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newPost)
+      return await instance.create(newPost)
     }
   }
 
@@ -1244,8 +1256,10 @@ export class PostModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PostModel(model as PostType)
 

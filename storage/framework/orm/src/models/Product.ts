@@ -1170,6 +1170,8 @@ export class ProductModel {
   }
 
   static async latest(): Promise<ProductType | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1178,12 +1180,16 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new ProductModel(model as ProductType)
 
     return data
   }
 
   static async oldest(): Promise<ProductType | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1191,6 +1197,8 @@ export class ProductModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -1201,7 +1209,8 @@ export class ProductModel {
     condition: Partial<ProductType>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
-    // Get the key and value from the condition object
+    const instance = new ProductModel(null)
+
     const key = Object.keys(condition)[0] as keyof ProductType
 
     if (!key) {
@@ -1217,10 +1226,13 @@ export class ProductModel {
       .executeTakeFirst()
 
     if (existingProduct) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new ProductModel(existingProduct as ProductType)
     }
     else {
-      return await this.create(newProduct)
+      return await instance.create(newProduct)
     }
   }
 
@@ -1267,7 +1279,7 @@ export class ProductModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newProduct)
+      return await instance.create(newProduct)
     }
   }
 
@@ -1330,8 +1342,10 @@ export class ProductModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 

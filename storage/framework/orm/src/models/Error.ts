@@ -1122,6 +1122,8 @@ export class ErrorModel {
   }
 
   static async latest(): Promise<ErrorType | undefined> {
+    const instance = new ErrorModel(null)
+
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1130,12 +1132,16 @@ export class ErrorModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new ErrorModel(model as ErrorType)
 
     return data
   }
 
   static async oldest(): Promise<ErrorType | undefined> {
+    const instance = new ErrorModel(null)
+
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1143,6 +1149,8 @@ export class ErrorModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -1153,7 +1161,8 @@ export class ErrorModel {
     condition: Partial<ErrorType>,
     newError: NewError,
   ): Promise<ErrorModel> {
-    // Get the key and value from the condition object
+    const instance = new ErrorModel(null)
+
     const key = Object.keys(condition)[0] as keyof ErrorType
 
     if (!key) {
@@ -1169,10 +1178,13 @@ export class ErrorModel {
       .executeTakeFirst()
 
     if (existingError) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new ErrorModel(existingError as ErrorType)
     }
     else {
-      return await this.create(newError)
+      return await instance.create(newError)
     }
   }
 
@@ -1219,7 +1231,7 @@ export class ErrorModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newError)
+      return await instance.create(newError)
     }
   }
 
@@ -1282,8 +1294,10 @@ export class ErrorModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ErrorModel(model as ErrorType)
 

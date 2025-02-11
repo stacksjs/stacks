@@ -1083,6 +1083,8 @@ export class SubscriberEmailModel {
   }
 
   static async latest(): Promise<SubscriberEmailType | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1091,12 +1093,16 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
     return data
   }
 
   static async oldest(): Promise<SubscriberEmailType | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1104,6 +1110,8 @@ export class SubscriberEmailModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -1114,7 +1122,8 @@ export class SubscriberEmailModel {
     condition: Partial<SubscriberEmailType>,
     newSubscriberEmail: NewSubscriberEmail,
   ): Promise<SubscriberEmailModel> {
-    // Get the key and value from the condition object
+    const instance = new SubscriberEmailModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriberEmailType
 
     if (!key) {
@@ -1130,10 +1139,13 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
 
     if (existingSubscriberEmail) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new SubscriberEmailModel(existingSubscriberEmail as SubscriberEmailType)
     }
     else {
-      return await this.create(newSubscriberEmail)
+      return await instance.create(newSubscriberEmail)
     }
   }
 
@@ -1180,7 +1192,7 @@ export class SubscriberEmailModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newSubscriberEmail)
+      return await instance.create(newSubscriberEmail)
     }
   }
 
@@ -1243,8 +1255,10 @@ export class SubscriberEmailModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 

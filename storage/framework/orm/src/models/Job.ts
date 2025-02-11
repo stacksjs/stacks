@@ -1122,6 +1122,8 @@ export class JobModel {
   }
 
   static async latest(): Promise<JobType | undefined> {
+    const instance = new JobModel(null)
+
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1130,12 +1132,16 @@ export class JobModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new JobModel(model as JobType)
 
     return data
   }
 
   static async oldest(): Promise<JobType | undefined> {
+    const instance = new JobModel(null)
+
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1143,6 +1149,8 @@ export class JobModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new JobModel(model as JobType)
 
@@ -1153,7 +1161,8 @@ export class JobModel {
     condition: Partial<JobType>,
     newJob: NewJob,
   ): Promise<JobModel> {
-    // Get the key and value from the condition object
+    const instance = new JobModel(null)
+
     const key = Object.keys(condition)[0] as keyof JobType
 
     if (!key) {
@@ -1169,10 +1178,13 @@ export class JobModel {
       .executeTakeFirst()
 
     if (existingJob) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new JobModel(existingJob as JobType)
     }
     else {
-      return await this.create(newJob)
+      return await instance.create(newJob)
     }
   }
 
@@ -1219,7 +1231,7 @@ export class JobModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newJob)
+      return await instance.create(newJob)
     }
   }
 
@@ -1282,8 +1294,10 @@ export class JobModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new JobModel(model as JobType)
 

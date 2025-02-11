@@ -1118,6 +1118,8 @@ export class AccessTokenModel {
   }
 
   static async latest(): Promise<AccessTokenType | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1126,12 +1128,16 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
 
   static async oldest(): Promise<AccessTokenType | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1139,6 +1145,8 @@ export class AccessTokenModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1149,7 +1157,8 @@ export class AccessTokenModel {
     condition: Partial<AccessTokenType>,
     newAccessToken: NewAccessToken,
   ): Promise<AccessTokenModel> {
-    // Get the key and value from the condition object
+    const instance = new AccessTokenModel(null)
+
     const key = Object.keys(condition)[0] as keyof AccessTokenType
 
     if (!key) {
@@ -1165,10 +1174,13 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     if (existingAccessToken) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new AccessTokenModel(existingAccessToken as AccessTokenType)
     }
     else {
-      return await this.create(newAccessToken)
+      return await instance.create(newAccessToken)
     }
   }
 
@@ -1215,7 +1227,7 @@ export class AccessTokenModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newAccessToken)
+      return await instance.create(newAccessToken)
     }
   }
 
@@ -1278,8 +1290,10 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 

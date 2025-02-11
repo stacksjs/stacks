@@ -1054,6 +1054,8 @@ export class SubscriberModel {
   }
 
   static async latest(): Promise<SubscriberType | undefined> {
+    const instance = new SubscriberModel(null)
+
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1062,12 +1064,16 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
 
   static async oldest(): Promise<SubscriberType | undefined> {
+    const instance = new SubscriberModel(null)
+
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1075,6 +1081,8 @@ export class SubscriberModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -1085,7 +1093,8 @@ export class SubscriberModel {
     condition: Partial<SubscriberType>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
-    // Get the key and value from the condition object
+    const instance = new SubscriberModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriberType
 
     if (!key) {
@@ -1101,10 +1110,13 @@ export class SubscriberModel {
       .executeTakeFirst()
 
     if (existingSubscriber) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new SubscriberModel(existingSubscriber as SubscriberType)
     }
     else {
-      return await this.create(newSubscriber)
+      return await instance.create(newSubscriber)
     }
   }
 
@@ -1151,7 +1163,7 @@ export class SubscriberModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newSubscriber)
+      return await instance.create(newSubscriber)
     }
   }
 
@@ -1214,8 +1226,10 @@ export class SubscriberModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberModel(model as SubscriberType)
 

@@ -1866,6 +1866,8 @@ export async function generateModelString(
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'desc')
@@ -1874,12 +1876,16 @@ export async function generateModelString(
           if (!model)
             return undefined
 
+          await instance.mapCustomGetters(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
 
           return data
         }
 
         static async oldest(): Promise<${modelName}Type | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'asc')
@@ -1887,6 +1893,8 @@ export async function generateModelString(
 
           if (!model)
             return undefined
+
+          await instance.mapCustomGetters(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1897,7 +1905,8 @@ export async function generateModelString(
           condition: Partial<${modelName}Type>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
-          // Get the key and value from the condition object
+          const instance = new ${modelName}Model(null)
+
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
           if (!key) {
@@ -1913,10 +1922,13 @@ export async function generateModelString(
             .executeTakeFirst()
   
           if (existing${modelName}) {
+            await instance.mapCustomGetters(model)
+            await instance.loadRelations(model)
+            
             return new ${modelName}Model(existing${modelName} as ${modelName}Type)
           }
           else {
-            return await this.create(new${modelName})
+            return await instance.create(new${modelName})
           }
         }
   
@@ -1962,7 +1974,7 @@ export async function generateModelString(
             return new ${modelName}Model(updated${modelName} as ${modelName}Type)
           } else {
             // If not found, create a new record
-            return await this.create(new${modelName})
+            return await instance.create(new${modelName})
           }
         }
 
@@ -2023,8 +2035,11 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
           }
 
-          if (model)
+          if (model) {
+            await this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
+           
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   

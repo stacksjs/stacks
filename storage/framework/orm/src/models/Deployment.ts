@@ -1183,6 +1183,8 @@ export class DeploymentModel {
   }
 
   static async latest(): Promise<DeploymentType | undefined> {
+    const instance = new DeploymentModel(null)
+
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1191,12 +1193,16 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new DeploymentModel(model as DeploymentType)
 
     return data
   }
 
   static async oldest(): Promise<DeploymentType | undefined> {
+    const instance = new DeploymentModel(null)
+
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1204,6 +1210,8 @@ export class DeploymentModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -1214,7 +1222,8 @@ export class DeploymentModel {
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
-    // Get the key and value from the condition object
+    const instance = new DeploymentModel(null)
+
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
     if (!key) {
@@ -1230,10 +1239,13 @@ export class DeploymentModel {
       .executeTakeFirst()
 
     if (existingDeployment) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new DeploymentModel(existingDeployment as DeploymentType)
     }
     else {
-      return await this.create(newDeployment)
+      return await instance.create(newDeployment)
     }
   }
 
@@ -1280,7 +1292,7 @@ export class DeploymentModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newDeployment)
+      return await instance.create(newDeployment)
     }
   }
 
@@ -1343,8 +1355,10 @@ export class DeploymentModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new DeploymentModel(model as DeploymentType)
 

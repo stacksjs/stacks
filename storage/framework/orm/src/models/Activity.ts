@@ -1168,6 +1168,8 @@ export class ActivityModel {
   }
 
   static async latest(): Promise<ActivityType | undefined> {
+    const instance = new ActivityModel(null)
+
     const model = await DB.instance.selectFrom('activities')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1176,12 +1178,16 @@ export class ActivityModel {
     if (!model)
       return undefined
 
+    await instance.mapCustomGetters(model)
+
     const data = new ActivityModel(model as ActivityType)
 
     return data
   }
 
   static async oldest(): Promise<ActivityType | undefined> {
+    const instance = new ActivityModel(null)
+
     const model = await DB.instance.selectFrom('activities')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1189,6 +1195,8 @@ export class ActivityModel {
 
     if (!model)
       return undefined
+
+    await instance.mapCustomGetters(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -1199,7 +1207,8 @@ export class ActivityModel {
     condition: Partial<ActivityType>,
     newActivity: NewActivity,
   ): Promise<ActivityModel> {
-    // Get the key and value from the condition object
+    const instance = new ActivityModel(null)
+
     const key = Object.keys(condition)[0] as keyof ActivityType
 
     if (!key) {
@@ -1215,10 +1224,13 @@ export class ActivityModel {
       .executeTakeFirst()
 
     if (existingActivity) {
+      await instance.mapCustomGetters(model)
+      await instance.loadRelations(model)
+
       return new ActivityModel(existingActivity as ActivityType)
     }
     else {
-      return await this.create(newActivity)
+      return await instance.create(newActivity)
     }
   }
 
@@ -1265,7 +1277,7 @@ export class ActivityModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newActivity)
+      return await instance.create(newActivity)
     }
   }
 
@@ -1328,8 +1340,10 @@ export class ActivityModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ActivityModel(model as ActivityType)
 
