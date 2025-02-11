@@ -851,12 +851,10 @@ export class ProductModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newProduct: NewProduct): Promise<ProductModel> {
-    const instance = new ProductModel(null)
-
+  async applyCreate(newProduct: NewProduct): Promise<ProductModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProduct).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProduct
 
@@ -866,12 +864,22 @@ export class ProductModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     if (model)
       dispatch('product:created', model)
 
     return model
+  }
+
+  async create(newProduct: NewProduct): Promise<ProductModel> {
+    return await this.create(newProduct)
+  }
+
+  static async create(newProduct: NewProduct): Promise<ProductModel> {
+    const instance = new ProductModel(null)
+
+    return await instance.create(newProduct)
   }
 
   static async createMany(newProduct: NewProduct[]): Promise<void> {

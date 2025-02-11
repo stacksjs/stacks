@@ -823,12 +823,10 @@ export class FailedJobModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
-
+  async applyCreate(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newFailedJob).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewFailedJob
 
@@ -836,12 +834,22 @@ export class FailedJobModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
 
     if (model)
       dispatch('failedjob:created', model)
 
     return model
+  }
+
+  async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
+    return await this.create(newFailedJob)
+  }
+
+  static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
+    const instance = new FailedJobModel(null)
+
+    return await instance.create(newFailedJob)
   }
 
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {

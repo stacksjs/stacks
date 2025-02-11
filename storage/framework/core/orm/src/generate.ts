@@ -1596,13 +1596,11 @@ export async function generateModelString(
 
           return await instance.applyPaginate(options)
         }
-  
-        static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
 
+        async applyCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const filteredValues = Object.fromEntries(
             Object.entries(new${modelName}).filter(([key]) => 
-              !instance.guarded.includes(key) && instance.fillable.includes(key)
+              !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
 
@@ -1612,12 +1610,22 @@ export async function generateModelString(
             .values(filteredValues)
             .executeTakeFirst()
 
-          const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
+          const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
           if (model)
             dispatch('${formattedModelName}:created', model)
 
           return model
+        }
+        
+        async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+          return await this.create(new${modelName})
+        }
+  
+        static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.create(new${modelName})
         }
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {

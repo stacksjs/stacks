@@ -787,12 +787,10 @@ export class ReleaseModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
-
+  async applyCreate(newRelease: NewRelease): Promise<ReleaseModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newRelease).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewRelease
 
@@ -800,12 +798,22 @@ export class ReleaseModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     if (model)
       dispatch('release:created', model)
 
     return model
+  }
+
+  async create(newRelease: NewRelease): Promise<ReleaseModel> {
+    return await this.create(newRelease)
+  }
+
+  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.create(newRelease)
   }
 
   static async createMany(newRelease: NewRelease[]): Promise<void> {

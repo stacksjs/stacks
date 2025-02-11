@@ -823,12 +823,10 @@ export class ErrorModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newError: NewError): Promise<ErrorModel> {
-    const instance = new ErrorModel(null)
-
+  async applyCreate(newError: NewError): Promise<ErrorModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newError).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewError
 
@@ -836,12 +834,22 @@ export class ErrorModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
 
     if (model)
       dispatch('error:created', model)
 
     return model
+  }
+
+  async create(newError: NewError): Promise<ErrorModel> {
+    return await this.create(newError)
+  }
+
+  static async create(newError: NewError): Promise<ErrorModel> {
+    const instance = new ErrorModel(null)
+
+    return await instance.create(newError)
   }
 
   static async createMany(newError: NewError[]): Promise<void> {

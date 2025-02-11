@@ -827,12 +827,10 @@ export class AccessTokenModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    const instance = new AccessTokenModel(null)
-
+  async applyCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newAccessToken).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewAccessToken
 
@@ -840,12 +838,22 @@ export class AccessTokenModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     if (model)
       dispatch('accesstoken:created', model)
 
     return model
+  }
+
+  async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+    return await this.create(newAccessToken)
+  }
+
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.create(newAccessToken)
   }
 
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {

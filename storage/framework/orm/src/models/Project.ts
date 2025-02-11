@@ -814,12 +814,10 @@ export class ProjectModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newProject: NewProject): Promise<ProjectModel> {
-    const instance = new ProjectModel(null)
-
+  async applyCreate(newProject: NewProject): Promise<ProjectModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProject).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProject
 
@@ -827,12 +825,22 @@ export class ProjectModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
 
     if (model)
       dispatch('project:created', model)
 
     return model
+  }
+
+  async create(newProject: NewProject): Promise<ProjectModel> {
+    return await this.create(newProject)
+  }
+
+  static async create(newProject: NewProject): Promise<ProjectModel> {
+    const instance = new ProjectModel(null)
+
+    return await instance.create(newProject)
   }
 
   static async createMany(newProject: NewProject[]): Promise<void> {

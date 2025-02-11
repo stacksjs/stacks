@@ -871,12 +871,10 @@ export class PaymentMethodModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-    const instance = new PaymentMethodModel(null)
-
+  async applyCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPaymentMethod).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPaymentMethod
 
@@ -886,12 +884,22 @@ export class PaymentMethodModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentMethodModel
 
     if (model)
       dispatch('paymentmethod:created', model)
 
     return model
+  }
+
+  async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
+    return await this.create(newPaymentMethod)
+  }
+
+  static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
+    const instance = new PaymentMethodModel(null)
+
+    return await instance.create(newPaymentMethod)
   }
 
   static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {

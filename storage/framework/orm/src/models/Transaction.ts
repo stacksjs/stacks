@@ -860,12 +860,10 @@ export class TransactionModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
-
+  async applyCreate(newTransaction: NewTransaction): Promise<TransactionModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
 
@@ -875,12 +873,22 @@ export class TransactionModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
     if (model)
       dispatch('transaction:created', model)
 
     return model
+  }
+
+  async create(newTransaction: NewTransaction): Promise<TransactionModel> {
+    return await this.create(newTransaction)
+  }
+
+  static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
+    const instance = new TransactionModel(null)
+
+    return await instance.create(newTransaction)
   }
 
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {

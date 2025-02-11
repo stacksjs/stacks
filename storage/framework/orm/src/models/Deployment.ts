@@ -864,12 +864,10 @@ export class DeploymentModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
-
+  async applyCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newDeployment).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewDeployment
 
@@ -879,12 +877,22 @@ export class DeploymentModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
 
     if (model)
       dispatch('deployment:created', model)
 
     return model
+  }
+
+  async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
+    return await this.create(newDeployment)
+  }
+
+  static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
+    const instance = new DeploymentModel(null)
+
+    return await instance.create(newDeployment)
   }
 
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {

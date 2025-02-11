@@ -891,12 +891,10 @@ export class SubscriptionModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-    const instance = new SubscriptionModel(null)
-
+  async applyCreate(newSubscription: NewSubscription): Promise<SubscriptionModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscription).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscription
 
@@ -906,12 +904,22 @@ export class SubscriptionModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
 
     if (model)
       dispatch('subscription:created', model)
 
     return model
+  }
+
+  async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
+    return await this.create(newSubscription)
+  }
+
+  static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
+    const instance = new SubscriptionModel(null)
+
+    return await instance.create(newSubscription)
   }
 
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {

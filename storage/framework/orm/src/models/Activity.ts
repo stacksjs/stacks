@@ -850,12 +850,10 @@ export class ActivityModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newActivity: NewActivity): Promise<ActivityModel> {
-    const instance = new ActivityModel(null)
-
+  async applyCreate(newActivity: NewActivity): Promise<ActivityModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newActivity).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewActivity
 
@@ -863,12 +861,22 @@ export class ActivityModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ActivityModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ActivityModel
 
     if (model)
       dispatch('activity:created', model)
 
     return model
+  }
+
+  async create(newActivity: NewActivity): Promise<ActivityModel> {
+    return await this.create(newActivity)
+  }
+
+  static async create(newActivity: NewActivity): Promise<ActivityModel> {
+    const instance = new ActivityModel(null)
+
+    return await instance.create(newActivity)
   }
 
   static async createMany(newActivity: NewActivity[]): Promise<void> {

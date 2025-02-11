@@ -900,12 +900,10 @@ export class UserModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newUser: NewUser): Promise<UserModel> {
-    const instance = new UserModel(null)
-
+  async applyCreate(newUser: NewUser): Promise<UserModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newUser).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewUser
 
@@ -915,12 +913,22 @@ export class UserModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
 
     return model
+  }
+
+  async create(newUser: NewUser): Promise<UserModel> {
+    return await this.create(newUser)
+  }
+
+  static async create(newUser: NewUser): Promise<UserModel> {
+    const instance = new UserModel(null)
+
+    return await instance.create(newUser)
   }
 
   static async createMany(newUser: NewUser[]): Promise<void> {

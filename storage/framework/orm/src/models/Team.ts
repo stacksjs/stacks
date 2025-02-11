@@ -858,12 +858,10 @@ export class TeamModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newTeam: NewTeam): Promise<TeamModel> {
-    const instance = new TeamModel(null)
-
+  async applyCreate(newTeam: NewTeam): Promise<TeamModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTeam
 
@@ -871,12 +869,22 @@ export class TeamModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     if (model)
       dispatch('team:created', model)
 
     return model
+  }
+
+  async create(newTeam: NewTeam): Promise<TeamModel> {
+    return await this.create(newTeam)
+  }
+
+  static async create(newTeam: NewTeam): Promise<TeamModel> {
+    const instance = new TeamModel(null)
+
+    return await instance.create(newTeam)
   }
 
   static async createMany(newTeam: NewTeam[]): Promise<void> {

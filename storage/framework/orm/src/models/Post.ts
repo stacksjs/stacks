@@ -809,12 +809,10 @@ export class PostModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newPost: NewPost): Promise<PostModel> {
-    const instance = new PostModel(null)
-
+  async applyCreate(newPost: NewPost): Promise<PostModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPost).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPost
 
@@ -822,12 +820,22 @@ export class PostModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
 
     if (model)
       dispatch('post:created', model)
 
     return model
+  }
+
+  async create(newPost: NewPost): Promise<PostModel> {
+    return await this.create(newPost)
+  }
+
+  static async create(newPost: NewPost): Promise<PostModel> {
+    const instance = new PostModel(null)
+
+    return await instance.create(newPost)
   }
 
   static async createMany(newPost: NewPost[]): Promise<void> {
