@@ -1192,8 +1192,8 @@ export class ProjectModel {
       .executeTakeFirst()
 
     if (existingProject) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingProject)
+      await instance.loadRelations(existingProject)
 
       return new ProjectModel(existingProject as ProjectType)
     }

@@ -1270,8 +1270,8 @@ export class DeploymentModel {
       .executeTakeFirst()
 
     if (existingDeployment) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingDeployment)
+      await instance.loadRelations(existingDeployment)
 
       return new DeploymentModel(existingDeployment as DeploymentType)
     }

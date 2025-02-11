@@ -1209,8 +1209,8 @@ export class FailedJobModel {
       .executeTakeFirst()
 
     if (existingFailedJob) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingFailedJob)
+      await instance.loadRelations(existingFailedJob)
 
       return new FailedJobModel(existingFailedJob as FailedJobType)
     }

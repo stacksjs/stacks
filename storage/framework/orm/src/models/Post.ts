@@ -1171,8 +1171,8 @@ export class PostModel {
       .executeTakeFirst()
 
     if (existingPost) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingPost)
+      await instance.loadRelations(existingPost)
 
       return new PostModel(existingPost as PostType)
     }

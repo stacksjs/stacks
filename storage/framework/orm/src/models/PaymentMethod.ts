@@ -1277,8 +1277,8 @@ export class PaymentMethodModel {
       .executeTakeFirst()
 
     if (existingPaymentMethod) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingPaymentMethod)
+      await instance.loadRelations(existingPaymentMethod)
 
       return new PaymentMethodModel(existingPaymentMethod as PaymentMethodType)
     }

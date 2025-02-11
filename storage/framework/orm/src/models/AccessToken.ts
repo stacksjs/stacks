@@ -1205,8 +1205,8 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     if (existingAccessToken) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingAccessToken)
+      await instance.loadRelations(existingAccessToken)
 
       return new AccessTokenModel(existingAccessToken as AccessTokenType)
     }

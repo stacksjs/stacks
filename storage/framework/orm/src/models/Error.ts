@@ -1209,8 +1209,8 @@ export class ErrorModel {
       .executeTakeFirst()
 
     if (existingError) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingError)
+      await instance.loadRelations(existingError)
 
       return new ErrorModel(existingError as ErrorType)
     }

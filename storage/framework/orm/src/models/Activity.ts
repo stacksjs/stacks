@@ -1255,8 +1255,8 @@ export class ActivityModel {
       .executeTakeFirst()
 
     if (existingActivity) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingActivity)
+      await instance.loadRelations(existingActivity)
 
       return new ActivityModel(existingActivity as ActivityType)
     }

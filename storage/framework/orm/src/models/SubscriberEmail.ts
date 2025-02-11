@@ -1170,8 +1170,8 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
 
     if (existingSubscriberEmail) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingSubscriberEmail)
+      await instance.loadRelations(existingSubscriberEmail)
 
       return new SubscriberEmailModel(existingSubscriberEmail as SubscriberEmailType)
     }

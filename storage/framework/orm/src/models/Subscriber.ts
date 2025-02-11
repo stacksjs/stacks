@@ -1141,8 +1141,8 @@ export class SubscriberModel {
       .executeTakeFirst()
 
     if (existingSubscriber) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingSubscriber)
+      await instance.loadRelations(existingSubscriber)
 
       return new SubscriberModel(existingSubscriber as SubscriberType)
     }

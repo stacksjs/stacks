@@ -1257,8 +1257,8 @@ export class ProductModel {
       .executeTakeFirst()
 
     if (existingProduct) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingProduct)
+      await instance.loadRelations(existingProduct)
 
       return new ProductModel(existingProduct as ProductType)
     }

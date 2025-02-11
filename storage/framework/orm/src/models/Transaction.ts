@@ -1250,8 +1250,8 @@ export class TransactionModel {
       .executeTakeFirst()
 
     if (existingTransaction) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingTransaction)
+      await instance.loadRelations(existingTransaction)
 
       return new TransactionModel(existingTransaction as TransactionType)
     }

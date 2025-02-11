@@ -6,6 +6,10 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
+// const userModel = (await import(path.userModelsPath('User.ts'))).default
+
+// generateCustomAccessors(userModel)
+
 function generateCustomAccessors(model: Model): { output: string, loopString: string } {
   let output = ''
   let loopString = ''
@@ -919,7 +923,7 @@ export async function generateModelString(
             })
           } else {
             const model = data
-          
+
             const customGetter = {
               ${getterOutput.output}
             }
@@ -1956,8 +1960,8 @@ export async function generateModelString(
             .executeTakeFirst()
   
           if (existing${modelName}) {
-            instance.mapCustomGetters(model)
-            await instance.loadRelations(model)
+            instance.mapCustomGetters(existing${modelName})
+            await instance.loadRelations(existing${modelName})
             
             return new ${modelName}Model(existing${modelName} as ${modelName}Type)
           }

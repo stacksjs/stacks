@@ -1268,8 +1268,8 @@ export class TeamModel {
       .executeTakeFirst()
 
     if (existingTeam) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingTeam)
+      await instance.loadRelations(existingTeam)
 
       return new TeamModel(existingTeam as TeamType)
     }

@@ -111,9 +111,6 @@ export class UserModel {
     if (Array.isArray(data)) {
       data.map((model: UserJsonResponse) => {
         const customGetter = {
-          firstName: () => {
-            return model.name.split(' ')[0]
-          },
           salutationName: () => {
             return `Mr. ${model.name}`
           },
@@ -131,9 +128,6 @@ export class UserModel {
       const model = data
 
       const customGetter = {
-        firstName: () => {
-          return model.name.split(' ')[0]
-        },
         salutationName: () => {
           return `Mr. ${model.name}`
         },
@@ -1298,8 +1292,8 @@ export class UserModel {
       .executeTakeFirst()
 
     if (existingUser) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingUser)
+      await instance.loadRelations(existingUser)
 
       return new UserModel(existingUser as UserType)
     }

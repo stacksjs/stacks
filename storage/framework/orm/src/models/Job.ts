@@ -1209,8 +1209,8 @@ export class JobModel {
       .executeTakeFirst()
 
     if (existingJob) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingJob)
+      await instance.loadRelations(existingJob)
 
       return new JobModel(existingJob as JobType)
     }

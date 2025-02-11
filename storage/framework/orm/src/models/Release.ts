@@ -1141,8 +1141,8 @@ export class ReleaseModel {
       .executeTakeFirst()
 
     if (existingRelease) {
-      instance.mapCustomGetters(model)
-      await instance.loadRelations(model)
+      instance.mapCustomGetters(existingRelease)
+      await instance.loadRelations(existingRelease)
 
       return new ReleaseModel(existingRelease as ReleaseType)
     }
