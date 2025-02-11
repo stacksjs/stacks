@@ -201,6 +201,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)
@@ -231,8 +232,10 @@ export class ProjectModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -240,9 +243,13 @@ export class ProjectModel {
   }
 
   static async first(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(null)
+
     const model = await DB.instance.selectFrom('projects')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -255,8 +262,10 @@ export class ProjectModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProjectModel(model as ProjectType)
 
@@ -291,6 +300,7 @@ export class ProjectModel {
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProjectModel(model as ProjectType)

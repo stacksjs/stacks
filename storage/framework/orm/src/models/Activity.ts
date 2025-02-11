@@ -229,6 +229,7 @@ export class ActivityModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)
@@ -259,8 +260,10 @@ export class ActivityModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -268,9 +271,13 @@ export class ActivityModel {
   }
 
   static async first(): Promise<ActivityModel | undefined> {
+    const instance = new ActivityModel(null)
+
     const model = await DB.instance.selectFrom('activities')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -283,8 +290,10 @@ export class ActivityModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ActivityModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ActivityModel(model as ActivityType)
 
@@ -323,6 +332,7 @@ export class ActivityModel {
 
     cache.getOrSet(`activity:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ActivityModel(model as ActivityType)

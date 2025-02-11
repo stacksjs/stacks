@@ -174,6 +174,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
@@ -204,8 +205,10 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -213,9 +216,13 @@ export class ReleaseModel {
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -228,8 +235,10 @@ export class ReleaseModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -264,6 +273,7 @@ export class ReleaseModel {
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)

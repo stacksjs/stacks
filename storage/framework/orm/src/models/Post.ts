@@ -196,6 +196,7 @@ export class PostModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)
@@ -226,8 +227,10 @@ export class PostModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PostModel(model as PostType)
 
@@ -235,9 +238,13 @@ export class PostModel {
   }
 
   static async first(): Promise<PostModel | undefined> {
+    const instance = new PostModel(null)
+
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new PostModel(model as PostType)
 
@@ -250,8 +257,10 @@ export class PostModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No PostModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PostModel(model as PostType)
 
@@ -286,6 +295,7 @@ export class PostModel {
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PostModel(model as PostType)

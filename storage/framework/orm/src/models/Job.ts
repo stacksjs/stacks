@@ -210,6 +210,7 @@ export class JobModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)
@@ -240,8 +241,10 @@ export class JobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new JobModel(model as JobType)
 
@@ -249,9 +252,13 @@ export class JobModel {
   }
 
   static async first(): Promise<JobModel | undefined> {
+    const instance = new JobModel(null)
+
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new JobModel(model as JobType)
 
@@ -264,8 +271,10 @@ export class JobModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No JobModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new JobModel(model as JobType)
 
@@ -300,6 +309,7 @@ export class JobModel {
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new JobModel(model as JobType)

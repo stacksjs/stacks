@@ -210,6 +210,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)
@@ -240,8 +241,10 @@ export class FailedJobModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -249,9 +252,13 @@ export class FailedJobModel {
   }
 
   static async first(): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(null)
+
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -264,8 +271,10 @@ export class FailedJobModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new FailedJobModel(model as FailedJobType)
 
@@ -300,6 +309,7 @@ export class FailedJobModel {
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new FailedJobModel(model as FailedJobType)

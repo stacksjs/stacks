@@ -214,6 +214,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
@@ -244,8 +245,10 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -253,9 +256,13 @@ export class AccessTokenModel {
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -268,8 +275,10 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -304,6 +313,7 @@ export class AccessTokenModel {
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)

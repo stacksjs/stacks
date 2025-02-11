@@ -251,6 +251,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)
@@ -281,8 +282,10 @@ export class DeploymentModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -290,9 +293,13 @@ export class DeploymentModel {
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(null)
+
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -305,8 +312,10 @@ export class DeploymentModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new DeploymentModel(model as DeploymentType)
 
@@ -341,6 +350,7 @@ export class DeploymentModel {
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new DeploymentModel(model as DeploymentType)

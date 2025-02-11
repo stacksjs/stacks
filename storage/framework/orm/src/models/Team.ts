@@ -245,6 +245,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
@@ -275,8 +276,10 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 
@@ -284,9 +287,13 @@ export class TeamModel {
   }
 
   static async first(): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -299,8 +306,10 @@ export class TeamModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TeamModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 
@@ -335,6 +344,7 @@ export class TeamModel {
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)

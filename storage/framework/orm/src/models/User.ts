@@ -280,6 +280,7 @@ export class UserModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
@@ -310,8 +311,10 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 
@@ -319,9 +322,13 @@ export class UserModel {
   }
 
   static async first(): Promise<UserModel | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -334,8 +341,10 @@ export class UserModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No UserModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 
@@ -370,6 +379,7 @@ export class UserModel {
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)

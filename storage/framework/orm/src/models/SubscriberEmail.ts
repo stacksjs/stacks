@@ -184,6 +184,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
@@ -214,8 +215,10 @@ export class SubscriberEmailModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -223,9 +226,13 @@ export class SubscriberEmailModel {
   }
 
   static async first(): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(null)
+
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -238,8 +245,10 @@ export class SubscriberEmailModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)
 
@@ -278,6 +287,7 @@ export class SubscriberEmailModel {
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberEmailModel(model as SubscriberEmailType)

@@ -278,6 +278,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
@@ -308,8 +309,10 @@ export class SubscriptionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -317,9 +320,13 @@ export class SubscriptionModel {
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(null)
+
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -332,8 +339,10 @@ export class SubscriptionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriptionModel(model as SubscriptionType)
 
@@ -368,6 +377,7 @@ export class SubscriptionModel {
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriptionModel(model as SubscriptionType)

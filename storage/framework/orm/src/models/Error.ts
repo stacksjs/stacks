@@ -210,6 +210,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)
@@ -240,8 +241,10 @@ export class ErrorModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -249,9 +252,13 @@ export class ErrorModel {
   }
 
   static async first(): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(null)
+
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -264,8 +271,10 @@ export class ErrorModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ErrorModel(model as ErrorType)
 
@@ -300,6 +309,7 @@ export class ErrorModel {
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ErrorModel(model as ErrorType)

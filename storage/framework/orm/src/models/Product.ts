@@ -238,6 +238,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
@@ -268,8 +269,10 @@ export class ProductModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 
@@ -277,9 +280,13 @@ export class ProductModel {
   }
 
   static async first(): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -292,8 +299,10 @@ export class ProductModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ProductModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 
@@ -328,6 +337,7 @@ export class ProductModel {
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)

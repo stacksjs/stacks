@@ -980,6 +980,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
+          await this.mapCustomGetters(model)
           await this.loadRelations(model)
           
           const data = new ${modelName}Model(model as ${modelName}Type)
@@ -1010,8 +1011,10 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().executeTakeFirst()
           }
 
-          if (model)
+          if (model) {
+            await this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1019,10 +1022,14 @@ export async function generateModelString(
         }
         
         static async first(): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .executeTakeFirst()
-            
+
+          await instance.mapCustomGetters(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1034,8 +1041,10 @@ export async function generateModelString(
           if (model === undefined)
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
           
-          if (model)
+          if (model) {
+            await this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1072,6 +1081,7 @@ export async function generateModelString(
           
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
+          await this.mapCustomGetters(model)
           await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)

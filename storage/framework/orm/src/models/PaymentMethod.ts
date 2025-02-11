@@ -258,6 +258,7 @@ export class PaymentMethodModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
@@ -288,8 +289,10 @@ export class PaymentMethodModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -297,9 +300,13 @@ export class PaymentMethodModel {
   }
 
   static async first(): Promise<PaymentMethodModel | undefined> {
+    const instance = new PaymentMethodModel(null)
+
     const model = await DB.instance.selectFrom('payment_methods')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -312,8 +319,10 @@ export class PaymentMethodModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No PaymentMethodModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new PaymentMethodModel(model as PaymentMethodType)
 
@@ -348,6 +357,7 @@ export class PaymentMethodModel {
 
     cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new PaymentMethodModel(model as PaymentMethodType)

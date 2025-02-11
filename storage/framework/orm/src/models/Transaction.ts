@@ -247,6 +247,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
@@ -277,8 +278,10 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -286,9 +289,13 @@ export class TransactionModel {
   }
 
   static async first(): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
+
+    await instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -301,8 +308,10 @@ export class TransactionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
 
-    if (model)
+    if (model) {
+      await this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -337,6 +346,7 @@ export class TransactionModel {
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
+    await this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
