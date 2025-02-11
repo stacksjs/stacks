@@ -34,7 +34,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@shikijs/vitepress-twoslash": "^2.3.0",
+    "@shikijs/vitepress-twoslash": "^2.3.2",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
