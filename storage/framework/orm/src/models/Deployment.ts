@@ -112,24 +112,9 @@ export class DeploymentModel {
     }
   }
 
-  mapCustomSetters(models: DeploymentJsonResponse | DeploymentJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: DeploymentJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: DeploymentJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

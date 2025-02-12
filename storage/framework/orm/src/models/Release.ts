@@ -99,24 +99,9 @@ export class ReleaseModel {
     }
   }
 
-  mapCustomSetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: ReleaseJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: ReleaseJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

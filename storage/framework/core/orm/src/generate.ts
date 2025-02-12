@@ -40,7 +40,7 @@ function generateCustomSetters(model: Model): { output: string, loopString: stri
     }
 
     loopString += `
-      for (const [key, fn] of Object.entries(customGetter)) {
+      for (const [key, fn] of Object.entries(customSetter)) {
         model[key] = fn()
       }`
   }
@@ -952,29 +952,12 @@ export async function generateModelString(
           }
         }
 
-        mapCustomSetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
-          const data = models
-              
-          if (Array.isArray(data)) {
-            data.map((model: ${modelName}JsonResponse) => {
-               
-              const customGetter = {
-                ${setterOutput.output}
-              }
-
-              ${setterOutput.loopString}
-
-              return model
-            })
-          } else {
-            const model = data
-
-            const customGetter = {
-              ${setterOutput.output}
-            }
-
-            ${setterOutput.loopString}
+        mapCustomSetters(model: ${modelName}JsonResponse): void {
+          const customSetter = {
+            ${setterOutput.output}
           }
+
+          ${setterOutput.loopString}
         }
 
         ${getFields}

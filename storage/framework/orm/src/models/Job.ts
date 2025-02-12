@@ -103,24 +103,9 @@ export class JobModel {
     }
   }
 
-  mapCustomSetters(models: JobJsonResponse | JobJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: JobJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: JobJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

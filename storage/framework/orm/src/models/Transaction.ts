@@ -116,24 +116,9 @@ export class TransactionModel {
     }
   }
 
-  mapCustomSetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: TransactionJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: TransactionJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

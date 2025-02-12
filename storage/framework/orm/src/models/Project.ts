@@ -102,24 +102,9 @@ export class ProjectModel {
     }
   }
 
-  mapCustomSetters(models: ProjectJsonResponse | ProjectJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: ProjectJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: ProjectJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

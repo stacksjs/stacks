@@ -99,24 +99,9 @@ export class SubscriberModel {
     }
   }
 
-  mapCustomSetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: SubscriberJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: SubscriberJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

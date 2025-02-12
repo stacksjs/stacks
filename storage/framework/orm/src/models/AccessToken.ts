@@ -107,24 +107,9 @@ export class AccessTokenModel {
     }
   }
 
-  mapCustomSetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: AccessTokenJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: AccessTokenJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

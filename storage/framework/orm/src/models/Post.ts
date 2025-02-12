@@ -105,24 +105,9 @@ export class PostModel {
     }
   }
 
-  mapCustomSetters(models: PostJsonResponse | PostJsonResponse[]): void {
-    const data = models
+  mapCustomSetters(model: PostJsonResponse): void {
+    const customSetter = {
 
-    if (Array.isArray(data)) {
-      data.map((model: PostJsonResponse) => {
-        const customGetter = {
-
-        }
-
-        return model
-      })
-    }
-    else {
-      const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 
