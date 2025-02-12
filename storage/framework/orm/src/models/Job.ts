@@ -116,7 +116,15 @@ export class JobModel {
   }
 
   async mapCustomSetters(model: JobJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
 
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get id(): number | undefined {

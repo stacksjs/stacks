@@ -10,7 +10,7 @@ import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, 
 
 // generateCustomAccessors(userModel)
 
-function generateCustomAccessors(model: Model): { output: string } {
+function generateCustomAccessors(model: Model): string {
   let output = ''
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
@@ -19,32 +19,20 @@ function generateCustomAccessors(model: Model): { output: string } {
     }
   }
 
-  return { output }
+  return output
 }
 
-function generateCustomSetters(model: Model): { customSetterVar: string, loopString: string } {
+function generateCustomSetters(model: Model): string {
   let output = ''
-  let loopString = ''
-  let customSetterVar = ''
 
   if (model.set) {
-    customSetterVar += ` const customSetter = { \n`
     for (const [methodName, getter] of Object.entries(model.set)) {
       const getterStr = getter.toString()
       output += removeAttrString(`${methodName}: ${getterStr}, \n`)
-
-      customSetterVar += output
     }
-
-    customSetterVar += '}'
-
-    loopString += `
-      for (const [key, fn] of Object.entries(customSetter)) {
-        model[key] = await fn()
-      }`
   }
 
-  return { customSetterVar, loopString }
+  return output
 }
 
 function removeAttrString(getterFn: string): string {
@@ -936,7 +924,7 @@ export async function generateModelString(
                 default: () => {
                 },
 
-                ${getterOutput.output}
+                ${getterOutput}
               }
 
               for (const [key, fn] of Object.entries(customGetter)) {
@@ -952,7 +940,7 @@ export async function generateModelString(
               default: () => {
               },
 
-              ${getterOutput.output}
+              ${getterOutput}
             }
 
             for (const [key, fn] of Object.entries(customGetter)) {
@@ -962,9 +950,16 @@ export async function generateModelString(
         }
 
         async mapCustomSetters(model: ${modelName}JsonResponse): Promise<void> {
-          ${setterOutput.customSetterVar}
+          const customSetter = {
+            default: () => {
+            },
 
-          ${setterOutput.loopString}
+            ${setterOutput}
+          }
+
+          for (const [key, fn] of Object.entries(customSetter)) {
+              model[key] = await fn()
+          }
         }
 
         ${getFields}

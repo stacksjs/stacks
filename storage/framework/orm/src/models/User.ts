@@ -148,7 +148,11 @@ export class UserModel {
 
   async mapCustomSetters(model: UserJsonResponse): Promise<void> {
     const customSetter = {
+      default: () => {
+      },
+
       password: () => Bun.password.hash(model.password),
+
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {

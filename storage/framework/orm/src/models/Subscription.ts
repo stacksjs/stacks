@@ -128,7 +128,15 @@ export class SubscriptionModel {
   }
 
   async mapCustomSetters(model: SubscriptionJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
 
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get user_id(): number | undefined {

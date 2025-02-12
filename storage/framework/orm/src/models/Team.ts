@@ -123,7 +123,15 @@ export class TeamModel {
   }
 
   async mapCustomSetters(model: TeamJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
 
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get personal_access_tokens(): AccessTokenModel[] | undefined {

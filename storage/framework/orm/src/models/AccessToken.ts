@@ -120,7 +120,15 @@ export class AccessTokenModel {
   }
 
   async mapCustomSetters(model: AccessTokenJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
 
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get team_id(): number | undefined {

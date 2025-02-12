@@ -116,7 +116,15 @@ export class FailedJobModel {
   }
 
   async mapCustomSetters(model: FailedJobJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
 
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get id(): number | undefined {
