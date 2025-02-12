@@ -1,4 +1,4 @@
-import type { AttributesKey, Model } from '@stacksjs/types'
+import type { Attributes, Model } from '@stacksjs/types'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
@@ -107,13 +107,13 @@ export default {
     },
   },
   get: {
-    salutationName: (attributes: AttributesKey) => {
+    salutationName: (attributes: Attributes) => {
       return `Mr. ${attributes.name}`
     },
   },
 
   set: {
-    password: (attributes: AttributesKey) => Bun.password.hash(attributes.password),
+    password: (attributes: Attributes) => Bun.password.hash(attributes.password),
   },
   dashboard: {
     highlight: true,

@@ -147,7 +147,7 @@ export interface ModelOptions extends Base {
     likeable?: boolean | LikeableOptions
   }
 
-  attributes?: Attributes
+  attributes?: AttributesElements
 
   // relationships
   hasOne?: HasOne<ModelNames> | ModelNames[]
@@ -189,8 +189,12 @@ export interface Attribute {
   // validation?: String | Number | Boolean | Date
 }
 
-export interface Attributes {
+export interface AttributesElements {
   [key: string]: Attribute
+}
+
+export interface Attributes {
+  [key: string]: any
 }
 
 export interface RelationConfig {
