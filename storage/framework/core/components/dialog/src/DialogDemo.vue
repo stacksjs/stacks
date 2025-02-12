@@ -22,7 +22,7 @@ function handleClose() {
 
 <template >
   <div>
-    <div class="flex flex-col m-2" >
+    <div class="flex flex-col my-2" >
       <span class="text-xl font-medium text-gray-900">
         Basic
       </span>
