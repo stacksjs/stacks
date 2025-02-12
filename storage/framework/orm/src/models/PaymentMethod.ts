@@ -231,7 +231,7 @@ export class PaymentMethodModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PaymentMethodType): Partial<PaymentMethodType> {
+  getOriginal(column?: keyof PaymentMethodJsonResponse): Partial<PaymentMethodJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

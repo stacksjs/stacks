@@ -174,7 +174,7 @@ export class ProjectModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProjectType): Partial<ProjectType> {
+  getOriginal(column?: keyof ProjectJsonResponse): Partial<ProjectJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

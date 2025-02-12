@@ -169,7 +169,7 @@ export class PostModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PostType): Partial<PostType> {
+  getOriginal(column?: keyof PostJsonResponse): Partial<PostJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

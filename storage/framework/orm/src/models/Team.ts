@@ -218,7 +218,7 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TeamType): Partial<TeamType> {
+  getOriginal(column?: keyof TeamJsonResponse): Partial<TeamJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

@@ -147,7 +147,7 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ReleaseType): Partial<ReleaseType> {
+  getOriginal(column?: keyof ReleaseJsonResponse): Partial<ReleaseJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

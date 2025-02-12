@@ -358,6 +358,43 @@ export async function writeTableNames(): Promise<void> {
   await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
 }
 
+export async function writeModelAttributes(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  let fieldString = `export interface Attributes { \n`
+  const attributesTypeFile = Bun.file(path.frameworkPath('types/attributes.ts'))
+
+  const processedFields = new Set<string>()
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+    const modeFileElement = modelFiles[i] as string
+
+    const attributes = await extractFields(model, modeFileElement)
+
+    for (const attribute of attributes) {
+      const fieldName = snakeCase(attribute.field)
+
+      // Skip if field already exists
+      if (processedFields.has(fieldName)) {
+        continue
+      }
+
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+      fieldString += ` ${fieldName}: ${entity}\n     `
+
+      // Add to processed fields
+      processedFields.add(fieldName)
+    }
+  }
+
+  fieldString += '} \n'
+
+  const writer = attributesTypeFile.writer()
+
+  writer.write(fieldString)
+}
+
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
@@ -1016,6 +1053,15 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.info('Writing Model Requests...')
       await writeModelRequest()
       log.success('Wrote Model Requests')
+    }
+    catch (error) {
+      handleError('Error while writing Model Requests', error)
+    }
+
+    try {
+      log.info('Writing Model Attributes...')
+      await writeModelAttributes()
+      log.success('Wrote Model Attributes')
     }
     catch (error) {
       handleError('Error while writing Model Requests', error)

@@ -187,7 +187,7 @@ export class AccessTokenModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof AccessTokenType): Partial<AccessTokenType> {
+  getOriginal(column?: keyof AccessTokenJsonResponse): Partial<AccessTokenJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

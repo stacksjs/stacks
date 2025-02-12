@@ -965,7 +965,7 @@ export async function generateModelString(
         ${getFields}
         ${setFields}
         
-        getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {
+        getOriginal(column?: keyof ${modelName}JsonResponse): Partial<${modelName}JsonResponse> {
           if (column) {
             return this.originalAttributes[column]
           }

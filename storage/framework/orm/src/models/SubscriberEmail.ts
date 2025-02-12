@@ -157,7 +157,7 @@ export class SubscriberEmailModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof SubscriberEmailType): Partial<SubscriberEmailType> {
+  getOriginal(column?: keyof SubscriberEmailJsonResponse): Partial<SubscriberEmailJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

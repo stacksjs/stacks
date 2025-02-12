@@ -211,7 +211,7 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductType): Partial<ProductType> {
+  getOriginal(column?: keyof ProductJsonResponse): Partial<ProductJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

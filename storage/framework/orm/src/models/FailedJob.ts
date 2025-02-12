@@ -183,7 +183,7 @@ export class FailedJobModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof FailedJobType): Partial<FailedJobType> {
+  getOriginal(column?: keyof FailedJobJsonResponse): Partial<FailedJobJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

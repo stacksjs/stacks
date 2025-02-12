@@ -220,7 +220,7 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TransactionType): Partial<TransactionType> {
+  getOriginal(column?: keyof TransactionJsonResponse): Partial<TransactionJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

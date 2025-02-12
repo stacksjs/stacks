@@ -202,7 +202,7 @@ export class ActivityModel {
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof ActivityType): Partial<ActivityType> {
+  getOriginal(column?: keyof ActivityJsonResponse): Partial<ActivityJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

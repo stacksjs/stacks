@@ -224,7 +224,7 @@ export class DeploymentModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof DeploymentType): Partial<DeploymentType> {
+  getOriginal(column?: keyof DeploymentJsonResponse): Partial<DeploymentJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

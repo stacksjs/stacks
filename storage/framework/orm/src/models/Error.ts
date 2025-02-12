@@ -183,7 +183,7 @@ export class ErrorModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ErrorType): Partial<ErrorType> {
+  getOriginal(column?: keyof ErrorJsonResponse): Partial<ErrorJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }

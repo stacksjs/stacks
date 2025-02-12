@@ -251,7 +251,7 @@ export class SubscriptionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriptionType): Partial<SubscriptionType> {
+  getOriginal(column?: keyof SubscriptionJsonResponse): Partial<SubscriptionJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
