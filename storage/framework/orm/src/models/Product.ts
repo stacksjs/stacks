@@ -100,9 +100,7 @@ export class ProductModel {
   }
 
   async mapCustomSetters(model: ProductJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

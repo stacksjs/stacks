@@ -96,9 +96,7 @@ export class JobModel {
   }
 
   async mapCustomSetters(model: JobJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

@@ -100,9 +100,7 @@ export class AccessTokenModel {
   }
 
   async mapCustomSetters(model: AccessTokenJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get team_id(): number | undefined {

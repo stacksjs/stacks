@@ -108,9 +108,7 @@ export class PaymentMethodModel {
   }
 
   async mapCustomSetters(model: PaymentMethodJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get user_id(): number | undefined {

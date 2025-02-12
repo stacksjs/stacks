@@ -98,9 +98,7 @@ export class PostModel {
   }
 
   async mapCustomSetters(model: PostJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get user_id(): number | undefined {

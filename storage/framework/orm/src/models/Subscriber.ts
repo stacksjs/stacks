@@ -92,9 +92,7 @@ export class SubscriberModel {
   }
 
   async mapCustomSetters(model: SubscriberJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

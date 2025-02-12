@@ -96,9 +96,7 @@ export class ErrorModel {
   }
 
   async mapCustomSetters(model: ErrorJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

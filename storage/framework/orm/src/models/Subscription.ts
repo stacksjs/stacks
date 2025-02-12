@@ -108,9 +108,7 @@ export class SubscriptionModel {
   }
 
   async mapCustomSetters(model: SubscriptionJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get user_id(): number | undefined {

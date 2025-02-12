@@ -105,9 +105,7 @@ export class DeploymentModel {
   }
 
   async mapCustomSetters(model: DeploymentJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get user_id(): number | undefined {

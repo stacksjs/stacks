@@ -103,9 +103,7 @@ export class TeamModel {
   }
 
   async mapCustomSetters(model: TeamJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get personal_access_tokens(): AccessTokenModel[] | undefined {

@@ -95,9 +95,7 @@ export class ProjectModel {
   }
 
   async mapCustomSetters(model: ProjectJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

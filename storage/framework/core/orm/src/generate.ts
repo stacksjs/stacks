@@ -36,15 +36,21 @@ function generateCustomAccessors(model: Model): { customGetterVar: string, loopS
   return { customGetterVar, loopString }
 }
 
-function generateCustomSetters(model: Model): { output: string, loopString: string } {
+function generateCustomSetters(model: Model): { customSetterVar: string, loopString: string } {
   let output = ''
   let loopString = ''
+  let customSetterVar = ''
 
   if (model.set) {
+    customSetterVar += ` const customSetter = { \n`
     for (const [methodName, getter] of Object.entries(model.set)) {
       const getterStr = getter.toString()
       output += removeAttrString(`${methodName}: ${getterStr}, \n`)
+
+      customSetterVar += output
     }
+
+    customSetterVar += '}'
 
     loopString += `
       for (const [key, fn] of Object.entries(customSetter)) {
@@ -52,7 +58,7 @@ function generateCustomSetters(model: Model): { output: string, loopString: stri
       }`
   }
 
-  return { output, loopString }
+  return { customSetterVar, loopString }
 }
 
 function removeAttrString(getterFn: string): string {
@@ -956,9 +962,7 @@ export async function generateModelString(
         }
 
         async mapCustomSetters(model: ${modelName}JsonResponse): Promise<void> {
-          const customSetter = {
-            ${setterOutput.output}
-          }
+          ${setterOutput.customSetterVar}
 
           ${setterOutput.loopString}
         }

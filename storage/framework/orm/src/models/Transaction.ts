@@ -109,9 +109,7 @@ export class TransactionModel {
   }
 
   async mapCustomSetters(model: TransactionJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get user_id(): number | undefined {

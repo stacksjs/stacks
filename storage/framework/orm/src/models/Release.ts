@@ -92,9 +92,7 @@ export class ReleaseModel {
   }
 
   async mapCustomSetters(model: ReleaseJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

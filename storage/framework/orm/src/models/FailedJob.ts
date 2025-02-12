@@ -96,9 +96,7 @@ export class FailedJobModel {
   }
 
   async mapCustomSetters(model: FailedJobJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {

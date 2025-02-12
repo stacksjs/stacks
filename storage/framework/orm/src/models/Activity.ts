@@ -99,9 +99,7 @@ export class ActivityModel {
   }
 
   async mapCustomSetters(model: ActivityJsonResponse): Promise<void> {
-    const customSetter = {
 
-    }
   }
 
   get id(): number | undefined {
