@@ -380,7 +380,8 @@ export async function writeModelAttributes(): Promise<void> {
         continue
       }
 
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+      const entity = mapEntity(attribute)
+
       fieldString += ` ${fieldName}: ${entity}\n     `
 
       // Add to processed fields
