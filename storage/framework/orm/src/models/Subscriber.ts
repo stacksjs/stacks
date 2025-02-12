@@ -83,19 +83,11 @@ export class SubscriberModel {
 
     if (Array.isArray(data)) {
       data.map((model: SubscriberJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

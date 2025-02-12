@@ -114,7 +114,6 @@ export class UserModel {
           salutationName: () => {
             return `Mr. ${model.name}`
           },
-
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -131,7 +130,6 @@ export class UserModel {
         salutationName: () => {
           return `Mr. ${model.name}`
         },
-
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {

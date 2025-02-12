@@ -99,19 +99,11 @@ export class PaymentMethodModel {
 
     if (Array.isArray(data)) {
       data.map((model: PaymentMethodJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

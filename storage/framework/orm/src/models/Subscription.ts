@@ -99,19 +99,11 @@ export class SubscriptionModel {
 
     if (Array.isArray(data)) {
       data.map((model: SubscriptionJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

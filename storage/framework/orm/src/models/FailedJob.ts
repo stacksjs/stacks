@@ -87,19 +87,11 @@ export class FailedJobModel {
 
     if (Array.isArray(data)) {
       data.map((model: FailedJobJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

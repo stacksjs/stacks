@@ -83,19 +83,11 @@ export class ReleaseModel {
 
     if (Array.isArray(data)) {
       data.map((model: ReleaseJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

@@ -100,19 +100,11 @@ export class TransactionModel {
 
     if (Array.isArray(data)) {
       data.map((model: TransactionJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

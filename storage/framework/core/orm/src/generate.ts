@@ -10,15 +10,22 @@ import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, 
 
 // generateCustomAccessors(userModel)
 
-function generateCustomAccessors(model: Model): { output: string, loopString: string } {
+function generateCustomAccessors(model: Model): { customGetterVar: string, loopString: string } {
   let output = ''
   let loopString = ''
+  let customGetterVar = ''
 
   if (model.get) {
+    customGetterVar += ` const customGetter = { \n`
+
     for (const [methodName, getter] of Object.entries(model.get)) {
       const getterStr = getter.toString()
       output += removeAttrString(`${methodName}: ${getterStr}, \n`)
+
+      customGetterVar += output
     }
+
+    customGetterVar += '}'
 
     loopString += `
       for (const [key, fn] of Object.entries(customGetter)) {
@@ -26,7 +33,7 @@ function generateCustomAccessors(model: Model): { output: string, loopString: st
       }`
   }
 
-  return { output, loopString }
+  return { customGetterVar, loopString }
 }
 
 function generateCustomSetters(model: Model): { output: string, loopString: string } {
@@ -933,9 +940,7 @@ export async function generateModelString(
           if (Array.isArray(data)) {
             data.map((model: ${modelName}JsonResponse) => {
                
-              const customGetter = {
-                ${getterOutput.output}
-              }
+              ${getterOutput.customGetterVar}
 
               ${getterOutput.loopString}
 
@@ -944,9 +949,7 @@ export async function generateModelString(
           } else {
             const model = data
 
-            const customGetter = {
-              ${getterOutput.output}
-            }
+            ${getterOutput.customGetterVar}
 
             ${getterOutput.loopString}
           }

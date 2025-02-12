@@ -87,19 +87,11 @@ export class JobModel {
 
     if (Array.isArray(data)) {
       data.map((model: JobJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

@@ -96,19 +96,11 @@ export class DeploymentModel {
 
     if (Array.isArray(data)) {
       data.map((model: DeploymentJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 

@@ -91,19 +91,11 @@ export class ProductModel {
 
     if (Array.isArray(data)) {
       data.map((model: ProductJsonResponse) => {
-        const customGetter = {
-
-        }
-
         return model
       })
     }
     else {
       const model = data
-
-      const customGetter = {
-
-      }
     }
   }
 
