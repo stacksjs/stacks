@@ -107,7 +107,7 @@ export class AccessTokenModel {
     }
   }
 
-  mapCustomSetters(model: AccessTokenJsonResponse): void {
+  async mapCustomSetters(model: AccessTokenJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -853,13 +853,13 @@ export class AccessTokenModel {
   }
 
   async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    return await this.create(newAccessToken)
+    return await this.applyCreate(newAccessToken)
   }
 
   static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const instance = new AccessTokenModel(null)
 
-    return await instance.create(newAccessToken)
+    return await instance.applyCreate(newAccessToken)
   }
 
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {

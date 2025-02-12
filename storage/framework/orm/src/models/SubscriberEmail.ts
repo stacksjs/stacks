@@ -101,7 +101,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  mapCustomSetters(model: SubscriberEmailJsonResponse): void {
+  async mapCustomSetters(model: SubscriberEmailJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -831,13 +831,13 @@ export class SubscriberEmailModel {
   }
 
   async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-    return await this.create(newSubscriberEmail)
+    return await this.applyCreate(newSubscriberEmail)
   }
 
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const instance = new SubscriberEmailModel(null)
 
-    return await instance.create(newSubscriberEmail)
+    return await instance.applyCreate(newSubscriberEmail)
   }
 
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {

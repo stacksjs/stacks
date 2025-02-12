@@ -103,7 +103,7 @@ export class JobModel {
     }
   }
 
-  mapCustomSetters(model: JobJsonResponse): void {
+  async mapCustomSetters(model: JobJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -849,13 +849,13 @@ export class JobModel {
   }
 
   async create(newJob: NewJob): Promise<JobModel> {
-    return await this.create(newJob)
+    return await this.applyCreate(newJob)
   }
 
   static async create(newJob: NewJob): Promise<JobModel> {
     const instance = new JobModel(null)
 
-    return await instance.create(newJob)
+    return await instance.applyCreate(newJob)
   }
 
   static async createMany(newJob: NewJob[]): Promise<void> {

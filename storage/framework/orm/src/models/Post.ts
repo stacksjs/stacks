@@ -105,7 +105,7 @@ export class PostModel {
     }
   }
 
-  mapCustomSetters(model: PostJsonResponse): void {
+  async mapCustomSetters(model: PostJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -835,13 +835,13 @@ export class PostModel {
   }
 
   async create(newPost: NewPost): Promise<PostModel> {
-    return await this.create(newPost)
+    return await this.applyCreate(newPost)
   }
 
   static async create(newPost: NewPost): Promise<PostModel> {
     const instance = new PostModel(null)
 
-    return await instance.create(newPost)
+    return await instance.applyCreate(newPost)
   }
 
   static async createMany(newPost: NewPost[]): Promise<void> {

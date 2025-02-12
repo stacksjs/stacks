@@ -110,7 +110,7 @@ export class TeamModel {
     }
   }
 
-  mapCustomSetters(model: TeamJsonResponse): void {
+  async mapCustomSetters(model: TeamJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -884,13 +884,13 @@ export class TeamModel {
   }
 
   async create(newTeam: NewTeam): Promise<TeamModel> {
-    return await this.create(newTeam)
+    return await this.applyCreate(newTeam)
   }
 
   static async create(newTeam: NewTeam): Promise<TeamModel> {
     const instance = new TeamModel(null)
 
-    return await instance.create(newTeam)
+    return await instance.applyCreate(newTeam)
   }
 
   static async createMany(newTeam: NewTeam[]): Promise<void> {

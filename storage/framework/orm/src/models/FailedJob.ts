@@ -103,7 +103,7 @@ export class FailedJobModel {
     }
   }
 
-  mapCustomSetters(model: FailedJobJsonResponse): void {
+  async mapCustomSetters(model: FailedJobJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -849,13 +849,13 @@ export class FailedJobModel {
   }
 
   async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-    return await this.create(newFailedJob)
+    return await this.applyCreate(newFailedJob)
   }
 
   static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
     const instance = new FailedJobModel(null)
 
-    return await instance.create(newFailedJob)
+    return await instance.applyCreate(newFailedJob)
   }
 
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {

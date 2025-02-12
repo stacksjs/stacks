@@ -103,7 +103,7 @@ export class ErrorModel {
     }
   }
 
-  mapCustomSetters(model: ErrorJsonResponse): void {
+  async mapCustomSetters(model: ErrorJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -849,13 +849,13 @@ export class ErrorModel {
   }
 
   async create(newError: NewError): Promise<ErrorModel> {
-    return await this.create(newError)
+    return await this.applyCreate(newError)
   }
 
   static async create(newError: NewError): Promise<ErrorModel> {
     const instance = new ErrorModel(null)
 
-    return await instance.create(newError)
+    return await instance.applyCreate(newError)
   }
 
   static async createMany(newError: NewError[]): Promise<void> {

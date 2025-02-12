@@ -106,7 +106,7 @@ export class ActivityModel {
     }
   }
 
-  mapCustomSetters(model: ActivityJsonResponse): void {
+  async mapCustomSetters(model: ActivityJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -876,13 +876,13 @@ export class ActivityModel {
   }
 
   async create(newActivity: NewActivity): Promise<ActivityModel> {
-    return await this.create(newActivity)
+    return await this.applyCreate(newActivity)
   }
 
   static async create(newActivity: NewActivity): Promise<ActivityModel> {
     const instance = new ActivityModel(null)
 
-    return await instance.create(newActivity)
+    return await instance.applyCreate(newActivity)
   }
 
   static async createMany(newActivity: NewActivity[]): Promise<void> {

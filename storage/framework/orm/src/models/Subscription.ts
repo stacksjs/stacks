@@ -115,7 +115,7 @@ export class SubscriptionModel {
     }
   }
 
-  mapCustomSetters(model: SubscriptionJsonResponse): void {
+  async mapCustomSetters(model: SubscriptionJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -919,13 +919,13 @@ export class SubscriptionModel {
   }
 
   async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-    return await this.create(newSubscription)
+    return await this.applyCreate(newSubscription)
   }
 
   static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
     const instance = new SubscriptionModel(null)
 
-    return await instance.create(newSubscription)
+    return await instance.applyCreate(newSubscription)
   }
 
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {

@@ -102,7 +102,7 @@ export class ProjectModel {
     }
   }
 
-  mapCustomSetters(model: ProjectJsonResponse): void {
+  async mapCustomSetters(model: ProjectJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -840,13 +840,13 @@ export class ProjectModel {
   }
 
   async create(newProject: NewProject): Promise<ProjectModel> {
-    return await this.create(newProject)
+    return await this.applyCreate(newProject)
   }
 
   static async create(newProject: NewProject): Promise<ProjectModel> {
     const instance = new ProjectModel(null)
 
-    return await instance.create(newProject)
+    return await instance.applyCreate(newProject)
   }
 
   static async createMany(newProject: NewProject[]): Promise<void> {

@@ -107,7 +107,7 @@ export class ProductModel {
     }
   }
 
-  mapCustomSetters(model: ProductJsonResponse): void {
+  async mapCustomSetters(model: ProductJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -879,13 +879,13 @@ export class ProductModel {
   }
 
   async create(newProduct: NewProduct): Promise<ProductModel> {
-    return await this.create(newProduct)
+    return await this.applyCreate(newProduct)
   }
 
   static async create(newProduct: NewProduct): Promise<ProductModel> {
     const instance = new ProductModel(null)
 
-    return await instance.create(newProduct)
+    return await instance.applyCreate(newProduct)
   }
 
   static async createMany(newProduct: NewProduct[]): Promise<void> {

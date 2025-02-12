@@ -115,7 +115,7 @@ export class PaymentMethodModel {
     }
   }
 
-  mapCustomSetters(model: PaymentMethodJsonResponse): void {
+  async mapCustomSetters(model: PaymentMethodJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -899,13 +899,13 @@ export class PaymentMethodModel {
   }
 
   async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
-    return await this.create(newPaymentMethod)
+    return await this.applyCreate(newPaymentMethod)
   }
 
   static async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
     const instance = new PaymentMethodModel(null)
 
-    return await instance.create(newPaymentMethod)
+    return await instance.applyCreate(newPaymentMethod)
   }
 
   static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {

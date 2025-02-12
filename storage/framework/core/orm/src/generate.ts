@@ -41,7 +41,7 @@ function generateCustomSetters(model: Model): { output: string, loopString: stri
 
     loopString += `
       for (const [key, fn] of Object.entries(customSetter)) {
-        model[key] = fn()
+        model[key] = await fn()
       }`
   }
 
@@ -952,7 +952,7 @@ export async function generateModelString(
           }
         }
 
-        mapCustomSetters(model: ${modelName}JsonResponse): void {
+        async mapCustomSetters(model: ${modelName}JsonResponse): Promise<void> {
           const customSetter = {
             ${setterOutput.output}
           }
@@ -1647,13 +1647,13 @@ export async function generateModelString(
         }
         
         async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-          return await this.create(new${modelName})
+          return await this.applyCreate(new${modelName})
         }
   
         static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const instance = new ${modelName}Model(null)
 
-          return await instance.create(new${modelName})
+          return await instance.applyCreate(new${modelName})
         }
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {

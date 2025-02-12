@@ -140,14 +140,14 @@ export class UserModel {
     }
   }
 
-  mapCustomSetters(model: UserJsonResponse): void {
+  async mapCustomSetters(model: UserJsonResponse): Promise<void> {
     const customSetter = {
       password: () => Bun.password.hash(model.password),
 
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      model[key] = fn()
+      model[key] = await fn()
     }
   }
 
@@ -933,13 +933,13 @@ export class UserModel {
   }
 
   async create(newUser: NewUser): Promise<UserModel> {
-    return await this.create(newUser)
+    return await this.applyCreate(newUser)
   }
 
   static async create(newUser: NewUser): Promise<UserModel> {
     const instance = new UserModel(null)
 
-    return await instance.create(newUser)
+    return await instance.applyCreate(newUser)
   }
 
   static async createMany(newUser: NewUser[]): Promise<void> {

@@ -116,7 +116,7 @@ export class TransactionModel {
     }
   }
 
-  mapCustomSetters(model: TransactionJsonResponse): void {
+  async mapCustomSetters(model: TransactionJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -888,13 +888,13 @@ export class TransactionModel {
   }
 
   async create(newTransaction: NewTransaction): Promise<TransactionModel> {
-    return await this.create(newTransaction)
+    return await this.applyCreate(newTransaction)
   }
 
   static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
     const instance = new TransactionModel(null)
 
-    return await instance.create(newTransaction)
+    return await instance.applyCreate(newTransaction)
   }
 
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {

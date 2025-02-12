@@ -112,7 +112,7 @@ export class DeploymentModel {
     }
   }
 
-  mapCustomSetters(model: DeploymentJsonResponse): void {
+  async mapCustomSetters(model: DeploymentJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -892,13 +892,13 @@ export class DeploymentModel {
   }
 
   async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    return await this.create(newDeployment)
+    return await this.applyCreate(newDeployment)
   }
 
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const instance = new DeploymentModel(null)
 
-    return await instance.create(newDeployment)
+    return await instance.applyCreate(newDeployment)
   }
 
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {

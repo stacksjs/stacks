@@ -99,7 +99,7 @@ export class ReleaseModel {
     }
   }
 
-  mapCustomSetters(model: ReleaseJsonResponse): void {
+  async mapCustomSetters(model: ReleaseJsonResponse): Promise<void> {
     const customSetter = {
 
     }
@@ -813,13 +813,13 @@ export class ReleaseModel {
   }
 
   async create(newRelease: NewRelease): Promise<ReleaseModel> {
-    return await this.create(newRelease)
+    return await this.applyCreate(newRelease)
   }
 
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {
     const instance = new ReleaseModel(null)
 
-    return await instance.create(newRelease)
+    return await instance.applyCreate(newRelease)
   }
 
   static async createMany(newRelease: NewRelease[]): Promise<void> {
