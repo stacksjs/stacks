@@ -46,7 +46,7 @@
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-inspect": "^10.1.1",
     "vite-plugin-pwa": "^0.21.1",
-    "vite-plugin-vue-devtools": "^7.7.1",
+    "vite-plugin-vue-devtools": "^7.7.2",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-plugin-webfont-dl": "^3.10.4",
     "vite-ssg": "^25.0.0",

@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.3",
-    "@microsoft/api-extractor": "^7.49.2",
+    "@microsoft/api-extractor": "^7.50.0",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/dialog": "workspace:*",
