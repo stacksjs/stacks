@@ -111,9 +111,13 @@ export class UserModel {
     if (Array.isArray(data)) {
       data.map((model: UserJsonResponse) => {
         const customGetter = {
+          default: () => {
+          },
+
           salutationName: () => {
             return `Mr. ${model.name}`
           },
+
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
@@ -127,9 +131,13 @@ export class UserModel {
       const model = data
 
       const customGetter = {
+        default: () => {
+        },
+
         salutationName: () => {
           return `Mr. ${model.name}`
         },
+
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {

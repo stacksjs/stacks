@@ -87,11 +87,31 @@ export class JobModel {
 
     if (Array.isArray(data)) {
       data.map((model: JobJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
         return model
       })
     }
     else {
       const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
     }
   }
 
