@@ -873,6 +873,8 @@ export class TransactionModel {
       ),
     ) as NewTransaction
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('transactions')
@@ -1492,6 +1494,8 @@ export class TransactionModel {
       ),
     ) as NewTransaction
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('transactions')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1512,6 +1516,8 @@ export class TransactionModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(transaction).execute()
     }
+
+    await this.mapCustomSetters(transaction)
 
     await DB.instance.updateTable('transactions')
       .set(transaction)
@@ -1538,6 +1544,8 @@ export class TransactionModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('transactions')

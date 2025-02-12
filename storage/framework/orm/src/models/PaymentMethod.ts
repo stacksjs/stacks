@@ -884,6 +884,8 @@ export class PaymentMethodModel {
       ),
     ) as NewPaymentMethod
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('payment_methods')
@@ -1519,6 +1521,8 @@ export class PaymentMethodModel {
       ),
     ) as NewPaymentMethod
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('payment_methods')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1539,6 +1543,8 @@ export class PaymentMethodModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(paymentmethod).execute()
     }
+
+    await this.mapCustomSetters(paymentmethod)
 
     await DB.instance.updateTable('payment_methods')
       .set(paymentmethod)
@@ -1565,6 +1571,8 @@ export class PaymentMethodModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPaymentMethod
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('payment_methods')

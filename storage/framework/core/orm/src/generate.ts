@@ -1632,6 +1632,8 @@ export async function generateModelString(
             ),
           ) as New${modelName}
 
+          await this.mapCustomSetters(filteredValues)
+          
           ${uuidQuery}
 
           const result = await DB.instance.insertInto('${tableName}')
@@ -2222,6 +2224,8 @@ export async function generateModelString(
             ),
           ) as New${modelName}
 
+          await this.mapCustomSetters(filteredValues)
+
           await DB.instance.updateTable('${tableName}')
             .set(filteredValues)
             .where('id', '=', this.id)
@@ -2244,6 +2248,8 @@ export async function generateModelString(
           if (this.id === undefined) {
             this.updateFromQuery.set(${formattedModelName}).execute()
           }
+
+          await this.mapCustomSetters(${formattedModelName})
   
           await DB.instance.updateTable('${tableName}')
             .set(${formattedModelName})
@@ -2273,6 +2279,8 @@ export async function generateModelString(
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
+
+          await this.mapCustomSetters(filteredValues)
 
           if (this.id === undefined) {
             await DB.instance.insertInto('${tableName}')

@@ -822,6 +822,8 @@ export class PostModel {
       ),
     ) as NewPost
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('posts')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1413,6 +1415,8 @@ export class PostModel {
       ),
     ) as NewPost
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('posts')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1433,6 +1437,8 @@ export class PostModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(post).execute()
     }
+
+    await this.mapCustomSetters(post)
 
     await DB.instance.updateTable('posts')
       .set(post)
@@ -1459,6 +1465,8 @@ export class PostModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewPost
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('posts')

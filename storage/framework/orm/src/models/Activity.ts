@@ -863,6 +863,8 @@ export class ActivityModel {
       ),
     ) as NewActivity
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('activities')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1497,6 +1499,8 @@ export class ActivityModel {
       ),
     ) as NewActivity
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('activities')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1517,6 +1521,8 @@ export class ActivityModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(activity).execute()
     }
+
+    await this.mapCustomSetters(activity)
 
     await DB.instance.updateTable('activities')
       .set(activity)
@@ -1543,6 +1549,8 @@ export class ActivityModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewActivity
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('activities')

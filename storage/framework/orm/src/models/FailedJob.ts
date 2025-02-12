@@ -836,6 +836,8 @@ export class FailedJobModel {
       ),
     ) as NewFailedJob
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('failed_jobs')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1451,6 +1453,8 @@ export class FailedJobModel {
       ),
     ) as NewFailedJob
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('failed_jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1471,6 +1475,8 @@ export class FailedJobModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(failedjob).execute()
     }
+
+    await this.mapCustomSetters(failedjob)
 
     await DB.instance.updateTable('failed_jobs')
       .set(failedjob)
@@ -1497,6 +1503,8 @@ export class FailedJobModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewFailedJob
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('failed_jobs')

@@ -877,6 +877,8 @@ export class DeploymentModel {
       ),
     ) as NewDeployment
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('deployments')
@@ -1512,6 +1514,8 @@ export class DeploymentModel {
       ),
     ) as NewDeployment
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('deployments')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1532,6 +1536,8 @@ export class DeploymentModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(deployment).execute()
     }
+
+    await this.mapCustomSetters(deployment)
 
     await DB.instance.updateTable('deployments')
       .set(deployment)
@@ -1558,6 +1564,8 @@ export class DeploymentModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewDeployment
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('deployments')

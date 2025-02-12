@@ -800,6 +800,8 @@ export class ReleaseModel {
       ),
     ) as NewRelease
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('releases')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1383,6 +1385,8 @@ export class ReleaseModel {
       ),
     ) as NewRelease
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('releases')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1403,6 +1407,8 @@ export class ReleaseModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(release).execute()
     }
+
+    await this.mapCustomSetters(release)
 
     await DB.instance.updateTable('releases')
       .set(release)
@@ -1429,6 +1435,8 @@ export class ReleaseModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewRelease
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('releases')

@@ -836,6 +836,8 @@ export class ErrorModel {
       ),
     ) as NewError
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('errors')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1451,6 +1453,8 @@ export class ErrorModel {
       ),
     ) as NewError
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('errors')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1471,6 +1475,8 @@ export class ErrorModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(error).execute()
     }
+
+    await this.mapCustomSetters(error)
 
     await DB.instance.updateTable('errors')
       .set(error)
@@ -1497,6 +1503,8 @@ export class ErrorModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewError
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('errors')

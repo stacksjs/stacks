@@ -800,6 +800,8 @@ export class SubscriberModel {
       ),
     ) as NewSubscriber
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('subscribers')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1383,6 +1385,8 @@ export class SubscriberModel {
       ),
     ) as NewSubscriber
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('subscribers')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1403,6 +1407,8 @@ export class SubscriberModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(subscriber).execute()
     }
+
+    await this.mapCustomSetters(subscriber)
 
     await DB.instance.updateTable('subscribers')
       .set(subscriber)
@@ -1429,6 +1435,8 @@ export class SubscriberModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriber
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('subscribers')

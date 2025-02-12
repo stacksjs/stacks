@@ -840,6 +840,8 @@ export class AccessTokenModel {
       ),
     ) as NewAccessToken
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('personal_access_tokens')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1447,6 +1449,8 @@ export class AccessTokenModel {
       ),
     ) as NewAccessToken
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('personal_access_tokens')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1467,6 +1471,8 @@ export class AccessTokenModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(accesstoken).execute()
     }
+
+    await this.mapCustomSetters(accesstoken)
 
     await DB.instance.updateTable('personal_access_tokens')
       .set(accesstoken)
@@ -1493,6 +1499,8 @@ export class AccessTokenModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewAccessToken
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('personal_access_tokens')

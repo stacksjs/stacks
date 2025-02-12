@@ -918,6 +918,8 @@ export class UserModel {
       ),
     ) as NewUser
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('users')
@@ -1539,6 +1541,8 @@ export class UserModel {
       ),
     ) as NewUser
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('users')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1562,6 +1566,8 @@ export class UserModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(user).execute()
     }
+
+    await this.mapCustomSetters(user)
 
     await DB.instance.updateTable('users')
       .set(user)
@@ -1591,6 +1597,8 @@ export class UserModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewUser
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('users')

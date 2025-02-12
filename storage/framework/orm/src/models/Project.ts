@@ -827,6 +827,8 @@ export class ProjectModel {
       ),
     ) as NewProject
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('projects')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1434,6 +1436,8 @@ export class ProjectModel {
       ),
     ) as NewProject
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('projects')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1454,6 +1458,8 @@ export class ProjectModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(project).execute()
     }
+
+    await this.mapCustomSetters(project)
 
     await DB.instance.updateTable('projects')
       .set(project)
@@ -1480,6 +1486,8 @@ export class ProjectModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProject
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('projects')

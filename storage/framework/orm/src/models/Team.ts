@@ -871,6 +871,8 @@ export class TeamModel {
       ),
     ) as NewTeam
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('teams')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1510,6 +1512,8 @@ export class TeamModel {
       ),
     ) as NewTeam
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('teams')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1530,6 +1534,8 @@ export class TeamModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(team).execute()
     }
+
+    await this.mapCustomSetters(team)
 
     await DB.instance.updateTable('teams')
       .set(team)
@@ -1556,6 +1562,8 @@ export class TeamModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTeam
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('teams')

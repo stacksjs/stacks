@@ -904,6 +904,8 @@ export class SubscriptionModel {
       ),
     ) as NewSubscription
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('subscriptions')
@@ -1563,6 +1565,8 @@ export class SubscriptionModel {
       ),
     ) as NewSubscription
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('subscriptions')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1583,6 +1587,8 @@ export class SubscriptionModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(subscription).execute()
     }
+
+    await this.mapCustomSetters(subscription)
 
     await DB.instance.updateTable('subscriptions')
       .set(subscription)
@@ -1609,6 +1615,8 @@ export class SubscriptionModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscription
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('subscriptions')

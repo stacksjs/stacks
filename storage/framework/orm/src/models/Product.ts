@@ -864,6 +864,8 @@ export class ProductModel {
       ),
     ) as NewProduct
 
+    await this.mapCustomSetters(filteredValues)
+
     filteredValues.uuid = randomUUIDv7()
 
     const result = await DB.instance.insertInto('products')
@@ -1499,6 +1501,8 @@ export class ProductModel {
       ),
     ) as NewProduct
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('products')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1519,6 +1523,8 @@ export class ProductModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(product).execute()
     }
+
+    await this.mapCustomSetters(product)
 
     await DB.instance.updateTable('products')
       .set(product)
@@ -1545,6 +1551,8 @@ export class ProductModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProduct
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('products')

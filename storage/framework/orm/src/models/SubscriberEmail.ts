@@ -818,6 +818,8 @@ export class SubscriberEmailModel {
       ),
     ) as NewSubscriberEmail
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('subscriber_emails')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1412,6 +1414,8 @@ export class SubscriberEmailModel {
       ),
     ) as NewSubscriberEmail
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('subscriber_emails')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1432,6 +1436,8 @@ export class SubscriberEmailModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(subscriberemail).execute()
     }
+
+    await this.mapCustomSetters(subscriberemail)
 
     await DB.instance.updateTable('subscriber_emails')
       .set(subscriberemail)
@@ -1458,6 +1464,8 @@ export class SubscriberEmailModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriberEmail
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('subscriber_emails')

@@ -836,6 +836,8 @@ export class JobModel {
       ),
     ) as NewJob
 
+    await this.mapCustomSetters(filteredValues)
+
     const result = await DB.instance.insertInto('jobs')
       .values(filteredValues)
       .executeTakeFirst()
@@ -1451,6 +1453,8 @@ export class JobModel {
       ),
     ) as NewJob
 
+    await this.mapCustomSetters(filteredValues)
+
     await DB.instance.updateTable('jobs')
       .set(filteredValues)
       .where('id', '=', this.id)
@@ -1471,6 +1475,8 @@ export class JobModel {
     if (this.id === undefined) {
       this.updateFromQuery.set(job).execute()
     }
+
+    await this.mapCustomSetters(job)
 
     await DB.instance.updateTable('jobs')
       .set(job)
@@ -1497,6 +1503,8 @@ export class JobModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewJob
+
+    await this.mapCustomSetters(filteredValues)
 
     if (this.id === undefined) {
       await DB.instance.insertInto('jobs')
