@@ -193,10 +193,6 @@ export interface AttributesElements {
   [key: string]: Attribute
 }
 
-export interface Attributes {
-  [key: string]: any
-}
-
 export interface RelationConfig {
   relationship: string
   model: string
