@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+      time: '22:00'
+      timezone: America/Los_Angeles
+    open-pull-requests-limit: 10
+    groups:
+      # Group all minor and patch updates together
+      minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      - dependency-name: unconfig
+    labels:
+      - dependencies
+    versioning-strategy: increase
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+      time: '22:00'
+      timezone: America/Los_Angeles
+    commit-message:
+      prefix: chore
+      include: scope
+    labels:
+      - dependencies
