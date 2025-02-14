@@ -843,8 +843,7 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
 export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
 
-  if (fs.existsSync(typePath))
-    await fs.writeFile(typePath, '')
+  await fs.writeFile(typePath, '')
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
@@ -855,6 +854,7 @@ export async function deleteExistingModels(modelStringFile?: string): Promise<vo
   }
 
   const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)], { absolute: true })
+
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
@@ -891,8 +891,7 @@ export async function deleteExistingModelNameTypes(): Promise<void> {
 export async function deleteAttributeTypes(): Promise<void> {
   const typeFile = path.frameworkPath('types/attributes.ts')
 
-  if (fs.existsSync(typeFile))
-    await fs.promises.unlink(typeFile)
+  await fs.writeFile(typeFile, '')
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
