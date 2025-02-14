@@ -56,7 +56,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@types/js-yaml": "^4.0.9",
-    "@vueuse/core": "^12.6.0",
+    "@vueuse/core": "^12.6.1",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^12.6.0",
     "@vueuse/shared": "^12.6.0",
