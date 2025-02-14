@@ -65,7 +65,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@unhead/vue": "^1.11.18",
+    "@unhead/vue": "^1.11.19",
     "bun-plugin-unocss": "^0.1.2",
     "pinia": "^3.0.1",
     "unhead": "^1.11.18",
