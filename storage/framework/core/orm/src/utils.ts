@@ -888,6 +888,13 @@ export async function deleteExistingModelNameTypes(): Promise<void> {
     await fs.promises.unlink(typeFile)
 }
 
+export async function deleteAttributeTypes(): Promise<void> {
+  const typeFile = path.frameworkPath('types/attributes.ts')
+
+  if (fs.existsSync(typeFile))
+    await fs.promises.unlink(typeFile)
+}
+
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
   if (fs.existsSync(requestD))
@@ -1022,6 +1029,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Deleting old Model Name types...')
     await deleteExistingModelNameTypes()
     log.success('Deleted Model Name types')
+
+    log.info('Deleting old attribute types...')
+    await deleteAttributeTypes()
+    log.success('Deleted old attribute types')
 
     log.info('Deleting old Model Requests...')
     await deleteExistingModelRequest(modelStringFile)
