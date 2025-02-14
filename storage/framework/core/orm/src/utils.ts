@@ -842,8 +842,9 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
 
 export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
+
   if (fs.existsSync(typePath))
-    await fs.promises.unlink(typePath)
+    await fs.writeFile(typePath, '')
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
@@ -884,8 +885,7 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath('types/src/model-names.ts')
-  if (fs.existsSync(typeFile))
-    await fs.promises.unlink(typeFile)
+  await fs.writeFile(typeFile, '')
 }
 
 export async function deleteAttributeTypes(): Promise<void> {
@@ -897,8 +897,7 @@ export async function deleteAttributeTypes(): Promise<void> {
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  if (fs.existsSync(requestD))
-    await fs.promises.unlink(requestD)
+  await fs.writeFile(requestD, '')
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
@@ -917,8 +916,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string): Prom
 
 export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
-  if (fs.existsSync(ormRoute))
-    await fs.promises.unlink(ormRoute)
+  await fs.writeFile(ormRoute, '')
 }
 
 export async function generateKyselyTypes(): Promise<void> {
