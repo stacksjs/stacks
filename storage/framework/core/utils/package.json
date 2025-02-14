@@ -58,7 +58,7 @@
     "@types/js-yaml": "^4.0.9",
     "@vueuse/core": "^12.6.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/math": "^12.6.0",
+    "@vueuse/math": "^12.6.1",
     "@vueuse/shared": "^12.6.0",
     "ace-builds": "^1.38.0",
     "bun-plugin-env": "^0.4.1",
