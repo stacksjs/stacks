@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Doughnut } from 'vue-chartjs'
 import {
@@ -167,24 +167,24 @@ const cache = ref<Cache>({
 const slowQueries = ref<SlowQuery[]>([
   {
     query: "insert into `tickets` (`flight_id`, `user_id`, `price`, `created_at`, `updated_at`) values (?, ?, ?, ?, ?)",
-    location: "app/Http/Controllers/FlightTicketController.php:26",
+    location: "app/Actions/FlightAction.ts:26",
     count: 347,
     slowest: 3099,
   },
   {
     query: "select `id`, `departs_at` from `flights` where `departs_at` > ? order by `departs_at` asc",
-    location: "app/Http/Controllers/FlightController.php:91",
+    location: "app/Actions/FlightAction.ts:91",
     count: 363,
     slowest: 3088,
   },
 ])
 
 const users = ref<User[]>([
-  { name: 'Joe Dixon', email: 'joe@laravel.com', requests: 68 },
-  { name: 'Tim MacDonald', email: 'tim@laravel.com', requests: 65 },
-  { name: 'Christoph Rumpel', email: 'christoph@laravel.com', requests: 51 },
-  { name: 'James Brooks', email: 'james@laravel.com', requests: 50 },
-  { name: 'Guus Leeuw', email: 'guus@laravel.com', requests: 47 },
+  { name: 'Chris Breuer', email: 'chris@stacksjs.org', requests: 68 },
+  { name: 'Avery', email: 'avery@stacksjs.org', requests: 65 },
+  { name: 'Michael', email: 'michael@stacksjs.org', requests: 51 },
+  { name: 'Glenn', email: 'glenn@stacksjs.org', requests: 50 },
+  { name: 'Zoltan', email: 'zoltan@stacksjs.org', requests: 47 },
 ])
 
 // Chart data
@@ -515,64 +515,74 @@ const statsCards = [
       </div>
     </div>
 
-    <!-- Queue Monitoring -->
+    <!-- Queue Monitoring & Cache Performance -->
     <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-            Queue Monitoring
-          </h1>
-          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            Real-time monitoring of your application's queue processing.
-          </p>
-        </div>
-      </div>
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Queue Monitoring -->
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                Queue Monitoring
+              </h1>
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Real-time monitoring of your application's queue processing.
+              </p>
+            </div>
+          </div>
 
-      <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Queues -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <div class="space-y-8">
-              <!-- Queue Stats -->
-              <div v-for="(stats, name) in queues" :key="name" class="space-y-4">
-                <div>
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ name }}</h4>
-                </div>
-
-                <!-- Status Pills -->
-                <div class="flex items-center space-x-2">
-                  <div v-for="(value, status) in stats" :key="status"
-                       class="inline-flex items-center space-x-1"
-                       :class="{
-                         'text-blue-700 dark:text-blue-300': status === 'queued',
-                         'text-yellow-700 dark:text-yellow-300': status === 'processing',
-                         'text-green-700 dark:text-green-300': status === 'processed',
-                         'text-purple-700 dark:text-purple-300': status === 'released',
-                         'text-red-700 dark:text-red-300': status === 'failed'
-                       }">
-                    <div :class="[getQueueStatusColor(status), 'h-1.5 w-1.5 rounded-full']"></div>
-                    <span class="text-xs font-mono">{{ value }}</span>
-                  </div>
-                </div>
-
-                <!-- Queue Chart -->
-                <div>
-                  <div class="flex items-center space-x-4 mb-2">
+          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+            <div class="p-6">
+              <div class="space-y-8">
+                <!-- Queue Stats -->
+                <div v-for="(stats, name) in queues" :key="name" class="space-y-4">
+                  <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                      <div class="h-1 w-4 bg-green-500 rounded"></div>
-                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Processed</span>
+                      <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
+                        {{ name }}
+                      </h4>
                     </div>
-                    <div class="flex items-center space-x-2">
-                      <div class="h-1 w-4 bg-red-500 rounded"></div>
-                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Failed</span>
+                    <div class="flex items-center space-x-3">
+                      <div v-for="(value, status) in stats" :key="status"
+                           class="group relative">
+                        <div class="flex items-center space-x-2 cursor-help"
+                             :class="{
+                               'text-blue-700 dark:text-blue-300': status === 'queued',
+                               'text-yellow-700 dark:text-yellow-300': status === 'processing',
+                               'text-green-700 dark:text-green-300': status === 'processed',
+                               'text-purple-700 dark:text-purple-300': status === 'released',
+                               'text-red-700 dark:text-red-300': status === 'failed'
+                             }">
+                          <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
+                          <span class="text-xs font-mono">{{ value }}</span>
+                        </div>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                          <div class="relative">
+                            <div class="px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-lg whitespace-nowrap">
+                              {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
+                            </div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div class="h-48">
-                    <Line :data="getQueueData(name)" :options="queueChartOptions" />
-                  </div>
-                  <div class="flex justify-between text-xs font-mono text-gray-500 dark:text-gray-400 mt-2">
-                    <span>12am</span>
-                    <span>6am</span>
+
+                  <!-- Queue Chart -->
+                  <div>
+                    <div class="flex items-center space-x-4 mb-2">
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-green-500 rounded"></div>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Processed</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-red-500 rounded"></div>
+                        <span class="text-xs font-medium text-gray-500 dark:text-gray-400">Failed</span>
+                      </div>
+                    </div>
+                    <div class="h-48">
+                      <Line :data="getQueueData(name)" :options="queueChartOptions" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -580,7 +590,7 @@ const statsCards = [
           </div>
         </div>
 
-        <!-- Cache Stats -->
+        <!-- Cache Performance -->
         <div>
           <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
@@ -660,23 +670,45 @@ const statsCards = [
     <div class="mt-8 px-4 lg:px-8 sm:px-6">
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <!-- Exceptions -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Exceptions</h3>
-            <div class="mt-6 space-y-4">
-              <div v-for="exception in exceptions" :key="exception.type" class="space-y-2">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">{{ exception.type }}</p>
-                    <p class="text-xs font-mono text-gray-500 dark:text-gray-400">{{ exception.location }}</p>
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                Exceptions
+              </h1>
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Recent application exceptions and their occurrence rates.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+            <div class="p-6">
+              <div class="space-y-4">
+                <div v-for="exception in exceptions" :key="exception.type"
+                     class="group relative rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                  <div class="mb-3">
+                    <div class="font-mono text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-all">
+                      {{ exception.type }}
+                    </div>
                   </div>
-                  <div class="text-right">
-                    <p class="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">{{ exception.count }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ exception.latest }}</p>
+                  <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
+                    <div class="flex items-center space-x-2">
+                      <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                        <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.latest }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                        <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.count }}</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div class="h-1 w-full rounded-full bg-gray-200 dark:bg-blue-gray-600">
-                  <div class="h-1 rounded-full bg-red-500" style="width: 75%"></div>
+                  <div class="absolute left-0 top-0 w-1 h-full bg-red-500 rounded-l-lg"></div>
                 </div>
               </div>
             </div>
@@ -684,30 +716,42 @@ const statsCards = [
         </div>
 
         <!-- Slow Queries -->
-        <div class="overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
-          <div class="p-6">
-            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Slow Queries</h3>
-            <div class="mt-6 space-y-4">
-              <div v-for="query in slowQueries" :key="query.location"
-                   class="group rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
-                <div class="mb-3">
-                  <div class="font-mono text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-all">
-                    {{ query.query }}
-                  </div>
-                </div>
-                <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
-                  <div class="flex items-center space-x-2">
-                    <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
-                    <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.location }}</span>
-                  </div>
-                  <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-1">
-                      <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
-                      <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.count }}</span>
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                Slow Queries
+              </h1>
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Database queries that are taking longer than expected to execute.
+              </p>
+            </div>
+          </div>
+
+          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+            <div class="p-6">
+              <div class="space-y-4">
+                <div v-for="query in slowQueries" :key="query.location"
+                     class="group rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                  <div class="mb-3">
+                    <div class="font-mono text-sm text-gray-900 dark:text-gray-100 leading-relaxed break-all">
+                      {{ query.query }}
                     </div>
-                    <div class="flex items-center space-x-1">
-                      <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
-                      <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.slowest }}ms</span>
+                  </div>
+                  <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
+                    <div class="flex items-center space-x-2">
+                      <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                        <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.count }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                        <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.slowest }}ms</span>
+                      </div>
                     </div>
                   </div>
                 </div>
