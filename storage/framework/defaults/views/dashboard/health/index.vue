@@ -78,7 +78,28 @@ const healthMetrics = [
     metrics: [
       { label: 'Total Health Checks', value: '2' },
       { label: 'Failed Health Checks', value: '0' },
+      { label: 'Last Check', value: '10 min ago' },
     ],
+  },
+  {
+    name: 'Exceptions',
+    icon: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+    status: 'warning',
+    description: 'Recent application exceptions',
+    exceptionList: [
+      {
+        name: 'App\\Exceptions\\FlightOverbookedException',
+        path: 'app/Jobs/ProcessBooking.ts:33',
+        count: 36,
+        time: '2 minutes ago'
+      },
+      {
+        name: 'Illuminate\\Http\\Client\\RequestException',
+        path: 'app/Actions/FlightAction.ts:91',
+        count: 22,
+        time: '5 minutes ago'
+      }
+    ]
   },
   {
     name: 'DNS',
@@ -222,6 +243,23 @@ const chartOptions = {
                 </dd>
               </div>
             </dl>
+          </div>
+
+          <div v-if="metric.exceptionList" class="mt-4 space-y-4">
+            <div v-for="exception in metric.exceptionList" :key="exception.name"
+                 class="relative">
+              <div class="flex justify-between">
+                <div class="flex-1">
+                  <p class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ exception.name }}</p>
+                  <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ exception.path }}</p>
+                </div>
+                <div class="ml-4 flex flex-col items-end">
+                  <span class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ exception.count }}</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ exception.time }}</span>
+                </div>
+              </div>
+              <div class="absolute -left-2 top-2 w-0.5 h-full bg-red-500 dark:bg-red-400"></div>
+            </div>
           </div>
         </div>
       </div>

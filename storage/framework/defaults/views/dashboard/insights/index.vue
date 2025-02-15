@@ -120,13 +120,13 @@ const queues = ref<Record<string, QueueStats>>({
 const exceptions = ref<Exception[]>([
   {
     type: 'App\\Exceptions\\FlightOverbookedException',
-    location: 'app/Jobs/ProcessBooking.php:33',
+    location: 'app/Jobs/ProcessBooking.ts:33',
     count: 36,
     latest: '2 minutes ago',
   },
   {
     type: 'Illuminate\\Http\\Client\\RequestException',
-    location: 'app/Http/Controllers/FlightController.php:91',
+    location: 'app/Actions/FlightAction.ts:91',
     count: 22,
     latest: '5 minutes ago',
   },
