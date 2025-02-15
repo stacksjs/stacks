@@ -67,7 +67,21 @@ watch(theme, (currentVal) => {
             class="header-link"
             :class="{ 'active-header-link': $route.path === '/health' }"
           >
-            <div class="i-hugeicons-favourite h-6 w-6 transition duration-150 ease-in-out" />
+            <div class="i-hugeicons-health h-6 w-6 transition duration-150 ease-in-out" />
+          </RouterLink>
+        </button>
+
+        <button
+          type="button"
+          class="header-icon-button"
+        >
+          <span class="sr-only">View Cloud Insights Page</span>
+          <RouterLink
+            to="/insights"
+            class="header-link"
+            :class="{ 'active-header-link': $route.path === '/insights' }"
+          >
+            <div class="i-hugeicons-pulse-01 h-6 w-6 transition duration-150 ease-in-out" />
           </RouterLink>
         </button>
 
