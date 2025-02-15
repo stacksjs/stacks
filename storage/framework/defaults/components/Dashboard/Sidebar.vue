@@ -118,7 +118,7 @@ const sectionContent = {
   app: {
     items: [
       { to: '/deployments', icon: 'i-hugeicons-rocket', text: 'Deployments' },
-      { to: '/requests', icon: 'i-hugeicons-search-01', text: 'Requests' },
+      { to: '/requests', icon: 'i-hugeicons-api', text: 'Requests' },
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
       { to: '/commands', icon: 'i-hugeicons-command-line', text: 'Commands' },
       { to: '/jobs', icon: 'i-hugeicons-queue-02', text: 'Jobs' },
@@ -161,7 +161,7 @@ const sectionContent = {
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
-                    <div class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
+                    <div class="i-hugeicons-home-03 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Dashboard
                   </RouterLink>
                 </li>
