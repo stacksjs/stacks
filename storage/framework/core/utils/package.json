@@ -59,7 +59,7 @@
     "@vueuse/core": "^12.6.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^12.6.0",
-    "@vueuse/shared": "^12.6.0",
+    "@vueuse/shared": "^12.6.1",
     "ace-builds": "^1.38.0",
     "bun-plugin-env": "^0.4.1",
     "bun-plugin-yml": "^0.3.1",
