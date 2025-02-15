@@ -81,6 +81,14 @@ interface SlowQuery {
   slowest: number
 }
 
+interface SlowRoute {
+  method: string
+  route: string
+  count: number
+  slowest: number
+  action?: string
+}
+
 interface User {
   name: string
   email: string
@@ -176,6 +184,23 @@ const slowQueries = ref<SlowQuery[]>([
     location: "app/Actions/FlightAction.ts:91",
     count: 363,
     slowest: 3088,
+  },
+])
+
+const slowRoutes = ref<SlowRoute[]>([
+  {
+    method: 'DELETE',
+    route: '/flights/{flight}',
+    count: 520,
+    slowest: 2997,
+    action: 'app/Actions/FlightAction.ts:destroy',
+  },
+  {
+    method: 'POST',
+    route: '/flights/{flight}/tickets',
+    count: 543,
+    slowest: 2996,
+    action: 'app/Actions/FlightAction.ts:createTicket',
   },
 ])
 
@@ -754,6 +779,87 @@ const statsCards = [
                       </div>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slow Routes & Documentation -->
+      <div class="mt-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <!-- Slow Routes -->
+          <div>
+            <div class="sm:flex sm:items-center">
+              <div class="sm:flex-auto">
+                <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                  Slow Routes
+                </h1>
+                <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                  Routes that are taking longer than expected to respond (>1000ms).
+                </p>
+              </div>
+            </div>
+
+            <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 shadow">
+              <div class="p-6">
+                <div class="space-y-4">
+                  <div v-for="route in slowRoutes" :key="route.route"
+                       class="group rounded-lg border border-gray-200 dark:border-blue-gray-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                    <div class="mb-3">
+                      <div class="flex items-center space-x-3">
+                        <span class="px-2 py-1 text-xs font-medium rounded-md"
+                              :class="{
+                                'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100': route.method === 'DELETE',
+                                'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100': route.method === 'POST',
+                                'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100': route.method === 'GET',
+                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-100': route.method === 'PUT',
+                                'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-100': route.method === 'PATCH'
+                              }">
+                          {{ route.method }}
+                        </span>
+                        <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ route.route }}</span>
+                      </div>
+                      <div v-if="route.action" class="mt-2 flex items-center space-x-2">
+                        <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                        <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ route.action }}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
+                      <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-1">
+                          <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                          <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.count }} requests</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                          <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                          <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.slowest }}ms</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documentation Card -->
+          <div>
+            <div class="overflow-hidden rounded-lg dark:bg-blue-gray-700 flex justify-center items-center h-full">
+              <div class="p-6">
+                <div class="flex flex-col items-center text-center">
+                  <div class="i-heroicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
+                  <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                    Extend Your Dashboard
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                    Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
+                  </p>
+                  <a href="https://stacksjs.org/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
+                    <div class="i-heroicons-book-open h-5 w-5 mr-2" />
+                    Read the Documentation
+                  </a>
                 </div>
               </div>
             </div>
