@@ -13,7 +13,7 @@ defineProps({
 
 const options = reactive({
   lang: 'typescript',
-  theme: 'nord_dark',
+  theme: 'github_dark',
   content: `echo 'Hello World!'
 
 mv ./test/test.ts ./jello
@@ -22,20 +22,20 @@ cp`,
 </script>
 
 <template>
-  <header class="flex items-center justify-between border-b border-[#282a2e] rounded-t-lg bg-[#373b41] p-4">
+  <header class="flex items-center justify-between border-b border-[#30363d] rounded-t-lg bg-[#1f2428] p-4">
     <div class="flex items-center gap-2">
-      <div class="h-3 w-3 rounded-full bg-[#CC6666]" />
-      <div class="h-3 w-3 rounded-full bg-[#E6E074]" />
-      <div class="h-3 w-3 rounded-full bg-[#68B5BD]" />
+      <div class="h-3 w-3 rounded-full bg-[#f85149]" />
+      <div class="h-3 w-3 rounded-full bg-[#db9d16]" />
+      <div class="h-3 w-3 rounded-full bg-[#2ea043]" />
     </div>
 
-    <span v-if="!live" class="text-sm text-white font-mono">Deploy Script</span>
-    <span v-else class="text-sm text-white font-mono">Live Terminal Output</span>
+    <span v-if="!live" class="text-sm text-[#c9d1d9] font-mono">Deploy Script</span>
+    <span v-else class="text-sm text-[#c9d1d9] font-mono">Live Terminal Output</span>
   </header>
 
   <VAceEditor
     v-model:value="options.content"
-    class="vue-ace-editor rounded-b-lg"
+    class="vue-ace-editor rounded-b-lg bg-[#0d1117]"
     :placeholder="`Enter your ${options.lang} code here`"
     :lang="options.lang"
     :theme="options.theme"
@@ -44,6 +44,8 @@ cp`,
       enableBasicAutocompletion: true,
       enableSnippets: true,
       enableLiveAutocompletion: true,
+      fontSize: '14px',
+      fontFamily: 'ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace',
     }"
     style="height: 300px"
   />
@@ -57,7 +59,7 @@ select {
 }
 
 .vue-ace-editor {
-  font-size: 16px;
+  font-size: 14px;
   flex: 1;
 }
 
