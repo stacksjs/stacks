@@ -392,7 +392,16 @@ const handleRetry = async (job: Job) => {
     <div class="my-8 px-4 lg:px-8 sm:px-6">
       <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="px-4 py-5 sm:p-6">
-          <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Recent Jobs</h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Recent Jobs</h3>
+            <router-link
+              to="/jobs/history"
+              class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              <span>View Full History</span>
+              <div class="i-heroicons-arrow-right h-4 w-4" />
+            </router-link>
+          </div>
           <div class="mt-4 flow-root">
             <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -508,15 +517,6 @@ const handleRetry = async (job: Job) => {
         <div class="sm:flex-auto">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of jobs by queue and status</p>
-        </div>
-        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <router-link
-            to="/jobs/history"
-            class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            <span>View Full History</span>
-            <div class="i-heroicons-arrow-right h-4 w-4" />
-          </router-link>
         </div>
       </div>
 
