@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useHead } from '@vueuse/head'
 
-const route = useRoute()
+const route = useRoute('/jobs/[id]')
 const router = useRouter()
 const jobId = route.params.id as string
 
