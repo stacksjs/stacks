@@ -10,6 +10,7 @@ useHead({
 
 // const toast = useToast()
 const activeTab = ref('active') // 'active' or 'resolved'
+const selectedEnvironment = ref('all') // 'all', 'production', or 'staging'
 const isAiAnalyzing = ref(false)
 
 interface ErrorStats {
@@ -85,8 +86,19 @@ const allErrors = ref<Error[]>([
   }
 ])
 
-const activeErrors = computed(() => allErrors.value.filter(error => error.status === 'active'))
-const resolvedErrors = computed(() => allErrors.value.filter(error => error.status === 'resolved'))
+const activeErrors = computed(() => {
+  const filtered = allErrors.value.filter(error => error.status === 'active')
+  return selectedEnvironment.value === 'all'
+    ? filtered
+    : filtered.filter(error => error.environment === selectedEnvironment.value)
+})
+
+const resolvedErrors = computed(() => {
+  const filtered = allErrors.value.filter(error => error.status === 'resolved')
+  return selectedEnvironment.value === 'all'
+    ? filtered
+    : filtered.filter(error => error.environment === selectedEnvironment.value)
+})
 
 const getTypeColor = (type: string): string => {
   const colors: Record<string, string> = {
@@ -228,47 +240,63 @@ const analyzeWithAI = async (errorId: string) => {
 
       <!-- Tabs -->
       <div class="mt-8 border-b border-gray-200 dark:border-blue-gray-600">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-          <button
-            @click="activeTab = 'active'"
-            :class="[
-              activeTab === 'active'
-                ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-            ]"
-          >
-            Active Errors
-            <span
+        <div class="flex justify-between items-center">
+          <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+            <button
+              @click="activeTab = 'active'"
               :class="[
-                activeTab === 'active' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
-                'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+                activeTab === 'active'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
               ]"
             >
-              {{ activeErrors.length }}
-            </span>
-          </button>
+              Active Errors
+              <span
+                :class="[
+                  activeTab === 'active' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
+                  'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+                ]"
+              >
+                {{ activeErrors.length }}
+              </span>
+            </button>
 
-          <button
-            @click="activeTab = 'resolved'"
-            :class="[
-              activeTab === 'resolved'
-                ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-            ]"
-          >
-            Resolved
-            <span
+            <button
+              @click="activeTab = 'resolved'"
               :class="[
-                activeTab === 'resolved' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
-                'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+                activeTab === 'resolved'
+                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
               ]"
             >
-              {{ resolvedErrors.length }}
-            </span>
-          </button>
-        </nav>
+              Resolved
+              <span
+                :class="[
+                  activeTab === 'resolved' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
+                  'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+                ]"
+              >
+                {{ resolvedErrors.length }}
+              </span>
+            </button>
+          </nav>
+
+          <!-- Environment Filter -->
+          <div class="flex items-center">
+            <label for="environment-filter" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Environment:</label>
+            <select
+              id="environment-filter"
+              v-model="selectedEnvironment"
+              class="block w-32 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-gray-100 dark:ring-gray-600"
+            >
+              <option value="all">All</option>
+              <option value="production">Production</option>
+              <option value="staging">Staging</option>
+            </select>
+          </div>
+        </div>
       </div>
 
       <!-- Error List -->
