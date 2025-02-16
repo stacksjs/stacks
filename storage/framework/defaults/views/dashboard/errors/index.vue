@@ -246,7 +246,7 @@ const analyzeWithAI = async (errorId: string) => {
               @click="activeTab = 'active'"
               :class="[
                 activeTab === 'active'
-                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  ? 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
                 'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
               ]"
@@ -254,7 +254,7 @@ const analyzeWithAI = async (errorId: string) => {
               Active Errors
               <span
                 :class="[
-                  activeTab === 'active' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
+                  activeTab === 'active' ? 'bg-red-100 text-red-600 dark:bg-red-400/10 dark:text-red-400' : 'bg-gray-100 text-gray-900 dark:bg-gray-600 dark:text-gray-300',
                   'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
                 ]"
               >
@@ -266,7 +266,7 @@ const analyzeWithAI = async (errorId: string) => {
               @click="activeTab = 'resolved'"
               :class="[
                 activeTab === 'resolved'
-                  ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
+                  ? 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300'
                   : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
                 'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
               ]"
@@ -362,41 +362,41 @@ const analyzeWithAI = async (errorId: string) => {
                           <button
                             @click="resolveError(error.id)"
                             type="button"
-                            class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-green-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:text-green-400 dark:ring-gray-600 dark:hover:bg-gray-700"
+                            class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-green-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-green-400"
+                            aria-label="Mark error as resolved"
                           >
-                            <div class="i-heroicons-check-circle mr-1.5 h-4 w-4" />
-                            Resolve
+                            <div class="i-heroicons-check-circle h-4 w-4" />
                           </button>
                           <button
                             @click="analyzeWithAI(error.id)"
                             type="button"
                             :class="[
-                              'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:ring-gray-600 dark:hover:bg-gray-700',
-                              isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-purple-600 dark:text-purple-400'
+                              'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-purple-600 focus:z-10 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-purple-400',
+                              isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 dark:text-gray-400'
                             ]"
                             :disabled="isAiAnalyzing"
+                            aria-label="Analyze error with AI"
                           >
                             <div :class="[
-                              'mr-1.5 h-4 w-4',
+                              'h-4 w-4',
                               isAiAnalyzing ? 'i-heroicons-arrow-path animate-spin' : 'i-heroicons-sparkles'
                             ]" />
-                            AI Analyze
                           </button>
                         </template>
                         <button
                           type="button"
-                          class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-blue-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:text-blue-400 dark:ring-gray-600 dark:hover:bg-gray-700"
+                          class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-blue-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
                           :class="{ 'rounded-l-md': activeTab === 'resolved' }"
+                          aria-label="Share error details"
                         >
-                          <div class="i-heroicons-share mr-1.5 h-4 w-4" />
-                          Share
+                          <div class="i-heroicons-share h-4 w-4" />
                         </button>
                         <button
                           type="button"
-                          class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700"
+                          class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                          aria-label="View error details"
                         >
-                          <div class="i-heroicons-eye mr-1.5 h-4 w-4" />
-                          View
+                          <div class="i-heroicons-eye h-4 w-4" />
                         </button>
                       </div>
                     </td>

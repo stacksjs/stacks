@@ -166,8 +166,11 @@ const chartOptions = {
 
     <!-- Detailed Health Cards -->
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-      <div v-for="metric in healthMetrics" :key="metric.name"
-           class="relative overflow-hidden rounded-lg bg-white shadow transition-all duration-200 hover:shadow-lg dark:bg-blue-gray-800">
+      <div
+        v-for="metric in healthMetrics"
+        :key="metric.name"
+        class="relative overflow-hidden rounded-lg bg-white shadow transition-all duration-200 dark:bg-blue-gray-800"
+      >
         <div class="p-6">
           <div class="flex items-center">
             <div :class="{
