@@ -14,9 +14,6 @@ import {
   Legend,
   Filler,
   Scale,
-  ChartOptions,
-  ScaleOptionsByType,
-  CartesianScaleTypeRegistry,
   CoreScaleOptions,
   Tick,
 } from 'chart.js'
