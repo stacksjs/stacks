@@ -62,6 +62,15 @@ interface WorkerStats {
   cpu_usage: number
 }
 
+interface Job {
+  id: string
+  name: string
+  queue: string
+  status: 'queued' | 'processing' | 'failed' | 'completed'
+  runtime?: number
+  started_at?: string
+}
+
 // Mock data for demonstration
 const queues = ref<Record<string, QueueStats>>({
   default: {
@@ -296,6 +305,11 @@ onMounted(async () => {
   await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
 })
+
+const handleRetry = async (job: Job) => {
+  // Implement retry logic
+  console.log('Retrying job:', job.id)
+}
 </script>
 
 <template>
@@ -427,41 +441,55 @@ onMounted(async () => {
 
     <!-- Queue Stats -->
     <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of jobs by queue and status</p>
-            </div>
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of jobs by queue and status</p>
+        </div>
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <router-link
+            to="/dashboard/jobs/history"
+            class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            <span>View Full History</span>
+            <div class="i-heroicons-arrow-right h-4 w-4" />
+          </router-link>
+        </div>
+      </div>
+
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 sm:grid-cols-2">
+        <div v-for="(stats, name) in queues" :key="name" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
+              {{ name }}
+            </h4>
           </div>
 
-          <div class="mt-6 space-y-8">
-            <div v-for="(stats, name) in queues" :key="name" class="space-y-4">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                  <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
-                    {{ name }}
-                  </h4>
-                </div>
-                <div class="flex items-center space-x-3">
-                  <div v-for="(value, status) in stats" :key="status"
-                       class="group relative">
-                    <div class="flex items-center space-x-2 cursor-help">
-                      <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
-                      <span class="text-xs font-mono text-gray-700 dark:text-gray-300">{{ value }}</span>
-                    </div>
-                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                      <div class="relative">
-                        <div class="px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-gray-700 rounded shadow-lg whitespace-nowrap">
-                          {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
-                        </div>
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          <div class="space-y-4">
+            <!-- Queue Stats -->
+            <div class="grid grid-cols-3 gap-4">
+              <div v-for="(value, status) in stats" :key="status" class="text-center">
+                <div class="text-2xl font-semibold" :class="{
+                  'text-blue-600 dark:text-blue-400': status === 'queued',
+                  'text-yellow-600 dark:text-yellow-400': status === 'processing',
+                  'text-green-600 dark:text-green-400': status === 'processed',
+                  'text-purple-600 dark:text-purple-400': status === 'released',
+                  'text-red-600 dark:text-red-400': status === 'failed'
+                }">{{ value }}</div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
               </div>
+            </div>
+
+            <!-- Queue Progress -->
+            <div class="h-2 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
+              <div class="flex h-full">
+                <div class="bg-green-500 h-full" :style="{ width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` }" />
+                <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` }" />
+              </div>
+            </div>
+            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+              <span>Success Rate: {{ ((stats.processed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
+              <span>Failure Rate: {{ ((stats.failed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
             </div>
           </div>
         </div>
@@ -469,60 +497,56 @@ onMounted(async () => {
     </div>
 
     <!-- Recent Jobs -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Recent Jobs</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Latest jobs processed by the system</p>
-            </div>
-          </div>
-
-          <div class="mt-6">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+    <div class="mt-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="px-4 py-5 sm:p-6">
+        <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Recent Jobs</h3>
+        <div class="mt-4 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-600">
                 <thead>
                   <tr>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Job</th>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-0">Job</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Queue</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Runtime</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Started</th>
-                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
                       <span class="sr-only">Actions</span>
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                  <tr v-for="job in recentJobs" :key="job.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
+                <tbody class="divide-y divide-gray-200 dark:divide-blue-gray-600">
+                  <tr v-for="job in recentJobs" :key="job.id">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-0">{{ job.name }}</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ job.queue }}</td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="font-medium text-gray-900 dark:text-gray-100">{{ job.name }}</div>
-                      <div class="text-gray-500 dark:text-gray-400 font-mono text-xs">{{ job.id }}</div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {{ job.queue }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                            :class="getJobStatusColor(job.status)">
+                      <span
+                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                        :class="getJobStatusColor(job.status)"
+                      >
                         {{ job.status }}
                       </span>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {{ job.runtime ? `${job.runtime}s` : '-' }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {{ job.started_at }}
-                    </td>
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <button
-                        v-if="job.status === 'failed'"
-                        type="button"
-                        class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
-                      >
-                        Retry
-                      </button>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ job.started_at }}</td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <div class="flex justify-end space-x-2">
+                        <router-link
+                          :to="`/dashboard/jobs/${job.id}`"
+                          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          View
+                        </router-link>
+                        <button
+                          v-if="job.status === 'failed'"
+                          type="button"
+                          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          @click="handleRetry(job)"
+                        >
+                          Retry
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
