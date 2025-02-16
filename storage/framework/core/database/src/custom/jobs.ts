@@ -1,7 +1,8 @@
+import type { Result } from '@stacksjs/error-handling'
 import type { MigrationResult } from '../migrations'
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
-import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { hasMigrationBeenCreated } from '../drivers'
 
