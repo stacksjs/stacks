@@ -288,16 +288,6 @@ const barChartOptions = {
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-medium text-gray-900">Response Time</h3>
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-blue-400"></div>
-                <span class="text-sm text-gray-600">Average</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-blue-200"></div>
-                <span class="text-sm text-gray-600">p95</span>
-              </div>
-            </div>
           </div>
           <div class="relative h-[300px]">
             <Line :data="responseTimeData" :options="chartOptions" />
@@ -308,16 +298,6 @@ const barChartOptions = {
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-medium text-gray-900">Success Rate</h3>
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-green-400"></div>
-                <span class="text-sm text-gray-600">Success</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-red-400"></div>
-                <span class="text-sm text-gray-600">Error</span>
-              </div>
-            </div>
           </div>
           <div class="relative h-[300px]">
             <Line :data="successRateData" :options="chartOptions" />
@@ -328,20 +308,6 @@ const barChartOptions = {
         <div class="bg-white rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-base font-medium text-gray-900">Status Codes</h3>
-            <div class="flex items-center space-x-4">
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-green-400"></div>
-                <span class="text-sm text-gray-600">2xx</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-yellow-400"></div>
-                <span class="text-sm text-gray-600">3xx</span>
-              </div>
-              <div class="flex items-center space-x-2">
-                <div class="h-3 w-3 rounded-full bg-red-400"></div>
-                <span class="text-sm text-gray-600">4xx/5xx</span>
-              </div>
-            </div>
           </div>
           <div class="relative h-[300px]">
             <Bar :data="statusCodesData" :options="barChartOptions" />

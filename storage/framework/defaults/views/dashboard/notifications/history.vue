@@ -295,6 +295,9 @@ onMounted(async () => {
                           <div v-if="sortDirection === 'desc'" class="i-heroicons-chevron-down h-4 w-4" />
                           <div v-else class="i-heroicons-chevron-up h-4 w-4" />
                         </div>
+                        <div v-else class="ml-2">
+                          <div class="i-heroicons-arrows-up-down h-4 w-4 text-gray-400" />
+                        </div>
                       </div>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer" @click="toggleSort('delivered_at')">
@@ -303,6 +306,9 @@ onMounted(async () => {
                         <div v-if="sortField === 'delivered_at'" class="ml-2">
                           <div v-if="sortDirection === 'desc'" class="i-heroicons-chevron-down h-4 w-4" />
                           <div v-else class="i-heroicons-chevron-up h-4 w-4" />
+                        </div>
+                        <div v-else class="ml-2">
+                          <div class="i-heroicons-arrows-up-down h-4 w-4 text-gray-400" />
                         </div>
                       </div>
                     </th>
