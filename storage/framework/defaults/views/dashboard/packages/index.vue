@@ -20,6 +20,12 @@ import {
   CoreScaleOptions,
   Tick,
 } from 'chart.js'
+import {
+  Listbox,
+  ListboxButton,
+  ListboxOptions,
+  ListboxOption,
+} from '@headlessui/vue'
 
 ChartJS.register(
   CategoryScale,
@@ -306,30 +312,6 @@ const downloadsData = computed(() => ({
   }]
 }))
 
-// Chart data for contributors
-const contributorsData = computed(() => ({
-  labels: sortedPackages.value.map(pkg => pkg.name),
-  datasets: [{
-    label: 'Contributors',
-    data: sortedPackages.value.map(pkg => pkg.contributors),
-    backgroundColor: 'rgba(234, 179, 8, 0.8)',
-    borderColor: 'rgb(234, 179, 8)',
-    borderWidth: 1
-  }]
-}))
-
-// Chart data for issues
-const issuesData = computed(() => ({
-  labels: sortedPackages.value.map(pkg => pkg.name),
-  datasets: [{
-    label: 'Open Issues',
-    data: sortedPackages.value.map(pkg => pkg.issues),
-    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-    borderColor: 'rgb(239, 68, 68)',
-    borderWidth: 1
-  }]
-}))
-
 // Customize options for different metrics
 const contributorsOptions = {
   ...baseChartOptions,
@@ -359,9 +341,26 @@ const issuesOptions = {
   }
 } as const
 
+// Star growth chart options
+const starsOptions = {
+  ...baseChartOptions,
+  plugins: {
+    ...baseChartOptions.plugins,
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          const value = context.parsed.y
+          if (value >= 1000) return `Stars: ${(value / 1000).toFixed(1)}k`
+          return `Stars: ${value}`
+        }
+      }
+    }
+  }
+} as const
+
 const timeRange = ref<'7' | '30' | '90' | '365'>('30')
 const displayMode = ref<'line' | 'bar'>('line')
-const selectedPackages = ref<Set<string>>(new Set())
+const selectedPackages = ref<string[]>([])
 const isLoading = ref(false)
 
 // Helper function to format dates
@@ -376,14 +375,27 @@ const formatDate = (daysAgo: number) => {
 
 // Generate date labels for the selected time range
 const generateDateLabels = (days: number) => {
-  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
+  // Return array with most recent date (0 days ago) on the right
+  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i))
 }
 
-// Generate mock daily download data for a package
-const generateDailyData = (baseDownloads: number, days: number) => {
-  return Array.from({ length: days }, () => {
-    const variance = baseDownloads * 0.2 // 20% variance
-    return Math.floor(baseDownloads / days + (Math.random() - 0.5) * variance)
+// Generate mock growth data
+const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
+  // Generate data with most recent value on the right
+  return Array.from({ length: days }, (_, i) => {
+    const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
+    // Start from the oldest date (days - 1) and move towards today (0)
+    const daysFromStart = i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  })
+}
+
+// Generate star growth data over time
+const generateStarGrowthData = (days: number, baseCount: number) => {
+  return Array.from({ length: days }, (_, i) => {
+    const daysFromStart = i
+    const dailyGrowth = Math.floor(Math.random() * 5) + 1 // 1-5 stars per day
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart))
   })
 }
 
@@ -393,11 +405,11 @@ const useCompactMode = computed(() => packages.length > 10)
 // Computed property for filtered and sorted packages
 const filteredPackages = computed(() => {
   let filtered = [...packages]
-  if (useCompactMode.value && selectedPackages.value.size === 0) {
+  if (useCompactMode.value && selectedPackages.value.length === 0) {
     // In compact mode, default to showing top 5 packages by downloads
     filtered = filtered.sort((a, b) => b.downloads - a.downloads).slice(0, 5)
-  } else if (selectedPackages.value.size > 0) {
-    filtered = filtered.filter(pkg => selectedPackages.value.has(pkg.name))
+  } else if (selectedPackages.value.length > 0) {
+    filtered = filtered.filter(pkg => selectedPackages.value.includes(pkg.name))
   }
   return filtered.sort((a, b) => b.downloads - a.downloads)
 })
@@ -416,7 +428,7 @@ const downloadsTimeData = computed(() => {
 
       return {
         label: pkg.name,
-        data: generateDailyData(pkg.downloads, days),
+        data: generateGrowthData(days, pkg.downloads, 100),
         borderColor: color.border,
         backgroundColor: displayMode.value === 'line'
           ? color.background.replace('0.8', '0.1')
@@ -428,65 +440,202 @@ const downloadsTimeData = computed(() => {
   }
 })
 
+// Star growth over time data
+const starsTimeData = computed(() => {
+  const days = parseInt(timeRange.value)
+  const labels = generateDateLabels(days)
+
+  return {
+    labels,
+    datasets: filteredPackages.value.map((pkg, index) => {
+      const colorIndex = index % colors.length
+      const color = colors[colorIndex]
+      if (!color) return null
+
+      return {
+        label: pkg.name,
+        data: generateStarGrowthData(days, pkg.stars),
+        borderColor: color.border,
+        backgroundColor: displayMode.value === 'line'
+          ? color.background.replace('0.8', '0.1')
+          : color.background,
+        fill: true,
+        tension: 0.4
+      }
+    }).filter((dataset): dataset is NonNullable<typeof dataset> => dataset !== null)
+  }
+})
+
+// Computed properties for stats cards
+const totalDownloads = computed(() => {
+  return filteredPackages.value.reduce((sum: number, pkg: any) => sum + pkg.downloads, 0)
+})
+
+const totalContributors = computed(() => {
+  return filteredPackages.value.reduce((sum: number, pkg: any) => sum + pkg.contributors, 0)
+})
+
+const totalIssues = computed(() => {
+  return filteredPackages.value.reduce((sum: number, pkg: any) => sum + pkg.issues, 0)
+})
+
+// Chart data for contributors
+const contributorsData = computed(() => ({
+  labels: filteredPackages.value.map(pkg => pkg.name),
+  datasets: [{
+    label: 'Contributors',
+    data: filteredPackages.value.map(pkg => pkg.contributors),
+    backgroundColor: 'rgba(234, 179, 8, 0.8)',
+    borderColor: 'rgb(234, 179, 8)',
+    borderWidth: 1
+  }]
+}))
+
+// Chart data for issues
+const issuesData = computed(() => ({
+  labels: filteredPackages.value.map(pkg => pkg.name),
+  datasets: [{
+    label: 'Open Issues',
+    data: filteredPackages.value.map(pkg => pkg.issues),
+    backgroundColor: 'rgba(239, 68, 68, 0.8)',
+    borderColor: 'rgb(239, 68, 68)',
+    borderWidth: 1
+  }]
+}))
+
+// Chart data for stars
+const starsData = computed(() => ({
+  labels: filteredPackages.value.map(pkg => pkg.name),
+  datasets: [{
+    label: 'GitHub Stars',
+    data: filteredPackages.value.map(pkg => pkg.stars),
+    backgroundColor: 'rgba(168, 85, 247, 0.8)',
+    borderColor: 'rgb(168, 85, 247)',
+    borderWidth: 1
+  }]
+}))
+
 </script>
 
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
-    <!-- Stats section -->
+    <!-- Stats Section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
-        <h3 class="text-base text-gray-900 font-semibold leading-6">
-          Last 30 days
-        </h3>
+        <div class="flex items-center justify-between">
+          <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            Package Statistics
+          </h3>
+
+          <div v-if="useCompactMode" class="flex items-center space-x-2">
+            <div class="relative w-64">
+              <Listbox v-model="selectedPackages" multiple>
+                <div class="relative">
+                  <ListboxButton
+                    class="relative w-full cursor-default h-9 bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-inset transition-all duration-200"
+                  >
+                    <span class="block truncate">
+                      {{ selectedPackages.length === 0 ? 'Select packages...' : `${selectedPackages.length} selected` }}
+                    </span>
+                    <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                      <div class="i-heroicons-chevron-up-down h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                    </span>
+                  </ListboxButton>
+
+                  <transition
+                    enter-active-class="transition duration-100 ease-out"
+                    enter-from-class="transform scale-95 opacity-0"
+                    enter-to-class="transform scale-100 opacity-100"
+                    leave-active-class="transition duration-75 ease-in"
+                    leave-from-class="transform scale-100 opacity-100"
+                    leave-to-class="transform scale-95 opacity-0"
+                  >
+                    <ListboxOptions
+                      class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-blue-gray-600 py-1 text-sm shadow-lg ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-10"
+                    >
+                      <ListboxOption
+                        v-for="pkg in packages"
+                        :key="pkg.name"
+                        :value="pkg.name"
+                        v-slot="{ active, selected }"
+                        as="template"
+                      >
+                        <li
+                          :class="[
+                            active ? 'bg-blue-50 dark:bg-blue-700/50 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100',
+                            'relative cursor-default select-none py-2 pl-10 pr-4 transition-colors duration-150',
+                          ]"
+                        >
+                          <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                            {{ pkg.name }}
+                          </span>
+                          <span
+                            v-if="selected"
+                            class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400"
+                          >
+                            <div class="i-heroicons-check h-5 w-5" aria-hidden="true" />
+                          </span>
+                        </li>
+                      </ListboxOption>
+                    </ListboxOptions>
+                  </transition>
+                </div>
+              </Listbox>
+            </div>
+            <button
+              @click="selectedPackages = []"
+              class="h-9 px-3 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-500 transition-colors duration-200"
+            >
+              Clear
+            </button>
+          </div>
+        </div>
 
         <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <!-- Total Downloads -->
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-heroicons-arrow-down-tray h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Downloads
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                {{ packages.reduce((sum, pkg) => sum + pkg.downloads, 0).toLocaleString() }}
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ totalDownloads.toLocaleString() }}
               </p>
             </dd>
           </div>
 
-          <!-- Total Contributors -->
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-heroicons-users h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Contributors
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                {{ packages.reduce((sum, pkg) => sum + pkg.contributors, 0) }}
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ totalContributors.toLocaleString() }}
               </p>
             </dd>
           </div>
 
-          <!-- Total Issues -->
-          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-heroicons-bug-ant h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Issues
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 font-semibold">
-                {{ packages.reduce((sum, pkg) => sum + pkg.issues, 0) }}
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ totalIssues.toLocaleString() }}
               </p>
             </dd>
           </div>
@@ -515,23 +664,6 @@ const downloadsTimeData = computed(() => {
                   <option value="90">Last 90 days</option>
                   <option value="365">Last year</option>
                 </select>
-                <div v-if="useCompactMode" class="flex items-center space-x-2">
-                  <select
-                    v-model="selectedPackages"
-                    multiple
-                    class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 max-h-32"
-                  >
-                    <option v-for="pkg in packages" :key="pkg.name" :value="pkg.name">
-                      {{ pkg.name }}
-                    </option>
-                  </select>
-                  <button
-                    @click="selectedPackages.clear()"
-                    class="h-9 px-3 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-500"
-                  >
-                    Clear
-                  </button>
-                </div>
                 <div class="flex rounded-md shadow-sm h-9">
                   <button
                     @click="displayMode = 'line'"
@@ -593,6 +725,73 @@ const downloadsTimeData = computed(() => {
             </div>
             <div class="h-[400px]">
               <Bar :data="issuesData" :options="issuesOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Stars Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">GitHub Stars</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of stars per package</p>
+            </div>
+            <div class="h-[400px]">
+              <Bar :data="starsData" :options="starsOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Star Growth Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Star Growth</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">GitHub Star growth over time per package</p>
+              </div>
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="timeRange"
+                  class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="7">Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                  <option value="90">Last 90 days</option>
+                  <option value="365">Last year</option>
+                </select>
+                <div class="flex rounded-md shadow-sm h-9">
+                  <button
+                    @click="displayMode = 'line'"
+                    :class="[
+                      'px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors',
+                      displayMode === 'line'
+                        ? 'bg-blue-600 text-white ring-blue-600'
+                        : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
+                    ]"
+                  >
+                    Line
+                  </button>
+                  <button
+                    @click="displayMode = 'bar'"
+                    :class="[
+                      'px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px',
+                      displayMode === 'bar'
+                        ? 'bg-blue-600 text-white ring-blue-600'
+                        : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
+                    ]"
+                  >
+                    Bar
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="h-[400px]">
+              <component
+                :is="displayMode === 'line' ? Line : Bar"
+                :data="starsTimeData"
+                :options="timeChartOptions"
+              />
             </div>
           </div>
         </div>

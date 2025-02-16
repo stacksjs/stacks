@@ -116,7 +116,18 @@ const formatDate = (daysAgo: number) => {
 
 // Generate date labels for the selected time range
 const generateDateLabels = (days: number) => {
-  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
+  // Start from oldest date and move towards today
+  return Array.from({ length: days }, (_, i) => formatDate(i))
+}
+
+// Generate mock growth data
+const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
+  // Start from oldest date and move towards today
+  return Array.from({ length: days }, (_, i) => {
+    const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
+    const daysFromStart = i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  })
 }
 
 interface FunctionStats {

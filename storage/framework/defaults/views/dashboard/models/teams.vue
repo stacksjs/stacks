@@ -276,8 +276,9 @@ const generateDateLabels = (days: number) => {
 const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
   return Array.from({ length: days }, (_, i) => {
     const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
-    return Math.floor(baseCount + (dailyGrowth * i) + dayVariance)
-  })
+    const daysFromStart = days - 1 - i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  }).reverse()
 }
 
 // Chart options
