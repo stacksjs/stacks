@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
@@ -101,22 +101,97 @@ const chartOptions = {
 }
 
 const comparePackage = ref('')
-const timeRange = ref('7')
+const timeRange = ref<'7' | '30' | '90' | '365'>('7')
+const isLoading = ref(false)
+
+// Helper function to format dates
+const formatDate = (daysAgo: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Generate date labels for the selected time range
+const generateDateLabels = (days: number) => {
+  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
+}
+
+interface DownloadStats {
+  labels: string[]
+  data: number[]
+  compareData: number[]
+}
+
+interface DownloadStatsMap {
+  '7': DownloadStats
+  '30': DownloadStats
+  '90': DownloadStats
+  '365': DownloadStats
+}
+
+const downloadStats = ref<DownloadStatsMap>({
+  '7': {
+    labels: generateDateLabels(7),
+    data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
+    compareData: [9500, 11800, 10200, 12800, 15200, 14100, 13200]
+  },
+  '30': {
+    labels: generateDateLabels(30),
+    data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 8000)
+  },
+  '90': {
+    labels: generateDateLabels(90),
+    data: Array.from({ length: 90 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 90 }, () => Math.floor(Math.random() * 15000) + 8000)
+  },
+  '365': {
+    labels: generateDateLabels(365),
+    data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000)
+  }
+})
+
+// Function to fetch download data from API
+const fetchDownloadData = async (days: '7' | '30' | '90' | '365') => {
+  isLoading.value = true
+  try {
+    // Here you would make your API call
+    // const response = await fetch(`/api/downloads?days=${days}`)
+    // const data = await response.json()
+    // downloadStats.value[days] = data
+
+    // For now we're using the mock data already set in downloadStats
+    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+  } catch (error) {
+    console.error('Error fetching download data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Watch for time range changes
+watch(timeRange, async (newRange) => {
+  await fetchDownloadData(newRange)
+})
 
 // Mock data for downloads chart
 const downloadsData = computed(() => ({
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  labels: downloadStats.value[timeRange.value].labels,
   datasets: [
     {
       label: '@your/package',
-      data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
+      data: downloadStats.value[timeRange.value].data,
       borderColor: 'rgb(59, 130, 246)',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
     },
     ...(comparePackage.value ? [{
       label: comparePackage.value,
-      data: [9500, 11800, 10200, 12800, 15200, 14100, 13200],
+      data: downloadStats.value[timeRange.value].compareData,
       borderColor: 'rgb(234, 179, 8)',
       backgroundColor: 'rgba(234, 179, 8, 0.1)',
       fill: true,
@@ -124,14 +199,18 @@ const downloadsData = computed(() => ({
   ]
 }))
 
-const handleCompare = () => {
-  // In a real implementation, this would fetch actual download data
-  // for the compared package
+const handleCompare = async () => {
   if (comparePackage.value) {
-    // Trigger reactivity by reassigning the value
-    comparePackage.value = comparePackage.value
+    // Here you would fetch comparison data from API
+    // await fetchComparisonData(comparePackage.value, timeRange.value)
+    await fetchDownloadData(timeRange.value)
   }
 }
+
+// Initial data fetch
+onMounted(async () => {
+  await fetchDownloadData(timeRange.value)
+})
 </script>
 
 <template>
@@ -257,6 +336,7 @@ const handleCompare = () => {
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
                 <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
               </select>
             </div>
           </div>

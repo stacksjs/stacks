@@ -242,7 +242,7 @@ const sectionContent = {
                   class="sidebar-bottom-link"
                   :class="{ 'active-bottom-link': $route.path === '/buddy' }"
                 >
-                  <div class="i-hugeicons-bubble-chat h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                  <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
 
                 <RouterLink
