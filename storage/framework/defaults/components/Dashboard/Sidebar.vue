@@ -269,9 +269,6 @@ const sectionContent = {
                   <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
               </div>
-              <div class="flex-none rounded-full bg-red-400/10 p-1 text-red-400">
-                <div class="h-2 w-2 animate-pulse rounded-full bg-current" />
-              </div>
             </li>
           </ul>
         </nav>

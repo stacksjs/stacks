@@ -1,7 +1,172 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
+import { useHead } from '@vueuse/head'
+import { Line, Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
+
 useHead({
   title: 'Dashboard - Requests',
 })
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+// Mock data for charts
+const requestVolumeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Requests',
+      data: [1200, 1900, 800, 1600, 2400, 2100, 1800, 2200],
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderColor: 'rgb(59, 130, 246)',
+      fill: true,
+    }
+  ]
+}
+
+const responseTimeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Average',
+      data: [320, 280, 300, 390, 420, 350, 360, 380],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: false,
+    },
+    {
+      label: 'p95',
+      data: [480, 420, 450, 580, 630, 525, 540, 570],
+      borderColor: 'rgb(147, 197, 253)',
+      backgroundColor: 'rgba(147, 197, 253, 0.1)',
+      fill: false,
+    }
+  ]
+}
+
+const successRateData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Success Rate',
+      data: [98, 97, 99, 96, 95, 97, 98, 96],
+      borderColor: 'rgb(34, 197, 94)',
+      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+      fill: true,
+    },
+    {
+      label: 'Error Rate',
+      data: [2, 3, 1, 4, 5, 3, 2, 4],
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+    }
+  ]
+}
+
+const statusCodesData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: '2xx',
+      data: [980, 970, 990, 960, 950, 970, 980, 960],
+      backgroundColor: 'rgba(34, 197, 94, 0.7)',
+    },
+    {
+      label: '3xx',
+      data: [15, 20, 8, 25, 30, 20, 15, 25],
+      backgroundColor: 'rgba(234, 179, 8, 0.7)',
+    },
+    {
+      label: '4xx/5xx',
+      data: [5, 10, 2, 15, 20, 10, 5, 15],
+      backgroundColor: 'rgba(239, 68, 68, 0.7)',
+    }
+  ]
+}
+
+const barChartOptions = {
+  ...chartOptions,
+  scales: {
+    ...chartOptions.scales,
+    x: {
+      ...chartOptions.scales.x,
+      stacked: true,
+    },
+    y: {
+      ...chartOptions.scales.y,
+      stacked: true,
+    },
+  },
+}
 </script>
 
 <template>
@@ -96,6 +261,92 @@ useHead({
             </dd>
           </div>
         </dl>
+      </div>
+    </div>
+
+    <!-- Graphs Section -->
+    <div class="px-4 lg:px-8 sm:px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Request Volume Graph -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-medium text-gray-900">Request Volume</h3>
+            <div class="flex items-center space-x-4">
+              <select class="text-sm border-0 rounded-md bg-gray-50 py-1.5 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600">
+                <option>Last 24 hours</option>
+                <option>Last 7 days</option>
+                <option>Last 30 days</option>
+              </select>
+            </div>
+          </div>
+          <div class="relative h-[300px]">
+            <Line :data="requestVolumeData" :options="chartOptions" />
+          </div>
+        </div>
+
+        <!-- Response Time Graph -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-medium text-gray-900">Response Time</h3>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-blue-400"></div>
+                <span class="text-sm text-gray-600">Average</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-blue-200"></div>
+                <span class="text-sm text-gray-600">p95</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[300px]">
+            <Line :data="responseTimeData" :options="chartOptions" />
+          </div>
+        </div>
+
+        <!-- Success Rate Graph -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-medium text-gray-900">Success Rate</h3>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-green-400"></div>
+                <span class="text-sm text-gray-600">Success</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-red-400"></div>
+                <span class="text-sm text-gray-600">Error</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[300px]">
+            <Line :data="successRateData" :options="chartOptions" />
+          </div>
+        </div>
+
+        <!-- Status Code Distribution -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-medium text-gray-900">Status Codes</h3>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-green-400"></div>
+                <span class="text-sm text-gray-600">2xx</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-yellow-400"></div>
+                <span class="text-sm text-gray-600">3xx</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="h-3 w-3 rounded-full bg-red-400"></div>
+                <span class="text-sm text-gray-600">4xx/5xx</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative h-[300px]">
+            <Bar :data="statusCodesData" :options="barChartOptions" />
+          </div>
+        </div>
       </div>
     </div>
 
