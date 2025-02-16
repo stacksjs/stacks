@@ -20,7 +20,8 @@
       "Middleware/*": ["../../../app/Middleware/*"],
       "Models/*": ["../../../app/Models/*"],
       "Notifications/*": ["../../../app/Notifications/*"],
-      "~/*": ["../../../*"]
+      "~/*": ["../../../*"],
+      "@/*": ["../../../resources/*"]
     },
     "resolveJsonModule": true,
     "types": [
