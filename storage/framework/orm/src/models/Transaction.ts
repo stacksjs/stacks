@@ -5,7 +5,6 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
@@ -900,9 +899,6 @@ export class TransactionModel {
       .executeTakeFirst()
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
-
-    if (model)
-      dispatch('transaction:created', model)
 
     return model
   }

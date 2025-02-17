@@ -4,7 +4,6 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -904,9 +903,6 @@ export class DeploymentModel {
       .executeTakeFirst()
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
-
-    if (model)
-      dispatch('deployment:created', model)
 
     return model
   }

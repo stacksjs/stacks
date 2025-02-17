@@ -2,7 +2,6 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
@@ -843,9 +842,6 @@ export class SubscriberEmailModel {
       .executeTakeFirst()
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
-
-    if (model)
-      dispatch('subscriberemail:created', model)
 
     return model
   }

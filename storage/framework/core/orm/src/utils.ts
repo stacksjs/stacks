@@ -398,23 +398,42 @@ export async function writeModelAttributes(): Promise<void> {
 
 export async function writeModelEvents(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-  let fieldString = `export interface ModelEvents { \n`
+  let eventString = ``
+  let observerString = ``
+  let observerImports = ``
   const attributesTypeFile = Bun.file(path.frameworkPath('types/events.ts'))
-
-  const processedFields = new Set<string>()
 
   for (let i = 0; i < modelFiles.length; i++) {
     const modelPath = modelFiles[i] as string
     const model = (await import(modelPath)).default as Model
 
     const modelName = getModelName(model, modelPath)
+
+    const formattedModelName = modelName.toLocaleLowerCase()
+
+    const observer = model?.traits?.observe
+
+    if (typeof observer === 'boolean') {
+      if (observer) {
+        observerString += `'${formattedModelName}:created': Partial<${modelName}Model>\n`
+        observerString += `'${formattedModelName}:updated': Partial<${modelName}Model>\n`
+        observerString += `'${formattedModelName}:deleted': Partial<${modelName}Model>\n`
+
+        observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'`
+      }
+    }
   }
 
-  fieldString += '} \n'
+  eventString += `
+  ${observerImports} \n\n
+    
+  export interface ModelEvents {\n 
+    ${observerString}
+  }`
 
   const writer = attributesTypeFile.writer()
 
-  writer.write(fieldString)
+  writer.write(eventString)
 }
 
 export async function writeModelRequest(): Promise<void> {
@@ -1094,7 +1113,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Attributes')
     }
     catch (error) {
-      handleError('Error while writing Model Requests', error)
+      handleError('Error while writing Model Attributes', error)
     }
 
     try {
@@ -1103,7 +1122,7 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Events')
     }
     catch (error) {
-      handleError('Error while writing Model Requests', error)
+      handleError('Error while writing Model Events', error)
     }
 
     log.info('Generating API Routes...')

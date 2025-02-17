@@ -3,7 +3,6 @@ import type { TeamModel } from './Team'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Team from './Team'
@@ -865,9 +864,6 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
-
-    if (model)
-      dispatch('accesstoken:created', model)
 
     return model
   }

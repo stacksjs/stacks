@@ -2,7 +2,6 @@ import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/d
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
@@ -852,9 +851,6 @@ export class ProjectModel {
       .executeTakeFirst()
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
-
-    if (model)
-      dispatch('project:created', model)
 
     return model
   }

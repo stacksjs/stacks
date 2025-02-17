@@ -1613,6 +1613,9 @@ export class UserModel {
       await DB.instance.insertInto('users')
         .values(filteredValues)
         .executeTakeFirstOrThrow()
+
+      if (model)
+        dispatch('user:created', model)
     }
     else {
       await this.update(this.attributes)
