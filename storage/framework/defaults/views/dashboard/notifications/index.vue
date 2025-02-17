@@ -55,33 +55,33 @@ interface ChannelStats {
 
 // Mock data for demonstration
 const notificationStats = ref<NotificationStats>({
-  total_sent: 45678,
+  total_sent: 45_678,
   delivery_rate: 98.5,
   avg_delivery_time: 1.2,
 })
 
 const channelStats = ref<Record<string, ChannelStats>>({
   email: {
-    sent: 25000,
-    delivered: 24800,
+    sent: 25_000,
+    delivered: 24_800,
     failed: 150,
     pending: 50,
   },
   sms: {
-    sent: 12000,
-    delivered: 11900,
+    sent: 12_000,
+    delivered: 11_900,
     failed: 80,
     pending: 20,
   },
   push: {
-    sent: 5000,
-    delivered: 4950,
+    sent: 5_000,
+    delivered: 4_950,
     failed: 30,
     pending: 20,
   },
   discord: {
-    sent: 2000,
-    delivered: 1990,
+    sent: 2_000,
+    delivered: 1_990,
     failed: 5,
     pending: 5,
   },
@@ -291,6 +291,11 @@ onMounted(async () => {
   await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
 })
+
+// Add this helper function before the template
+const formatNumber = (num: number): string => {
+  return num.toLocaleString()
+}
 </script>
 
 <template>
@@ -314,7 +319,7 @@ onMounted(async () => {
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
               <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
-                {{ notificationStats.total_sent.toLocaleString() }}
+                {{ formatNumber(notificationStats.total_sent) }}
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
                 <div class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
@@ -498,14 +503,14 @@ onMounted(async () => {
 
           <div class="space-y-4">
             <!-- Channel Stats -->
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
               <div v-for="(value, status) in stats" :key="status" class="text-center">
                 <div class="text-2xl font-semibold" :class="{
                   'text-blue-600 dark:text-blue-400': status === 'sent',
                   'text-green-600 dark:text-green-400': status === 'delivered',
                   'text-yellow-600 dark:text-yellow-400': status === 'pending',
                   'text-red-600 dark:text-red-400': status === 'failed'
-                }">{{ value }}</div>
+                }">{{ formatNumber(value) }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
               </div>
             </div>
