@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
-import MonacoEditor from '../../../components/MonacoEditor.vue'
 import * as d3 from 'd3'
 
 useHead({
@@ -107,7 +106,7 @@ const cloudConfig = ref<CloudConfig>({
 // Add node and link type definitions
 interface InfraNode extends d3.SimulationNodeDatum {
   id: string
-  type: 'loadbalancer' | 'server' | 'worker'
+  type: 'user' | 'loadbalancer' | 'server' | 'worker'
   label: string
   config?: ServerConfig | WorkerConfig
   x?: number
@@ -158,6 +157,9 @@ let simulation: d3.Simulation<d3.SimulationNodeDatum, undefined>
 // Add zoom state
 let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 
+// Add selected node state
+const selectedNode = ref<InfraNode | null>(null)
+
 // Function to update worker specs when size changes
 const updateWorkerSpecs = () => {
   workerConfig.value.specs = workerSizes[workerConfig.value.size]
@@ -202,9 +204,13 @@ const updateVisualization = () => {
   const nodes: InfraNode[] = []
   const links: InfraLink[] = []
 
+  // Add user/client node
+  nodes.push({ id: 'user', type: 'user', label: 'User/Client' })
+
   // Add load balancer if enabled
   if (cloudConfig.value.useLoadBalancer) {
     nodes.push({ id: 'lb', type: 'loadbalancer', label: 'Load Balancer' })
+    links.push({ source: 'user', target: 'lb' })
   }
 
   // Add servers
@@ -212,6 +218,8 @@ const updateVisualization = () => {
     nodes.push({ id: key, type: 'server', label: server.name, config: server })
     if (cloudConfig.value.useLoadBalancer) {
       links.push({ source: 'lb', target: key })
+    } else {
+      links.push({ source: 'user', target: key })
     }
   })
 
@@ -257,12 +265,17 @@ const updateVisualization = () => {
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended))
+    .on('click', (event: MouseEvent, d: InfraNode) => {
+      event.stopPropagation()
+      showNodeDetails(d)
+    })
 
   // Add circles for nodes
   node.append('circle')
     .attr('r', 30)
     .attr('fill', (d: InfraNode) => {
       switch (d.type) {
+        case 'user': return '#EC4899' // pink
         case 'loadbalancer': return '#60A5FA' // blue
         case 'server': return '#34D399' // green
         case 'worker': return '#FBBF24' // yellow
@@ -288,6 +301,7 @@ const updateVisualization = () => {
     .attr('font-size', '20px')
     .text((d: InfraNode) => {
       switch (d.type) {
+        case 'user': return '👤'
         case 'loadbalancer': return '⚖️'
         case 'server': return '🖥️'
         case 'worker': return '⚙️'
@@ -383,6 +397,11 @@ const updateVisualization = () => {
     .attr('font-size', '12px')
     .text('Reset')
     .attr('pointer-events', 'none')
+
+  // Add click handler to clear selection when clicking background
+  svg.on('click', () => {
+    selectedNode.value = null
+  })
 }
 
 // Update drag functions to work with zoom
@@ -480,6 +499,36 @@ const updateServerConfig = <T extends keyof ServerConfig>(key: string, field: T,
     cloudConfig.value.servers[key][field] = value
   }
 }
+
+// Function to show node details
+const showNodeDetails = (node: InfraNode) => {
+  selectedNode.value = node
+}
+
+// Function to format config details
+const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
+  if ('serverOS' in config) {
+    // Server config
+    return {
+      'Server Name': config.name,
+      'Domain': config.domain,
+      'Region': config.region,
+      'Type': config.type,
+      'Size': config.size,
+      'Disk Size': `${config.diskSize}GB`,
+      'OS': config.serverOS,
+    }
+  } else {
+    // Worker config
+    return {
+      'Worker Name': config.name,
+      'Size': config.size,
+      'Replicas': config.replicas,
+      'vCPU': config.specs.vcpu,
+      'RAM': `${config.specs.ram}MB`,
+    }
+  }
+}
 </script>
 
 <template>
@@ -515,7 +564,71 @@ const updateServerConfig = <T extends keyof ServerConfig>(key: string, field: T,
       <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="p-6">
           <h4 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Infrastructure Diagram</h4>
-          <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
+          <div class="relative">
+            <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
+
+            <!-- Node Details Panel -->
+            <div
+              v-if="selectedNode"
+              class="absolute top-4 right-4 w-80 bg-white dark:bg-blue-gray-700 rounded-lg shadow-lg p-4 z-10"
+              @click.stop
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {{ selectedNode.label }}
+                </h5>
+                <button
+                  @click="selectedNode = null"
+                  class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
+                >
+                  <span class="sr-only">Close</span>
+                  <div class="i-hugeicons-x-close h-5 w-5" />
+                </button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center"
+                    :class="{
+                      'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-300': selectedNode.type === 'user',
+                      'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300': selectedNode.type === 'loadbalancer',
+                      'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300': selectedNode.type === 'server',
+                      'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300': selectedNode.type === 'worker',
+                    }"
+                  >
+                    <span class="text-lg">
+                      {{ selectedNode.type === 'user' ? '👤' : selectedNode.type === 'loadbalancer' ? '⚖️' : selectedNode.type === 'server' ? '🖥️' : '⚙️' }}
+                    </span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Type</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                      {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
+                    </p>
+                  </div>
+                </div>
+
+                <template v-if="selectedNode.config">
+                  <div
+                    v-for="(value, key) in formatConfigDetails(selectedNode.config)"
+                    :key="key"
+                    class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
+                  >
+                    <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
+                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ value }}</span>
+                  </div>
+                </template>
+
+                <div v-else-if="selectedNode.type === 'user'" class="text-sm text-gray-500 dark:text-gray-400">
+                  Entry point for all incoming traffic to your infrastructure.
+                </div>
+                <div v-else-if="selectedNode.type === 'loadbalancer'" class="text-sm text-gray-500 dark:text-gray-400">
+                  Distributes incoming traffic across multiple servers for improved reliability and performance.
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -748,31 +861,6 @@ const updateServerConfig = <T extends keyof ServerConfig>(key: string, field: T,
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Code View -->
-      <div v-else class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="mb-4">
-            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">CDK Code</h4>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Generated AWS CDK TypeScript code for your infrastructure
-            </p>
-          </div>
-          <MonacoEditor
-            v-model="cdkCode"
-            language="typescript"
-            theme="vs-dark"
-            :options="{
-              readOnly: true,
-              minimap: { enabled: false },
-              lineNumbers: 'on',
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-            }"
-            class="h-[600px] w-full rounded-md overflow-hidden"
-          />
         </div>
       </div>
     </div>

@@ -780,7 +780,6 @@
         "@tauri-apps/cli": "^1.6.3",
         "@types/d3": "^7.4.3",
         "d3": "^7.9.0",
-        "monaco-editor": "^0.52.2",
         "unified-network": "^0.6.4",
         "vue": "^3.5.13",
       },
@@ -4283,8 +4282,6 @@
     "mnemonist": ["mnemonist@0.38.3", "", { "dependencies": { "obliterator": "^1.6.1" } }, "sha512-2K9QYubXx/NAjv4VLq1d1Ly8pWNC5L3BrixtdkyTegXWJIqY+zLNDhhX/A+ZwWt70tB1S8H4BE8FLYEFyNoOBw=="],
 
     "module-from-string": ["module-from-string@3.3.1", "", { "dependencies": { "esbuild": "^0.23.0", "nanoid": "^3.3.7" } }, "sha512-nFdOQ8NHJXR7ITj2JAwjpPSgX3vjbG2LfBL1YA5gil8sLkFTFa5pmV9P1NBGRik65u+NNyGEeUMcwkbqwPJ/ew=="],
-
-    "monaco-editor": ["monaco-editor@0.52.2", "", {}, "sha512-GEQWEZmfkOGLdd3XK8ryrfWz3AIP8YymVXiPHEdewrUq7mh0qrKrfHLNCXcbB6sTnMLnOZ3ztSiKcciFUkIJwQ=="],
 
     "mri": ["mri@1.2.0", "", {}, "sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA=="],
 
