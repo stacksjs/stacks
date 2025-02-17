@@ -200,14 +200,22 @@ const handleRetry = async (jobId: string) => {
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ job.started_at }}</td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <button
-                        v-if="job.status === 'failed'"
-                        type="button"
-                        class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
-                        @click="handleRetry(job.id)"
-                      >
-                        Retry
-                      </button>
+                      <div class="flex items-center justify-end space-x-3">
+                        <router-link
+                          :to="`/jobs/${job.id}`"
+                          class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                        >
+                          View
+                        </router-link>
+                        <button
+                          v-if="job.status === 'failed'"
+                          type="button"
+                          class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                          @click="handleRetry(job.id)"
+                        >
+                          Retry
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
