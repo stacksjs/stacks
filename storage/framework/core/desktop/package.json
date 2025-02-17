@@ -55,6 +55,9 @@
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^1.6.0",
     "@tauri-apps/cli": "^1.6.3",
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
+    "monaco-editor": "^0.52.2",
     "unified-network": "^0.6.4",
     "vue": "^3.5.13"
   }
