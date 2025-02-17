@@ -1644,8 +1644,7 @@ export async function generateModelString(
 
           const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
-          if (model)
-            dispatch('${formattedModelName}:created', model)
+          ${mittCreateStatement}
 
           return model
         }
@@ -2288,6 +2287,8 @@ export async function generateModelString(
             await DB.instance.insertInto('${tableName}')
               .values(filteredValues)
               .executeTakeFirstOrThrow()
+
+            ${mittCreateStatement}
           }
           else {
             await this.update(this.attributes)

@@ -396,6 +396,27 @@ export async function writeModelAttributes(): Promise<void> {
   writer.write(fieldString)
 }
 
+export async function writeModelEvents(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  let fieldString = `export interface ModelEvents { \n`
+  const attributesTypeFile = Bun.file(path.frameworkPath('types/events.ts'))
+
+  const processedFields = new Set<string>()
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+
+    const modelName = getModelName(model, modelPath)
+  }
+
+  fieldString += '} \n'
+
+  const writer = attributesTypeFile.writer()
+
+  writer.write(fieldString)
+}
+
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
 
@@ -1071,6 +1092,15 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.info('Writing Model Attributes...')
       await writeModelAttributes()
       log.success('Wrote Model Attributes')
+    }
+    catch (error) {
+      handleError('Error while writing Model Requests', error)
+    }
+
+    try {
+      log.info('Writing Model Events...')
+      await writeModelEvents()
+      log.success('Wrote Model Events')
     }
     catch (error) {
       handleError('Error while writing Model Requests', error)
