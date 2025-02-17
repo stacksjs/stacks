@@ -118,7 +118,6 @@ const sectionContent = {
   app: {
     items: [
       { to: '/deployments', icon: 'i-hugeicons-rocket', text: 'Deployments' },
-      { to: '/cloud', icon: 'i-hugeicons-cloud', text: 'Cloud' },
       { to: '/requests', icon: 'i-hugeicons-api', text: 'Requests' },
       { to: '/realtime', icon: 'i-hugeicons-link-03', text: 'Realtime' },
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
@@ -136,6 +135,7 @@ const sectionContent = {
   },
   management: {
     items: [
+      { to: '/cloud', icon: 'i-hugeicons-cloud', text: 'Cloud' },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
       { to: '/emails', icon: 'i-hugeicons-at', text: 'Emails' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
