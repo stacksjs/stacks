@@ -1,5 +1,6 @@
 // thanks to mitt for the base of this wonderful functional event emitter
 
+import type { ModelEvents } from '@stacksjs/types'
 import type { UserModel } from '../../../orm/src/models/User'
 
 export type EventType = string | symbol
@@ -143,13 +144,10 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 // TODO: need to create an action that auto generates this Events type from the ./app/Events
-interface StacksEvents {
+interface StacksEvents extends ModelEvents {
   'user:registered': UserModel
   'user:logged-in': UserModel
   'user:logged-out': UserModel
-  'user:updated': Partial<UserModel>
-  'user:created': Partial<UserModel>
-  'user:deleted': Partial<UserModel>
   'user:password-reset': UserModel
   'user:password-changed': UserModel
 }

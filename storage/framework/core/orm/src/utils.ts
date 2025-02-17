@@ -1,5 +1,6 @@
 import type {
   Attributes,
+  AttributesElements,
   BaseRelation,
   FieldArrayElement,
   Model,
@@ -235,7 +236,7 @@ export async function fetchOtherModelRelations(modelName?: string): Promise<Rela
   return modelRelations
 }
 
-export function getHiddenAttributes(attributes: Attributes | undefined): string[] {
+export function getHiddenAttributes(attributes: AttributesElements | undefined): string[] {
   if (attributes === undefined)
     return []
 
@@ -426,7 +427,7 @@ export async function writeModelEvents(): Promise<void> {
 
   eventString += `
   ${observerImports} \n\n
-    
+
   export interface ModelEvents {\n 
     ${observerString}
   }`
