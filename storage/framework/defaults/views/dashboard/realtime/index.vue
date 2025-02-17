@@ -349,6 +349,93 @@ const activeConnections = ref([
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <div class="px-4 lg:px-8 sm:px-6">
+      <!-- Last 30 Days Stats -->
+      <div class="mb-8">
+        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+          Last 30 days
+        </h3>
+
+        <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-hugeicons-link-03 h-6 w-6 text-white" />
+              </div>
+
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+                Connections Triggered
+              </p>
+            </dt>
+
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ stats.connectionsTriggered }}
+              </p>
+
+              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+                <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+                </svg>
+                <span class="sr-only">Increased by</span>
+                {{ stats.connectionsChange }}
+              </p>
+            </dd>
+          </div>
+
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-hugeicons-alarm-clock h-6 w-6 text-white" />
+              </div>
+
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+                Average Latency
+              </p>
+            </dt>
+
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ stats.avgLatency }}
+              </p>
+
+              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+                <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+                </svg>
+                <span class="sr-only">Decreased by</span>
+                {{ stats.latencyChange }}
+              </p>
+            </dd>
+          </div>
+
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-hugeicons-checkmark-circle-01 h-6 w-6 text-white" />
+              </div>
+
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+                Success Rate
+              </p>
+            </dt>
+
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                {{ stats.successRate }}
+              </p>
+
+              <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
+                <svg class="h-5 w-5 flex-shrink-0 self-center text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
+                </svg>
+                <span class="sr-only">Decreased by</span>
+                {{ stats.successChange }}
+              </p>
+            </dd>
+          </div>
+        </dl>
+      </div>
+
       <!-- App Selector -->
       <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow p-4">
         <div class="flex items-center gap-4">
