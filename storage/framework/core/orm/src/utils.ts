@@ -416,9 +416,9 @@ export async function writeModelEvents(): Promise<void> {
 
     if (typeof observer === 'boolean') {
       if (observer) {
-        observerString += `'${formattedModelName}:created': Partial<${modelName}Model>\n`
-        observerString += `'${formattedModelName}:updated': Partial<${modelName}Model>\n`
-        observerString += `'${formattedModelName}:deleted': Partial<${modelName}Model>\n`
+        observerString += `'${formattedModelName}:created': ${modelName}Model\n`
+        observerString += `'${formattedModelName}:updated': ${modelName}Model\n`
+        observerString += `'${formattedModelName}:deleted': ${modelName}Model\n`
 
         observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'`
       }

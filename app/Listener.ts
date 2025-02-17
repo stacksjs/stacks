@@ -1,29 +1,30 @@
-import { listen } from '@stacksjs/events'
+import type { StacksEvents, WildcardHandler } from '@stacksjs/events'
+import { handleError } from '@stacksjs/error-handling'
+import { emitter } from '@stacksjs/events'
 import { path as p } from '@stacksjs/path'
 import events from './Events'
 
 export async function handleEvents() {
-  for (const key in events) {
-    if (Object.hasOwn(events, key)) {
-      const eventKey = key
-      const eventListeners = events[key]
+  emitter.on('*', listenEvents as WildcardHandler<StacksEvents>)
+}
 
-      for (const eventListener of eventListeners) {
-        const modulePath = eventListener
+async function listenEvents(type: keyof typeof events, event: any) {
+  const eventListeners = events[type]
 
-        if (isFunction(modulePath)) {
-          await modulePath()
-        }
-        else {
-          try {
-            const actionModule = await import(p.projectPath(`Actions/${modulePath}.ts`))
+  if (!eventListeners)
+    return
 
-            listen(eventKey, e => actionModule.default.handle(e))
-          }
-          catch (error) {
-            handleError(`Module not found: ${modulePath}`, error)
-          }
-        }
+  for (const eventListener of eventListeners) {
+    if (isFunction(eventListener)) {
+      await eventListener(event)
+    }
+    else {
+      try {
+        const actionModule = await import(p.projectPath(`Actions/${eventListener}.ts`))
+        await actionModule.default.handle(event)
+      }
+      catch (error) {
+        handleError(`Module not found: ${eventListener}`, error)
       }
     }
   }

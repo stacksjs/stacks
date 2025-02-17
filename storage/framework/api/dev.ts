@@ -5,6 +5,7 @@ import { log, runCommandSync } from '@stacksjs/cli'
 import { app, ports } from '@stacksjs/config'
 import { join, path } from '@stacksjs/path'
 import { serve } from '@stacksjs/router'
+import { handleEvents } from '../../../app/Listener'
 
 declare global {
   let counter: number
@@ -65,6 +66,8 @@ serve({
   port: ports.api || 3008,
   timezone: app.timezone || 'UTC',
 })
+
+await handleEvents()
 
 process.on('SIGINT', () => {
   log.info(`Exited using Ctrl-C`)

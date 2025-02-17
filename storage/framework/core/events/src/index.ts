@@ -104,6 +104,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      */
     emit<Key extends keyof Events>(type: Key, evt?: Events[Key]) {
       let handlers = (all as EventHandlerMap<Events>).get(type)
+
       if (handlers) {
         ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
           if (evt !== undefined)
@@ -111,6 +112,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
         })
       }
       handlers = (all as EventHandlerMap<Events>).get('*')
+
       if (handlers) {
         ;(handlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
           if (evt !== undefined)
@@ -144,7 +146,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 // TODO: need to create an action that auto generates this Events type from the ./app/Events
-interface StacksEvents extends ModelEvents {
+export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
   'user:registered': UserModel
   'user:logged-in': UserModel
   'user:logged-out': UserModel
@@ -153,13 +155,19 @@ interface StacksEvents extends ModelEvents {
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()
+
+// Export clean, typed methods
+type Dispatch = <Key extends keyof StacksEvents>(type: Key, event: StacksEvents[Key]) => void
+type Listen = <Key extends keyof StacksEvents>(type: Key, handler: Handler<StacksEvents[Key]>) => void
+type Off = <Key extends keyof StacksEvents>(type: Key, handler?: Handler<StacksEvents[Key]>) => void
+
 const emitter: Emitter<StacksEvents> = events
-const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
-const useEvents: any = events
-const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
 
-const listen: typeof emitter.on = emitter.on.bind(emitter)
-const off: typeof emitter.off = emitter.off.bind(emitter)
-const all: typeof emitter.all = emitter.all
+const useEvents: Emitter<StacksEvents> = events
+const dispatch: Dispatch = emitter.emit
+const all: EventHandlerMap<StacksEvents> = emitter.all
+const listen: Listen = emitter.on
+const useListen: Listen = emitter.on
+const off: Off = emitter.off
 
-export { all, dispatch, events, listen, mitt, off, useEvent, useEvents }
+export { all, dispatch, emitter, events, listen, mitt, off, useEvents, useListen }
