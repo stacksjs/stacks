@@ -242,19 +242,38 @@ const updateVisualization = () => {
 
   // Create force simulation with proper typing
   simulation = d3.forceSimulation<InfraNode>(nodes)
-    .force('link', d3.forceLink<InfraNode, InfraLink>(links).id(d => d.id).distance(100))
-    .force('charge', d3.forceManyBody<InfraNode>().strength(-300))
-    .force('center', d3.forceCenter<InfraNode>(width / 2, height / 2))
-    .force('collision', d3.forceCollide<InfraNode>().radius(50))
+    .force('link', d3.forceLink<InfraNode, InfraLink>(links)
+      .id(d => d.id)
+      .distance(150)
+      .strength(1))
+    .force('charge', d3.forceManyBody().strength(-400))
+    .force('x', d3.forceX<InfraNode>(d => {
+      switch (d.type) {
+        case 'user': return width * 0.2
+        case 'loadbalancer': return width * 0.4
+        case 'server': return width * 0.6
+        case 'worker': return width * 0.8
+        default: return width * 0.5
+      }
+    }).strength(0.8))
+    .force('y', d3.forceY<InfraNode>(d => {
+      if (d.type === 'server' || d.type === 'worker') {
+        const index = nodes.filter(n => n.type === 'server' || n.type === 'worker').indexOf(d)
+        return (height / 2) + (index * 40) - (nodes.length * 10)
+      }
+      return height / 2
+    }).strength(0.8))
+    .force('collision', d3.forceCollide<InfraNode>().radius(40))
 
   // Create links
   const link = zoomGroup.append('g')
     .selectAll<SVGLineElement, InfraLink>('line')
     .data(links)
     .join('line')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
+    .attr('stroke', '#D1D5DB') // gray-300 for better visibility
+    .attr('stroke-opacity', 0.8)
     .attr('stroke-width', 2)
+    .attr('stroke-dasharray', '4,4')
 
   // Create nodes
   const node = zoomGroup.append('g')
@@ -275,39 +294,62 @@ const updateVisualization = () => {
     .attr('r', 30)
     .attr('fill', (d: InfraNode) => {
       switch (d.type) {
-        case 'user': return '#EC4899' // pink
-        case 'loadbalancer': return '#60A5FA' // blue
-        case 'server': return '#34D399' // green
-        case 'worker': return '#FBBF24' // yellow
-        default: return '#9CA3AF' // gray
+        case 'user': return '#FCE7F3' // pink-100
+        case 'loadbalancer': return '#DBEAFE' // blue-100
+        case 'server': return '#D1FAE5' // green-100
+        case 'worker': return '#FEF3C7' // yellow-100
+        default: return '#F3F4F6' // gray-100
       }
     })
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 2)
+    .attr('stroke', (d: InfraNode) => {
+      switch (d.type) {
+        case 'user': return '#EC4899' // pink-500
+        case 'loadbalancer': return '#3B82F6' // blue-500
+        case 'server': return '#10B981' // green-500
+        case 'worker': return '#F59E0B' // yellow-500
+        default: return '#6B7280' // gray-500
+      }
+    })
+    .attr('stroke-width', 3)
 
-  // Add labels
-  node.append('text')
-    .text((d: InfraNode) => d.label)
-    .attr('text-anchor', 'middle')
-    .attr('dy', 40)
-    .attr('fill', '#fff')
-    .attr('font-size', '12px')
+  // Add icons with colored backgrounds
+  node.append('circle')
+    .attr('r', 20)
+    .attr('fill', (d: InfraNode) => {
+      switch (d.type) {
+        case 'user': return '#BE185D' // pink-700
+        case 'loadbalancer': return '#1D4ED8' // blue-700
+        case 'server': return '#047857' // green-700
+        case 'worker': return '#B45309' // yellow-700
+        default: return '#374151' // gray-700
+      }
+    })
 
   // Add icons
   node.append('text')
     .attr('text-anchor', 'middle')
-    .attr('dy', 5)
+    .attr('dy', 7)
     .attr('fill', '#fff')
-    .attr('font-size', '20px')
+    .attr('font-size', '18px')
+    .attr('font-family', 'sans-serif')
     .text((d: InfraNode) => {
       switch (d.type) {
-        case 'user': return '👤'
+        case 'user': return '👥'
         case 'loadbalancer': return '⚖️'
         case 'server': return '🖥️'
         case 'worker': return '⚙️'
         default: return '📦'
       }
     })
+
+  // Update labels with better contrast
+  node.append('text')
+    .text((d: InfraNode) => d.label)
+    .attr('text-anchor', 'middle')
+    .attr('dy', 50)
+    .attr('fill', '#1F2937') // gray-800
+    .attr('font-size', '12px')
+    .attr('font-weight', '500')
 
   // Update positions on simulation tick
   simulation.on('tick', () => {
@@ -542,22 +584,6 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
         <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
           Design and manage your cloud infrastructure visually or using CDK
         </p>
-      </div>
-
-      <!-- View Toggle -->
-      <div class="mb-8 flex items-center gap-4">
-        <button
-          v-for="view in ['visual', 'code']"
-          :key="view"
-          @click="activeView = view as 'visual' | 'code'"
-          :class="{
-            'px-4 py-2 text-sm font-medium rounded-md': true,
-            'bg-blue-600 text-white': activeView === view,
-            'bg-gray-100 text-gray-700 dark:bg-blue-gray-700 dark:text-gray-300': activeView !== view,
-          }"
-        >
-          {{ view.charAt(0).toUpperCase() + view.slice(1) }} Builder
-        </button>
       </div>
 
       <!-- Infrastructure Diagram -->
