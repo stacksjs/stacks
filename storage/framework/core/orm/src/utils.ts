@@ -362,7 +362,7 @@ export async function writeTableNames(): Promise<void> {
 export async function writeModelAttributes(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
   let fieldString = `export interface Attributes { \n`
-  const attributesTypeFile = Bun.file(path.frameworkPath('types/attributes.ts'))
+  const attributesTypeFile = path.frameworkPath('types/attributes.ts')
 
   const processedFields = new Set<string>()
 
@@ -392,9 +392,7 @@ export async function writeModelAttributes(): Promise<void> {
 
   fieldString += '} \n'
 
-  const writer = attributesTypeFile.writer()
-
-  writer.write(fieldString)
+  await fs.writeFile(attributesTypeFile, fieldString)
 }
 
 export async function writeModelEvents(): Promise<void> {
@@ -439,8 +437,6 @@ export async function writeModelEvents(): Promise<void> {
 
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-
-  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
   let importTypes = ``
   let importTypesString = ``
@@ -597,9 +593,9 @@ export async function writeModelRequest(): Promise<void> {
 
   typeString += `export type ModelRequest = ${importTypesString}`
 
-  const requestWrite = requestD.writer()
+  const requestD = path.frameworkPath('types/requests.d.ts')
 
-  requestWrite.write(typeString)
+  await fs.writeFile(requestD, typeString)
 }
 
 export async function writeOrmActions(apiRoute: string, modelName: string, actionPath?: string): Promise<void> {
@@ -1049,6 +1045,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '}'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
+
   const writer = file.writer()
 
   writer.write(text)
