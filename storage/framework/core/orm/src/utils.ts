@@ -935,6 +935,12 @@ export async function deleteAttributeTypes(): Promise<void> {
   await fs.writeFile(typeFile, '')
 }
 
+export async function deleteModelEvents(): Promise<void> {
+  const eventFile = path.frameworkPath('types/events.ts')
+
+  await fs.writeFile(eventFile, '')
+}
+
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
   await fs.writeFile(requestD, '')
@@ -1071,6 +1077,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Deleting old attribute types...')
     await deleteAttributeTypes()
     log.success('Deleted old attribute types')
+
+    log.info('Deleting old model events...')
+    await deleteModelEvents()
+    log.success('Deleted old model events')
 
     log.info('Deleting old Model Requests...')
     await deleteExistingModelRequest(modelStringFile)
