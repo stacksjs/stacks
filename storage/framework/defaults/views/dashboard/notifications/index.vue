@@ -492,20 +492,20 @@ const formatNumber = (num: number): string => {
         </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 sm:grid-cols-2">
+      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 sm:grid-cols-2">
         <div v-for="(stats, name) in channelStats" :key="name" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
+          <div class="flex items-center justify-between mb-6">
+            <h4 class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
               <div :class="getChannelIcon(name)" class="h-4 w-4" />
               <span class="capitalize">{{ name }}</span>
             </h4>
           </div>
 
-          <div class="space-y-4">
+          <div class="space-y-6">
             <!-- Channel Stats -->
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-4 gap-4">
               <div v-for="(value, status) in stats" :key="status" class="text-center">
-                <div class="text-2xl font-semibold" :class="{
+                <div class="text-2xl font-semibold font-mono" :class="{
                   'text-blue-600 dark:text-blue-400': status === 'sent',
                   'text-green-600 dark:text-green-400': status === 'delivered',
                   'text-yellow-600 dark:text-yellow-400': status === 'pending',
@@ -516,13 +516,13 @@ const formatNumber = (num: number): string => {
             </div>
 
             <!-- Delivery Progress -->
-            <div class="h-2 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
+            <div class="h-2.5 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
               <div class="flex h-full">
                 <div class="bg-green-500 h-full" :style="{ width: `${(stats.delivered / stats.sent) * 100}%` }" />
                 <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / stats.sent) * 100}%` }" />
               </div>
             </div>
-            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
               <span>Success Rate: {{ ((stats.delivered / stats.sent) * 100).toFixed(1) }}%</span>
               <span>Failure Rate: {{ ((stats.failed / stats.sent) * 100).toFixed(1) }}%</span>
             </div>

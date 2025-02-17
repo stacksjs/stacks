@@ -532,7 +532,7 @@ const handleRetry = async (job: Job) => {
             <!-- Queue Stats -->
             <div class="grid grid-cols-3 gap-4">
               <div v-for="(value, status) in stats" :key="status" class="text-center">
-                <div class="text-2xl font-semibold" :class="{
+                <div class="text-2xl font-semibold font-mono" :class="{
                   'text-blue-600 dark:text-blue-400': status === 'queued',
                   'text-yellow-600 dark:text-yellow-400': status === 'processing',
                   'text-green-600 dark:text-green-400': status === 'processed',
