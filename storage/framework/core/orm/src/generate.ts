@@ -1849,11 +1849,11 @@ export async function generateModelString(
   
         ${whereStatements}
   
-        whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        whereIn(column: string, values: any[]): ${modelName}Model {
           return ${modelName}Model.whereIn(column, values)
         }
   
-        static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        static whereIn(column: string, values: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
@@ -1865,7 +1865,7 @@ export async function generateModelString(
           return instance
         }
 
-        applyWhereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        applyWhereBetween(column: string, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
             throw new HttpError(500, 'Range must have exactly two values: [min, max]')
           }

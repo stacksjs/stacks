@@ -734,7 +734,7 @@ export class AccessTokenModel {
   static doesntHave(relation: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {

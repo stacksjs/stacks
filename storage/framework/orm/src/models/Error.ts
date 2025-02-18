@@ -730,7 +730,7 @@ export class ErrorModel {
   static doesntHave(relation: string): ErrorModel {
     const instance = new ErrorModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {

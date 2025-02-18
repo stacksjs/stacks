@@ -716,7 +716,7 @@ export class PostModel {
   static doesntHave(relation: string): PostModel {
     const instance = new PostModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {

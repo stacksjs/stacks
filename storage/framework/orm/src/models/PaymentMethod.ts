@@ -778,7 +778,7 @@ export class PaymentMethodModel {
   static doesntHave(relation: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {

@@ -757,7 +757,7 @@ export class ActivityModel {
   static doesntHave(relation: string): ActivityModel {
     const instance = new ActivityModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {

@@ -11,7 +11,7 @@ export default new Action({
     const id = request.getParam('id')
 
     const user = await User.whereDoesntHave('posts', (query) => {
-      return query.where('job_title', 'Regional Brand Executive')
+      query.where('job_title', 'Regional Brand Executive')
     }).first()
 
     // user?.update({ job_title: 'Senior Software Engineer' })

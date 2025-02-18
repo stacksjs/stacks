@@ -798,7 +798,7 @@ export class SubscriptionModel {
   static doesntHave(relation: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriptionModel {

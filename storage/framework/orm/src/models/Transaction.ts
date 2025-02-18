@@ -767,7 +767,7 @@ export class TransactionModel {
   static doesntHave(relation: string): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {

@@ -771,7 +771,7 @@ export class DeploymentModel {
   static doesntHave(relation: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {

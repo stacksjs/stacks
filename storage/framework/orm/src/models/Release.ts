@@ -694,7 +694,7 @@ export class ReleaseModel {
   static doesntHave(relation: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {

@@ -712,7 +712,7 @@ export class SubscriberEmailModel {
   static doesntHave(relation: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberEmailModel {

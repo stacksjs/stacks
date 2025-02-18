@@ -758,7 +758,7 @@ export class ProductModel {
   static doesntHave(relation: string): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {

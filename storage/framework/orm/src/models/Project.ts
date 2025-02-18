@@ -721,7 +721,7 @@ export class ProjectModel {
   static doesntHave(relation: string): ProjectModel {
     const instance = new ProjectModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {

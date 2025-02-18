@@ -765,7 +765,7 @@ export class TeamModel {
   static doesntHave(relation: string): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TeamModel {

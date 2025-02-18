@@ -730,7 +730,7 @@ export class FailedJobModel {
   static doesntHave(relation: string): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
   applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): FailedJobModel {
