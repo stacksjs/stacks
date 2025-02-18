@@ -147,11 +147,11 @@ export default function mitt<Events extends Record<EventType, unknown>>(
 
 // TODO: need to create an action that auto generates this Events type from the ./app/Events
 export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
-  'user:registered': UserModel
-  'user:logged-in': UserModel
-  'user:logged-out': UserModel
-  'user:password-reset': UserModel
-  'user:password-changed': UserModel
+  'user:registered': Partial<UserModel>
+  'user:logged-in': Partial<UserModel>
+  'user:logged-out': Partial<UserModel>
+  'user:password-reset': Partial<UserModel>
+  'user:password-changed': Partial<UserModel>
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()
