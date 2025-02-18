@@ -24,6 +24,7 @@ interface ServerConfig {
   bunVersion?: string
   database?: string
   databaseName?: string
+  searchEngine?: string
   userData?: string
 }
 
@@ -652,17 +653,20 @@ export class StacksInfrastructureStack extends cdk.Stack {
 const addServer = () => {
   const id = Object.keys(cloudConfig.value.servers).length + 1
   const key = `app${id}`
-  cloudConfig.value.servers[key] = {
-    name: `app-server-${id}`,
+  const newServer: ServerConfig = {
+    name: `app-${generateServerName('app')}`,
     domain: 'stacksjs.org',
     region: 'us-east-1',
     type: 'app',
-    size: 't3.micro',
+    size: 't3.micro' as InstanceType,
     diskSize: 20,
     serverOS: defaultServerOS,
     bunVersion: defaultBunVersion,
+    database: 'sqlite',
+    databaseName: 'stacks',
+    searchEngine: 'meilisearch'
   }
-  // Set edit mode for new server
+  cloudConfig.value.servers[key] = newServer
   editMode.value[key] = true
 }
 
@@ -730,6 +734,72 @@ const saveWorkerConfig = async () => {
 const formatFieldName = (field: string) => {
   return field.charAt(0).toUpperCase() + field.slice(1)
 }
+
+// Add these functions after the formatFieldName function
+const adjectives = [
+  'weathered', 'cosmic', 'stellar', 'quantum', 'nebula', 'astral', 'galactic', 'lunar', 'solar', 'celestial',
+  'mystic', 'ethereal', 'void', 'nova', 'pulsar', 'quasar', 'cosmic', 'starlit', 'orbital', 'meteor',
+  'ancient', 'blazing', 'crystal', 'digital', 'electric', 'fusion', 'glowing', 'hyper', 'infinite', 'kinetic',
+  'luminous', 'magnetic', 'neon', 'omega', 'plasma', 'radiant', 'sonic', 'temporal', 'ultra', 'virtual',
+  'wild', 'xenon', 'zero', 'atomic', 'binary', 'cyber', 'dynamic', 'eternal', 'flux', 'gamma'
+]
+
+const nouns = [
+  'galaxy', 'nebula', 'star', 'comet', 'aurora', 'horizon', 'nova', 'zenith', 'cosmos', 'orbit',
+  'vertex', 'prism', 'nexus', 'cipher', 'matrix', 'beacon', 'pulse', 'echo', 'flux', 'core',
+  'aegis', 'blade', 'cloud', 'dawn', 'edge', 'forge', 'grid', 'helix', 'iris', 'jade',
+  'knight', 'light', 'mist', 'node', 'oasis', 'path', 'quark', 'rift', 'sage', 'titan',
+  'unity', 'vortex', 'wave', 'xray', 'yeti', 'zephyr', 'atlas', 'byte', 'crest', 'delta'
+]
+
+const generateServerName = (type: string) => {
+  const adj = adjectives[Math.floor(Math.random() * adjectives.length)]
+  const noun = nouns[Math.floor(Math.random() * nouns.length)]
+  return `${adj}-${noun}`
+}
+
+// Update server name when type changes
+const updateServerName = (server: ServerConfig, type: string) => {
+  const prefix = type === 'app' ? 'app' :
+    type === 'web' ? 'web' :
+    type === 'worker' ? 'worker' :
+    type === 'cache' ? 'cache' :
+    type === 'database' ? 'db' :
+    type === 'search' ? 'search' :
+    type === 'loadbalancer' ? 'lb' : 'server'
+
+  server.name = `${prefix}-${generateServerName(type)}`
+}
+
+// Update the updateServerDefaults function
+const updateServerDefaults = (server: ServerConfig) => {
+  // Reset database and search engine based on server type
+  if (server.type === 'web') {
+    server.database = ''
+    server.searchEngine = ''
+  } else if (server.type === 'loadbalancer' || server.type === 'cache') {
+    server.database = ''
+    server.searchEngine = ''
+    server.bunVersion = ''
+  } else if (server.type === 'database') {
+    server.searchEngine = ''
+    server.bunVersion = ''
+    server.database = server.database || 'sqlite'
+    server.databaseName = server.databaseName || 'stacks'
+  } else if (server.type === 'search') {
+    server.database = ''
+    server.databaseName = ''
+    server.bunVersion = ''
+    server.searchEngine = server.searchEngine || 'meilisearch'
+  }
+}
+
+// Add a watcher for server type changes
+watch(() => Object.values(cloudConfig.value.servers), (servers) => {
+  servers.forEach(server => {
+    updateServerDefaults(server)
+  })
+}, { deep: true })
 </script>
 
 <template>
@@ -886,11 +956,20 @@ const formatFieldName = (field: string) => {
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-              <input
-                v-model="workerConfig.name"
-                type="text"
-                class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
-              >
+              <div class="flex gap-2">
+                <input
+                  v-model="workerConfig.name"
+                  type="text"
+                  class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                >
+                <button
+                  @click="workerConfig.name = generateServerName('worker')"
+                  type="button"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-200"
+                >
+                  <div class="i-heroicons-sparkles w-5 h-5"></div>
+                </button>
+              </div>
             </div>
 
             <div>
@@ -1060,11 +1139,20 @@ const formatFieldName = (field: string) => {
                 <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-                    <input
-                      v-model="server.name"
-                      type="text"
-                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
-                    >
+                    <div class="flex gap-2">
+                      <input
+                        v-model="server.name"
+                        type="text"
+                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                      >
+                      <button
+                        @click="server.name = generateServerName(server.type)"
+                        type="button"
+                        class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-200"
+                      >
+                        <div class="i-heroicons-sparkles w-5 h-5"></div>
+                      </button>
+                    </div>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Domain</label>
@@ -1091,6 +1179,7 @@ const formatFieldName = (field: string) => {
                       <select
                         v-model="server.type"
                         :disabled="!editMode[key]"
+                        @change="updateServerName(server, server.type)"
                         class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option v-for="type in serverTypes" :key="type.value" :value="type.value">
@@ -1099,31 +1188,31 @@ const formatFieldName = (field: string) => {
                       </select>
                     </div>
                   </div>
-                  <div>
+                  <div v-if="['app', 'web', 'worker'].includes(server.type)">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bun Version</label>
                     <select
                       v-model="server.bunVersion"
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
+                      <option value="" disabled>Select a version</option>
                       <option v-for="version in bunVersions" :key="version" :value="version">
                         {{ version }}
                       </option>
                     </select>
                   </div>
-                  <div>
+                  <div v-if="!['loadbalancer', 'cache', 'search', 'database'].includes(server.type)">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database</label>
                     <select
                       v-model="server.database"
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
-                      <option value="">None</option>
+                      <option value="" v-if="server.type !== 'database'">None</option>
                       <option value="mysql">MySQL</option>
                       <option value="postgresql">PostgreSQL</option>
                       <option value="sqlite">SQLite</option>
-                      <option value="mongodb">MongoDB</option>
                     </select>
                   </div>
-                  <div v-if="server.database">
+                  <div v-if="server.database && !['loadbalancer', 'cache', 'search'].includes(server.type)">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database Name</label>
                     <input
                       v-model="server.databaseName"
@@ -1151,6 +1240,17 @@ const formatFieldName = (field: string) => {
                       min="1"
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
+                  </div>
+                  <div v-if="!['loadbalancer', 'cache', 'search', 'database'].includes(server.type)">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Engine</label>
+                    <select
+                      v-model="server.searchEngine"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    >
+                      <option value="">None</option>
+                      <option value="meilisearch">Meilisearch</option>
+                      <option value="typesense">Typesense</option>
+                    </select>
                   </div>
                   <div class="sm:col-span-2 lg:col-span-3">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Data Script</label>
