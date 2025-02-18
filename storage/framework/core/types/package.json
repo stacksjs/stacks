@@ -57,7 +57,7 @@
     "@types/minimatch": "^5.1.2",
     "@types/nprogress": "^0.2.3",
     "@vinejs/vine": "^3.0.0",
-    "aws-cdk-lib": "^2.178.2",
+    "aws-cdk-lib": "^2.179.0",
     "cac": "^6.7.14",
     "markdown-it": "^14.1.0",
     "meilisearch": "^0.49.0",
