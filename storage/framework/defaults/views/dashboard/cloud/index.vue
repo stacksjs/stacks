@@ -113,44 +113,44 @@ const serverTypes: ServerType[] = [
   {
     value: 'app',
     label: 'Application Server',
-    badges: ['Bun', 'Nginx', 'Redis', 'Memcached', 'Search Engine'],
+    badges: ['Bun', 'Database', 'Nginx', 'Redis', 'Memcached', 'Search Engine'],
     description: 'These servers are meant to be networked to dedicated cache or database servers.'
   },
   {
     value: 'web',
     label: 'Web Server',
     badges: ['Bun', 'Nginx'],
-    description: 'A secured web server with Nginx.'
+    description: 'A secure Nginx web server.'
   },
   {
     value: 'worker',
     label: 'Worker Server',
     badges: ['Bun'],
-    description: 'Connect to your local database / cache server to keep your queued jobs processing quickly.'
+    description: 'A dedicated worker server for processing queued jobs.'
   },
   {
     value: 'cache',
     label: 'Cache Server',
     badges: ['Redis', 'Memcached'],
-    description: 'Dedicated cache server for improved performance.'
+    description: 'A dedicated cache server for improved performance.'
   },
   {
     value: 'database',
     label: 'Database Server',
     badges: ['Database'],
-    description: 'Separate your app from your data with a dedicated database. Choose from MySQL, PostgreSQL, or MariaDB.'
+    description: 'A dedicated database server for your services.'
   },
   {
     value: 'search',
     label: 'Search Server',
     badges: ['Search Engine', 'Nginx'],
-    description: 'Search your data with Meilisearch.'
+    description: 'A dedicated search server for your services.'
   },
   {
     value: 'loadbalancer',
     label: 'Load Balancer',
     badges: ['Nginx'],
-    description: 'Share server load with a load balancer. Distribute traffic between two or more servers.'
+    description: 'A load balancer to distribute traffic between two or more servers.'
   }
 ]
 
@@ -921,14 +921,23 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                 <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Servers</h4>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your application servers and their specifications.</p>
               </div>
-              <button
-                @click="addServer"
-                type="button"
-                class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
-              >
-                <span class="text-lg">+</span>
-                Add Server
-              </button>
+              <div class="flex items-center gap-4">
+                <router-link
+                  to="servers"
+                  class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+                >
+                  View All
+                  <div class="i-heroicons-arrow-right w-4 h-4"></div>
+                </router-link>
+                <button
+                  @click="addServer"
+                  type="button"
+                  class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
+                >
+                  <span class="text-lg">+</span>
+                  Add Server
+                </button>
+              </div>
             </div>
 
             <div class="space-y-6">
@@ -942,26 +951,27 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                   <button
                     v-if="!editMode[key]"
                     @click="toggleEditMode(key)"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                    class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/50"
                   >
-                    <span class="i-heroicons-pencil-square w-5 h-5"></span>
-                    Edit
+                    <span class="sr-only">Edit</span>
+                    <div class="i-heroicons-pencil-square w-5 h-5"></div>
                   </button>
-                  <button
-                    v-else
-                    @click="toggleEditMode(key)"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
-                  >
-                    <span class="i-heroicons-check w-5 h-5"></span>
-                    Save
-                  </button>
-                  <button
-                    @click="removeServer(key)"
-                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
-                  >
-                    <span class="text-lg">×</span>
-                    Remove
-                  </button>
+                  <template v-else>
+                    <button
+                      @click="removeServer(key)"
+                      class="inline-flex items-center p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200 rounded-md hover:bg-red-50 dark:hover:bg-red-900/50"
+                    >
+                      <span class="sr-only">Remove</span>
+                      <div class="i-heroicons-trash w-5 h-5"></div>
+                    </button>
+                    <button
+                      @click="toggleEditMode(key)"
+                      class="inline-flex items-center p-1.5 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200 rounded-md hover:bg-green-50 dark:hover:bg-green-900/50"
+                    >
+                      <span class="sr-only">Save</span>
+                      <div class="i-heroicons-check w-5 h-5"></div>
+                    </button>
+                  </template>
                 </div>
 
                 <!-- Server Header -->
@@ -1145,6 +1155,13 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
             <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Worker Configuration</h4>
 
             <div class="flex items-center gap-4">
+              <router-link
+                to="workers"
+                class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              >
+                View All
+                <div class="i-heroicons-arrow-right w-4 h-4"></div>
+              </router-link>
               <p v-if="saveError" class="text-sm text-red-600 dark:text-red-400">
                 {{ saveError }}
               </p>
