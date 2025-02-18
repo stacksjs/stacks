@@ -33,15 +33,21 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
+    "@iconify-json/carbon": "^1.2.7",
     "@shikijs/vitepress-twoslash": "^2.4.2",
+    "@vite-pwa/assets-generator": "^0.2.6",
+    "@vite-pwa/vitepress": "^0.5.3",
+    "unplugin-icons": "^22.0.0",
+    "unplugin-vue-components": "^28.1.0",
+    "vite-plugin-pwa": "^0.21.1",
+    "vitepress": "1.6.3"
+  },
+  "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/server": "workspace:*",
-    "@vite-pwa/assets-generator": "^0.2.6",
-    "@vite-pwa/vitepress": "^0.5.3",
-    "vitepress": "1.6.3"
+    "@stacksjs/server": "workspace:*"
   }
 }
