@@ -103,6 +103,11 @@ const operatingSystems = [
   'amazon-linux-2-x86_64',
 ]
 
+// Update default values
+const defaultServerOS = 'ubuntu-24-lts-x86_64'
+const defaultBunVersion = 'v1.2.3'
+
+// Update server types descriptions
 const serverTypes: ServerType[] = [
   {
     value: 'app',
@@ -114,11 +119,11 @@ const serverTypes: ServerType[] = [
     value: 'web',
     label: 'Web Server',
     badges: ['Bun', 'Nginx'],
-    description: 'A secured web server with Nginx and PHP.'
+    description: 'A secured web server with Nginx.'
   },
   {
     value: 'worker',
-    label: 'Dedicated Worker Server',
+    label: 'Worker Server',
     badges: ['Bun'],
     description: 'Connect to your local database / cache server to keep your queued jobs processing quickly.'
   },
@@ -149,7 +154,15 @@ const serverTypes: ServerType[] = [
 ]
 
 const bunVersions = [
-  'v1.0.30',
+  'v1.2.3',
+  'v1.2.2',
+  'v1.2.1',
+  'v1.2.0',
+  'v1.1.20',
+  'v1.1.15',
+  'v1.1.10',
+  'v1.1.5',
+  'v1.1.0',
   'v1.0.25',
   'v1.0.20',
   'v1.0.15',
@@ -267,6 +280,14 @@ const hasUnsavedChanges = ref(false)
 // Add initial state tracking for change detection
 const initialWorkerConfig = ref({ ...workerConfig.value })
 const initialCloudConfig = ref({ ...cloudConfig.value })
+
+// Add edit mode state
+const editMode = ref<Record<string, boolean>>({})
+
+// Add toggle edit mode function
+const toggleEditMode = (key: string) => {
+  editMode.value[key] = !editMode.value[key]
+}
 
 // Function to update worker specs when size changes
 const updateWorkerSpecs = () => {
@@ -630,15 +651,19 @@ export class StacksInfrastructureStack extends cdk.Stack {
 // Methods
 const addServer = () => {
   const id = Object.keys(cloudConfig.value.servers).length + 1
-  cloudConfig.value.servers[`app${id}`] = {
+  const key = `app${id}`
+  cloudConfig.value.servers[key] = {
     name: `app-server-${id}`,
     domain: 'stacksjs.org',
     region: 'us-east-1',
     type: 'app',
     size: 't3.micro',
     diskSize: 20,
-    serverOS: 'ubuntu-20-lts-x86_64',
+    serverOS: defaultServerOS,
+    bunVersion: defaultBunVersion,
   }
+  // Set edit mode for new server
+  editMode.value[key] = true
 }
 
 const removeServer = (key: string) => {
@@ -699,6 +724,11 @@ const saveWorkerConfig = async () => {
   } finally {
     isSaving.value = false
   }
+}
+
+// Add field name formatter
+const formatFieldName = (field: string) => {
+  return field.charAt(0).toUpperCase() + field.slice(1)
 }
 </script>
 
@@ -956,9 +986,26 @@ const saveWorkerConfig = async () => {
               <div
                 v-for="(server, key) in cloudConfig.servers"
                 :key="key"
-                class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
+                class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200"
+                :class="{ 'hover:border-blue-200 dark:hover:border-blue-500': editMode[key] }"
               >
-                <div class="absolute top-4 right-4">
+                <div class="absolute top-4 right-4 flex items-center gap-2">
+                  <button
+                    v-if="!editMode[key]"
+                    @click="toggleEditMode(key)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                  >
+                    <span class="i-heroicons-pencil-square w-5 h-5"></span>
+                    Edit
+                  </button>
+                  <button
+                    v-else
+                    @click="toggleEditMode(key)"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
+                  >
+                    <span class="i-heroicons-check w-5 h-5"></span>
+                    Save
+                  </button>
                   <button
                     @click="removeServer(key)"
                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
@@ -968,12 +1015,49 @@ const saveWorkerConfig = async () => {
                   </button>
                 </div>
 
+                <!-- Server Header -->
                 <div class="mb-6">
-                  <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ server.domain }}</p>
+                  <div class="flex items-center gap-4 mb-2">
+                    <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
+                    <div class="flex flex-wrap gap-2">
+                      <span
+                        v-for="badge in serverTypes.find((t: ServerType) => t.value === server.type)?.badges"
+                        :key="badge"
+                        class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                      >
+                        {{ badge }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="i-heroicons-link w-4 h-4"></div>
+                    <p>{{ server.domain }}</p>
+                  </div>
+                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    {{ serverTypes.find((t: ServerType) => t.value === server.type)?.description }}
+                  </p>
                 </div>
 
-                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <!-- Server Configuration -->
+                <div v-if="!editMode[key]" class="mt-4">
+                  <div class="flex items-center gap-2">
+                    <div class="i-heroicons-server w-4 h-4 text-gray-400"></div>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ (workerSizes[server.size as keyof typeof workerSizes].ram / 1024).toFixed(0) }}GB RAM ({{ server.size }})
+                    </span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">
+                      {{ workerSizes[server.size as keyof typeof workerSizes].vcpu }} vCPUs
+                    </span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+                    <span class="text-sm text-gray-900 dark:text-gray-100">
+                      64-bit {{ server.size.includes('g.') ? 'ARM' : 'x86' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Edit Form -->
+                <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                     <input
@@ -982,7 +1066,6 @@ const saveWorkerConfig = async () => {
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Domain</label>
                     <input
@@ -991,7 +1074,6 @@ const saveWorkerConfig = async () => {
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
                     <select
@@ -1003,42 +1085,20 @@ const saveWorkerConfig = async () => {
                       </option>
                     </select>
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
                     <div class="relative">
                       <select
                         v-model="server.type"
-                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 pl-3 pr-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                        :disabled="!editMode[key]"
+                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <option v-for="type in serverTypes" :key="type.value" :value="type.value">
                           {{ type.label }}
                         </option>
                       </select>
                     </div>
-                    <div v-if="server.type" class="mt-2">
-                      <div class="flex flex-wrap gap-2">
-                        <span
-                          v-for="badge in serverTypes.find((t: ServerType) => t.value === server.type)?.badges"
-                          :key="badge"
-                          class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
-                          :class="{
-                            'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300': badge === 'Bun',
-                            'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300': badge === 'Nginx',
-                            'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300': badge === 'Database',
-                            'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300': badge === 'Redis' || badge === 'Memcached',
-                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300': badge === 'Search Engine'
-                          }"
-                        >
-                          {{ badge }}
-                        </span>
-                      </div>
-                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {{ serverTypes.find((t: ServerType) => t.value === server.type)?.description }}
-                      </p>
-                    </div>
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bun Version</label>
                     <select
@@ -1050,7 +1110,6 @@ const saveWorkerConfig = async () => {
                       </option>
                     </select>
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database</label>
                     <select
@@ -1064,7 +1123,6 @@ const saveWorkerConfig = async () => {
                       <option value="mongodb">MongoDB</option>
                     </select>
                   </div>
-
                   <div v-if="server.database">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database Name</label>
                     <input
@@ -1074,26 +1132,6 @@ const saveWorkerConfig = async () => {
                       placeholder="my_database"
                     >
                   </div>
-
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Size</label>
-                    <div class="relative">
-                      <select
-                        v-model="server.size"
-                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
-                      >
-                        <option v-for="size in instanceTypes" :key="size" :value="size">
-                          {{ (workerSizes[size as keyof typeof workerSizes].ram / 1024).toFixed(0) }}GB RAM ({{ size }}) (64-bit {{ size.includes('g.') ? 'arm' : 'x86' }}) - {{ workerSizes[size as keyof typeof workerSizes].vcpu }} vCPUs
-                        </option>
-                      </select>
-                      <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operating System</label>
                     <select
@@ -1105,7 +1143,6 @@ const saveWorkerConfig = async () => {
                       </option>
                     </select>
                   </div>
-
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disk Size (GB)</label>
                     <input
@@ -1115,7 +1152,6 @@ const saveWorkerConfig = async () => {
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
-
                   <div class="sm:col-span-2 lg:col-span-3">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Data Script</label>
                     <textarea
