@@ -3,16 +3,12 @@ import type {
   AttributesElements,
   BaseBelongsToMany,
   BaseHasOneThrough,
-  BelongsToMany,
   FieldArrayElement,
-  HasOne,
-  HasOneThrough,
   Model,
   ModelElement,
   ModelNames,
   Relation,
   RelationConfig,
-  Relations,
   TableNames,
 } from '@stacksjs/types'
 import { generator, parser, traverse } from '@stacksjs/build'

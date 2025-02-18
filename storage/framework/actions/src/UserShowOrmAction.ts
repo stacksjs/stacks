@@ -10,7 +10,12 @@ export default new Action({
   async handle(request: UserRequestType) {
     const id = request.getParam('id')
 
-    const result = await User.find(Number(id))
+    const result = await User.create({
+      name: 'Glenn',
+      email: 'gtorregosa@gmail.com',
+      password: '123456',
+      job_title: 'test',
+    })
 
     return response.json(result)
   },

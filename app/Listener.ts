@@ -20,7 +20,7 @@ async function listenEvents(type: keyof typeof events, event: any) {
     }
     else {
       try {
-        const actionModule = await import(p.projectPath(`Actions/${eventListener}.ts`))
+        const actionModule = await import(p.appPath(`Actions/${eventListener}.ts`))
         await actionModule.default.handle(event)
       }
       catch (error) {

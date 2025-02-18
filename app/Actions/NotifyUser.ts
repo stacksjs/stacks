@@ -1,0 +1,11 @@
+import type { RequestInstance } from '@stacksjs/types'
+import { Action } from '@stacksjs/actions'
+
+export default new Action({
+  name: 'NotifyUser',
+  description: 'Notify User After Creation',
+  method: 'GET',
+  async handle(request: RequestInstance) {
+    console.log('test')
+  },
+})
