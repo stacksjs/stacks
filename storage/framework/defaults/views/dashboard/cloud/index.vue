@@ -16,7 +16,7 @@ interface ServerConfig {
   domain: string
   region: string
   type: string
-  size: string
+  size: keyof typeof workerSizes
   diskSize: number
   privateNetwork?: string
   subnet?: string
@@ -35,12 +35,9 @@ interface CloudConfig {
 
 interface WorkerConfig {
   name: string
-  size: 'Small' | 'Medium' | 'Large'
+  size: keyof typeof workerSizes
   replicas: number
-  specs: {
-    vcpu: number
-    ram: number
-  }
+  specs: WorkerSizeSpecs
 }
 
 // Available options for dropdowns
@@ -62,6 +59,19 @@ const instanceTypes = [
   't3.medium',
   't3.large',
   't3.xlarge',
+  't3.2xlarge',
+  'c6a.large',
+  'c6a.xlarge',
+  'c6a.2xlarge',
+  'c6a.4xlarge',
+  'm6a.large',
+  'm6a.xlarge',
+  'm6a.2xlarge',
+  'm6a.4xlarge',
+  'r6a.large',
+  'r6a.xlarge',
+  'r6a.2xlarge',
+  'r6a.4xlarge',
 ]
 
 const serverTypes = [
@@ -122,9 +132,25 @@ interface InfraLink {
 
 // Update worker sizes with type safety
 const workerSizes = {
-  Small: { vcpu: 0.25, ram: 512 },
-  Medium: { vcpu: 0.5, ram: 1024 },
-  Large: { vcpu: 1, ram: 2048 },
+  't3.nano': { vcpu: 2, ram: 512 },
+  't3.micro': { vcpu: 2, ram: 1024 },
+  't3.small': { vcpu: 2, ram: 2048 },
+  't3.medium': { vcpu: 2, ram: 4096 },
+  't3.large': { vcpu: 2, ram: 8192 },
+  't3.xlarge': { vcpu: 4, ram: 16384 },
+  't3.2xlarge': { vcpu: 8, ram: 32768 },
+  'c6a.large': { vcpu: 2, ram: 4096 },
+  'c6a.xlarge': { vcpu: 4, ram: 8192 },
+  'c6a.2xlarge': { vcpu: 8, ram: 16384 },
+  'c6a.4xlarge': { vcpu: 16, ram: 32768 },
+  'm6a.large': { vcpu: 2, ram: 8192 },
+  'm6a.xlarge': { vcpu: 4, ram: 16384 },
+  'm6a.2xlarge': { vcpu: 8, ram: 32768 },
+  'm6a.4xlarge': { vcpu: 16, ram: 65536 },
+  'r6a.large': { vcpu: 2, ram: 16384 },
+  'r6a.xlarge': { vcpu: 4, ram: 32768 },
+  'r6a.2xlarge': { vcpu: 8, ram: 65536 },
+  'r6a.4xlarge': { vcpu: 16, ram: 131072 },
 } as const
 
 type WorkerSize = keyof typeof workerSizes
@@ -133,20 +159,12 @@ type WorkerSizeSpecs = {
   ram: number
 }
 
-// Update WorkerConfig interface
-interface WorkerConfig {
-  name: string
-  size: WorkerSize
-  replicas: number
-  specs: WorkerSizeSpecs
-}
-
 // Add worker state
 const workerConfig = ref<WorkerConfig>({
   name: 'Worker 1',
-  size: 'Small',
+  size: 't3.micro',
   replicas: 1,
-  specs: workerSizes.Small,
+  specs: workerSizes['t3.micro'],
 })
 
 // Add visualization state
@@ -160,13 +178,26 @@ let zoomGroup: d3.Selection<SVGGElement, unknown, null, undefined>
 // Add selected node state
 const selectedNode = ref<InfraNode | null>(null)
 
+// Add save state
+const isSaving = ref(false)
+const saveError = ref<string | null>(null)
+
+// Add unsaved state
+const hasUnsavedChanges = ref(false)
+
+// Add initial state tracking for change detection
+const initialWorkerConfig = ref({ ...workerConfig.value })
+const initialCloudConfig = ref({ ...cloudConfig.value })
+
 // Function to update worker specs when size changes
 const updateWorkerSpecs = () => {
   workerConfig.value.specs = workerSizes[workerConfig.value.size]
 }
 
-// Watch for changes that affect the visualization
-watch([cloudConfig, workerConfig], () => {
+// Update watch to compare with initial state
+watch([cloudConfig, workerConfig], ([newCloud, newWorker]) => {
+  hasUnsavedChanges.value = JSON.stringify(newCloud) !== JSON.stringify(initialCloudConfig.value) ||
+    JSON.stringify(newWorker) !== JSON.stringify(initialWorkerConfig.value)
   if (diagramContainer.value) {
     updateVisualization()
   }
@@ -571,6 +602,25 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
     }
   }
 }
+
+// Update save method to reset initial state
+const saveWorkerConfig = async () => {
+  isSaving.value = true
+  saveError.value = null
+
+  try {
+    // TODO: Implement actual API call to save worker config
+    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulated API call
+    initialWorkerConfig.value = { ...workerConfig.value }
+    initialCloudConfig.value = { ...cloudConfig.value }
+    hasUnsavedChanges.value = false
+    // Show success notification here
+  } catch (error) {
+    saveError.value = error instanceof Error ? error.message : 'Failed to save worker configuration'
+  } finally {
+    isSaving.value = false
+  }
+}
 </script>
 
 <template>
@@ -578,18 +628,40 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
     <div class="px-4 lg:px-8 sm:px-6">
       <!-- Header -->
       <div class="mb-8">
-        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-          Cloud Infrastructure
-        </h3>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-          Design and manage your cloud infrastructure visually or using CDK
-        </p>
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div>
+              <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+                Cloud Infrastructure
+              </h3>
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+                Design and manage your cloud infrastructure.
+              </p>
+            </div>
+          </div>
+
+          <router-link
+            to="/settings/mail"
+            class="inline-flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+          >
+            <div class="i-heroicons-cog-6-tooth w-6 h-6"></div>
+          </router-link>
+        </div>
       </div>
 
       <!-- Infrastructure Diagram -->
       <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="p-6">
-          <h4 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Infrastructure Diagram</h4>
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2">
+              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Infrastructure Diagram</h4>
+              <!-- AWS Icon -->
+              <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
+                <div class="i-hugeicons-amazon w-6 h-6"></div>
+              </div>
+              <span v-if="hasUnsavedChanges" class="text-sm text-amber-600 dark:text-amber-400 ml-2">(Unsaved changes)</span>
+            </div>
+          </div>
           <div class="relative">
             <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
 
@@ -608,7 +680,9 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                   class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
                 >
                   <span class="sr-only">Close</span>
-                  <div class="i-hugeicons-x-close h-5 w-5" />
+                  <div class="h-5 w-5">
+                    <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200">×</span>
+                  </div>
                 </button>
               </div>
 
@@ -661,7 +735,44 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
       <!-- Worker Configuration -->
       <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="p-6">
-          <h4 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Worker Configuration</h4>
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Worker Configuration</h4>
+
+            <div class="flex items-center gap-4">
+              <p v-if="saveError" class="text-sm text-red-600 dark:text-red-400">
+                {{ saveError }}
+              </p>
+
+              <button
+                @click="saveWorkerConfig"
+                :disabled="isSaving"
+                class="inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  v-if="isSaving"
+                  class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                {{ isSaving ? 'Saving...' : 'Save Changes' }}
+              </button>
+            </div>
+          </div>
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
@@ -680,38 +791,43 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                 @change="updateWorkerSpecs"
                 class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
-                <option v-for="size in ['Small', 'Medium', 'Large'] as const" :key="size" :value="size">
-                  {{ size }} ({{ workerSizes[size].vcpu }} vCPU, {{ workerSizes[size].ram }}MB RAM)
+                <option v-for="(specs, size) in workerSizes" :key="size" :value="size">
+                  {{ size }} ({{ specs.vcpu }} vCPU, {{ (specs.ram / 1024).toFixed(1) }}GB RAM)
                 </option>
               </select>
             </div>
           </div>
 
-          <!-- Replicas Slider -->
+          <!-- Replicas Input -->
           <div class="mt-6">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Replicas ({{ workerConfig.replicas }})
+              Replicas
             </label>
-            <div class="relative mt-2">
+            <div class="flex items-center gap-4">
               <input
                 v-model.number="workerConfig.replicas"
-                type="range"
+                type="number"
                 min="1"
-                max="10"
+                max="12"
                 step="1"
-                class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                class="block w-24 h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
-              <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                <span>1</span>
-                <span>2</span>
-                <span>3</span>
-                <span>4</span>
-                <span>5</span>
-                <span>6</span>
-                <span>7</span>
-                <span>8</span>
-                <span>9</span>
-                <span>10</span>
+              <div class="flex-1">
+                <input
+                  v-model.number="workerConfig.replicas"
+                  type="range"
+                  min="1"
+                  max="12"
+                  step="1"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+                >
+                <div class="flex justify-between mt-1 px-1">
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -translate-x-[2px]">1</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -translate-x-[6px]">3</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -translate-x-[6px]">6</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -translate-x-[6px]">9</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -translate-x-[4px]">12</span>
+                </div>
               </div>
             </div>
           </div>
@@ -729,7 +845,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
               <div>
                 <p class="text-sm text-gray-500 dark:text-gray-400">RAM</p>
                 <p class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {{ (workerConfig.specs.ram * workerConfig.replicas).toFixed(0) }}MB
+                  {{ ((workerConfig.specs.ram * workerConfig.replicas) / 1024).toFixed(1) }}GB
                 </p>
               </div>
             </div>
@@ -739,45 +855,20 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
 
       <!-- Visual Builder -->
       <div v-if="activeView === 'visual'" class="space-y-8">
-        <!-- Global Settings -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
-          <h4 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Global Settings</h4>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cloud Provider</label>
-              <select
-                v-model="cloudConfig.type"
-                class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="aws">AWS</option>
-                <option value="gcp">Google Cloud</option>
-                <option value="azure">Azure</option>
-              </select>
-            </div>
-            <div class="flex items-center">
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input
-                  v-model="cloudConfig.useLoadBalancer"
-                  type="checkbox"
-                  class="sr-only peer"
-                >
-                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                <span class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Use Load Balancer</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
         <!-- Servers -->
         <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
           <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Servers</h4>
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Servers</h4>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your application servers and their specifications.</p>
+              </div>
               <button
                 @click="addServer"
                 type="button"
-                class="rounded-md bg-blue-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
               >
+                <span class="text-lg">+</span>
                 Add Server
               </button>
             </div>
@@ -786,25 +877,30 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
               <div
                 v-for="(server, key) in cloudConfig.servers"
                 :key="key"
-                class="border dark:border-gray-600 rounded-lg p-4"
+                class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
               >
-                <div class="flex items-center justify-between mb-4">
-                  <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
+                <div class="absolute top-4 right-4">
                   <button
                     @click="removeServer(key)"
-                    class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    class="inline-flex items-center gap-1 px-2.5 py-1.5 text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
                   >
+                    <span class="text-lg">×</span>
                     Remove
                   </button>
                 </div>
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="mb-6">
+                  <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ server.domain }}</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                     <input
                       v-model="server.name"
                       type="text"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
 
@@ -813,7 +909,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <input
                       v-model="server.domain"
                       type="text"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
 
@@ -821,7 +917,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
                     <select
                       v-model="server.region"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                       <option v-for="region in regions" :key="region" :value="region">
                         {{ region }}
@@ -833,7 +929,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
                     <select
                       v-model="server.type"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                       <option v-for="type in serverTypes" :key="type.value" :value="type.value">
                         {{ type.label }}
@@ -845,10 +941,10 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Size</label>
                     <select
                       v-model="server.size"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
-                      <option v-for="type in instanceTypes" :key="type" :value="type">
-                        {{ type }}
+                      <option v-for="size in instanceTypes" :key="size" :value="size">
+                        {{ size }} ({{ workerSizes[size].vcpu }} vCPU, {{ (workerSizes[size].ram / 1024).toFixed(1) }}GB RAM)
                       </option>
                     </select>
                   </div>
@@ -857,7 +953,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operating System</label>
                     <select
                       v-model="server.serverOS"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                       <option v-for="os in operatingSystems" :key="os" :value="os">
                         {{ os }}
@@ -871,7 +967,7 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                       v-model.number="server.diskSize"
                       type="number"
                       min="1"
-                      class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                   </div>
 
@@ -880,7 +976,8 @@ const formatConfigDetails = (config: ServerConfig | WorkerConfig) => {
                     <textarea
                       v-model="server.userData"
                       rows="3"
-                      class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 font-mono"
+                      class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 font-mono transition-colors duration-200"
+                      placeholder="#!/bin/bash"
                     ></textarea>
                   </div>
                 </div>
