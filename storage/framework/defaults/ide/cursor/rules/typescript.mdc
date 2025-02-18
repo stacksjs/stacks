@@ -1,0 +1,9 @@
+---
+description: TypeScript Usage specifics
+globs: docs/**/*.md
+---
+## TypeScript Usage
+
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use `maps` instead, or `as const`
+- Use functional components with TypeScript interfaces

@@ -1,0 +1,10 @@
+---
+description: Testing specifics
+globs: 
+---
+## Testing
+
+- Write tests for all functions, types, interfaces, and ensure examples are accurate
+- The `./test` directory is where the tests are stored
+- Use `bun test` to run the tests
+- Use bun native modules for testing from `import { x, y, z } from 'bun:test'`

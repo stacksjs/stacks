@@ -1,0 +1,9 @@
+---
+description: Documentation specific rules
+globs: docs/**/*.md
+---
+## Documentation
+
+- Write documentation for all functions, types, interfaces, and ensure examples are accurate
+- The `./docs` directory is where the vitepress markdown documentation is stored
+- Make sure to update the docs markdown files

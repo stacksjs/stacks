@@ -1,0 +1,11 @@
+---
+description: Project structure information
+globs: 
+---
+## Project Structure
+
+- the `./src` directory is the source code
+- the `./test` directory is the test code
+- the `./bin` directory is the command-line code
+  - you can also call the CLI via `./clarity ...`
+- the `./docs` directory is the documentation

@@ -23,6 +23,7 @@ custom-cli
 .idea
 .stacks
 .vscode
+.cursor
 .zed
 ./test.ts
 resources/assets/fonts/*.woff

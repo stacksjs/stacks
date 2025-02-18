@@ -1,0 +1,9 @@
+---
+description: Syntax and Formatting specifics
+globs: 
+---
+## Syntax and Formatting
+
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Make sure everything is properly commented

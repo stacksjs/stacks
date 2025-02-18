@@ -1,0 +1,12 @@
+---
+description: Code Style & Structure specifics
+globs: 
+---
+## Code Style & Structure
+
+- Write concise, technical TypeScript code with accurate examples in the docblock
+- If Bun native modules are available, use them
+- Use functional and declarative programming patterns; avoid classes unless needed
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`, `hasError`)
+- Use proper jsdoc comments for functions, types, interfaces, and ensure examples are accurate
