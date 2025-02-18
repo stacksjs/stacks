@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line } from 'vue-chartjs'
 import {
@@ -29,14 +29,6 @@ useHead({
   title: 'Dashboard - Jobs',
 })
 
-interface QueueStats {
-  queued: number
-  processing: number
-  processed: number
-  released: number
-  failed: number
-}
-
 interface JobStats {
   id: string
   name: string
@@ -50,18 +42,6 @@ interface JobStats {
   payload: any
 }
 
-interface WorkerStats {
-  id: string
-  name: string
-  status: 'running' | 'paused' | 'stopped'
-  jobs_processed: number
-  failed_jobs: number
-  last_heartbeat: string
-  queue: string
-  memory_usage: number
-  cpu_usage: number
-}
-
 interface Job {
   id: string
   name: string
@@ -70,31 +50,6 @@ interface Job {
   runtime?: number
   started_at?: string
 }
-
-// Mock data for demonstration
-const queues = ref<Record<string, QueueStats>>({
-  default: {
-    queued: 70,
-    processing: 15,
-    processed: 250,
-    released: 5,
-    failed: 2,
-  },
-  high: {
-    queued: 23,
-    processing: 8,
-    processed: 180,
-    released: 3,
-    failed: 1,
-  },
-  low: {
-    queued: 45,
-    processing: 12,
-    processed: 150,
-    released: 4,
-    failed: 3,
-  },
-})
 
 const recentJobs = ref<JobStats[]>([
   {
@@ -128,31 +83,6 @@ const recentJobs = ref<JobStats[]>([
     status: 'processing',
     started_at: '2024-03-14 10:16:00',
     payload: { report_type: 'monthly' },
-  },
-])
-
-const workers = ref<WorkerStats[]>([
-  {
-    id: '1',
-    name: 'worker-1',
-    status: 'running',
-    jobs_processed: 1250,
-    failed_jobs: 23,
-    last_heartbeat: '2024-03-14 10:16:32',
-    queue: 'default',
-    memory_usage: 128.5,
-    cpu_usage: 23.4,
-  },
-  {
-    id: '2',
-    name: 'worker-2',
-    status: 'running',
-    jobs_processed: 980,
-    failed_jobs: 15,
-    last_heartbeat: '2024-03-14 10:16:30',
-    queue: 'high',
-    memory_usage: 145.2,
-    cpu_usage: 28.7,
   },
 ])
 

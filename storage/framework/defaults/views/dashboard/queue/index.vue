@@ -97,6 +97,17 @@ const workers = ref<WorkerStats[]>([
     memory_usage: 145.2,
     cpu_usage: 28.7,
   },
+  {
+    id: '3',
+    name: 'worker-3',
+    status: 'running',
+    jobs_processed: 850,
+    failed_jobs: 18,
+    last_heartbeat: '2024-03-14 10:16:28',
+    queue: 'low',
+    memory_usage: 112.8,
+    cpu_usage: 19.5,
+  },
 ])
 
 const timeRange = ref<'hour' | 'day' | 'week'>('hour')
@@ -210,23 +221,83 @@ const getWaitTimeData = () => {
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <div class="px-4 lg:px-8 sm:px-6">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <div>
-            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-              Queue Management
-            </h3>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-              Monitor and manage your queue workers and statistics.
-            </p>
+      <!-- Stats Overview -->
+    <div class="mb-8">
+      <div>
+        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+          Queue Overview
+        </h3>
+
+        <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-heroicons-queue-list h-6 w-6 text-white" />
+              </div>
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+                Total Jobs
+              </p>
+            </dt>
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                71,897
+              </p>
+              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+                <div class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <span class="sr-only">Increased by</span>
+                122
+              </p>
+            </dd>
           </div>
-        </div>
+
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-heroicons-clock h-6 w-6 text-white" />
+              </div>
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+                Average Processing Time
+              </p>
+            </dt>
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                2.3s
+              </p>
+              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+                <div class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <span class="sr-only">Decreased by</span>
+                0.4s
+              </p>
+            </dd>
+          </div>
+
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-blue-500 p-3">
+                <div class="i-heroicons-bolt h-6 w-6 text-white" />
+              </div>
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+                Jobs Per Minute
+              </p>
+            </dt>
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+                42
+              </p>
+              <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
+                <div class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                <span class="sr-only">Decreased by</span>
+                8
+              </p>
+            </dd>
+          </div>
+        </dl>
       </div>
+    </div>
 
 
     <!-- Queue Stats -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
+    <div class="mt-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
@@ -273,77 +344,15 @@ const getWaitTimeData = () => {
       </div>
     </div>
 
-    <!-- Workers -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Workers</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Active job processing workers</p>
-            </div>
-          </div>
-
-          <div class="mt-6">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                <thead>
-                  <tr>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Name</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Queue</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Jobs Processed</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Memory</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">CPU</th>
-                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Last Heartbeat</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                  <tr v-for="worker in workers" :key="worker.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="font-medium text-gray-900 dark:text-gray-100">{{ worker.name }}</div>
-                      <div class="text-gray-500 dark:text-gray-400 font-mono text-xs">{{ worker.id }}</div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                            :class="getWorkerStatusColor(worker.status)">
-                        {{ worker.status }}
-                      </span>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {{ worker.queue }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="text-gray-900 dark:text-gray-100">{{ worker.jobs_processed }}</div>
-                      <div class="text-gray-500 dark:text-gray-400 text-xs">{{ worker.failed_jobs }} failed</div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {{ worker.memory_usage.toFixed(1) }}MB
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {{ worker.cpu_usage.toFixed(1) }}%
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
-                      {{ worker.last_heartbeat }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
       <!-- Queue Statistics -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="my-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h4>
             <div class="flex items-center gap-4">
               <select
                 v-model="selectedQueue"
-                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="all">All Queues</option>
                 <option v-for="(_, queue) in queues" :key="queue" :value="queue">
@@ -371,38 +380,6 @@ const getWaitTimeData = () => {
             <!-- Wait Time Chart -->
             <div class="h-80">
               <Line :data="getWaitTimeData()" :options="chartOptions" />
-            </div>
-          </div>
-
-          <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
-            <div
-              v-for="(stats, queue) in queues"
-              :key="queue"
-              class="bg-gray-50 dark:bg-blue-gray-600 rounded-lg p-4"
-            >
-              <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100 mb-4">{{ queue }}</h5>
-              <div class="space-y-2">
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">Queued</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stats.queued }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">Processing</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stats.processing }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">Processed</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stats.processed }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">Released</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stats.released }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-sm text-gray-500 dark:text-gray-400">Failed</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ stats.failed }}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>

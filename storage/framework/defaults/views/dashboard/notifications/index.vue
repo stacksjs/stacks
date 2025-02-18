@@ -106,7 +106,7 @@ const recentNotifications = ref<NotificationEntry[]>([
   {
     id: '2',
     type: 'sms',
-    recipient: '+1234567890',
+    recipient: '+1 (234) 567-890',
     subject: 'Your verification code: 123456',
     status: 'failed',
     sent_at: '2024-03-14 10:14:00',
