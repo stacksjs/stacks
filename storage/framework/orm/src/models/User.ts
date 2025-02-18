@@ -1170,11 +1170,11 @@ export class UserModel {
     return instance
   }
 
-  whereIn(column: keyof UserType, values: any[]): UserModel {
+  whereIn(column: string, values: any[]): UserModel {
     return UserModel.whereIn(column, values)
   }
 
-  static whereIn(column: keyof UserType, values: any[]): UserModel {
+  static whereIn(column: string, values: any[]): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
@@ -1186,7 +1186,7 @@ export class UserModel {
     return instance
   }
 
-  applyWhereBetween(column: keyof UserType, range: [any, any]): UserModel {
+  applyWhereBetween(column: string, range: [any, any]): UserModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }

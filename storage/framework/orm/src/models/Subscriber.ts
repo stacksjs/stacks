@@ -705,53 +705,50 @@ export class SubscriberModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id')
 
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
-
         return not(exists(subquery))
       })
+
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'not') {
+            this.whereNotIn(condition.column, condition.values!)
+          }
+          else {
+            this.whereIn(condition.column, condition.values!)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values!)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
 
     return this
   }
@@ -1021,11 +1018,11 @@ export class SubscriberModel {
     return instance
   }
 
-  whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+  whereIn(column: string, values: any[]): SubscriberModel {
     return SubscriberModel.whereIn(column, values)
   }
 
-  static whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+  static whereIn(column: string, values: any[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
@@ -1037,7 +1034,7 @@ export class SubscriberModel {
     return instance
   }
 
-  applyWhereBetween(column: keyof SubscriberType, range: [any, any]): SubscriberModel {
+  applyWhereBetween(column: string, range: [any, any]): SubscriberModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
