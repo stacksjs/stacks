@@ -5,7 +5,7 @@ export default new Action({
   name: 'NotifyUser',
   description: 'Notify User After Creation',
   method: 'GET',
-  async handle(request: RequestInstance) {
-    console.log('test')
+  async handle() {
+    // console.log('test')
   },
 })

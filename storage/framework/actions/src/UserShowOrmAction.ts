@@ -7,8 +7,9 @@ export default new Action({
   name: 'User Show',
   description: 'User Show ORM Action',
   method: 'GET',
-  async handle(request: UserRequestType) {
-    const id = request.getParam('id')
+  async handle() {
+  // async handle(request: UserRequestType) {
+    // const id = request.getParam('id')
 
     const user = await User.whereDoesntHave('posts', (query) => {
       query.where('job_title', 'Regional Brand Executive')
