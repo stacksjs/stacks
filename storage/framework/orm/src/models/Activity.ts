@@ -1075,6 +1075,10 @@ export class ActivityModel {
       eb(column, '=', '').or(column, 'is', null),
     )
 
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
     return this
   }
 
@@ -1086,6 +1090,10 @@ export class ActivityModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
