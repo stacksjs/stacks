@@ -8,14 +8,9 @@ export default new Action({
   description: 'User Show ORM Action',
   method: 'GET',
   async handle(request: UserRequestType) {
-    // const id = request.getParam('id')
+    const id = request.getParam('id')
 
-    const result = await User.create({
-      job_title: 'dev',
-      name: 'Glenn',
-      password: '123456',
-      email: 'gtorregosa@gmail.com',
-    })
+    const result = await User.find(Number(id))
 
     return response.json(result)
   },

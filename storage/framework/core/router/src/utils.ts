@@ -1,5 +1,6 @@
+import type { Ok } from '@stacksjs/error-handling'
 import type { ModelRequest, RequestInstance } from '@stacksjs/types'
-import { type Ok, ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { camelCase } from '@stacksjs/strings'
 import { route } from './router'

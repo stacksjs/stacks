@@ -1,8 +1,10 @@
+import type { Ok } from '@stacksjs/error-handling'
 import type { JitterConfig, JobOptions } from '@stacksjs/types'
-import { ok, type Ok } from '@stacksjs/error-handling'
+import type { JobModel } from '../../../orm/src/models/Job'
+import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { FailedJob } from '../../../orm/src/models/FailedJob'
-import { Job, type JobModel } from '../../../orm/src/models/Job'
+import { Job } from '../../../orm/src/models/Job'
 import { runJob } from './job'
 
 interface QueuePayload {

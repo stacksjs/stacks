@@ -1,7 +1,8 @@
+import type { ComponentMeta, MetaCheckerOptions } from 'vue-component-meta'
 import { frameworkPath, join, path, projectPath } from '@stacksjs/path'
 import { existsSync, globSync, mkdirSync, writeFileSync } from '@stacksjs/storage'
 import MarkdownIt from 'markdown-it'
-import { type ComponentMeta, createComponentMetaChecker, type MetaCheckerOptions } from 'vue-component-meta'
+import { createComponentMetaChecker } from 'vue-component-meta'
 
 /**
  * ℹ️ Useful Links

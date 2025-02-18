@@ -13,7 +13,8 @@ bun install -d @stacksjs/registry
 ```
 
 ```typescript
-import { registry, type Registry } from '@stacksjs/registry'
+import type { Registry } from '@stacksjs/registry'
+import { registry } from '@stacksjs/registry'
 
 console.log(registry) // the Registry as an object
 ```

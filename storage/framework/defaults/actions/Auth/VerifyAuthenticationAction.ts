@@ -1,6 +1,7 @@
+import type { AuthenticationResponseJSON } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { type AuthenticationResponseJSON, getUserPasskey, verifyAuthenticationResponse } from '@stacksjs/auth'
+import { getUserPasskey, verifyAuthenticationResponse } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 
 export default new Action({

@@ -1,5 +1,6 @@
+import type { Ref } from 'vue'
 import type { ToastT } from '../types'
-import { type Ref, ref, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { ToastState } from '../state'
 
 export function useNotification(): {

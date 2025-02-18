@@ -10,21 +10,21 @@ export interface BaseRelation {
   relationName?: string
 }
 
-interface Relation<T = string> extends BaseRelation {
+export interface Relation<T = string> extends BaseRelation {
   model: T
 }
 
-interface HasOne<T = string> extends Array<Relation<T>> {}
-interface HasMany<T = string> extends Array<Relation<T>> {}
-interface BelongsTo<T = string> extends Array<Relation<T>> {}
-interface BelongsToMany<T = string> extends Array<{
+export interface HasOne<T = string> extends Array<Relation<T>> {}
+export interface HasMany<T = string> extends Array<Relation<T>> {}
+export interface BelongsTo<T = string> extends Array<Relation<T>> {}
+export interface BelongsToMany<T = string> extends Array<{
   model: T
   firstForeignKey?: string
   secondForeignKey?: string
   pivotTable?: string
 } | T> {}
 
-interface HasOneThrough<T = string> extends Array<{
+export interface HasOneThrough<T = string> extends Array<{
   model: T
   through: T
   foreignKey?: string

@@ -1,3 +1,4 @@
+import type { ParsedPath } from 'node:path'
 import os from 'node:os'
 import {
   basename,
@@ -8,7 +9,7 @@ import {
   join,
   normalize,
   parse,
-  type ParsedPath,
+
   relative,
   resolve,
   sep,

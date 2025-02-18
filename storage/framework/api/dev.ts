@@ -67,7 +67,7 @@ serve({
   timezone: app.timezone || 'UTC',
 })
 
-await handleEvents()
+handleEvents()
 
 process.on('SIGINT', () => {
   log.info(`Exited using Ctrl-C`)

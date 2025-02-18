@@ -1,10 +1,12 @@
 import type {
   Attributes,
   AttributesElements,
-  BaseRelation,
+  BelongsToMany,
   FieldArrayElement,
+  HasOneThrough,
   Model,
   ModelElement,
+  Relation,
   RelationConfig,
   TableNames,
 } from '@stacksjs/types'
@@ -65,7 +67,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
 
   for (const relation of relationsArray) {
     if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation as keyof Model] as BaseRelation) {
+      for (const relationInstance of model[relation as keyof Model] as Relation[]) {
         let relationModel = relationInstance.model
         let modelRelation: Model
         let modelPath: string
@@ -93,6 +95,9 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
         const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
         const formattedModelName = snakeCase(modelName)
 
+        const throughInstance = relationInstance as HasOneThrough
+        const belongsToManyInstance = relationInstance as BelongsToMany
+
         const relationshipData: RelationConfig = {
           relationship: relation,
           model: relationModel,
@@ -102,13 +107,13 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
           modelKey: `${modelRelationName}_id`,
           relationName: relationInstance.relationName || '',
           relationModel: modelName,
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
+          throughModel: throughInstance.through || '',
+          throughForeignKey: throughInstance.throughForeignKey || '',
           pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
           pivotKey: `${modelRelationName}_id`,
           pivotTable:
-            relationInstance?.pivotTable
-            || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
+          belongsToManyInstance?.pivotTable
+          || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
         }
 
         if (['belongsToMany', 'belongsTo'].includes(relation))

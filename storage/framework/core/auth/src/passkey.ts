@@ -1,6 +1,7 @@
 import type { VerifiedRegistrationResponse } from '@simplewebauthn/server'
+import type { Insertable } from '@stacksjs/database'
 import type { UserModel } from '../../../orm/src/models/User'
-import { db, type Insertable } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 
 export {
   generateAuthenticationOptions,

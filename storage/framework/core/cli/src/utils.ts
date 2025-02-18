@@ -1,4 +1,5 @@
-import { collect, type Collection } from '@stacksjs/collections'
+import type { Collection } from '@stacksjs/collections'
+import { collect } from '@stacksjs/collections'
 
 export {
   align,

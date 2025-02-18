@@ -1,8 +1,9 @@
+import type { TeamModel } from '../../../orm/src/models/Team'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { verifyHash } from '@stacksjs/security'
 import AccessToken from '../../../orm/src/models/AccessToken'
-import Team, { type TeamModel } from '../../../orm/src/models/Team'
+import Team from '../../../orm/src/models/Team'
 import User from '../../../orm/src/models/User'
 
 interface Credentials {

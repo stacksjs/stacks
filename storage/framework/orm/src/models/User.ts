@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
@@ -7,6 +8,7 @@ import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
+
 import { cache } from '@stacksjs/cache'
 
 import { sql } from '@stacksjs/database'
@@ -16,8 +18,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
-
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
 
 import Team from './Team'
 

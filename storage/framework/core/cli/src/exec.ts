@@ -1,6 +1,7 @@
+import type { Result } from '@stacksjs/error-handling'
 import type { CliOptions, ErrorLike, SpawnOptions, Subprocess } from '@stacksjs/types'
 import process from 'node:process'
-import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { italic, log } from './'
 
