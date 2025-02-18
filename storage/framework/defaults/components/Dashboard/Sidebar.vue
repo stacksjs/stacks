@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+interface SidebarItem {
+  to: string
+  icon?: string
+  letter?: string
+  text: string
+  children?: SidebarItem[]
+}
+
+interface SectionContent {
+  items: SidebarItem[]
+}
+
+interface Sections {
+  [key: string]: boolean
+}
+
 const calculateTransform = (section: string) => {
   if (!draggedItem || !isDragging.value) return ''
 
@@ -18,19 +34,29 @@ const calculateTransform = (section: string) => {
 }
 
 // State for each section's collapse status
-const sections = ref({
+const sections = ref<Sections>({
   library: true,
   app: true,
   models: true,
   management: true
 })
 
+// Add separate state for nested items
+const expandedItems = ref<Record<string, boolean>>({
+  '/cloud': false,
+  '/queue': false
+})
+
 // Create an ordered array of sections that we can reorder
 const sectionOrder = ref(['library', 'app', 'models', 'management'])
 
 // Toggle function for sections
-const toggleSection = (section: keyof typeof sections.value) => {
+const toggleSection = (section: string) => {
   sections.value[section] = !sections.value[section]
+}
+
+const toggleItem = (path: string) => {
+  expandedItems.value[path] = !expandedItems.value[path]
 }
 
 // Drag and drop handling
@@ -106,7 +132,7 @@ const handleDragEnd = () => {
 }
 
 // Section content mapping
-const sectionContent = {
+const sectionContent: Record<string, SectionContent> = {
   library: {
     items: [
       { to: '/components', icon: 'i-hugeicons-puzzle', text: 'Components' },
@@ -122,8 +148,14 @@ const sectionContent = {
       { to: '/realtime', icon: 'i-hugeicons-link-03', text: 'Realtime' },
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
       { to: '/commands', icon: 'i-hugeicons-command-line', text: 'Commands' },
-      { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' },
-      { to: '/queue', icon: 'i-hugeicons-queue-02', text: 'Queue' },
+      {
+        to: '/queue',
+        icon: 'i-hugeicons-queue-02',
+        text: 'Queue',
+        children: [
+          { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' }
+        ]
+      },
       { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
     ]
   },
@@ -136,7 +168,15 @@ const sectionContent = {
   },
   management: {
     items: [
-      { to: '/cloud', icon: 'i-hugeicons-cloud', text: 'Cloud' },
+      {
+        to: '/cloud',
+        icon: 'i-hugeicons-cloud',
+        text: 'Cloud',
+        children: [
+          { to: '/servers', icon: 'i-hugeicons-server-stack-01', text: 'Servers' },
+          { to: '/workers', icon: 'i-hugeicons-labor', text: 'Workers' }
+        ]
+      },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
       { to: '/emails', icon: 'i-hugeicons-mailbox-01', text: 'Emails' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
@@ -221,17 +261,42 @@ const sectionContent = {
                   :class="sections[sectionKey] ? 'expanded' : 'collapsed'"
                 >
                   <li v-for="item in sectionContent[sectionKey].items" :key="item.to">
-                    <RouterLink :to="item.to" class="sidebar-links group">
-                      <template v-if="item.icon">
-                        <div :class="[item.icon, 'h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                      </template>
-                      <template v-else-if="item.letter">
-                        <span class="h-6 w-6 flex shrink-0 items-center justify-center border border-gray-200 rounded-lg bg-white text-[0.625rem] text-gray-400 font-medium dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">
-                          {{ item.letter }}
-                        </span>
-                      </template>
-                      <span class="truncate">{{ item.text }}</span>
-                    </RouterLink>
+                    <div>
+                      <RouterLink
+                        :to="item.to"
+                        class="sidebar-links group"
+                        @click.prevent="item.children ? toggleItem(item.to) : $router.push(item.to)"
+                      >
+                        <template v-if="item.icon">
+                          <div :class="[item.icon, 'h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                        </template>
+                        <template v-else-if="item.letter">
+                          <span class="h-6 w-6 flex shrink-0 items-center justify-center border border-gray-200 rounded-lg bg-white text-[0.625rem] text-gray-400 font-medium dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">
+                            {{ item.letter }}
+                          </span>
+                        </template>
+                        <span class="truncate">{{ item.text }}</span>
+                        <div
+                          v-if="item.children"
+                          class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 ml-auto"
+                          :class="{ 'transform rotate-90': expandedItems[item.to] }"
+                        />
+                      </RouterLink>
+
+                      <ul
+                        v-if="item.children"
+                        role="list"
+                        class="mt-1 space-y-1 overflow-hidden transition-all duration-200"
+                        :class="{ 'max-h-0': !expandedItems[item.to], 'max-h-40': expandedItems[item.to] }"
+                      >
+                        <li v-for="child in item.children" :key="child.to">
+                          <RouterLink :to="child.to" class="sidebar-child-link group">
+                            <div :class="[child.icon, 'h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                            <span class="truncate">{{ child.text }}</span>
+                          </RouterLink>
+                        </li>
+                      </ul>
+                    </div>
                   </li>
                 </ul>
               </li>
@@ -282,7 +347,9 @@ const sectionContent = {
 
 <style scoped>
 .sidebar-links {
-  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800 duration-150 ease-in-out transition flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold;
+  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800
+         duration-150 ease-in-out transition flex items-center gap-x-3
+         rounded-md p-2 text-sm leading-6 font-semibold;
 }
 
 .router-link-active {
@@ -353,5 +420,15 @@ li[draggable="true"]:hover .drag-handle {
 
 li[draggable="true"].dragging .drag-handle {
   @apply cursor-grabbing;
+}
+
+.sidebar-child-link {
+  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800
+         duration-150 ease-in-out transition flex items-center gap-x-3
+         rounded-md p-2 text-sm leading-6 font-semibold pl-8;
+}
+
+.router-link-active.sidebar-child-link {
+  @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
 }
 </style>

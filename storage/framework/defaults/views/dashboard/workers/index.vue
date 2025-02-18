@@ -83,16 +83,6 @@ const filteredWorkers = computed(() => {
               </p>
             </div>
           </div>
-
-          <div class="flex items-center gap-4">
-            <router-link
-              to="/cloud"
-              class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
-            >
-              <div class="i-heroicons-arrow-left w-4 h-4"></div>
-              Back to Dashboard
-            </router-link>
-          </div>
         </div>
       </div>
 

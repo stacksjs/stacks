@@ -96,16 +96,6 @@ const filteredServers = computed(() => {
               </p>
             </div>
           </div>
-
-          <div class="flex items-center gap-4">
-            <router-link
-              to="/cloud"
-              class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
-            >
-              <div class="i-heroicons-arrow-left w-4 h-4"></div>
-              Back to Dashboard
-            </router-link>
-          </div>
         </div>
       </div>
 
@@ -194,12 +184,20 @@ const filteredServers = computed(() => {
                   {{ server.searchEngine || 'None' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <router-link
-                    :to="`/servers/${key}`"
-                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    Edit
-                  </router-link>
+                  <div class="flex items-center justify-end gap-4">
+                    <router-link
+                      :to="`/servers/${key}`"
+                      class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                    >
+                      View
+                    </router-link>
+                    <router-link
+                      :to="`/servers/${key}`"
+                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      Edit
+                    </router-link>
+                  </div>
                 </td>
               </tr>
             </tbody>
