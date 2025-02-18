@@ -28,7 +28,7 @@
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.7",
     "@intlify/unplugin-vue-i18n": "^6.0.3",
-    "@shikijs/markdown-it": "^2.4.2",
+    "@shikijs/markdown-it": "^3.0.0",
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^5.2.1",
@@ -36,7 +36,7 @@
     "@vue/test-utils": "^2.4.6",
     "markdown-it-link-attributes": "^4.0.1",
     "rollup": "^4.34.8",
-    "shiki": "^2.4.2",
+    "shiki": "^3.0.0",
     "unocss": "65.5.0",
     "unplugin-auto-import": "^19.1.0",
     "unplugin-vue-components": "^28.1.0",
