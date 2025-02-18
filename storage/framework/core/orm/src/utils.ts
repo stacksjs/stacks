@@ -1,13 +1,18 @@
 import type {
   Attributes,
   AttributesElements,
+  BaseBelongsToMany,
+  BaseHasOneThrough,
   BelongsToMany,
   FieldArrayElement,
+  HasOne,
   HasOneThrough,
   Model,
   ModelElement,
+  ModelNames,
   Relation,
   RelationConfig,
+  Relations,
   TableNames,
 } from '@stacksjs/types'
 import { generator, parser, traverse } from '@stacksjs/build'
@@ -62,74 +67,207 @@ export function hasRelations(obj: any, key: string): boolean {
 }
 
 export async function getRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation as keyof Model] as Relation[]) {
-        let relationModel = relationInstance.model
-        let modelRelation: Model
-        let modelPath: string
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
+  if (model.hasOne) {
+    for (const relationInstance of model.hasOne) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasOne'))
+    }
+  }
 
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const userModelPath = path.userModelsPath(`${modelName}.ts`)
-        const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-        const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  if (model.hasMany) {
+    for (const relationInstance of model.hasMany) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasMany'))
+    }
+  }
 
-        if (fs.existsSync(modelRelationPath))
-          modelRelation = (await import(modelRelationPath)).default as Model
-        else
-          modelRelation = (await import(coreModelRelationPath)).default as Model
+  if (model.belongsTo) {
+    for (const relationInstance of model.belongsTo) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'belongsTo'))
+    }
+  }
 
-        if (fs.existsSync(userModelPath))
-          modelPath = userModelPath
-        else
-          modelPath = coreModelPath
+  if (model.hasOneThrough) {
+    for (const relationInstance of model.hasOneThrough) {
+      relationships.push(await processHasThrough(relationInstance, model, modelName, 'hasOneThrough'))
+    }
+  }
 
-        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
-        const table = getTableName(model, modelPath)
-        const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
-        const formattedModelName = snakeCase(modelName)
-
-        const throughInstance = relationInstance as HasOneThrough
-        const belongsToManyInstance = relationInstance as BelongsToMany
-
-        const relationshipData: RelationConfig = {
-          relationship: relation,
-          model: relationModel,
-          table: modelRelationTable as TableNames,
-          relationTable: table as TableNames,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          modelKey: `${modelRelationName}_id`,
-          relationName: relationInstance.relationName || '',
-          relationModel: modelName,
-          throughModel: throughInstance.through || '',
-          throughForeignKey: throughInstance.throughForeignKey || '',
-          pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
-          pivotKey: `${modelRelationName}_id`,
-          pivotTable:
-          belongsToManyInstance?.pivotTable
-          || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        }
-
-        if (['belongsToMany', 'belongsTo'].includes(relation))
-          relationshipData.foreignKey = ''
-
-        if (['belongsToMany'].includes(relation)) {
-          relationshipData.pivotForeign = relationInstance.foreignKey || `${formattedModelName}_id`
-          relationshipData.pivotKey = `${modelRelationName}_id`
-        }
-
-        relationships.push(relationshipData)
-      }
+  if (model.belongsToMany) {
+    for (const relationInstance of model.belongsToMany) {
+      relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany'))
     }
   }
 
   return relationships
+}
+
+async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+  let throughModel = ''
+  let throughForeignKey = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+    throughModel = relationInstance.through
+    throughForeignKey = relationInstance.throughForeignKey || ''
+  }
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel,
+    throughForeignKey,
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let pivotTable = ''
+  let pivotForeign = ''
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    pivotTable = relationInstance.pivotTable || ''
+    pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
+  }
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: '',
+    modelKey: `${modelRelationName}_id`,
+    relationName: '',
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: pivotTable as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processHasOneAndMany(relationInstance: ModelNames | Relation<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+  }
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  if (relation === 'belongsTo')
+    relationshipData.foreignKey = ''
+
+  return relationshipData
 }
 
 export function getRelationType(relation: string): string {
