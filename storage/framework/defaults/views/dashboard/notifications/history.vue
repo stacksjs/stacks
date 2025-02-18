@@ -52,17 +52,17 @@ const getStatusColor = (status: string): string => {
 const getChannelIcon = (type: string): string => {
   switch (type) {
     case 'email':
-      return 'i-heroicons-envelope'
+      return 'i-hugeicons-mail-01'
     case 'sms':
-      return 'i-heroicons-device-phone-mobile'
+      return 'i-hugeicons-smart-phone-01'
     case 'push':
-      return 'i-heroicons-bell'
+      return 'i-hugeicons-notification-01'
     case 'discord':
-      return 'i-simple-icons-discord'
+      return 'i-hugeicons-discord'
     case 'slack':
-      return 'i-simple-icons-slack'
+      return 'i-hugeicons-slack'
     default:
-      return 'i-heroicons-bell'
+      return 'i-hugeicons-notification-03'
   }
 }
 
