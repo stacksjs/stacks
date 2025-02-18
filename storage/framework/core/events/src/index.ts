@@ -162,12 +162,14 @@ type Listen = <Key extends keyof StacksEvents>(type: Key, handler: Handler<Stack
 type Off = <Key extends keyof StacksEvents>(type: Key, handler?: Handler<StacksEvents[Key]>) => void
 
 const emitter: Emitter<StacksEvents> = events
-
 const useEvents: Emitter<StacksEvents> = events
+
 const dispatch: Dispatch = emitter.emit
+const useEvent: Dispatch = dispatch
 const all: EventHandlerMap<StacksEvents> = emitter.all
 const listen: Listen = emitter.on
 const useListen: Listen = emitter.on
+
 const off: Off = emitter.off
 
-export { all, dispatch, emitter, events, listen, mitt, off, useEvents, useListen }
+export { all, dispatch, emitter, events, listen, mitt, off, useEvent, useEvents, useListen }
