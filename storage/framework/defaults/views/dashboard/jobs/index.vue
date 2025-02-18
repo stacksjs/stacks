@@ -40,50 +40,100 @@ interface JobStats {
   runtime?: number
   error?: string
   payload: any
+  priority: number
+  tags: string[]
+  dependencies?: string[]
+  retry_history?: {
+    attempted_at: string
+    failed_at: string
+    error: string
+  }[]
+  stack_trace?: string
+}
+
+interface RetryAttempt {
+  attempted_at: string
+  error: string
 }
 
 interface Job {
   id: string
   name: string
+  status: 'queued' | 'processing' | 'completed' | 'failed'
   queue: string
-  status: 'queued' | 'processing' | 'failed' | 'completed'
-  runtime?: number
+  payload: any
+  created_at: string
   started_at?: string
+  completed_at?: string
+  error?: string
+  stack_trace?: string
+  tags?: string[]
+  priority?: number
+  dependencies?: string[]
+  retry_history?: RetryAttempt[]
+  attempts: number
+  runtime?: number
+  logs?: Array<{
+    timestamp: string
+    level: 'info' | 'warning' | 'error'
+    message: string
+  }>
 }
 
-const recentJobs = ref<JobStats[]>([
+const recentJobs = ref<Job[]>([
   {
     id: '1',
-    name: 'ProcessPayment',
-    queue: 'high',
-    attempts: 1,
+    name: 'ProcessPodcast',
     status: 'completed',
-    started_at: '2024-03-14 10:15:23',
-    finished_at: '2024-03-14 10:15:25',
-    runtime: 2.3,
-    payload: { order_id: '12345' },
+    queue: 'default',
+    payload: { podcast_id: 123 },
+    created_at: '2024-03-14 10:00:00',
+    started_at: '2024-03-14 10:00:01',
+    completed_at: '2024-03-14 10:00:05',
+    attempts: 1,
+    runtime: 4.2,
+    tags: ['podcast', 'media'],
+    priority: 1,
+    logs: [
+      { timestamp: '2024-03-14 10:00:01', level: 'info', message: 'Starting podcast processing' },
+      { timestamp: '2024-03-14 10:00:03', level: 'info', message: 'Transcoding audio file' },
+      { timestamp: '2024-03-14 10:00:05', level: 'info', message: 'Podcast processing completed' }
+    ]
   },
   {
     id: '2',
-    name: 'SendWelcomeEmail',
-    queue: 'default',
-    attempts: 3,
+    name: 'SendNewsletter',
     status: 'failed',
-    started_at: '2024-03-14 10:14:00',
-    finished_at: '2024-03-14 10:14:05',
-    runtime: 5.1,
+    queue: 'high',
+    payload: { newsletter_id: 456 },
+    created_at: '2024-03-14 10:01:00',
+    started_at: '2024-03-14 10:01:01',
     error: 'SMTP connection failed',
-    payload: { user_id: '789' },
-  },
-  {
-    id: '3',
-    name: 'GenerateReport',
-    queue: 'low',
-    attempts: 1,
-    status: 'processing',
-    started_at: '2024-03-14 10:16:00',
-    payload: { report_type: 'monthly' },
-  },
+    stack_trace: 'Error: SMTP connection failed\n    at SMTPClient.connect (/app/vendor/smtp.js:123)\n    at Newsletter.send (/app/app/Jobs/SendNewsletter.php:45)',
+    attempts: 3,
+    tags: ['email', 'newsletter'],
+    priority: 2,
+    retry_history: [
+      {
+        attempted_at: '2024-03-14 10:01:01',
+        error: 'SMTP connection timeout'
+      },
+      {
+        attempted_at: '2024-03-14 10:02:01',
+        error: 'SMTP authentication failed'
+      },
+      {
+        attempted_at: '2024-03-14 10:03:01',
+        error: 'SMTP connection failed'
+      }
+    ],
+    logs: [
+      { timestamp: '2024-03-14 10:01:01', level: 'info', message: 'Starting newsletter delivery' },
+      { timestamp: '2024-03-14 10:01:01', level: 'warning', message: 'SMTP connection timeout' },
+      { timestamp: '2024-03-14 10:02:01', level: 'warning', message: 'SMTP authentication failed' },
+      { timestamp: '2024-03-14 10:03:01', level: 'error', message: 'SMTP connection failed' }
+    ]
+  }
 ])
 
 const timeRange = ref<'hour' | 'day' | 'week'>('hour')
@@ -214,9 +264,50 @@ onMounted(async () => {
   isLoading.value = false
 })
 
-const handleRetry = async (job: Job) => {
-  // Implement retry logic
-  console.log('Retrying job:', job.id)
+const retryJob = async (jobId: string) => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  const job = recentJobs.value.find(j => j.id === jobId)
+  if (job) {
+    job.status = 'queued'
+    job.attempts += 1
+  }
+  isLoading.value = false
+}
+
+const cancelJob = async (jobId: string) => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  const job = recentJobs.value.find(j => j.id === jobId)
+  if (job) {
+    job.status = 'failed'
+    job.error = 'Job cancelled by user'
+  }
+  isLoading.value = false
+}
+
+// Add state for expanded job rows
+const expandedJobs = ref<Set<string>>(new Set())
+
+// Toggle job expansion
+const toggleJobExpansion = (jobId: string) => {
+  if (expandedJobs.value.has(jobId)) {
+    expandedJobs.value.delete(jobId)
+  } else {
+    expandedJobs.value.add(jobId)
+  }
+}
+
+// Get log level color classes
+const getLogLevelColor = (level: string): string => {
+  switch (level) {
+    case 'error':
+      return 'text-red-600 dark:text-red-400'
+    case 'warning':
+      return 'text-yellow-600 dark:text-yellow-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
 }
 </script>
 
@@ -371,45 +462,54 @@ const handleRetry = async (job: Job) => {
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Queue</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Runtime</th>
-                      <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Started</th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Started</th>
                       <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
                         <span class="sr-only">Actions</span>
                       </th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-200 dark:divide-blue-gray-600">
-                    <tr v-for="job in recentJobs" :key="job.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-0">{{ job.name }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ job.queue }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                          :class="getJobStatusColor(job.status)"
-                        >
-                          {{ job.status }}
-                        </span>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ job.started_at }}</td>
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                        <div class="flex justify-end space-x-2">
-                          <router-link
-                            :to="`/jobs/${job.id}`"
-                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                          >
-                            View
-                          </router-link>
-                          <button
-                            v-if="job.status === 'failed'"
-                            type="button"
-                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            @click="handleRetry(job)"
-                          >
-                            Retry
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <template v-for="job in recentJobs" :key="job.id">
+                      <tr>
+                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-0">
+                          <div class="font-medium text-gray-900 dark:text-gray-100">{{ job.name }}</div>
+                          <div class="mt-1 flex items-center gap-1">
+                            <span v-for="tag in job.tags" :key="tag" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-900/50 dark:text-blue-300">
+                              {{ tag }}
+                            </span>
+                          </div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm">
+                          <div class="text-gray-900 dark:text-gray-100">{{ job.queue }}</div>
+                          <div class="mt-1 text-gray-500 dark:text-gray-400">Priority: {{ job.priority }}</div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm">
+                          <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset" :class="getJobStatusColor(job.status)">
+                            {{ job.status }}
+                          </span>
+                          <div v-if="job.status === 'failed'" class="mt-1 text-xs text-red-600 dark:text-red-400">
+                            Attempts: {{ job.attempts }}
+                          </div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm">
+                          <div class="font-mono text-gray-900 dark:text-gray-100">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</div>
+                        </td>
+                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                          <div>Started: {{ job.started_at || '-' }}</div>
+                          <div>Completed: {{ job.completed_at || '-' }}</div>
+                        </td>
+                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                          <div class="flex justify-end space-x-2">
+                            <router-link
+                              :to="`/jobs/${job.id}`"
+                              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                              View
+                            </router-link>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
                   </tbody>
                 </table>
               </div>

@@ -47,6 +47,12 @@ interface WorkerStats {
   queue: string
   memory_usage: number
   cpu_usage: number
+  memory_limit: number
+  timeout: number
+  supervisor_id: string
+  connection: 'redis' | 'database' | 'sqs'
+  tries: number
+  retry_after: number
 }
 
 // Mock data for demonstration
@@ -85,6 +91,12 @@ const workers = ref<WorkerStats[]>([
     queue: 'default',
     memory_usage: 128.5,
     cpu_usage: 23.4,
+    memory_limit: 128,
+    timeout: 60,
+    supervisor_id: 'supervisor-1',
+    connection: 'redis',
+    tries: 3,
+    retry_after: 90,
   },
   {
     id: '2',
@@ -96,6 +108,12 @@ const workers = ref<WorkerStats[]>([
     queue: 'high',
     memory_usage: 145.2,
     cpu_usage: 28.7,
+    memory_limit: 128,
+    timeout: 60,
+    supervisor_id: 'supervisor-2',
+    connection: 'redis',
+    tries: 3,
+    retry_after: 90,
   },
   {
     id: '3',
@@ -107,6 +125,12 @@ const workers = ref<WorkerStats[]>([
     queue: 'low',
     memory_usage: 112.8,
     cpu_usage: 19.5,
+    memory_limit: 128,
+    timeout: 60,
+    supervisor_id: 'supervisor-3',
+    connection: 'redis',
+    tries: 3,
+    retry_after: 90,
   },
 ])
 
@@ -216,6 +240,76 @@ const getWaitTimeData = () => {
     }],
   }
 }
+
+// Add worker configuration
+const workerConfig = ref({
+  memory_limit: 128,
+  timeout: 60,
+  tries: 3,
+  retry_after: 90,
+  connection: 'redis' as const,
+})
+
+// Add worker actions
+const restartWorker = async (workerId: string) => {
+  isLoading.value = true
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  const worker = workers.value.find(w => w.id === workerId)
+  if (worker) {
+    worker.status = 'running'
+    worker.last_heartbeat = new Date().toISOString()
+  }
+  isLoading.value = false
+}
+
+const pauseWorker = async (workerId: string) => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  const worker = workers.value.find(w => w.id === workerId)
+  if (worker) worker.status = 'paused'
+  isLoading.value = false
+}
+
+const stopWorker = async (workerId: string) => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  const worker = workers.value.find(w => w.id === workerId)
+  if (worker) worker.status = 'stopped'
+  isLoading.value = false
+}
+
+const retryFailedJobs = async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  // Simulate retrying failed jobs
+  Object.values(queues.value).forEach(queue => {
+    queue.failed = 0
+    queue.queued += queue.failed
+  })
+  isLoading.value = false
+}
+
+const clearFailedJobs = async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  // Simulate clearing failed jobs
+  Object.values(queues.value).forEach(queue => {
+    queue.failed = 0
+  })
+  isLoading.value = false
+}
+
+// Update workers data with new fields
+workers.value = workers.value.map(worker => ({
+  ...worker,
+  memory_limit: 128,
+  timeout: 60,
+  supervisor_id: `supervisor-${worker.id}`,
+  connection: 'redis' as const,
+  tries: 3,
+  retry_after: 90,
+}))
 </script>
 
 <template>
@@ -393,6 +487,22 @@ const getWaitTimeData = () => {
               <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Workers</h4>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Monitor your queue workers and their performance.</p>
             </div>
+            <div class="flex items-center gap-4">
+              <button
+                @click="retryFailedJobs"
+                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              >
+                <div class="i-heroicons-arrow-path h-5 w-5 mr-1" />
+                Retry Failed Jobs
+              </button>
+              <button
+                @click="clearFailedJobs"
+                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500"
+              >
+                <div class="i-heroicons-trash h-5 w-5 mr-1" />
+                Clear Failed Jobs
+              </button>
+            </div>
           </div>
 
           <div class="space-y-6">
@@ -421,6 +531,32 @@ const getWaitTimeData = () => {
                       {{ worker.status.charAt(0).toUpperCase() + worker.status.slice(1) }}
                     </span>
                   </div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <button
+                      v-if="worker.status !== 'running'"
+                      @click="restartWorker(worker.id)"
+                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 rounded-md hover:bg-green-100 dark:hover:bg-green-900"
+                    >
+                      <div class="i-heroicons-play h-4 w-4 mr-1" />
+                      Start
+                    </button>
+                    <button
+                      v-if="worker.status === 'running'"
+                      @click="pauseWorker(worker.id)"
+                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900"
+                    >
+                      <div class="i-heroicons-pause h-4 w-4 mr-1" />
+                      Pause
+                    </button>
+                    <button
+                      v-if="worker.status === 'running'"
+                      @click="stopWorker(worker.id)"
+                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 rounded-md hover:bg-red-100 dark:hover:bg-red-900"
+                    >
+                      <div class="i-heroicons-stop h-4 w-4 mr-1" />
+                      Stop
+                    </button>
+                  </div>
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     Last heartbeat: {{ worker.last_heartbeat }}
                   </p>
@@ -437,34 +573,37 @@ const getWaitTimeData = () => {
                 </div>
 
                 <div>
-                  <div class="space-y-2">
+                  <div class="space-y-4">
                     <div>
-                      <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Memory Usage</span>
-                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {{ worker.memory_usage.toFixed(1) }}MB
-                        </span>
+                      <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Connection</span>
+                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.connection }}</span>
                       </div>
-                      <div class="mt-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                        <div
-                          class="h-full bg-blue-600 rounded-full"
-                          :style="{ width: `${Math.min(worker.memory_usage / 2, 100)}%` }"
-                        ></div>
+                      <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-500 dark:text-gray-400">Memory Limit</span>
+                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.memory_limit }}MB</span>
+                      </div>
+                      <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-500 dark:text-gray-400">Timeout</span>
+                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.timeout }}s</span>
+                      </div>
+                      <div class="flex items-center justify-between text-sm mt-2">
+                        <span class="text-gray-500 dark:text-gray-400">Supervisor</span>
+                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.supervisor_id }}</span>
                       </div>
                     </div>
 
-                    <div>
-                      <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">CPU Usage</span>
-                        <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {{ worker.cpu_usage.toFixed(1) }}%
-                        </span>
-                      </div>
-                      <div class="mt-1 h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                        <div
-                          class="h-full bg-green-600 rounded-full"
-                          :style="{ width: `${worker.cpu_usage}%` }"
-                        ></div>
+                    <div v-if="worker.memory_usage / worker.memory_limit > 0.9" class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-3">
+                      <div class="flex">
+                        <div class="i-heroicons-exclamation-triangle h-5 w-5 text-yellow-400" />
+                        <div class="ml-3">
+                          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                            High Memory Usage
+                          </h3>
+                          <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-200">
+                            <p>Worker is approaching memory limit. Consider restarting or increasing the limit.</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

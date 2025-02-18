@@ -31,6 +31,11 @@ interface JobDetails {
     file: string
     line: number
   }
+  logs?: Array<{
+    timestamp: string
+    level: 'info' | 'warning' | 'error'
+    message: string
+  }>
 }
 
 const job = ref<JobDetails | null>(null)
@@ -51,6 +56,18 @@ const jobStatusColors: Record<string, string> = {
 
 const getJobStatusColor = (status: string): string => {
   return jobStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
+}
+
+const getLogLevelColor = (level: string | undefined): string => {
+  if (!level) return 'text-gray-600 dark:text-gray-400'
+  switch (level) {
+    case 'error':
+      return 'text-red-600 dark:text-red-400'
+    case 'warning':
+      return 'text-yellow-600 dark:text-yellow-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
 }
 
 const handleRetry = async () => {
@@ -122,6 +139,12 @@ onMounted(async () => {
           '#2 /vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(88): CallQueuedHandler->call()',
         ]
       },
+      logs: [
+        { timestamp: '2024-03-14 10:15:23', level: 'info', message: 'Starting payment processing' },
+        { timestamp: '2024-03-14 10:15:24', level: 'info', message: 'Validating payment details' },
+        { timestamp: '2024-03-14 10:15:25', level: 'warning', message: 'Slow response from payment gateway' },
+        { timestamp: '2024-03-14 10:15:28', level: 'error', message: 'Connection timeout while processing payment' }
+      ],
     }
   } catch (error) {
     console.error('Failed to load job details:', error)
@@ -264,6 +287,24 @@ onMounted(async () => {
                     <div class="py-2 text-sm font-mono text-gray-900 dark:text-gray-100">{{ chainJob.replace('App\\Jobs\\', '') }}</div>
                   </li>
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Logs -->
+          <div v-if="job.logs?.length" class="bg-white dark:bg-blue-gray-700 shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100 mb-4">Logs</h3>
+              <div class="space-y-2">
+                <div
+                  v-for="log in job.logs"
+                  :key="log.timestamp"
+                  class="flex items-start gap-2 text-sm font-mono"
+                >
+                  <span class="text-gray-500 dark:text-gray-400 shrink-0">{{ log.timestamp }}</span>
+                  <span :class="getLogLevelColor(log.level)" class="shrink-0">[{{ log.level }}]</span>
+                  <span class="text-gray-900 dark:text-gray-100">{{ log.message }}</span>
+                </div>
               </div>
             </div>
           </div>
