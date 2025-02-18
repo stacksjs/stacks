@@ -1508,18 +1508,10 @@ export class AccessTokenModel {
     if (!this)
       throw new HttpError(500, 'AccessToken data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewAccessToken
-
-    await this.mapCustomSetters(filteredValues)
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('personal_access_tokens')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)

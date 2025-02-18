@@ -1513,7 +1513,7 @@ export async function generateModelString(
         static doesntHave(relation: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          return instance.doesntHave(relation)
+          return instance.applyDoesntHave(relation)
         }
 
         applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
@@ -2274,21 +2274,11 @@ export async function generateModelString(
         async save(): Promise<void> {
           if (!this)
             throw new HttpError(500, '${modelName} data is undefined')
-          
-           const filteredValues = Object.fromEntries(
-            Object.entries(this.attributes).filter(([key]) => 
-              !this.guarded.includes(key) && this.fillable.includes(key)
-            ),
-          ) as New${modelName}
-
-          await this.mapCustomSetters(filteredValues)
+        
+          await this.mapCustomSetters(this.attributes)
 
           if (this.id === undefined) {
-            await DB.instance.insertInto('${tableName}')
-              .values(filteredValues)
-              .executeTakeFirstOrThrow()
-
-            ${mittCreateStatement}
+            await this.create(this.attributes)
           }
           else {
             await this.update(this.attributes)

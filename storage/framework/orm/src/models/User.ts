@@ -814,6 +814,7 @@ export class UserModel {
     callback(subqueryBuilder)
     const conditions = subqueryBuilder.getConditions()
 
+    console.log(conditions)
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
         let subquery = selectFrom(relation)
@@ -826,9 +827,9 @@ export class UserModel {
               if (condition.type === 'and') {
                 subquery = subquery.where(condition.column, condition.operator!, condition.value)
               }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
+              // else {
+              //   subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              // }
               break
 
             case 'whereIn':
@@ -1602,21 +1603,10 @@ export class UserModel {
     if (!this)
       throw new HttpError(500, 'User data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewUser
-
-    await this.mapCustomSetters(filteredValues)
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('users')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
-
-      if (model)
-        dispatch('user:created', model)
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1666,7 +1656,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await DB.instance.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('teams')
       .where('team_id', '=', this.id)
       .selectAll()
       .execute()

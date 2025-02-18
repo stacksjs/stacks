@@ -1571,18 +1571,10 @@ export class TeamModel {
     if (!this)
       throw new HttpError(500, 'Team data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewTeam
-
-    await this.mapCustomSetters(filteredValues)
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('teams')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1629,7 +1621,7 @@ export class TeamModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await DB.instance.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('users')
       .where('user_id', '=', this.id)
       .selectAll()
       .execute()

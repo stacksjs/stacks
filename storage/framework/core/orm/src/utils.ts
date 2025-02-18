@@ -162,6 +162,17 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
   let pivotTable = ''
   let pivotForeign = ''
 
+  const formattedModelName = snakeCase(modelName)
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    pivotTable = relationInstance.pivotTable || ''
+    pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
+  }
+
   const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
   const userModelPath = path.userModelsPath(`${modelName}.ts`)
   const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
@@ -180,16 +191,6 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
   const modelRelationTable = getTableName(modelRelation, modelRelationPath)
   const table = getTableName(model, modelPath)
   const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
-  const formattedModelName = snakeCase(modelName)
-
-  if (isString(relationInstance)) {
-    relationModel = relationInstance
-  }
-  else {
-    relationModel = relationInstance.model
-    pivotTable = relationInstance.pivotTable || ''
-    pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
-  }
 
   const relationshipData: RelationConfig = {
     relationship: relation,

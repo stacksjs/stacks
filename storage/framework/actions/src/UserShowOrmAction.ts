@@ -10,13 +10,13 @@ export default new Action({
   async handle(request: UserRequestType) {
     const id = request.getParam('id')
 
-    const result = await User.create({
-      name: 'Glenn',
-      email: 'gtorregosa@gmail.com',
-      password: '123456',
-      job_title: 'test',
-    })
+    const user = await User.whereDoesntHave('posts', (query) => {
+      return query.where('job_title', 'Regional Brand Executive')
+    }).first()
 
-    return response.json(result)
+    // user?.update({ job_title: 'Senior Software Engineer' })
+    // user?.delete()
+
+    return response.json(user)
   },
 })

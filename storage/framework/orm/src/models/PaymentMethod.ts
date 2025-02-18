@@ -12,9 +12,9 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
+  transactions?: TransactionModel[] | undefined
   user_id?: number
   user?: UserModel
-  transactions?: TransactionModel[] | undefined
   type?: string
   last_four?: number
   brand?: string
@@ -138,16 +138,16 @@ export class PaymentMethodModel {
     }
   }
 
+  get transactions(): TransactionModel[] | undefined {
+    return this.attributes.transactions
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }
 
   get user(): UserModel | undefined {
     return this.attributes.user
-  }
-
-  get transactions(): TransactionModel[] | undefined {
-    return this.attributes.transactions
   }
 
   get id(): number | undefined {
@@ -1580,18 +1580,10 @@ export class PaymentMethodModel {
     if (!this)
       throw new HttpError(500, 'PaymentMethod data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewPaymentMethod
-
-    await this.mapCustomSetters(filteredValues)
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('payment_methods')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1696,9 +1688,9 @@ export class PaymentMethodModel {
 
       updated_at: this.updated_at,
 
+      transactions: this.transactions,
       user_id: this.user_id,
       user: this.user,
-      transactions: this.transactions,
       ...this.customColumns,
     }
 
