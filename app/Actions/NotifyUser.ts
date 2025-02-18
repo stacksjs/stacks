@@ -1,4 +1,3 @@
-import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 
 export default new Action({
