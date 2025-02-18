@@ -46,6 +46,7 @@ declare module 'vue-router/auto-routes' {
     '/notifications/': RouteRecordInfo<'/notifications/', '/notifications', Record<never, never>, Record<never, never>>,
     '/notifications/history': RouteRecordInfo<'/notifications/history', '/notifications/history', Record<never, never>, Record<never, never>>,
     '/packages/': RouteRecordInfo<'/packages/', '/packages', Record<never, never>, Record<never, never>>,
+    '/queue/': RouteRecordInfo<'/queue/', '/queue', Record<never, never>, Record<never, never>>,
     '/realtime/': RouteRecordInfo<'/realtime/', '/realtime', Record<never, never>, Record<never, never>>,
     '/releases/': RouteRecordInfo<'/releases/', '/releases', Record<never, never>, Record<never, never>>,
     '/requests/': RouteRecordInfo<'/requests/', '/requests', Record<never, never>, Record<never, never>>,

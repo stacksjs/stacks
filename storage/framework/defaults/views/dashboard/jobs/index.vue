@@ -256,14 +256,6 @@ const getWaitTimeData = () => {
 const throughputData = ref(getThroughputData())
 const waitTimeData = ref(getWaitTimeData())
 
-const queueStatusColors: Record<string, string> = {
-  queued: 'bg-blue-500',
-  processing: 'bg-yellow-500',
-  processed: 'bg-green-500',
-  released: 'bg-purple-500',
-  failed: 'bg-red-500',
-}
-
 const jobStatusColors: Record<string, string> = {
   queued: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
   processing: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
@@ -271,22 +263,8 @@ const jobStatusColors: Record<string, string> = {
   failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
 }
 
-const workerStatusColors: Record<string, string> = {
-  running: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
-  paused: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
-  stopped: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
-}
-
-const getQueueStatusColor = (status: string): string => {
-  return queueStatusColors[status] || 'bg-gray-500'
-}
-
 const getJobStatusColor = (status: string): string => {
   return jobStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
-}
-
-const getWorkerStatusColor = (status: string): string => {
-  return workerStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
 }
 
 // Watch for time range changes
@@ -318,7 +296,7 @@ const handleRetry = async (job: Job) => {
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
         <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-          Queue Overview
+          Jobs Overview
         </h3>
 
         <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
@@ -388,7 +366,58 @@ const handleRetry = async (job: Job) => {
       </div>
     </div>
 
-        <!-- Recent Jobs -->
+       <!-- Queue Performance -->
+    <div class="px-4 lg:px-8 sm:px-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Throughput Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Job Throughput</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Processed vs failed jobs over time</p>
+              </div>
+              <div class="flex items-center space-x-4">
+                <select
+                  v-model="timeRange"
+                  class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                >
+                  <option value="hour">Last Hour</option>
+                  <option value="day">Last 24 Hours</option>
+                  <option value="week">Last Week</option>
+                </select>
+              </div>
+            </div>
+            <div class="h-[300px] relative">
+              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+              <Line :data="throughputData" :options="chartOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Wait Time Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Job Wait Time</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time jobs spend in queue</p>
+              </div>
+            </div>
+            <div class="h-[300px] relative">
+              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+              <Line :data="waitTimeData" :options="chartOptions" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Jobs -->
     <div class="my-8 px-4 lg:px-8 sm:px-6">
       <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="px-4 py-5 sm:p-6">
@@ -398,7 +427,7 @@ const handleRetry = async (job: Job) => {
               to="/jobs/history"
               class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              <span>View Full History</span>
+              <span>View All</span>
               <div class="i-heroicons-arrow-right h-4 w-4" />
             </router-link>
           </div>
@@ -454,167 +483,6 @@ const handleRetry = async (job: Job) => {
                   </tbody>
                 </table>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Queue Performance -->
-    <div class="px-4 lg:px-8 sm:px-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- Throughput Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Job Throughput</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Processed vs failed jobs over time</p>
-              </div>
-              <div class="flex items-center space-x-4">
-                <select
-                  v-model="timeRange"
-                  class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
-                >
-                  <option value="hour">Last Hour</option>
-                  <option value="day">Last 24 Hours</option>
-                  <option value="week">Last Week</option>
-                </select>
-              </div>
-            </div>
-            <div class="h-[300px] relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Line :data="throughputData" :options="chartOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Wait Time Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <div>
-                <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Job Wait Time</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time jobs spend in queue</p>
-              </div>
-            </div>
-            <div class="h-[300px] relative">
-              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              </div>
-              <Line :data="waitTimeData" :options="chartOptions" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Queue Stats -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of jobs by queue and status</p>
-        </div>
-      </div>
-
-      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 sm:grid-cols-2">
-        <div v-for="(stats, name) in queues" :key="name" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
-              {{ name }}
-            </h4>
-          </div>
-
-          <div class="space-y-4">
-            <!-- Queue Stats -->
-            <div class="grid grid-cols-3 gap-4">
-              <div v-for="(value, status) in stats" :key="status" class="text-center">
-                <div class="text-2xl font-semibold font-mono" :class="{
-                  'text-blue-600 dark:text-blue-400': status === 'queued',
-                  'text-yellow-600 dark:text-yellow-400': status === 'processing',
-                  'text-green-600 dark:text-green-400': status === 'processed',
-                  'text-purple-600 dark:text-purple-400': status === 'released',
-                  'text-red-600 dark:text-red-400': status === 'failed'
-                }">{{ value }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
-              </div>
-            </div>
-
-            <!-- Queue Progress -->
-            <div class="h-2 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
-              <div class="flex h-full">
-                <div class="bg-green-500 h-full" :style="{ width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` }" />
-                <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` }" />
-              </div>
-            </div>
-            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-              <span>Success Rate: {{ ((stats.processed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
-              <span>Failure Rate: {{ ((stats.failed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Workers -->
-    <div class="mt-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Workers</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Active job processing workers</p>
-            </div>
-          </div>
-
-          <div class="mt-6">
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-                <thead>
-                  <tr>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Name</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Queue</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Jobs Processed</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Memory</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">CPU</th>
-                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100">Last Heartbeat</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
-                  <tr v-for="worker in workers" :key="worker.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="font-medium text-gray-900 dark:text-gray-100">{{ worker.name }}</div>
-                      <div class="text-gray-500 dark:text-gray-400 font-mono text-xs">{{ worker.id }}</div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                            :class="getWorkerStatusColor(worker.status)">
-                        {{ worker.status }}
-                      </span>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {{ worker.queue }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <div class="text-gray-900 dark:text-gray-100">{{ worker.jobs_processed }}</div>
-                      <div class="text-gray-500 dark:text-gray-400 text-xs">{{ worker.failed_jobs }} failed</div>
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {{ worker.memory_usage.toFixed(1) }}MB
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                      {{ worker.cpu_usage.toFixed(1) }}%
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
-                      {{ worker.last_heartbeat }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>

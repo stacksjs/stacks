@@ -384,7 +384,7 @@ const formatNumber = (num: number): string => {
               to="/notifications/history"
               class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              <span>View Full History</span>
+              <span>View All</span>
               <div class="i-heroicons-arrow-right h-4 w-4" />
             </router-link>
           </div>

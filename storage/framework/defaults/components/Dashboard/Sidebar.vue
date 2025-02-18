@@ -122,7 +122,8 @@ const sectionContent = {
       { to: '/realtime', icon: 'i-hugeicons-link-03', text: 'Realtime' },
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
       { to: '/commands', icon: 'i-hugeicons-command-line', text: 'Commands' },
-      { to: '/jobs', icon: 'i-hugeicons-queue-02', text: 'Jobs' },
+      { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' },
+      { to: '/queue', icon: 'i-hugeicons-queue-02', text: 'Queue' },
       { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
     ]
   },
