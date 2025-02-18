@@ -1015,7 +1015,15 @@ export class PostModel {
   }
 
   whereNull(column: string): PostModel {
-    return PostModel.whereNull(column)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
   }
 
   static whereNull(column: string): PostModel {

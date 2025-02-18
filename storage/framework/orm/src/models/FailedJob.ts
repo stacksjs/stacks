@@ -1029,7 +1029,15 @@ export class FailedJobModel {
   }
 
   whereNull(column: string): FailedJobModel {
-    return FailedJobModel.whereNull(column)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
   }
 
   static whereNull(column: string): FailedJobModel {

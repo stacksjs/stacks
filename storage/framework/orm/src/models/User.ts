@@ -1121,7 +1121,15 @@ export class UserModel {
   }
 
   whereNull(column: string): UserModel {
-    return UserModel.whereNull(column)
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
   }
 
   static whereNull(column: string): UserModel {

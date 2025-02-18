@@ -1828,7 +1828,15 @@ export async function generateModelString(
         }
 
         whereNull(column: string): ${modelName}Model {
-          return ${modelName}Model.whereNull(column)
+          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+  
+          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+  
+          return this
         }
   
         static whereNull(column: string): ${modelName}Model {
