@@ -138,7 +138,7 @@ const sectionContent = {
     items: [
       { to: '/cloud', icon: 'i-hugeicons-cloud', text: 'Cloud' },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
-      { to: '/emails', icon: 'i-hugeicons-at', text: 'Emails' },
+      { to: '/emails', icon: 'i-hugeicons-mailbox-01', text: 'Emails' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
     ]
   }

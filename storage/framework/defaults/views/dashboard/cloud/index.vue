@@ -16,7 +16,7 @@ interface ServerConfig {
   domain: string
   region: string
   type: string
-  size: keyof typeof workerSizes
+  size: InstanceType
   diskSize: number
   privateNetwork?: string
   subnet?: string
@@ -40,6 +40,14 @@ interface WorkerConfig {
   specs: WorkerSizeSpecs
 }
 
+// Add type for server type
+interface ServerType {
+  value: string
+  label: string
+  badges: string[]
+  description: string
+}
+
 // Available options for dropdowns
 const regions = [
   'us-east-1',
@@ -52,41 +60,102 @@ const regions = [
   'ap-southeast-2',
 ]
 
-const instanceTypes = [
-  't3.nano',
+type InstanceType = keyof typeof workerSizes
+
+// Update instance types to match Forge's offerings
+const instanceTypes: InstanceType[] = [
+  't2.micro',
+  't2.small',
+  't2.medium',
+  't2.large',
+  't2.xlarge',
+  't2.2xlarge',
   't3.micro',
   't3.small',
   't3.medium',
   't3.large',
   't3.xlarge',
   't3.2xlarge',
-  'c6a.large',
-  'c6a.xlarge',
-  'c6a.2xlarge',
-  'c6a.4xlarge',
-  'm6a.large',
-  'm6a.xlarge',
-  'm6a.2xlarge',
-  'm6a.4xlarge',
-  'r6a.large',
-  'r6a.xlarge',
-  'r6a.2xlarge',
-  'r6a.4xlarge',
-]
-
-const serverTypes = [
-  { value: 'app', label: 'Application Server' },
-  { value: 'web', label: 'Web Server' },
-  { value: 'worker', label: 'Worker Server' },
-  { value: 'cache', label: 'Cache Server' },
-  { value: 'search', label: 'Search Server' },
+  'm5.large',
+  'm5.xlarge',
+  'm5.4xlarge',
+  'm5.2xlarge',
+  'm5d.large',
+  'm5d.xlarge',
+  'c5.large',
+  'c5.xlarge',
+  'c5.2xlarge',
+  'c5.4xlarge',
+  'c5.9xlarge',
+  't4g.micro',
+  't4g.small',
+  't4g.medium',
+  't4g.large',
+  't4g.xlarge',
+  't4g.2xlarge',
 ]
 
 const operatingSystems = [
-  'ubuntu-20-lts-x86_64',
+  'ubuntu-24-lts-x86_64',
   'ubuntu-22-lts-x86_64',
+  'ubuntu-20-lts-x86_64',
   'debian-11-x86_64',
   'amazon-linux-2-x86_64',
+]
+
+const serverTypes: ServerType[] = [
+  {
+    value: 'app',
+    label: 'Application Server',
+    badges: ['Bun', 'Nginx', 'Redis', 'Memcached', 'Search Engine'],
+    description: 'These servers are meant to be networked to dedicated cache or database servers.'
+  },
+  {
+    value: 'web',
+    label: 'Web Server',
+    badges: ['Bun', 'Nginx'],
+    description: 'A secured web server with Nginx and PHP.'
+  },
+  {
+    value: 'worker',
+    label: 'Dedicated Worker Server',
+    badges: ['Bun'],
+    description: 'Connect to your local database / cache server to keep your queued jobs processing quickly.'
+  },
+  {
+    value: 'cache',
+    label: 'Cache Server',
+    badges: ['Redis', 'Memcached'],
+    description: 'Dedicated cache server for improved performance.'
+  },
+  {
+    value: 'database',
+    label: 'Database Server',
+    badges: ['Database'],
+    description: 'Separate your app from your data with a dedicated database. Choose from MySQL, PostgreSQL, or MariaDB.'
+  },
+  {
+    value: 'search',
+    label: 'Search Server',
+    badges: ['Search Engine', 'Nginx'],
+    description: 'Search your data with Meilisearch.'
+  },
+  {
+    value: 'loadbalancer',
+    label: 'Load Balancer',
+    badges: ['Nginx'],
+    description: 'Share server load with a load balancer. Distribute traffic between two or more servers.'
+  }
+]
+
+const bunVersions = [
+  'v1.0.30',
+  'v1.0.25',
+  'v1.0.20',
+  'v1.0.15',
+  'v1.0.10',
+  'v1.0.5',
+  'v1.0.0',
 ]
 
 // State
@@ -130,27 +199,37 @@ interface InfraLink {
   target: string | InfraNode
 }
 
-// Update worker sizes with type safety
+// Update worker sizes with accurate specs
 const workerSizes = {
-  't3.nano': { vcpu: 2, ram: 512 },
+  't2.micro': { vcpu: 1, ram: 1024 },
+  't2.small': { vcpu: 1, ram: 2048 },
+  't2.medium': { vcpu: 2, ram: 4096 },
+  't2.large': { vcpu: 2, ram: 8192 },
+  't2.xlarge': { vcpu: 4, ram: 16384 },
+  't2.2xlarge': { vcpu: 8, ram: 32768 },
   't3.micro': { vcpu: 2, ram: 1024 },
   't3.small': { vcpu: 2, ram: 2048 },
   't3.medium': { vcpu: 2, ram: 4096 },
   't3.large': { vcpu: 2, ram: 8192 },
   't3.xlarge': { vcpu: 4, ram: 16384 },
   't3.2xlarge': { vcpu: 8, ram: 32768 },
-  'c6a.large': { vcpu: 2, ram: 4096 },
-  'c6a.xlarge': { vcpu: 4, ram: 8192 },
-  'c6a.2xlarge': { vcpu: 8, ram: 16384 },
-  'c6a.4xlarge': { vcpu: 16, ram: 32768 },
-  'm6a.large': { vcpu: 2, ram: 8192 },
-  'm6a.xlarge': { vcpu: 4, ram: 16384 },
-  'm6a.2xlarge': { vcpu: 8, ram: 32768 },
-  'm6a.4xlarge': { vcpu: 16, ram: 65536 },
-  'r6a.large': { vcpu: 2, ram: 16384 },
-  'r6a.xlarge': { vcpu: 4, ram: 32768 },
-  'r6a.2xlarge': { vcpu: 8, ram: 65536 },
-  'r6a.4xlarge': { vcpu: 16, ram: 131072 },
+  'm5.large': { vcpu: 2, ram: 8192 },
+  'm5.xlarge': { vcpu: 4, ram: 16384 },
+  'm5.4xlarge': { vcpu: 16, ram: 65536 },
+  'm5.2xlarge': { vcpu: 8, ram: 32768 },
+  'm5d.large': { vcpu: 2, ram: 8192 },
+  'm5d.xlarge': { vcpu: 4, ram: 16384 },
+  'c5.large': { vcpu: 2, ram: 4096 },
+  'c5.xlarge': { vcpu: 4, ram: 8192 },
+  'c5.2xlarge': { vcpu: 8, ram: 16384 },
+  'c5.4xlarge': { vcpu: 16, ram: 32768 },
+  'c5.9xlarge': { vcpu: 36, ram: 73728 },
+  't4g.micro': { vcpu: 2, ram: 1024 },
+  't4g.small': { vcpu: 2, ram: 2048 },
+  't4g.medium': { vcpu: 2, ram: 4096 },
+  't4g.large': { vcpu: 2, ram: 8192 },
+  't4g.xlarge': { vcpu: 4, ram: 16384 },
+  't4g.2xlarge': { vcpu: 8, ram: 32768 },
 } as const
 
 type WorkerSize = keyof typeof workerSizes
@@ -927,26 +1006,92 @@ const saveWorkerConfig = async () => {
 
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                    <div class="relative">
+                      <select
+                        v-model="server.type"
+                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 pl-3 pr-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                      >
+                        <option v-for="type in serverTypes" :key="type.value" :value="type.value">
+                          {{ type.label }}
+                        </option>
+                      </select>
+                    </div>
+                    <div v-if="server.type" class="mt-2">
+                      <div class="flex flex-wrap gap-2">
+                        <span
+                          v-for="badge in serverTypes.find((t: ServerType) => t.value === server.type)?.badges"
+                          :key="badge"
+                          class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium"
+                          :class="{
+                            'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300': badge === 'Bun',
+                            'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300': badge === 'Nginx',
+                            'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300': badge === 'Database',
+                            'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300': badge === 'Redis' || badge === 'Memcached',
+                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300': badge === 'Search Engine'
+                          }"
+                        >
+                          {{ badge }}
+                        </span>
+                      </div>
+                      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        {{ serverTypes.find((t: ServerType) => t.value === server.type)?.description }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bun Version</label>
                     <select
-                      v-model="server.type"
+                      v-model="server.bunVersion"
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
-                      <option v-for="type in serverTypes" :key="type.value" :value="type.value">
-                        {{ type.label }}
+                      <option v-for="version in bunVersions" :key="version" :value="version">
+                        {{ version }}
                       </option>
                     </select>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Size</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database</label>
                     <select
-                      v-model="server.size"
+                      v-model="server.database"
                       class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
-                      <option v-for="size in instanceTypes" :key="size" :value="size">
-                        {{ size }} ({{ workerSizes[size].vcpu }} vCPU, {{ (workerSizes[size].ram / 1024).toFixed(1) }}GB RAM)
-                      </option>
+                      <option value="">None</option>
+                      <option value="mysql">MySQL</option>
+                      <option value="postgresql">PostgreSQL</option>
+                      <option value="sqlite">SQLite</option>
+                      <option value="mongodb">MongoDB</option>
                     </select>
+                  </div>
+
+                  <div v-if="server.database">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database Name</label>
+                    <input
+                      v-model="server.databaseName"
+                      type="text"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                      placeholder="my_database"
+                    >
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Size</label>
+                    <div class="relative">
+                      <select
+                        v-model="server.size"
+                        class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                      >
+                        <option v-for="size in instanceTypes" :key="size" :value="size">
+                          {{ (workerSizes[size as keyof typeof workerSizes].ram / 1024).toFixed(0) }}GB RAM ({{ size }}) (64-bit {{ size.includes('g.') ? 'arm' : 'x86' }}) - {{ workerSizes[size as keyof typeof workerSizes].vcpu }} vCPUs
+                        </option>
+                      </select>
+                      <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-gray-400">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                        </svg>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
