@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/calendar",
   "type": "module",
-  "version": "0.69.4",
+  "version": "0.69.5",
   "description": "Calendar components for all.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],

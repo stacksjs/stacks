@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/x-ray",
   "type": "module",
-  "version": "0.69.4",
+  "version": "0.69.5",
   "description": "All you need to debug, log & analyze.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
