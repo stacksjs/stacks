@@ -1937,7 +1937,7 @@ export async function generateModelString(
           return this
         }
 
-        whereBetween<V>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
+        whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
           return this.applyWhereBetween<V>(column, range)
         }
 

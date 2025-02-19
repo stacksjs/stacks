@@ -1260,7 +1260,7 @@ export class UserModel {
     return this
   }
 
-  whereBetween<V>(column: keyof UsersTable, range: [V, V]): UserModel {
+  whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
