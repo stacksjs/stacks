@@ -1123,7 +1123,7 @@ export class SubscriberEmailModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
+  applyWhereBetween<V>(column: keyof SubscriberEmailsTable, range: [V, V]): SubscriberEmailModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1137,14 +1137,14 @@ export class SubscriberEmailModel {
     return this
   }
 
-  whereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof SubscriberEmailsTable, range: [V, V]): SubscriberEmailModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
+  static whereBetween<V = number>(column: keyof SubscriberEmailsTable, range: [V, V]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
@@ -1167,7 +1167,7 @@ export class SubscriberEmailModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
+  applyWhereNotIn<V>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1177,14 +1177,14 @@ export class SubscriberEmailModel {
     return this
   }
 
-  whereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
+  whereNotIn<V>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
+  static whereNotIn<V = number>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

@@ -1162,7 +1162,7 @@ export class FailedJobModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof FailedJobsTable, range: [any, any]): FailedJobModel {
+  applyWhereBetween<V>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1176,14 +1176,14 @@ export class FailedJobModel {
     return this
   }
 
-  whereBetween(column: keyof FailedJobsTable, range: [any, any]): FailedJobModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof FailedJobsTable, range: [any, any]): FailedJobModel {
+  static whereBetween<V = number>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
@@ -1206,7 +1206,7 @@ export class FailedJobModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
+  applyWhereNotIn<V>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1216,14 +1216,14 @@ export class FailedJobModel {
     return this
   }
 
-  whereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
+  whereNotIn<V>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
+  static whereNotIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

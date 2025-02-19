@@ -1158,7 +1158,7 @@ export class AccessTokenModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
+  applyWhereBetween<V>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1172,14 +1172,14 @@ export class AccessTokenModel {
     return this
   }
 
-  whereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
+  static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
@@ -1202,7 +1202,7 @@ export class AccessTokenModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
+  applyWhereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1212,14 +1212,14 @@ export class AccessTokenModel {
     return this
   }
 
-  whereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
+  whereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
+  static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

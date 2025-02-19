@@ -1274,7 +1274,7 @@ export class SubscriptionModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof SubscriptionsTable, range: [any, any]): SubscriptionModel {
+  applyWhereBetween<V>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1288,14 +1288,14 @@ export class SubscriptionModel {
     return this
   }
 
-  whereBetween(column: keyof SubscriptionsTable, range: [any, any]): SubscriptionModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof SubscriptionsTable, range: [any, any]): SubscriptionModel {
+  static whereBetween<V = number>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
@@ -1318,7 +1318,7 @@ export class SubscriptionModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
+  applyWhereNotIn<V>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1328,14 +1328,14 @@ export class SubscriptionModel {
     return this
   }
 
-  whereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
+  whereNotIn<V>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
+  static whereNotIn<V = number>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

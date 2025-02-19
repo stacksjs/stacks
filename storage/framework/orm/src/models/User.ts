@@ -1246,7 +1246,7 @@ export class UserModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
+  applyWhereBetween<V>(column: keyof UsersTable, range: [V, V]): UserModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1260,14 +1260,14 @@ export class UserModel {
     return this
   }
 
-  whereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof UsersTable, range: [V, V]): UserModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
+  static whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
     const instance = new UserModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof UsersTable, value: string): UserModel {
@@ -1290,7 +1290,7 @@ export class UserModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof UsersTable, values: any[]): UserModel {
+  applyWhereNotIn<V>(column: keyof UsersTable, values: V[]): UserModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1300,14 +1300,14 @@ export class UserModel {
     return this
   }
 
-  whereNotIn(column: keyof UsersTable, values: any[]): UserModel {
+  whereNotIn<V>(column: keyof UsersTable, values: V[]): UserModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof UsersTable, values: any[]): UserModel {
+  static whereNotIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
     const instance = new UserModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

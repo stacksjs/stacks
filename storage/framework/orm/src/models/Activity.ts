@@ -1208,7 +1208,7 @@ export class ActivityModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
+  applyWhereBetween<V>(column: keyof ActivitiesTable, range: [V, V]): ActivityModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1222,14 +1222,14 @@ export class ActivityModel {
     return this
   }
 
-  whereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof ActivitiesTable, range: [V, V]): ActivityModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
+  static whereBetween<V = number>(column: keyof ActivitiesTable, range: [V, V]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof ActivitiesTable, value: string): ActivityModel {
@@ -1252,7 +1252,7 @@ export class ActivityModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
+  applyWhereNotIn<V>(column: keyof ActivitiesTable, values: V[]): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1262,14 +1262,14 @@ export class ActivityModel {
     return this
   }
 
-  whereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
+  whereNotIn<V>(column: keyof ActivitiesTable, values: V[]): ActivityModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
+  static whereNotIn<V = number>(column: keyof ActivitiesTable, values: V[]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

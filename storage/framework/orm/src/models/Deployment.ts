@@ -1223,7 +1223,7 @@ export class DeploymentModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
+  applyWhereBetween<V>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1237,14 +1237,14 @@ export class DeploymentModel {
     return this
   }
 
-  whereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
+  static whereBetween<V = number>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
@@ -1267,7 +1267,7 @@ export class DeploymentModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
+  applyWhereNotIn<V>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1277,14 +1277,14 @@ export class DeploymentModel {
     return this
   }
 
-  whereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
+  whereNotIn<V>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
+  static whereNotIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

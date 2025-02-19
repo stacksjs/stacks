@@ -1230,7 +1230,7 @@ export class PaymentMethodModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
+  applyWhereBetween<V>(column: keyof PaymentMethodsTable, range: [V, V]): PaymentMethodModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1244,14 +1244,14 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof PaymentMethodsTable, range: [V, V]): PaymentMethodModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
+  static whereBetween<V = number>(column: keyof PaymentMethodsTable, range: [V, V]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
@@ -1274,7 +1274,7 @@ export class PaymentMethodModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
+  applyWhereNotIn<V>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1284,14 +1284,14 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
+  whereNotIn<V>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
+  static whereNotIn<V = number>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

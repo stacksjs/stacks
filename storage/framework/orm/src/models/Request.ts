@@ -1242,7 +1242,7 @@ export class RequestModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
+  applyWhereBetween<V>(column: keyof RequestsTable, range: [V, V]): RequestModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1256,14 +1256,14 @@ export class RequestModel {
     return this
   }
 
-  whereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof RequestsTable, range: [V, V]): RequestModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
+  static whereBetween<V = number>(column: keyof RequestsTable, range: [V, V]): RequestModel {
     const instance = new RequestModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof RequestsTable, value: string): RequestModel {
@@ -1286,7 +1286,7 @@ export class RequestModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
+  applyWhereNotIn<V>(column: keyof RequestsTable, values: V[]): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1296,14 +1296,14 @@ export class RequestModel {
     return this
   }
 
-  whereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
+  whereNotIn<V>(column: keyof RequestsTable, values: V[]): RequestModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
+  static whereNotIn<V = number>(column: keyof RequestsTable, values: V[]): RequestModel {
     const instance = new RequestModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

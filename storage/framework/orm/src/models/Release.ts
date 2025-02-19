@@ -1094,7 +1094,7 @@ export class ReleaseModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
+  applyWhereBetween<V>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1108,14 +1108,14 @@ export class ReleaseModel {
     return this
   }
 
-  whereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
+  static whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
@@ -1138,7 +1138,7 @@ export class ReleaseModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
+  applyWhereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1148,14 +1148,14 @@ export class ReleaseModel {
     return this
   }
 
-  whereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
+  whereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
+  static whereNotIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

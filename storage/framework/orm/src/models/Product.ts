@@ -1210,7 +1210,7 @@ export class ProductModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ProductsTable, range: [any, any]): ProductModel {
+  applyWhereBetween<V>(column: keyof ProductsTable, range: [V, V]): ProductModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1224,14 +1224,14 @@ export class ProductModel {
     return this
   }
 
-  whereBetween(column: keyof ProductsTable, range: [any, any]): ProductModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof ProductsTable, range: [V, V]): ProductModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ProductsTable, range: [any, any]): ProductModel {
+  static whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof ProductsTable, value: string): ProductModel {
@@ -1254,7 +1254,7 @@ export class ProductModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
+  applyWhereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1264,14 +1264,14 @@ export class ProductModel {
     return this
   }
 
-  whereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
+  whereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
+  static whereNotIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

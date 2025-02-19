@@ -1203,7 +1203,7 @@ export class TransactionModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof TransactionsTable, range: [any, any]): TransactionModel {
+  applyWhereBetween<V>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1217,14 +1217,14 @@ export class TransactionModel {
     return this
   }
 
-  whereBetween(column: keyof TransactionsTable, range: [any, any]): TransactionModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof TransactionsTable, range: [any, any]): TransactionModel {
+  static whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof TransactionsTable, value: string): TransactionModel {
@@ -1247,7 +1247,7 @@ export class TransactionModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
+  applyWhereNotIn<V>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1257,14 +1257,14 @@ export class TransactionModel {
     return this
   }
 
-  whereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
+  whereNotIn<V>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
+  static whereNotIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {

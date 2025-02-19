@@ -1145,7 +1145,7 @@ export class ProjectModel {
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
+  applyWhereBetween<V>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1159,14 +1159,14 @@ export class ProjectModel {
     return this
   }
 
-  whereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
+  static whereBetween<V = number>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
   applyWhereLike(column: keyof ProjectsTable, value: string): ProjectModel {
@@ -1189,7 +1189,7 @@ export class ProjectModel {
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
+  applyWhereNotIn<V>(column: keyof ProjectsTable, values: V[]): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1199,14 +1199,14 @@ export class ProjectModel {
     return this
   }
 
-  whereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
+  whereNotIn<V>(column: keyof ProjectsTable, values: V[]): ProjectModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
+  static whereNotIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
