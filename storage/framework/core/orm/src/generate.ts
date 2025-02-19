@@ -1880,7 +1880,7 @@ export async function generateModelString(
           return instance
         }
 
-        applyWhereBetween(column: string, range: [any, any]): ${modelName}Model {
+        applyWhereBetween(column: keyof ${formattedTableName}Table, range: [any, any]): ${modelName}Model {
           if (range.length !== 2) {
             throw new HttpError(500, 'Range must have exactly two values: [min, max]')
           }
@@ -1894,11 +1894,11 @@ export async function generateModelString(
           return this
         }
 
-        whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        whereBetween(column: keyof ${formattedTableName}Table, range: [any, any]): ${modelName}Model {
           return this.applyWhereBetween(column, range)
         }
 
-        static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        static whereBetween(column: keyof ${formattedTableName}Table, range: [any, any]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           return instance.applyWhereBetween(column, range)

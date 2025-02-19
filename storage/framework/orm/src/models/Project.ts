@@ -1101,7 +1101,7 @@ export class ProjectModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): ProjectModel {
+  applyWhereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1115,11 +1115,11 @@ export class ProjectModel {
     return this
   }
 
-  whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
+  whereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof ProjectType, range: [any, any]): ProjectModel {
+  static whereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {
     const instance = new ProjectModel(null)
 
     return instance.applyWhereBetween(column, range)

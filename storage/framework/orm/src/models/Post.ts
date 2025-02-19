@@ -1080,7 +1080,7 @@ export class PostModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): PostModel {
+  applyWhereBetween(column: keyof PostsTable, range: [any, any]): PostModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1094,11 +1094,11 @@ export class PostModel {
     return this
   }
 
-  whereBetween(column: keyof PostType, range: [any, any]): PostModel {
+  whereBetween(column: keyof PostsTable, range: [any, any]): PostModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof PostType, range: [any, any]): PostModel {
+  static whereBetween(column: keyof PostsTable, range: [any, any]): PostModel {
     const instance = new PostModel(null)
 
     return instance.applyWhereBetween(column, range)

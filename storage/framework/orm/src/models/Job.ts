@@ -1118,7 +1118,7 @@ export class JobModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): JobModel {
+  applyWhereBetween(column: keyof JobsTable, range: [any, any]): JobModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1132,11 +1132,11 @@ export class JobModel {
     return this
   }
 
-  whereBetween(column: keyof JobType, range: [any, any]): JobModel {
+  whereBetween(column: keyof JobsTable, range: [any, any]): JobModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof JobType, range: [any, any]): JobModel {
+  static whereBetween(column: keyof JobsTable, range: [any, any]): JobModel {
     const instance = new JobModel(null)
 
     return instance.applyWhereBetween(column, range)

@@ -1198,7 +1198,7 @@ export class RequestModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): RequestModel {
+  applyWhereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1212,11 +1212,11 @@ export class RequestModel {
     return this
   }
 
-  whereBetween(column: keyof RequestType, range: [any, any]): RequestModel {
+  whereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof RequestType, range: [any, any]): RequestModel {
+  static whereBetween(column: keyof RequestsTable, range: [any, any]): RequestModel {
     const instance = new RequestModel(null)
 
     return instance.applyWhereBetween(column, range)

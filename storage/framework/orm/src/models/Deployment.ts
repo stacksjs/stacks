@@ -1179,7 +1179,7 @@ export class DeploymentModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): DeploymentModel {
+  applyWhereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1193,11 +1193,11 @@ export class DeploymentModel {
     return this
   }
 
-  whereBetween(column: keyof DeploymentType, range: [any, any]): DeploymentModel {
+  whereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof DeploymentType, range: [any, any]): DeploymentModel {
+  static whereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     return instance.applyWhereBetween(column, range)

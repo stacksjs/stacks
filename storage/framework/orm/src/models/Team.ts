@@ -1177,7 +1177,7 @@ export class TeamModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): TeamModel {
+  applyWhereBetween(column: keyof TeamsTable, range: [any, any]): TeamModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1191,11 +1191,11 @@ export class TeamModel {
     return this
   }
 
-  whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
+  whereBetween(column: keyof TeamsTable, range: [any, any]): TeamModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
+  static whereBetween(column: keyof TeamsTable, range: [any, any]): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereBetween(column, range)

@@ -1118,7 +1118,7 @@ export class ErrorModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): ErrorModel {
+  applyWhereBetween(column: keyof ErrorsTable, range: [any, any]): ErrorModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1132,11 +1132,11 @@ export class ErrorModel {
     return this
   }
 
-  whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
+  whereBetween(column: keyof ErrorsTable, range: [any, any]): ErrorModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof ErrorType, range: [any, any]): ErrorModel {
+  static whereBetween(column: keyof ErrorsTable, range: [any, any]): ErrorModel {
     const instance = new ErrorModel(null)
 
     return instance.applyWhereBetween(column, range)

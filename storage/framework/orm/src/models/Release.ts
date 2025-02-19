@@ -1050,7 +1050,7 @@ export class ReleaseModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): ReleaseModel {
+  applyWhereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1064,11 +1064,11 @@ export class ReleaseModel {
     return this
   }
 
-  whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+  whereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+  static whereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereBetween(column, range)

@@ -1079,7 +1079,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): SubscriberEmailModel {
+  applyWhereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1093,11 +1093,11 @@ export class SubscriberEmailModel {
     return this
   }
 
-  whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
+  whereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof SubscriberEmailType, range: [any, any]): SubscriberEmailModel {
+  static whereBetween(column: keyof SubscriberEmailsTable, range: [any, any]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     return instance.applyWhereBetween(column, range)

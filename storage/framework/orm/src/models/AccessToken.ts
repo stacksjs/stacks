@@ -1114,7 +1114,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): AccessTokenModel {
+  applyWhereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1128,11 +1128,11 @@ export class AccessTokenModel {
     return this
   }
 
-  whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
+  whereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
+  static whereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereBetween(column, range)

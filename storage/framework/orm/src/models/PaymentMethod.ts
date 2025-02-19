@@ -1186,7 +1186,7 @@ export class PaymentMethodModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): PaymentMethodModel {
+  applyWhereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1200,11 +1200,11 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereBetween(column: keyof PaymentMethodType, range: [any, any]): PaymentMethodModel {
+  whereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof PaymentMethodType, range: [any, any]): PaymentMethodModel {
+  static whereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     return instance.applyWhereBetween(column, range)

@@ -1164,7 +1164,7 @@ export class ActivityModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): ActivityModel {
+  applyWhereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1178,11 +1178,11 @@ export class ActivityModel {
     return this
   }
 
-  whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
+  whereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof ActivityType, range: [any, any]): ActivityModel {
+  static whereBetween(column: keyof ActivitiesTable, range: [any, any]): ActivityModel {
     const instance = new ActivityModel(null)
 
     return instance.applyWhereBetween(column, range)

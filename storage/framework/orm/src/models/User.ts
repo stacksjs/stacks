@@ -1202,7 +1202,7 @@ export class UserModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): UserModel {
+  applyWhereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1216,11 +1216,11 @@ export class UserModel {
     return this
   }
 
-  whereBetween(column: keyof UserType, range: [any, any]): UserModel {
+  whereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
+  static whereBetween(column: keyof UsersTable, range: [any, any]): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereBetween(column, range)
