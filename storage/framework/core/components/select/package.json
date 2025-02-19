@@ -39,6 +39,6 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
-    "unplugin-icons": "^22.0.0"
+    "unplugin-icons": "^22.1.0"
   }
 }

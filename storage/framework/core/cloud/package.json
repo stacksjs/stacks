@@ -45,11 +45,11 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-bedrock": "^3.750.0",
+    "@aws-sdk/client-bedrock": "^3.751.0",
     "@aws-sdk/client-cloudformation": "^3.750.0",
     "@aws-sdk/client-cloudfront": "^3.750.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.750.0",
-    "@aws-sdk/client-dynamodb": "3.750.0",
+    "@aws-sdk/client-dynamodb": "3.751.0",
     "@aws-sdk/client-ec2": "^3.750.0",
     "@aws-sdk/client-efs": "^3.750.0",
     "@aws-sdk/client-iam": "^3.750.0",
@@ -70,7 +70,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk": "^2.179.0",
+    "aws-cdk": "^2.1000.1",
     "aws-cdk-lib": "^2.179.0",
     "aws4fetch": "^1.0.20",
     "constructs": "^10.4.2",
