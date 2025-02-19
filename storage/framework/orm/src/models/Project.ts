@@ -1125,20 +1125,24 @@ export class ProjectModel {
     return instance
   }
 
-  whereIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
-    return ProjectModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof ProjectsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
+  whereIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
     const instance = new ProjectModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof ProjectsTable, range: [any, any]): ProjectModel {

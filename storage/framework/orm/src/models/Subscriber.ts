@@ -1074,20 +1074,24 @@ export class SubscriberModel {
     return instance
   }
 
-  whereIn(column: keyof SubscribersTable, values: any[]): SubscriberModel {
-    return SubscriberModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof SubscribersTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof SubscribersTable, values: any[]): SubscriberModel {
+  whereIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof SubscribersTable, range: [any, any]): SubscriberModel {

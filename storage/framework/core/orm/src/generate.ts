@@ -1902,21 +1902,25 @@ export async function generateModelString(
         }
   
         ${whereStatements}
+
+        applyWhereIn<V>(column: keyof ${formattedTableName}Table, values: V[]) {
+          this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
   
-        whereIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
-          return ${modelName}Model.whereIn(column, values)
+          this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+  
+          this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+  
+          return this
+        }
+
+        whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          return this.applyWhereIn<V>(column, values)
         }
   
-        static whereIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
+        static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-  
-          instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-  
-          return instance
+          return instance.applyWhereIn<V>(column, values)
         }
 
         applyWhereBetween(column: keyof ${formattedTableName}Table, range: [any, any]): ${modelName}Model {

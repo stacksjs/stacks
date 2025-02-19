@@ -1203,20 +1203,24 @@ export class TeamModel {
     return instance
   }
 
-  whereIn(column: keyof TeamsTable, values: any[]): TeamModel {
-    return TeamModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof TeamsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof TeamsTable, values: any[]): TeamModel {
+  whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof TeamsTable, range: [any, any]): TeamModel {

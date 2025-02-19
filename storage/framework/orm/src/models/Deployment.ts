@@ -1203,20 +1203,24 @@ export class DeploymentModel {
     return instance
   }
 
-  whereIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
-    return DeploymentModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof DeploymentsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
+  whereIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof DeploymentsTable, range: [any, any]): DeploymentModel {

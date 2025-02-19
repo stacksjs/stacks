@@ -1183,20 +1183,24 @@ export class TransactionModel {
     return instance
   }
 
-  whereIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
-    return TransactionModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof TransactionsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
+  whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof TransactionsTable, range: [any, any]): TransactionModel {

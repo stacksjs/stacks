@@ -1074,20 +1074,24 @@ export class ReleaseModel {
     return instance
   }
 
-  whereIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
-    return ReleaseModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof ReleasesTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
+  whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof ReleasesTable, range: [any, any]): ReleaseModel {

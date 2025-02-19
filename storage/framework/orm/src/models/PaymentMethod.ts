@@ -1210,20 +1210,24 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
-    return PaymentMethodModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof PaymentMethodsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
+  whereIn<V = number>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof PaymentMethodsTable, range: [any, any]): PaymentMethodModel {

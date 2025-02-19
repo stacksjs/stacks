@@ -1142,20 +1142,24 @@ export class JobModel {
     return instance
   }
 
-  whereIn(column: keyof JobsTable, values: any[]): JobModel {
-    return JobModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof JobsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof JobsTable, values: any[]): JobModel {
+  whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
     const instance = new JobModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof JobsTable, range: [any, any]): JobModel {

@@ -1138,20 +1138,24 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
-    return AccessTokenModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof PersonalAccessTokensTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
+  whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
   applyWhereBetween(column: keyof PersonalAccessTokensTable, range: [any, any]): AccessTokenModel {
