@@ -724,7 +724,7 @@ export class ProjectModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProjectsTable>) => void): ProjectModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -780,13 +780,13 @@ export class ProjectModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProjectModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProjectsTable>) => void): ProjectModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ProjectsTable>) => void,
   ): ProjectModel {
     const instance = new ProjectModel(null)
 

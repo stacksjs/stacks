@@ -781,7 +781,7 @@ export class PaymentMethodModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PaymentMethodsTable>) => void): PaymentMethodModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -837,13 +837,13 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PaymentMethodModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PaymentMethodsTable>) => void): PaymentMethodModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<PaymentMethodsTable>) => void,
   ): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 

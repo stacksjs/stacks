@@ -719,7 +719,7 @@ export class PostModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PostsTable>) => void): PostModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -775,13 +775,13 @@ export class PostModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PostsTable>) => void): PostModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<PostsTable>) => void,
   ): PostModel {
     const instance = new PostModel(null)
 

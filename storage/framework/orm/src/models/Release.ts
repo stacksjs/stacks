@@ -697,7 +697,7 @@ export class ReleaseModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ReleasesTable>) => void): ReleaseModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -753,13 +753,13 @@ export class ReleaseModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ReleasesTable>) => void): ReleaseModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ReleasesTable>) => void,
   ): ReleaseModel {
     const instance = new ReleaseModel(null)
 

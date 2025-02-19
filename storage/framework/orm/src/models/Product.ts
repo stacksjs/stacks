@@ -761,7 +761,7 @@ export class ProductModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -817,13 +817,13 @@ export class ProductModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ProductsTable>) => void,
   ): ProductModel {
     const instance = new ProductModel(null)
 

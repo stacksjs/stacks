@@ -1516,7 +1516,7 @@ export async function generateModelString(
           return instance.applyDoesntHave(relation)
         }
 
-        applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+        applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void): ${modelName}Model {
           const subqueryBuilder = new SubqueryBuilder()
 
           callback(subqueryBuilder)
@@ -1572,13 +1572,13 @@ export async function generateModelString(
           return this
         }
 
-        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void): ${modelName}Model {
           return this.applyWhereDoesntHave(relation, callback)
         }
 
         static whereDoesntHave(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void
         ): ${modelName}Model {
           const instance = new ${modelName}Model(null)
           

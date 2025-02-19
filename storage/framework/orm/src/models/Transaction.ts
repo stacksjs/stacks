@@ -770,7 +770,7 @@ export class TransactionModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TransactionsTable>) => void): TransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -826,13 +826,13 @@ export class TransactionModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TransactionsTable>) => void): TransactionModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<TransactionsTable>) => void,
   ): TransactionModel {
     const instance = new TransactionModel(null)
 

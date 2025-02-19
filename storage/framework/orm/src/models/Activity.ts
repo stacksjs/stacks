@@ -760,7 +760,7 @@ export class ActivityModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ActivitiesTable>) => void): ActivityModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -816,13 +816,13 @@ export class ActivityModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ActivityModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ActivitiesTable>) => void): ActivityModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ActivitiesTable>) => void,
   ): ActivityModel {
     const instance = new ActivityModel(null)
 

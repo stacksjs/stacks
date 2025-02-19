@@ -1,6 +1,6 @@
 type Operator = '=' | '<' | '>' | '<=' | '>=' | '<>' | '!=' | 'like' | 'not like' | 'in' | 'not in' | 'between' | 'not between' | 'is' | 'is not'
 
-interface WhereCondition<T, V = any> {
+interface WhereCondition<T = any, V = any> {
   type: 'and' | 'or'
   method: 'where' | 'whereIn' | 'whereNull' | 'whereNotNull' | 'whereBetween' | 'whereExists'
   column: keyof T
@@ -13,22 +13,20 @@ interface WhereCondition<T, V = any> {
 export class SubqueryBuilder<T> {
   private conditions: WhereCondition<T>[] = []
 
-  where<V>(column: keyof T, valueOrOperator: Operator, value?: V): void {
-    if (value === undefined) {
-      this.addCondition('and', 'where', column, '=', valueOrOperator as any)
-    }
-    else {
-      this.addCondition('and', 'where', column, valueOrOperator, value)
-    }
+  where<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue as Operator
+    const actualValue: V = value === undefined ? operatorOrValue as V : value
+
+    this.addCondition('and', 'where', column, operator, actualValue)
   }
 
-  orWhere<V>(column: keyof T, valueOrOperator: Operator, value?: V): void {
-    if (value === undefined) {
-      this.addCondition('or', 'where', column, '=', valueOrOperator as any)
-    }
-    else {
-      this.addCondition('or', 'where', column, valueOrOperator, value)
-    }
+  orWhere<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue as Operator
+    const actualValue: V = value === undefined ? operatorOrValue as V : value
+
+    this.addCondition('or', 'where', column, operator, actualValue)
   }
 
   whereIn<V>(column: keyof T, values: V[]): void {

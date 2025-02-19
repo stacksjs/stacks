@@ -697,7 +697,7 @@ export class SubscriberModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<SubscribersTable>) => void): SubscriberModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -753,13 +753,13 @@ export class SubscriberModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<SubscribersTable>) => void): SubscriberModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<SubscribersTable>) => void,
   ): SubscriberModel {
     const instance = new SubscriberModel(null)
 

@@ -733,7 +733,7 @@ export class ErrorModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ErrorsTable>) => void): ErrorModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -789,13 +789,13 @@ export class ErrorModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ErrorModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ErrorsTable>) => void): ErrorModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ErrorsTable>) => void,
   ): ErrorModel {
     const instance = new ErrorModel(null)
 

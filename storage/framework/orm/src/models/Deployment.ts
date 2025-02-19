@@ -774,7 +774,7 @@ export class DeploymentModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<DeploymentsTable>) => void): DeploymentModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -830,13 +830,13 @@ export class DeploymentModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): DeploymentModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<DeploymentsTable>) => void): DeploymentModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<DeploymentsTable>) => void,
   ): DeploymentModel {
     const instance = new DeploymentModel(null)
 

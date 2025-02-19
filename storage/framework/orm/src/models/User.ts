@@ -808,7 +808,7 @@ export class UserModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<UsersTable>) => void): UserModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -864,13 +864,13 @@ export class UserModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<UsersTable>) => void): UserModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<UsersTable>) => void,
   ): UserModel {
     const instance = new UserModel(null)
 

@@ -733,7 +733,7 @@ export class JobModel {
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<JobsTable>) => void): JobModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -789,13 +789,13 @@ export class JobModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): JobModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<JobsTable>) => void): JobModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<JobsTable>) => void,
   ): JobModel {
     const instance = new JobModel(null)
 
