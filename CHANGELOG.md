@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+## v0.69.0...v0.69.1
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.69.0...v0.69.1)
+
+### 🏡 Chore
+
+- Wip ([070afee76](https://github.com/stacksjs/stacks/commit/070afee76))
+- Wip ([686151303](https://github.com/stacksjs/stacks/commit/686151303))
+- Release v0.69.1 ([db264c600](https://github.com/stacksjs/stacks/commit/db264c600))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](http://github.com/chrisbbreuer))
+
 ## v0.68.2...v0.69.0
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.68.2...v0.69.0)
