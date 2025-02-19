@@ -966,13 +966,13 @@ export class ActivityModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ActivityModel {
+  whereColumn(first: keyof ActivitiesTable, operator: string, second: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ActivityModel {
+  static whereColumn(first: keyof ActivitiesTable, operator: string, second: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -980,7 +980,7 @@ export class ActivityModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ActivityModel {
+  applyWhereRef(column: keyof ActivitiesTable, ...args: string[]): ActivityModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -991,11 +991,11 @@ export class ActivityModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ActivityModel {
+  whereRef(column: keyof ActivitiesTable, ...args: string[]): ActivityModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ActivityModel {
+  static whereRef(column: keyof ActivitiesTable, ...args: string[]): ActivityModel {
     const instance = new ActivityModel(null)
 
     return instance.applyWhereRef(column, ...args)

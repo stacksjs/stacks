@@ -969,13 +969,13 @@ export class TransactionModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): TransactionModel {
+  whereColumn(first: keyof TransactionsTable, operator: string, second: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): TransactionModel {
+  static whereColumn(first: keyof TransactionsTable, operator: string, second: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -983,7 +983,7 @@ export class TransactionModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): TransactionModel {
+  applyWhereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -994,11 +994,11 @@ export class TransactionModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): TransactionModel {
+  whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): TransactionModel {
+  static whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhereRef(column, ...args)

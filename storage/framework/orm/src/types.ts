@@ -9,6 +9,7 @@ import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
+import type { RequestsTable } from '../src/models/Request'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
@@ -53,6 +54,7 @@ export interface Database {
   personal_access_tokens: PersonalAccessTokensTable
   team_users: TeamUsersTable
   teams: TeamsTable
+  requests: RequestsTable
   activities: ActivitiesTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable

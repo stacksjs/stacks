@@ -963,13 +963,13 @@ export class TeamModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): TeamModel {
+  whereColumn(first: keyof TeamsTable, operator: string, second: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): TeamModel {
+  static whereColumn(first: keyof TeamsTable, operator: string, second: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -977,7 +977,7 @@ export class TeamModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): TeamModel {
+  applyWhereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -988,11 +988,11 @@ export class TeamModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): TeamModel {
+  whereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): TeamModel {
+  static whereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereRef(column, ...args)

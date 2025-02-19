@@ -20,6 +20,8 @@ export { default as Project } from './Project'
 
 export { default as Release } from './Release'
 
+export { default as Request } from './Request'
+
 export { default as Subscriber } from './Subscriber'
 
 export { default as SubscriberEmail } from './SubscriberEmail'

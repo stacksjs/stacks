@@ -11,6 +11,13 @@ export interface Attributes {
   billing_email: string
   path: string
   is_personal: boolean
+  method: string[]
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
   title: string
   address: string
   latlng: string

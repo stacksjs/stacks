@@ -973,13 +973,13 @@ export class DeploymentModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): DeploymentModel {
+  whereColumn(first: keyof DeploymentsTable, operator: string, second: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): DeploymentModel {
+  static whereColumn(first: keyof DeploymentsTable, operator: string, second: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -987,7 +987,7 @@ export class DeploymentModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): DeploymentModel {
+  applyWhereRef(column: keyof DeploymentsTable, ...args: string[]): DeploymentModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -998,11 +998,11 @@ export class DeploymentModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): DeploymentModel {
+  whereRef(column: keyof DeploymentsTable, ...args: string[]): DeploymentModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): DeploymentModel {
+  static whereRef(column: keyof DeploymentsTable, ...args: string[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     return instance.applyWhereRef(column, ...args)

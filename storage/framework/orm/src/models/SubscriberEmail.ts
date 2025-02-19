@@ -921,13 +921,13 @@ export class SubscriberEmailModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+  whereColumn(first: keyof SubscriberEmailsTable, operator: string, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): SubscriberEmailModel {
+  static whereColumn(first: keyof SubscriberEmailsTable, operator: string, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -935,7 +935,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): SubscriberEmailModel {
+  applyWhereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -946,11 +946,11 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+  whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): SubscriberEmailModel {
+  static whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     return instance.applyWhereRef(column, ...args)

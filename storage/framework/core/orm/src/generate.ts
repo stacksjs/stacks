@@ -1727,13 +1727,13 @@ export async function generateModelString(
           return instance.applyWhere(instance, column, ...args)
         }
 
-        whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+        whereColumn(first: keyof ${formattedTableName}Table, operator: string, second: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
           return this
         }
 
-        static whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+        static whereColumn(first: keyof ${formattedTableName}Table, operator: string, second: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1741,7 +1741,7 @@ export async function generateModelString(
           return instance
         }
 
-        applyWhereRef(column: string, ...args: string[]): ${modelName}Model {
+        applyWhereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           const [operatorOrValue, value] = args
           const operator = value === undefined ? '=' : operatorOrValue
           const actualValue = value === undefined ? operatorOrValue : value
@@ -1752,11 +1752,11 @@ export async function generateModelString(
           return instance
         }
         
-        whereRef(column: string, ...args: string[]): ${modelName}Model {
+        whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           return this.applyWhereRef(column, ...args)
         }
 
-        static whereRef(column: string, ...args: string[]): ${modelName}Model {
+        static whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           return instance.applyWhereRef(column, ...args)

@@ -1000,13 +1000,13 @@ export class SubscriptionModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): SubscriptionModel {
+  whereColumn(first: keyof SubscriptionsTable, operator: string, second: keyof SubscriptionsTable): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): SubscriptionModel {
+  static whereColumn(first: keyof SubscriptionsTable, operator: string, second: keyof SubscriptionsTable): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1014,7 +1014,7 @@ export class SubscriptionModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): SubscriptionModel {
+  applyWhereRef(column: keyof SubscriptionsTable, ...args: string[]): SubscriptionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -1025,11 +1025,11 @@ export class SubscriptionModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): SubscriptionModel {
+  whereRef(column: keyof SubscriptionsTable, ...args: string[]): SubscriptionModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): SubscriptionModel {
+  static whereRef(column: keyof SubscriptionsTable, ...args: string[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     return instance.applyWhereRef(column, ...args)

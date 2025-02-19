@@ -928,13 +928,13 @@ export class FailedJobModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): FailedJobModel {
+  whereColumn(first: keyof FailedJobsTable, operator: string, second: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): FailedJobModel {
+  static whereColumn(first: keyof FailedJobsTable, operator: string, second: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -942,7 +942,7 @@ export class FailedJobModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): FailedJobModel {
+  applyWhereRef(column: keyof FailedJobsTable, ...args: string[]): FailedJobModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -953,11 +953,11 @@ export class FailedJobModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): FailedJobModel {
+  whereRef(column: keyof FailedJobsTable, ...args: string[]): FailedJobModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): FailedJobModel {
+  static whereRef(column: keyof FailedJobsTable, ...args: string[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     return instance.applyWhereRef(column, ...args)

@@ -1020,13 +1020,13 @@ export class UserModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): UserModel {
+  whereColumn(first: keyof UsersTable, operator: string, second: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): UserModel {
+  static whereColumn(first: keyof UsersTable, operator: string, second: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1034,7 +1034,7 @@ export class UserModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): UserModel {
+  applyWhereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -1045,11 +1045,11 @@ export class UserModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): UserModel {
+  whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): UserModel {
+  static whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereRef(column, ...args)

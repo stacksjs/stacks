@@ -928,13 +928,13 @@ export class JobModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): JobModel {
+  whereColumn(first: keyof JobsTable, operator: string, second: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): JobModel {
+  static whereColumn(first: keyof JobsTable, operator: string, second: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -942,7 +942,7 @@ export class JobModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): JobModel {
+  applyWhereRef(column: keyof JobsTable, ...args: string[]): JobModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -953,11 +953,11 @@ export class JobModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): JobModel {
+  whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): JobModel {
+  static whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
     const instance = new JobModel(null)
 
     return instance.applyWhereRef(column, ...args)

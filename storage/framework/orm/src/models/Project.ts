@@ -919,13 +919,13 @@ export class ProjectModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ProjectModel {
+  whereColumn(first: keyof ProjectsTable, operator: string, second: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ProjectModel {
+  static whereColumn(first: keyof ProjectsTable, operator: string, second: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -933,7 +933,7 @@ export class ProjectModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ProjectModel {
+  applyWhereRef(column: keyof ProjectsTable, ...args: string[]): ProjectModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -944,11 +944,11 @@ export class ProjectModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ProjectModel {
+  whereRef(column: keyof ProjectsTable, ...args: string[]): ProjectModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ProjectModel {
+  static whereRef(column: keyof ProjectsTable, ...args: string[]): ProjectModel {
     const instance = new ProjectModel(null)
 
     return instance.applyWhereRef(column, ...args)

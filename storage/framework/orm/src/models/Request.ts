@@ -1,27 +1,30 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import User from './User'
-
-export interface PostsTable {
+export interface RequestsTable {
   id?: number
-  user_id?: number
-  user?: UserModel
-  title?: string
-  body?: string
+  method?: string[]
+  path?: string
+  status_code?: number
+  duration_ms?: number
+  ip_address?: string
+  memory_usage?: number
+  user_agent?: string
+  error_message?: string
 
   created_at?: Date
 
   updated_at?: Date
 
+  deleted_at?: Date
+
 }
 
-interface PostResponse {
-  data: PostJsonResponse[]
+interface RequestResponse {
+  data: RequestJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -30,16 +33,16 @@ interface PostResponse {
   next_cursor: number | null
 }
 
-export interface PostJsonResponse extends Omit<PostsTable, 'password'> {
+export interface RequestJsonResponse extends Omit<RequestsTable, 'password'> {
   [key: string]: any
 }
 
-export type PostType = Selectable<PostsTable>
-export type NewPost = Partial<Insertable<PostsTable>>
-export type PostUpdate = Updateable<PostsTable>
+export type RequestType = Selectable<RequestsTable>
+export type NewRequest = Partial<Insertable<RequestsTable>>
+export type RequestUpdate = Updateable<RequestsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PostType, order: SortDirection }
+interface SortOptions { column: RequestType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -48,13 +51,13 @@ interface QueryOptions {
   page?: number
 }
 
-export class PostModel {
-  private readonly hidden: Array<keyof PostJsonResponse> = []
-  private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
-  private readonly guarded: Array<keyof PostJsonResponse> = []
-  protected attributes: Partial<PostJsonResponse> = {}
-  protected originalAttributes: Partial<PostJsonResponse> = {}
-
+export class RequestModel {
+  private readonly hidden: Array<keyof RequestJsonResponse> = []
+  private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
+  private readonly guarded: Array<keyof RequestJsonResponse> = []
+  protected attributes: Partial<RequestJsonResponse> = {}
+  protected originalAttributes: Partial<RequestJsonResponse> = {}
+  private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
   protected updateFromQuery: any
@@ -63,31 +66,31 @@ export class PostModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(post: Partial<PostType> | null) {
-    if (post) {
-      this.attributes = { ...post }
-      this.originalAttributes = { ...post }
+  constructor(request: Partial<RequestType> | null) {
+    if (request) {
+      this.attributes = { ...request }
+      this.originalAttributes = { ...request }
 
-      Object.keys(post).forEach((key) => {
+      Object.keys(request).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (post as PostJsonResponse)[key]
+          this.customColumns[key] = (request as RequestJsonResponse)[key]
         }
       })
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('posts')
-    this.updateFromQuery = DB.instance.updateTable('posts')
-    this.deleteFromQuery = DB.instance.deleteFrom('posts')
+    this.selectFromQuery = DB.instance.selectFrom('requests')
+    this.updateFromQuery = DB.instance.updateTable('requests')
+    this.deleteFromQuery = DB.instance.deleteFrom('requests')
     this.hasSelect = false
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
+  mapCustomGetters(models: RequestJsonResponse | RequestJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: PostJsonResponse) => {
+      data.map((model: RequestJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -116,7 +119,7 @@ export class PostModel {
     }
   }
 
-  async mapCustomSetters(model: PostJsonResponse): Promise<void> {
+  async mapCustomSetters(model: RequestJsonResponse): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -128,24 +131,40 @@ export class PostModel {
     }
   }
 
-  get user_id(): number | undefined {
-    return this.attributes.user_id
-  }
-
-  get user(): UserModel | undefined {
-    return this.attributes.user
-  }
-
   get id(): number | undefined {
     return this.attributes.id
   }
 
-  get title(): string | undefined {
-    return this.attributes.title
+  get method(): string[] | undefined {
+    return this.attributes.method
   }
 
-  get body(): string | undefined {
-    return this.attributes.body
+  get path(): string | undefined {
+    return this.attributes.path
+  }
+
+  get status_code(): number | undefined {
+    return this.attributes.status_code
+  }
+
+  get duration_ms(): number | undefined {
+    return this.attributes.duration_ms
+  }
+
+  get ip_address(): string | undefined {
+    return this.attributes.ip_address
+  }
+
+  get memory_usage(): number | undefined {
+    return this.attributes.memory_usage
+  }
+
+  get user_agent(): string | undefined {
+    return this.attributes.user_agent
+  }
+
+  get error_message(): string | undefined {
+    return this.attributes.error_message
   }
 
   get created_at(): Date | undefined {
@@ -156,19 +175,51 @@ export class PostModel {
     return this.attributes.updated_at
   }
 
-  set title(value: string) {
-    this.attributes.title = value
+  get deleted_at(): Date | undefined {
+    return this.attributes.deleted_at
   }
 
-  set body(value: string) {
-    this.attributes.body = value
+  set method(value: string[]) {
+    this.attributes.method = value
+  }
+
+  set path(value: string) {
+    this.attributes.path = value
+  }
+
+  set status_code(value: number) {
+    this.attributes.status_code = value
+  }
+
+  set duration_ms(value: number) {
+    this.attributes.duration_ms = value
+  }
+
+  set ip_address(value: string) {
+    this.attributes.ip_address = value
+  }
+
+  set memory_usage(value: number) {
+    this.attributes.memory_usage = value
+  }
+
+  set user_agent(value: string) {
+    this.attributes.user_agent = value
+  }
+
+  set error_message(value: string) {
+    this.attributes.error_message = value
   }
 
   set updated_at(value: Date) {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PostJsonResponse): Partial<PostJsonResponse> {
+  set deleted_at(value: Date) {
+    this.attributes.deleted_at = value
+  }
+
+  getOriginal(column?: keyof RequestJsonResponse): Partial<RequestJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -176,10 +227,10 @@ export class PostModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<PostJsonResponse> {
-    return this.fillable.reduce<Partial<PostJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof PostsTable]
-      const originalValue = this.originalAttributes[key as keyof PostsTable]
+  getChanges(): Partial<RequestJsonResponse> {
+    return this.fillable.reduce<Partial<RequestJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof RequestsTable]
+      const originalValue = this.originalAttributes[key as keyof RequestsTable]
 
       if (currentValue !== originalValue) {
         changes[key] = currentValue
@@ -189,7 +240,7 @@ export class PostModel {
     }, {})
   }
 
-  isDirty(column?: keyof PostType): boolean {
+  isDirty(column?: keyof RequestType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -201,15 +252,15 @@ export class PostModel {
     })
   }
 
-  isClean(column?: keyof PostType): boolean {
+  isClean(column?: keyof RequestType): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof PostType): boolean {
+  wasChanged(column?: keyof RequestType): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
+  select(params: (keyof RequestType)[] | RawBuilder<string> | string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -217,8 +268,8 @@ export class PostModel {
     return this
   }
 
-  static select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
-    const instance = new PostModel(null)
+  static select(params: (keyof RequestType)[] | RawBuilder<string> | string): RequestModel {
+    const instance = new RequestModel(null)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -228,8 +279,8 @@ export class PostModel {
     return instance
   }
 
-  async applyFind(id: number): Promise<PostModel | undefined> {
-    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFind(id: number): Promise<RequestModel | undefined> {
+    const model = await DB.instance.selectFrom('requests').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -237,26 +288,26 @@ export class PostModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
+    cache.getOrSet(`request:${id}`, JSON.stringify(model))
 
     return data
   }
 
-  async find(id: number): Promise<PostModel | undefined> {
+  async find(id: number): Promise<RequestModel | undefined> {
     return await this.applyFind(id)
   }
 
-  // Method to find a Post by ID
-  static async find(id: number): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+  // Method to find a Request by ID
+  static async find(id: number): Promise<RequestModel | undefined> {
+    const instance = new RequestModel(null)
 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<PostModel | undefined> {
-    let model: PostModel | undefined
+  async first(): Promise<RequestModel | undefined> {
+    let model: RequestModel | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -270,95 +321,103 @@ export class PostModel {
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  static async first(): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+  static async first(): Promise<RequestModel | undefined> {
+    const instance = new RequestModel(null)
 
-    const model = await DB.instance.selectFrom('posts')
+    const model = await DB.instance.selectFrom('requests')
       .selectAll()
       .executeTakeFirst()
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  async applyFirstOrFail(): Promise<PostModel | undefined> {
+  async applyFirstOrFail(): Promise<RequestModel | undefined> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PostModel results found for query')
+      throw new ModelNotFoundException(404, 'No RequestModel results found for query')
 
     if (model) {
       this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  async firstOrFail(): Promise<PostModel | undefined> {
+  async firstOrFail(): Promise<RequestModel | undefined> {
     return await this.applyFirstOrFail()
   }
 
-  static async firstOrFail(): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+  static async firstOrFail(): Promise<RequestModel | undefined> {
+    const instance = new RequestModel(null)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+  static async all(): Promise<RequestModel[]> {
+    const instance = new RequestModel(null)
 
-    const models = await DB.instance.selectFrom('posts').selectAll().execute()
+    const models = await DB.instance.selectFrom('requests').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: PostType) => {
-      return new PostModel(model)
+    const data = await Promise.all(models.map(async (model: RequestType) => {
+      return new RequestModel(model)
     }))
 
     return data
   }
 
-  async applyFindOrFail(id: number): Promise<PostModel> {
-    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFindOrFail(id: number): Promise<RequestModel> {
+    const model = await DB.instance.selectFrom('requests').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (instance.softDeletes) {
+      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
+    }
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, `No PostModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No RequestModel results for ${id}`)
 
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
+    cache.getOrSet(`request:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  async findOrFail(id: number): Promise<PostModel> {
+  async findOrFail(id: number): Promise<RequestModel> {
     return await this.applyFindOrFail(id)
   }
 
-  static async findOrFail(id: number): Promise<PostModel> {
-    const instance = new PostModel(null)
+  static async findOrFail(id: number): Promise<RequestModel> {
+    const instance = new RequestModel(null)
 
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<PostModel[]> {
-    let query = DB.instance.selectFrom('posts').where('id', 'in', ids)
+  async applyFindMany(ids: number[]): Promise<RequestModel[]> {
+    let query = DB.instance.selectFrom('requests').where('id', 'in', ids)
 
-    const instance = new PostModel(null)
+    const instance = new RequestModel(null)
+
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
 
     query = query.selectAll()
 
@@ -367,34 +426,34 @@ export class PostModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
+    return models.map((modelItem: RequestModel) => instance.parseResult(new RequestModel(modelItem)))
   }
 
-  static async findMany(ids: number[]): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+  static async findMany(ids: number[]): Promise<RequestModel[]> {
+    const instance = new RequestModel(null)
 
     return await instance.applyFindMany(ids)
   }
 
-  async findMany(ids: number[]): Promise<PostModel[]> {
+  async findMany(ids: number[]): Promise<RequestModel[]> {
     return await this.applyFindMany(ids)
   }
 
-  skip(count: number): PostModel {
+  skip(count: number): RequestModel {
     this.selectFromQuery = this.selectFromQuery.offset(count)
 
     return this
   }
 
-  static skip(count: number): PostModel {
-    const instance = new PostModel(null)
+  static skip(count: number): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
     return instance
   }
 
-  async applyChunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
@@ -420,49 +479,49 @@ export class PostModel {
     }
   }
 
-  async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
+  async chunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {
     await this.applyChunk(size, callback)
   }
 
-  static async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
-    const instance = new PostModel(null)
+  static async chunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {
+    const instance = new RequestModel(null)
 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): PostModel {
+  take(count: number): RequestModel {
     this.selectFromQuery = this.selectFromQuery.limit(count)
 
     return this
   }
 
-  static take(count: number): PostModel {
-    const instance = new PostModel(null)
+  static take(count: number): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
   }
 
-  static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
-    const instance = new PostModel(null)
+  static async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {
+    const instance = new RequestModel(null)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
-      return model.map((modelItem: PostModel) => modelItem[field])
+      return model.map((modelItem: RequestModel) => modelItem[field])
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
 
-    return model.map((modelItem: PostModel) => modelItem[field])
+    return model.map((modelItem: RequestModel) => modelItem[field])
   }
 
-  async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
-    return PostModel.pluck(field)
+  async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {
+    return RequestModel.pluck(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new RequestModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -479,8 +538,8 @@ export class PostModel {
     return result.count || 0
   }
 
-  static async max(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+  static async max(field: keyof RequestModel): Promise<number> {
+    const instance = new RequestModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -489,7 +548,7 @@ export class PostModel {
     return result.max
   }
 
-  async max(field: keyof PostModel): Promise<number> {
+  async max(field: keyof RequestModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max`)
       .executeTakeFirst()
@@ -497,8 +556,8 @@ export class PostModel {
     return result.max
   }
 
-  static async min(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+  static async min(field: keyof RequestModel): Promise<number> {
+    const instance = new RequestModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -507,7 +566,7 @@ export class PostModel {
     return result.min
   }
 
-  async min(field: keyof PostModel): Promise<number> {
+  async min(field: keyof RequestModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
@@ -515,8 +574,8 @@ export class PostModel {
     return result.min
   }
 
-  static async avg(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+  static async avg(field: keyof RequestModel): Promise<number> {
+    const instance = new RequestModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -525,7 +584,7 @@ export class PostModel {
     return result.avg
   }
 
-  async avg(field: keyof PostModel): Promise<number> {
+  async avg(field: keyof RequestModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
@@ -533,8 +592,8 @@ export class PostModel {
     return result.avg
   }
 
-  static async sum(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+  static async sum(field: keyof RequestModel): Promise<number> {
+    const instance = new RequestModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -543,7 +602,7 @@ export class PostModel {
     return result.sum
   }
 
-  async sum(field: keyof PostModel): Promise<number> {
+  async sum(field: keyof RequestModel): Promise<number> {
     const result = this.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
@@ -551,7 +610,7 @@ export class PostModel {
     return result.sum
   }
 
-  async applyGet(): Promise<PostModel[]> {
+  async applyGet(): Promise<RequestModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -564,51 +623,51 @@ export class PostModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: PostModel) => {
-      return new PostModel(model)
+    const data = await Promise.all(models.map(async (model: RequestModel) => {
+      return new RequestModel(model)
     }))
 
     return data
   }
 
-  async get(): Promise<PostModel[]> {
+  async get(): Promise<RequestModel[]> {
     return await this.applyGet()
   }
 
-  static async get(): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+  static async get(): Promise<RequestModel[]> {
+    const instance = new RequestModel(null)
 
     return await instance.applyGet()
   }
 
-  has(relation: string): PostModel {
+  has(relation: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+          .whereRef(`${relation}.request_id`, '=', 'requests.id'),
       ),
     )
 
     return this
   }
 
-  static has(relation: string): PostModel {
-    const instance = new PostModel(null)
+  static has(relation: string): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+          .whereRef(`${relation}.request_id`, '=', 'requests.id'),
       ),
     )
 
     return instance
   }
 
-  static whereExists(callback: (qb: any) => any): PostModel {
-    const instance = new PostModel(null)
+  static whereExists(callback: (qb: any) => any): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -620,7 +679,7 @@ export class PostModel {
   applyWhereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
-  ): PostModel {
+  ): RequestModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -630,7 +689,7 @@ export class PostModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id')
+          .whereRef(`${relation}.request_id`, '=', 'requests.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -682,26 +741,26 @@ export class PostModel {
   whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
-  ): PostModel {
+  ): RequestModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
-  ): PostModel {
-    const instance = new PostModel(null)
+  ): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereHas(relation, callback)
   }
 
-  applyDoesntHave(relation: string): PostModel {
+  applyDoesntHave(relation: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.post_id`, '=', 'posts.id'),
+            .whereRef(`${relation}.request_id`, '=', 'requests.id'),
         ),
       ),
     )
@@ -709,17 +768,17 @@ export class PostModel {
     return this
   }
 
-  doesntHave(relation: string): PostModel {
+  doesntHave(relation: string): RequestModel {
     return this.applyDoesntHave(relation)
   }
 
-  static doesntHave(relation: string): PostModel {
-    const instance = new PostModel(null)
+  static doesntHave(relation: string): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): RequestModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -729,7 +788,7 @@ export class PostModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.post_id`, '=', 'posts.id')
+          .whereRef(`${relation}.request_id`, '=', 'requests.id')
 
         return not(exists(subquery))
       })
@@ -775,28 +834,28 @@ export class PostModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): PostModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): RequestModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
     callback: (query: SubqueryBuilder) => void,
-  ): PostModel {
-    const instance = new PostModel(null)
+  ): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
 
-  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const totalRecordsResult = await DB.instance.selectFrom('posts')
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<RequestResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('requests')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const postsWithExtra = await DB.instance.selectFrom('posts')
+    const requestsWithExtra = await DB.instance.selectFrom('requests')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -804,11 +863,11 @@ export class PostModel {
       .execute()
 
     let nextCursor = null
-    if (postsWithExtra.length > (options.limit ?? 10))
-      nextCursor = postsWithExtra.pop()?.id ?? null
+    if (requestsWithExtra.length > (options.limit ?? 10))
+      nextCursor = requestsWithExtra.pop()?.id ?? null
 
     return {
-      data: postsWithExtra,
+      data: requestsWithExtra,
       paging: {
         total_records: totalRecords,
         page: options.page || 1,
@@ -818,81 +877,92 @@ export class PostModel {
     }
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<RequestResponse> {
     return await this.applyPaginate(options)
   }
 
-  // Method to get all posts
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const instance = new PostModel(null)
+  // Method to get all requests
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<RequestResponse> {
+    const instance = new RequestModel(null)
 
     return await instance.applyPaginate(options)
   }
 
-  async applyCreate(newPost: NewPost): Promise<PostModel> {
+  async applyCreate(newRequest: NewRequest): Promise<RequestModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newPost).filter(([key]) =>
+      Object.entries(newRequest).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewPost
+    ) as NewRequest
 
     await this.mapCustomSetters(filteredValues)
 
-    const result = await DB.instance.insertInto('posts')
+    const result = await DB.instance.insertInto('requests')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as RequestModel
 
     return model
   }
 
-  async create(newPost: NewPost): Promise<PostModel> {
-    return await this.applyCreate(newPost)
+  async create(newRequest: NewRequest): Promise<RequestModel> {
+    return await this.applyCreate(newRequest)
   }
 
-  static async create(newPost: NewPost): Promise<PostModel> {
-    const instance = new PostModel(null)
+  static async create(newRequest: NewRequest): Promise<RequestModel> {
+    const instance = new RequestModel(null)
 
-    return await instance.applyCreate(newPost)
+    return await instance.applyCreate(newRequest)
   }
 
-  static async createMany(newPost: NewPost[]): Promise<void> {
-    const instance = new PostModel(null)
+  static async createMany(newRequest: NewRequest[]): Promise<void> {
+    const instance = new RequestModel(null)
 
-    const valuesFiltered = newPost.map((newPost: NewPost) => {
+    const valuesFiltered = newRequest.map((newRequest: NewRequest) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newPost).filter(([key]) =>
+        Object.entries(newRequest).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewPost
+      ) as NewRequest
 
       return filteredValues
     })
 
-    await DB.instance.insertInto('posts')
+    await DB.instance.insertInto('requests')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
-  static async forceCreate(newPost: NewPost): Promise<PostModel> {
-    const result = await DB.instance.insertInto('posts')
-      .values(newPost)
+  static async forceCreate(newRequest: NewRequest): Promise<RequestModel> {
+    const result = await DB.instance.insertInto('requests')
+      .values(newRequest)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as RequestModel
 
     return model
   }
 
-  // Method to remove a Post
+  // Method to remove a Request
   static async remove(id: number): Promise<any> {
-    return await DB.instance.deleteFrom('posts')
+    const instance = new RequestModel(null)
+
+    if (instance.softDeletes) {
+      return await DB.instance.updateTable('requests')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', id)
+        .execute()
+    }
+
+    return await DB.instance.deleteFrom('requests')
       .where('id', '=', id)
       .execute()
   }
 
-  applyWhere(instance: PostModel, column: keyof PostsTable, ...args: any[]): PostModel {
+  applyWhere(instance: RequestModel, column: keyof RequestsTable, ...args: any[]): RequestModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -904,66 +974,66 @@ export class PostModel {
     return instance
   }
 
-  where(column: keyof PostsTable, ...args: any[]): PostModel {
+  where(column: keyof RequestsTable, ...args: any[]): RequestModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: keyof PostsTable, ...args: any[]): PostModel {
-    const instance = new PostModel(null)
+  static where(column: keyof RequestsTable, ...args: any[]): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: keyof PostsTable, operator: string, second: keyof PostsTable): PostModel {
+  whereColumn(first: keyof RequestsTable, operator: string, second: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof PostsTable, operator: string, second: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+  static whereColumn(first: keyof RequestsTable, operator: string, second: keyof RequestsTable): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
   }
 
-  applyWhereRef(column: keyof PostsTable, ...args: string[]): PostModel {
+  applyWhereRef(column: keyof RequestsTable, ...args: string[]): RequestModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new PostModel(null)
+    const instance = new RequestModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
   }
 
-  whereRef(column: keyof PostsTable, ...args: string[]): PostModel {
+  whereRef(column: keyof RequestsTable, ...args: string[]): RequestModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: keyof PostsTable, ...args: string[]): PostModel {
-    const instance = new PostModel(null)
+  static whereRef(column: keyof RequestsTable, ...args: string[]): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): PostModel {
+  whereRaw(sqlStatement: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
 
     return this
   }
 
-  static whereRaw(sqlStatement: string): PostModel {
-    const instance = new PostModel(null)
+  static whereRaw(sqlStatement: string): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): PostModel {
+  applyOrWhere(...conditions: [string, any][]): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -985,28 +1055,28 @@ export class PostModel {
     return this
   }
 
-  orWhere(...conditions: [string, any][]): PostModel {
+  orWhere(...conditions: [string, any][]): RequestModel {
     return this.applyOrWhere(...conditions)
   }
 
-  static orWhere(...conditions: [string, any][]): PostModel {
-    const instance = new PostModel(null)
+  static orWhere(...conditions: [string, any][]): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyOrWhere(...conditions)
   }
 
   when(
     condition: boolean,
-    callback: (query: PostModel) => PostModel,
-  ): PostModel {
-    return PostModel.when(condition, callback)
+    callback: (query: RequestModel) => RequestModel,
+  ): RequestModel {
+    return RequestModel.when(condition, callback)
   }
 
   static when(
     condition: boolean,
-    callback: (query: PostModel) => PostModel,
-  ): PostModel {
-    let instance = new PostModel(null)
+    callback: (query: RequestModel) => RequestModel,
+  ): RequestModel {
+    let instance = new RequestModel(null)
 
     if (condition)
       instance = callback(instance)
@@ -1014,7 +1084,7 @@ export class PostModel {
     return instance
   }
 
-  whereNull(column: string): PostModel {
+  whereNull(column: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1030,8 +1100,8 @@ export class PostModel {
     return this
   }
 
-  static whereNull(column: string): PostModel {
-    const instance = new PostModel(null)
+  static whereNull(column: string): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1048,28 +1118,76 @@ export class PostModel {
     return instance
   }
 
-  static whereTitle(value: string): PostModel {
-    const instance = new PostModel(null)
+  static whereMethod(value: string): RequestModel {
+    const instance = new RequestModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
-
-    return instance
-  }
-
-  static whereBody(value: string): PostModel {
-    const instance = new PostModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('method', '=', value)
 
     return instance
   }
 
-  whereIn(column: string, values: any[]): PostModel {
-    return PostModel.whereIn(column, values)
+  static wherePath(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
+
+    return instance
   }
 
-  static whereIn(column: string, values: any[]): PostModel {
-    const instance = new PostModel(null)
+  static whereStatusCode(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status_code', '=', value)
+
+    return instance
+  }
+
+  static whereDurationMs(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('duration_ms', '=', value)
+
+    return instance
+  }
+
+  static whereIpAddress(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
+
+    return instance
+  }
+
+  static whereMemoryUsage(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('memory_usage', '=', value)
+
+    return instance
+  }
+
+  static whereUserAgent(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('user_agent', '=', value)
+
+    return instance
+  }
+
+  static whereErrorMessage(value: string): RequestModel {
+    const instance = new RequestModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('error_message', '=', value)
+
+    return instance
+  }
+
+  whereIn(column: string, values: any[]): RequestModel {
+    return RequestModel.whereIn(column, values)
+  }
+
+  static whereIn(column: string, values: any[]): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
 
@@ -1080,7 +1198,7 @@ export class PostModel {
     return instance
   }
 
-  applyWhereBetween(column: string, range: [any, any]): PostModel {
+  applyWhereBetween(column: string, range: [any, any]): RequestModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1094,17 +1212,17 @@ export class PostModel {
     return this
   }
 
-  whereBetween(column: keyof PostType, range: [any, any]): PostModel {
+  whereBetween(column: keyof RequestType, range: [any, any]): RequestModel {
     return this.applyWhereBetween(column, range)
   }
 
-  static whereBetween(column: keyof PostType, range: [any, any]): PostModel {
-    const instance = new PostModel(null)
+  static whereBetween(column: keyof RequestType, range: [any, any]): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof PostType, value: string): PostModel {
+  applyWhereLike(column: keyof RequestType, value: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1114,17 +1232,17 @@ export class PostModel {
     return this
   }
 
-  whereLike(column: keyof PostType, value: string): PostModel {
+  whereLike(column: keyof RequestType, value: string): RequestModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof PostType, value: string): PostModel {
-    const instance = new PostModel(null)
+  static whereLike(column: keyof RequestType, value: string): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof PostType, values: any[]): PostModel {
+  applyWhereNotIn(column: keyof RequestType, values: any[]): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1134,12 +1252,12 @@ export class PostModel {
     return this
   }
 
-  whereNotIn(column: keyof PostType, values: any[]): PostModel {
+  whereNotIn(column: keyof RequestType, values: any[]): RequestModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof PostType, values: any[]): PostModel {
-    const instance = new PostModel(null)
+  static whereNotIn(column: keyof RequestType, values: any[]): RequestModel {
+    const instance = new RequestModel(null)
 
     return instance.applyWhereNotIn(column, values)
   }
@@ -1157,10 +1275,10 @@ export class PostModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<PostType | undefined> {
-    const instance = new PostModel(null)
+  static async latest(): Promise<RequestType | undefined> {
+    const instance = new RequestModel(null)
 
-    const model = await DB.instance.selectFrom('posts')
+    const model = await DB.instance.selectFrom('requests')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
@@ -1170,15 +1288,15 @@ export class PostModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  static async oldest(): Promise<PostType | undefined> {
-    const instance = new PostModel(null)
+  static async oldest(): Promise<RequestType | undefined> {
+    const instance = new RequestModel(null)
 
-    const model = await DB.instance.selectFrom('posts')
+    const model = await DB.instance.selectFrom('requests')
       .selectAll()
       .orderBy('id', 'asc')
       .executeTakeFirst()
@@ -1188,18 +1306,18 @@ export class PostModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
   static async firstOrCreate(
-    condition: Partial<PostType>,
-    newPost: NewPost,
-  ): Promise<PostModel> {
-    const instance = new PostModel(null)
+    condition: Partial<RequestType>,
+    newRequest: NewRequest,
+  ): Promise<RequestModel> {
+    const instance = new RequestModel(null)
 
-    const key = Object.keys(condition)[0] as keyof PostType
+    const key = Object.keys(condition)[0] as keyof RequestType
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1208,29 +1326,29 @@ export class PostModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPost = await DB.instance.selectFrom('posts')
+    const existingRequest = await DB.instance.selectFrom('requests')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingPost) {
-      instance.mapCustomGetters(existingPost)
-      await instance.loadRelations(existingPost)
+    if (existingRequest) {
+      instance.mapCustomGetters(existingRequest)
+      await instance.loadRelations(existingRequest)
 
-      return new PostModel(existingPost as PostType)
+      return new RequestModel(existingRequest as RequestType)
     }
     else {
-      return await instance.create(newPost)
+      return await instance.create(newRequest)
     }
   }
 
   static async updateOrCreate(
-    condition: Partial<PostType>,
-    newPost: NewPost,
-  ): Promise<PostModel> {
-    const instance = new PostModel(null)
+    condition: Partial<RequestType>,
+    newRequest: NewRequest,
+  ): Promise<RequestModel> {
+    const instance = new RequestModel(null)
 
-    const key = Object.keys(condition)[0] as keyof PostType
+    const key = Object.keys(condition)[0] as keyof RequestType
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1239,39 +1357,39 @@ export class PostModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingPost = await DB.instance.selectFrom('posts')
+    const existingRequest = await DB.instance.selectFrom('requests')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingPost) {
+    if (existingRequest) {
       // If found, update the existing record
-      await DB.instance.updateTable('posts')
-        .set(newPost)
+      await DB.instance.updateTable('requests')
+        .set(newRequest)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedPost = await DB.instance.selectFrom('posts')
+      const updatedRequest = await DB.instance.selectFrom('requests')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
 
-      if (!updatedPost) {
+      if (!updatedRequest) {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       instance.hasSaved = true
 
-      return new PostModel(updatedPost as PostType)
+      return new RequestModel(updatedRequest as RequestType)
     }
     else {
       // If not found, create a new record
-      return await instance.create(newPost)
+      return await instance.create(newRequest)
     }
   }
 
-  async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
+  async loadRelations(models: RequestJsonResponse | RequestJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1282,14 +1400,14 @@ export class PostModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('post_id', 'in', modelIds)
+        .where('request_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: PostJsonResponse) => {
-          const records = relatedRecords.filter((record: { post_id: number }) => {
-            return record.post_id === model.id
+        models.map((model: RequestJsonResponse) => {
+          const records = relatedRecords.filter((record: { request_id: number }) => {
+            return record.request_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1297,8 +1415,8 @@ export class PostModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { post_id: number }) => {
-          return record.post_id === models.id
+        const records = relatedRecords.filter((record: { request_id: number }) => {
+          return record.request_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1306,22 +1424,22 @@ export class PostModel {
     }
   }
 
-  with(relations: string[]): PostModel {
+  with(relations: string[]): RequestModel {
     this.withRelations = relations
 
     return this
   }
 
-  static with(relations: string[]): PostModel {
-    const instance = new PostModel(null)
+  static with(relations: string[]): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.withRelations = relations
 
     return instance
   }
 
-  async last(): Promise<PostType | undefined> {
-    let model: PostModel | undefined
+  async last(): Promise<RequestType | undefined> {
+    let model: RequestModel | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1335,116 +1453,116 @@ export class PostModel {
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  static async last(): Promise<PostType | undefined> {
-    const model = await DB.instance.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  static async last(): Promise<RequestType | undefined> {
+    const model = await DB.instance.selectFrom('requests').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new PostModel(model as PostType)
+    const data = new RequestModel(model as RequestType)
 
     return data
   }
 
-  orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+  orderBy(column: keyof RequestType, order: 'asc' | 'desc'): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
-    const instance = new PostModel(null)
+  static orderBy(column: keyof RequestType, order: 'asc' | 'desc'): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
-  groupBy(column: keyof PostType): PostModel {
+  groupBy(column: keyof RequestType): RequestModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof PostType): PostModel {
-    const instance = new PostModel(null)
+  static groupBy(column: keyof RequestType): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
     return instance
   }
 
-  having(column: keyof PostType, operator: string, value: any): PostModel {
+  having(column: keyof RequestType, operator: string, value: any): RequestModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PostType, operator: string, value: any): PostModel {
-    const instance = new PostModel(null)
+  static having(column: keyof RequestType, operator: string, value: any): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
-  inRandomOrder(): PostModel {
+  inRandomOrder(): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }
 
-  static inRandomOrder(): PostModel {
-    const instance = new PostModel(null)
+  static inRandomOrder(): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return instance
   }
 
-  orderByDesc(column: keyof PostType): PostModel {
+  orderByDesc(column: keyof RequestType): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof PostType): PostModel {
-    const instance = new PostModel(null)
+  static orderByDesc(column: keyof RequestType): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
-  orderByAsc(column: keyof PostType): PostModel {
+  orderByAsc(column: keyof RequestType): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof PostType): PostModel {
-    const instance = new PostModel(null)
+  static orderByAsc(column: keyof RequestType): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
-  async update(newPost: PostUpdate): Promise<PostModel | undefined> {
+  async update(newRequest: RequestUpdate): Promise<RequestModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newPost).filter(([key]) =>
+      Object.entries(newRequest).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewPost
+    ) as NewRequest
 
     await this.mapCustomSetters(filteredValues)
 
-    await DB.instance.updateTable('posts')
+    await DB.instance.updateTable('requests')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1460,15 +1578,15 @@ export class PostModel {
     return undefined
   }
 
-  async forceUpdate(post: PostUpdate): Promise<PostModel | undefined> {
+  async forceUpdate(request: RequestUpdate): Promise<RequestModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(post).execute()
+      this.updateFromQuery.set(request).execute()
     }
 
-    await this.mapCustomSetters(post)
+    await this.mapCustomSetters(request)
 
-    await DB.instance.updateTable('posts')
-      .set(post)
+    await DB.instance.updateTable('requests')
+      .set(request)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1485,7 +1603,7 @@ export class PostModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new HttpError(500, 'Post data is undefined')
+      throw new HttpError(500, 'Request data is undefined')
 
     await this.mapCustomSetters(this.attributes)
 
@@ -1499,12 +1617,12 @@ export class PostModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<PostType>): PostModel {
+  fill(data: Partial<RequestType>): RequestModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewPost
+    ) as NewRequest
 
     this.attributes = {
       ...this.attributes,
@@ -1514,7 +1632,7 @@ export class PostModel {
     return this
   }
 
-  forceFill(data: Partial<PostType>): PostModel {
+  forceFill(data: Partial<RequestType>): RequestModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1523,31 +1641,26 @@ export class PostModel {
     return this
   }
 
-  // Method to delete (soft delete) the post instance
+  // Method to delete (soft delete) the request instance
   async delete(): Promise<any> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('posts')
+    if (this.softDeletes) {
+      return await DB.instance.updateTable('requests')
+        .set({
+          deleted_at: sql.raw('CURRENT_TIMESTAMP'),
+        })
+        .where('id', '=', this.id)
+        .execute()
+    }
+
+    return await DB.instance.deleteFrom('requests')
       .where('id', '=', this.id)
       .execute()
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
-      throw new HttpError(500, 'Relation Error!')
-
-    const model = await User
-      .where('id', '=', this.user_id)
-      .first()
-
-    if (!model)
-      throw new HttpError(500, 'Model Relation Not Found!')
-
-    return model
-  }
-
-  distinct(column: keyof PostType): PostModel {
+  distinct(column: keyof RequestType): RequestModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1555,8 +1668,8 @@ export class PostModel {
     return this
   }
 
-  static distinct(column: keyof PostType): PostModel {
-    const instance = new PostModel(null)
+  static distinct(column: keyof RequestType): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1565,71 +1678,77 @@ export class PostModel {
     return instance
   }
 
-  join(table: string, firstCol: string, secondCol: string): PostModel {
+  join(table: string, firstCol: string, secondCol: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
 
-  static join(table: string, firstCol: string, secondCol: string): PostModel {
-    const instance = new PostModel(null)
+  static join(table: string, firstCol: string, secondCol: string): RequestModel {
+    const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
 
-  toJSON(): Partial<PostJsonResponse> {
-    const output: Partial<PostJsonResponse> = {
+  toJSON(): Partial<RequestJsonResponse> {
+    const output: Partial<RequestJsonResponse> = {
 
       id: this.id,
-      title: this.title,
-      body: this.body,
+      method: this.method,
+      path: this.path,
+      status_code: this.status_code,
+      duration_ms: this.duration_ms,
+      ip_address: this.ip_address,
+      memory_usage: this.memory_usage,
+      user_agent: this.user_agent,
+      error_message: this.error_message,
 
       created_at: this.created_at,
 
       updated_at: this.updated_at,
 
-      user_id: this.user_id,
-      user: this.user,
+      deleted_at: this.deleted_at,
+
       ...this.customColumns,
     }
 
     return output
   }
 
-  parseResult(model: PostModel): PostModel {
+  parseResult(model: RequestModel): RequestModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof PostModel]
+      delete model[hiddenAttribute as keyof RequestModel]
     }
 
     return model
   }
 }
 
-async function find(id: number): Promise<PostModel | undefined> {
-  const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
+async function find(id: number): Promise<RequestModel | undefined> {
+  const query = DB.instance.selectFrom('requests').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
   if (!model)
     return undefined
 
-  return new PostModel(model)
+  return new RequestModel(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await PostModel.count()
+  const results = await RequestModel.count()
 
   return results
 }
 
-export async function create(newPost: NewPost): Promise<PostModel> {
-  const result = await DB.instance.insertInto('posts')
-    .values(newPost)
+export async function create(newRequest: NewRequest): Promise<RequestModel> {
+  const result = await DB.instance.insertInto('requests')
+    .values(newRequest)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as RequestModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1637,25 +1756,67 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('posts')
+  await DB.instance.deleteFrom('requests')
     .where('id', '=', id)
     .execute()
 }
 
-export async function whereTitle(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('title', '=', value)
+export async function whereMethod(value: string[]): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('method', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: PostModel) => new PostModel(modelItem))
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
 }
 
-export async function whereBody(value: string): Promise<PostModel[]> {
-  const query = DB.instance.selectFrom('posts').where('body', '=', value)
+export async function wherePath(value: string): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('path', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: PostModel) => new PostModel(modelItem))
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
 }
 
-export const Post = PostModel
+export async function whereStatusCode(value: number): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('status_code', '=', value)
+  const results = await query.execute()
 
-export default Post
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export async function whereDurationMs(value: number): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('duration_ms', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export async function whereIpAddress(value: string): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('ip_address', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export async function whereMemoryUsage(value: number): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('memory_usage', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export async function whereUserAgent(value: string): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('user_agent', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export async function whereErrorMessage(value: string): Promise<RequestModel[]> {
+  const query = DB.instance.selectFrom('requests').where('error_message', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+}
+
+export const Request = RequestModel
+
+export default Request

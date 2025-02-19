@@ -892,13 +892,13 @@ export class ReleaseModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ReleaseModel {
+  whereColumn(first: keyof ReleasesTable, operator: string, second: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ReleaseModel {
+  static whereColumn(first: keyof ReleasesTable, operator: string, second: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -906,7 +906,7 @@ export class ReleaseModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ReleaseModel {
+  applyWhereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -917,11 +917,11 @@ export class ReleaseModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ReleaseModel {
+  whereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ReleaseModel {
+  static whereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereRef(column, ...args)

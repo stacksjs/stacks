@@ -1,5 +1,15 @@
 import { route } from '@stacksjs/router'
 
+route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
+
+route.get('requests/{id}', 'storage/framework/actions/src/RequestShowOrmAction.ts')
+
+route.post('requests', 'storage/framework/actions/src/RequestStoreOrmAction.ts')
+
+route.patch('requests/{id}', 'storage/framework/actions/src/RequestUpdateOrmAction.ts')
+
+route.delete('requests/{id}', 'storage/framework/actions/src/RequestDestroyOrmAction.ts')
+
 route.get('activities', 'storage/framework/actions/src/ActivityIndexOrmAction.ts')
 
 route.get('activities/{id}', 'storage/framework/actions/src/ActivityShowOrmAction.ts')

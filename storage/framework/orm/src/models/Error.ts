@@ -928,13 +928,13 @@ export class ErrorModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ErrorModel {
+  whereColumn(first: keyof ErrorsTable, operator: string, second: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ErrorModel {
+  static whereColumn(first: keyof ErrorsTable, operator: string, second: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -942,7 +942,7 @@ export class ErrorModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ErrorModel {
+  applyWhereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -953,11 +953,11 @@ export class ErrorModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ErrorModel {
+  whereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ErrorModel {
+  static whereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
     const instance = new ErrorModel(null)
 
     return instance.applyWhereRef(column, ...args)

@@ -980,13 +980,13 @@ export class PaymentMethodModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+  whereColumn(first: keyof PaymentMethodsTable, operator: string, second: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): PaymentMethodModel {
+  static whereColumn(first: keyof PaymentMethodsTable, operator: string, second: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -994,7 +994,7 @@ export class PaymentMethodModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): PaymentMethodModel {
+  applyWhereRef(column: keyof PaymentMethodsTable, ...args: string[]): PaymentMethodModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -1005,11 +1005,11 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): PaymentMethodModel {
+  whereRef(column: keyof PaymentMethodsTable, ...args: string[]): PaymentMethodModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): PaymentMethodModel {
+  static whereRef(column: keyof PaymentMethodsTable, ...args: string[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     return instance.applyWhereRef(column, ...args)

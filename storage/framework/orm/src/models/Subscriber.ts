@@ -892,13 +892,13 @@ export class SubscriberModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): SubscriberModel {
+  whereColumn(first: keyof SubscribersTable, operator: string, second: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): SubscriberModel {
+  static whereColumn(first: keyof SubscribersTable, operator: string, second: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -906,7 +906,7 @@ export class SubscriberModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): SubscriberModel {
+  applyWhereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -917,11 +917,11 @@ export class SubscriberModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): SubscriberModel {
+  whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): SubscriberModel {
+  static whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     return instance.applyWhereRef(column, ...args)

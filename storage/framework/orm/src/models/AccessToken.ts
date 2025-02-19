@@ -932,13 +932,13 @@ export class AccessTokenModel {
     return instance.applyWhere(instance, column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+  whereColumn(first: keyof PersonalAccessTokensTable, operator: string, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+  static whereColumn(first: keyof PersonalAccessTokensTable, operator: string, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -946,7 +946,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): AccessTokenModel {
+  applyWhereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -957,11 +957,11 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): AccessTokenModel {
+  whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): AccessTokenModel {
+  static whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereRef(column, ...args)
