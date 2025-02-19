@@ -1430,13 +1430,13 @@ export class TransactionModel {
     return data
   }
 
-  orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
+  orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
+  static orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1444,13 +1444,13 @@ export class TransactionModel {
     return instance
   }
 
-  groupBy(column: keyof TransactionType): TransactionModel {
+  groupBy(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof TransactionType): TransactionModel {
+  static groupBy(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1372,13 +1372,13 @@ export class ProjectModel {
     return data
   }
 
-  orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
+  orderBy(column: keyof ProjectsTable, order: 'asc' | 'desc'): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ProjectType, order: 'asc' | 'desc'): ProjectModel {
+  static orderBy(column: keyof ProjectsTable, order: 'asc' | 'desc'): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1386,13 +1386,13 @@ export class ProjectModel {
     return instance
   }
 
-  groupBy(column: keyof ProjectType): ProjectModel {
+  groupBy(column: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ProjectType): ProjectModel {
+  static groupBy(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

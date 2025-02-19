@@ -1469,13 +1469,13 @@ export class RequestModel {
     return data
   }
 
-  orderBy(column: keyof RequestType, order: 'asc' | 'desc'): RequestModel {
+  orderBy(column: keyof RequestsTable, order: 'asc' | 'desc'): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof RequestType, order: 'asc' | 'desc'): RequestModel {
+  static orderBy(column: keyof RequestsTable, order: 'asc' | 'desc'): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1483,13 +1483,13 @@ export class RequestModel {
     return instance
   }
 
-  groupBy(column: keyof RequestType): RequestModel {
+  groupBy(column: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof RequestType): RequestModel {
+  static groupBy(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1389,13 +1389,13 @@ export class FailedJobModel {
     return data
   }
 
-  orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
+  orderBy(column: keyof FailedJobsTable, order: 'asc' | 'desc'): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof FailedJobType, order: 'asc' | 'desc'): FailedJobModel {
+  static orderBy(column: keyof FailedJobsTable, order: 'asc' | 'desc'): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1403,13 +1403,13 @@ export class FailedJobModel {
     return instance
   }
 
-  groupBy(column: keyof FailedJobType): FailedJobModel {
+  groupBy(column: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof FailedJobType): FailedJobModel {
+  static groupBy(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

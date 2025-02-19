@@ -1389,13 +1389,13 @@ export class JobModel {
     return data
   }
 
-  orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
+  orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof JobType, order: 'asc' | 'desc'): JobModel {
+  static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1403,13 +1403,13 @@ export class JobModel {
     return instance
   }
 
-  groupBy(column: keyof JobType): JobModel {
+  groupBy(column: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof JobType): JobModel {
+  static groupBy(column: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

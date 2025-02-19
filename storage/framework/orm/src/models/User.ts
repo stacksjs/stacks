@@ -1473,13 +1473,13 @@ export class UserModel {
     return data
   }
 
-  orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
+  orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
+  static orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1487,13 +1487,13 @@ export class UserModel {
     return instance
   }
 
-  groupBy(column: keyof UserType): UserModel {
+  groupBy(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof UserType): UserModel {
+  static groupBy(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1435,13 +1435,13 @@ export class ActivityModel {
     return data
   }
 
-  orderBy(column: keyof ActivityType, order: 'asc' | 'desc'): ActivityModel {
+  orderBy(column: keyof ActivitiesTable, order: 'asc' | 'desc'): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ActivityType, order: 'asc' | 'desc'): ActivityModel {
+  static orderBy(column: keyof ActivitiesTable, order: 'asc' | 'desc'): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1449,13 +1449,13 @@ export class ActivityModel {
     return instance
   }
 
-  groupBy(column: keyof ActivityType): ActivityModel {
+  groupBy(column: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ActivityType): ActivityModel {
+  static groupBy(column: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

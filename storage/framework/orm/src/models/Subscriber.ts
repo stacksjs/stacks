@@ -1321,13 +1321,13 @@ export class SubscriberModel {
     return data
   }
 
-  orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+  orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+  static orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1335,13 +1335,13 @@ export class SubscriberModel {
     return instance
   }
 
-  groupBy(column: keyof SubscriberType): SubscriberModel {
+  groupBy(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof SubscriberType): SubscriberModel {
+  static groupBy(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1389,13 +1389,13 @@ export class ErrorModel {
     return data
   }
 
-  orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
+  orderBy(column: keyof ErrorsTable, order: 'asc' | 'desc'): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ErrorType, order: 'asc' | 'desc'): ErrorModel {
+  static orderBy(column: keyof ErrorsTable, order: 'asc' | 'desc'): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1403,13 +1403,13 @@ export class ErrorModel {
     return instance
   }
 
-  groupBy(column: keyof ErrorType): ErrorModel {
+  groupBy(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ErrorType): ErrorModel {
+  static groupBy(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

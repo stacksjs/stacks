@@ -1437,13 +1437,13 @@ export class ProductModel {
     return data
   }
 
-  orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
+  orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
+  static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1451,13 +1451,13 @@ export class ProductModel {
     return instance
   }
 
-  groupBy(column: keyof ProductType): ProductModel {
+  groupBy(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ProductType): ProductModel {
+  static groupBy(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

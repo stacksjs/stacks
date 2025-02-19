@@ -1385,13 +1385,13 @@ export class AccessTokenModel {
     return data
   }
 
-  orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+  orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+  static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1399,13 +1399,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  groupBy(column: keyof AccessTokenType): AccessTokenModel {
+  groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof AccessTokenType): AccessTokenModel {
+  static groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

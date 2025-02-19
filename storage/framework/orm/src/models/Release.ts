@@ -1321,13 +1321,13 @@ export class ReleaseModel {
     return data
   }
 
-  orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+  orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+  static orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1335,13 +1335,13 @@ export class ReleaseModel {
     return instance
   }
 
-  groupBy(column: keyof ReleaseType): ReleaseModel {
+  groupBy(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ReleaseType): ReleaseModel {
+  static groupBy(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -2148,13 +2148,13 @@ export async function generateModelString(
           return data
         }
 
-        orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
   
           return this
         }
   
-        static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -2162,13 +2162,13 @@ export async function generateModelString(
           return instance
         }
 
-        groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.groupBy(column)
   
           return this
         }
   
-        static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

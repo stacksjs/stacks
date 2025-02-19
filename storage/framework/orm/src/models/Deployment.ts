@@ -1450,13 +1450,13 @@ export class DeploymentModel {
     return data
   }
 
-  orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
+  orderBy(column: keyof DeploymentsTable, order: 'asc' | 'desc'): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof DeploymentType, order: 'asc' | 'desc'): DeploymentModel {
+  static orderBy(column: keyof DeploymentsTable, order: 'asc' | 'desc'): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1464,13 +1464,13 @@ export class DeploymentModel {
     return instance
   }
 
-  groupBy(column: keyof DeploymentType): DeploymentModel {
+  groupBy(column: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof DeploymentType): DeploymentModel {
+  static groupBy(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

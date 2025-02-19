@@ -1448,13 +1448,13 @@ export class TeamModel {
     return data
   }
 
-  orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+  orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+  static orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1462,13 +1462,13 @@ export class TeamModel {
     return instance
   }
 
-  groupBy(column: keyof TeamType): TeamModel {
+  groupBy(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof TeamType): TeamModel {
+  static groupBy(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1351,13 +1351,13 @@ export class PostModel {
     return data
   }
 
-  orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+  orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof PostType, order: 'asc' | 'desc'): PostModel {
+  static orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1365,13 +1365,13 @@ export class PostModel {
     return instance
   }
 
-  groupBy(column: keyof PostType): PostModel {
+  groupBy(column: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof PostType): PostModel {
+  static groupBy(column: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)

@@ -1457,13 +1457,13 @@ export class PaymentMethodModel {
     return data
   }
 
-  orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
+  orderBy(column: keyof PaymentMethodsTable, order: 'asc' | 'desc'): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof PaymentMethodType, order: 'asc' | 'desc'): PaymentMethodModel {
+  static orderBy(column: keyof PaymentMethodsTable, order: 'asc' | 'desc'): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1471,13 +1471,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
+  groupBy(column: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof PaymentMethodType): PaymentMethodModel {
+  static groupBy(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
