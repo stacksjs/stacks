@@ -1069,6 +1069,40 @@ export class TransactionModel {
     return instance
   }
 
+  whereNotNull(column: string): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    return this
+  }
+
+  static whereNotNull(column: string): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'not', null),
+    )
+
+    return instance
+  }
+
   whereNull(column: string): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
