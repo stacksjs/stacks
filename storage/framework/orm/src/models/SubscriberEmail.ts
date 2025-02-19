@@ -1137,7 +1137,7 @@ export class SubscriberEmailModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+  applyWhereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1147,17 +1147,17 @@ export class SubscriberEmailModel {
     return this
   }
 
-  whereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+  whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof SubscriberEmailType, value: string): SubscriberEmailModel {
+  static whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+  applyWhereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1167,11 +1167,11 @@ export class SubscriberEmailModel {
     return this
   }
 
-  whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+  whereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof SubscriberEmailType, values: any[]): SubscriberEmailModel {
+  static whereNotIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     return instance.applyWhereNotIn(column, values)

@@ -1224,7 +1224,7 @@ export class ProductModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof ProductType, value: string): ProductModel {
+  applyWhereLike(column: keyof ProductsTable, value: string): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1234,17 +1234,17 @@ export class ProductModel {
     return this
   }
 
-  whereLike(column: keyof ProductType, value: string): ProductModel {
+  whereLike(column: keyof ProductsTable, value: string): ProductModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ProductType, value: string): ProductModel {
+  static whereLike(column: keyof ProductsTable, value: string): ProductModel {
     const instance = new ProductModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+  applyWhereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1254,11 +1254,11 @@ export class ProductModel {
     return this
   }
 
-  whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+  whereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+  static whereNotIn(column: keyof ProductsTable, values: any[]): ProductModel {
     const instance = new ProductModel(null)
 
     return instance.applyWhereNotIn(column, values)

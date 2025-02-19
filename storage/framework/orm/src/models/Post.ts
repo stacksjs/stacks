@@ -1138,7 +1138,7 @@ export class PostModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof PostType, value: string): PostModel {
+  applyWhereLike(column: keyof PostsTable, value: string): PostModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1148,17 +1148,17 @@ export class PostModel {
     return this
   }
 
-  whereLike(column: keyof PostType, value: string): PostModel {
+  whereLike(column: keyof PostsTable, value: string): PostModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof PostType, value: string): PostModel {
+  static whereLike(column: keyof PostsTable, value: string): PostModel {
     const instance = new PostModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof PostType, values: any[]): PostModel {
+  applyWhereNotIn(column: keyof PostsTable, values: any[]): PostModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1168,11 +1168,11 @@ export class PostModel {
     return this
   }
 
-  whereNotIn(column: keyof PostType, values: any[]): PostModel {
+  whereNotIn(column: keyof PostsTable, values: any[]): PostModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof PostType, values: any[]): PostModel {
+  static whereNotIn(column: keyof PostsTable, values: any[]): PostModel {
     const instance = new PostModel(null)
 
     return instance.applyWhereNotIn(column, values)

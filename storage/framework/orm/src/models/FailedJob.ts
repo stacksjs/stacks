@@ -1176,7 +1176,7 @@ export class FailedJobModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof FailedJobType, value: string): FailedJobModel {
+  applyWhereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1186,17 +1186,17 @@ export class FailedJobModel {
     return this
   }
 
-  whereLike(column: keyof FailedJobType, value: string): FailedJobModel {
+  whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof FailedJobType, value: string): FailedJobModel {
+  static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
+  applyWhereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1206,11 +1206,11 @@ export class FailedJobModel {
     return this
   }
 
-  whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
+  whereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof FailedJobType, values: any[]): FailedJobModel {
+  static whereNotIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     return instance.applyWhereNotIn(column, values)

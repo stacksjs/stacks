@@ -1172,7 +1172,7 @@ export class AccessTokenModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  applyWhereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1182,17 +1182,17 @@ export class AccessTokenModel {
     return this
   }
 
-  whereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  applyWhereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1202,11 +1202,11 @@ export class AccessTokenModel {
     return this
   }
 
-  whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  whereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  static whereNotIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereNotIn(column, values)

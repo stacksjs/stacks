@@ -1176,7 +1176,7 @@ export class JobModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof JobType, value: string): JobModel {
+  applyWhereLike(column: keyof JobsTable, value: string): JobModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1186,17 +1186,17 @@ export class JobModel {
     return this
   }
 
-  whereLike(column: keyof JobType, value: string): JobModel {
+  whereLike(column: keyof JobsTable, value: string): JobModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof JobType, value: string): JobModel {
+  static whereLike(column: keyof JobsTable, value: string): JobModel {
     const instance = new JobModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof JobType, values: any[]): JobModel {
+  applyWhereNotIn(column: keyof JobsTable, values: any[]): JobModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1206,11 +1206,11 @@ export class JobModel {
     return this
   }
 
-  whereNotIn(column: keyof JobType, values: any[]): JobModel {
+  whereNotIn(column: keyof JobsTable, values: any[]): JobModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof JobType, values: any[]): JobModel {
+  static whereNotIn(column: keyof JobsTable, values: any[]): JobModel {
     const instance = new JobModel(null)
 
     return instance.applyWhereNotIn(column, values)

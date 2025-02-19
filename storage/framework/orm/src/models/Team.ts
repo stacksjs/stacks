@@ -1235,7 +1235,7 @@ export class TeamModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof TeamType, value: string): TeamModel {
+  applyWhereLike(column: keyof TeamsTable, value: string): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1245,17 +1245,17 @@ export class TeamModel {
     return this
   }
 
-  whereLike(column: keyof TeamType, value: string): TeamModel {
+  whereLike(column: keyof TeamsTable, value: string): TeamModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof TeamType, value: string): TeamModel {
+  static whereLike(column: keyof TeamsTable, value: string): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+  applyWhereNotIn(column: keyof TeamsTable, values: any[]): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1265,11 +1265,11 @@ export class TeamModel {
     return this
   }
 
-  whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+  whereNotIn(column: keyof TeamsTable, values: any[]): TeamModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+  static whereNotIn(column: keyof TeamsTable, values: any[]): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereNotIn(column, values)

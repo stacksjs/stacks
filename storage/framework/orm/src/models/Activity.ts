@@ -1222,7 +1222,7 @@ export class ActivityModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof ActivityType, value: string): ActivityModel {
+  applyWhereLike(column: keyof ActivitiesTable, value: string): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1232,17 +1232,17 @@ export class ActivityModel {
     return this
   }
 
-  whereLike(column: keyof ActivityType, value: string): ActivityModel {
+  whereLike(column: keyof ActivitiesTable, value: string): ActivityModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ActivityType, value: string): ActivityModel {
+  static whereLike(column: keyof ActivitiesTable, value: string): ActivityModel {
     const instance = new ActivityModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
+  applyWhereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1252,11 +1252,11 @@ export class ActivityModel {
     return this
   }
 
-  whereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
+  whereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ActivityType, values: any[]): ActivityModel {
+  static whereNotIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
     const instance = new ActivityModel(null)
 
     return instance.applyWhereNotIn(column, values)

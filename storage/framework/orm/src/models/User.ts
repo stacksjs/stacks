@@ -1260,7 +1260,7 @@ export class UserModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof UserType, value: string): UserModel {
+  applyWhereLike(column: keyof UsersTable, value: string): UserModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1270,17 +1270,17 @@ export class UserModel {
     return this
   }
 
-  whereLike(column: keyof UserType, value: string): UserModel {
+  whereLike(column: keyof UsersTable, value: string): UserModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof UserType, value: string): UserModel {
+  static whereLike(column: keyof UsersTable, value: string): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof UserType, values: any[]): UserModel {
+  applyWhereNotIn(column: keyof UsersTable, values: any[]): UserModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1290,11 +1290,11 @@ export class UserModel {
     return this
   }
 
-  whereNotIn(column: keyof UserType, values: any[]): UserModel {
+  whereNotIn(column: keyof UsersTable, values: any[]): UserModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof UserType, values: any[]): UserModel {
+  static whereNotIn(column: keyof UsersTable, values: any[]): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereNotIn(column, values)

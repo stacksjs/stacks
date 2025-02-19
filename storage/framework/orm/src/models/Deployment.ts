@@ -1237,7 +1237,7 @@ export class DeploymentModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof DeploymentType, value: string): DeploymentModel {
+  applyWhereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1247,17 +1247,17 @@ export class DeploymentModel {
     return this
   }
 
-  whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
+  whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof DeploymentType, value: string): DeploymentModel {
+  static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+  applyWhereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1267,11 +1267,11 @@ export class DeploymentModel {
     return this
   }
 
-  whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+  whereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof DeploymentType, values: any[]): DeploymentModel {
+  static whereNotIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     return instance.applyWhereNotIn(column, values)

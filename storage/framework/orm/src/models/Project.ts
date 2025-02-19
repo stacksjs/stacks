@@ -1159,7 +1159,7 @@ export class ProjectModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof ProjectType, value: string): ProjectModel {
+  applyWhereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1169,17 +1169,17 @@ export class ProjectModel {
     return this
   }
 
-  whereLike(column: keyof ProjectType, value: string): ProjectModel {
+  whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ProjectType, value: string): ProjectModel {
+  static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     const instance = new ProjectModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
+  applyWhereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1189,11 +1189,11 @@ export class ProjectModel {
     return this
   }
 
-  whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
+  whereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ProjectType, values: any[]): ProjectModel {
+  static whereNotIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
     const instance = new ProjectModel(null)
 
     return instance.applyWhereNotIn(column, values)

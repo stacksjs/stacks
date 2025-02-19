@@ -1244,7 +1244,7 @@ export class PaymentMethodModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+  applyWhereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1254,17 +1254,17 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+  whereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof PaymentMethodType, value: string): PaymentMethodModel {
+  static whereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
+  applyWhereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1274,11 +1274,11 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
+  whereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof PaymentMethodType, values: any[]): PaymentMethodModel {
+  static whereNotIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     return instance.applyWhereNotIn(column, values)

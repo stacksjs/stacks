@@ -1217,7 +1217,7 @@ export class TransactionModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof TransactionType, value: string): TransactionModel {
+  applyWhereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1227,17 +1227,17 @@ export class TransactionModel {
     return this
   }
 
-  whereLike(column: keyof TransactionType, value: string): TransactionModel {
+  whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof TransactionType, value: string): TransactionModel {
+  static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  applyWhereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1247,11 +1247,11 @@ export class TransactionModel {
     return this
   }
 
-  whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  whereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  static whereNotIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhereNotIn(column, values)

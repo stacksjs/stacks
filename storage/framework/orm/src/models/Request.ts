@@ -1256,7 +1256,7 @@ export class RequestModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof RequestType, value: string): RequestModel {
+  applyWhereLike(column: keyof RequestsTable, value: string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1266,17 +1266,17 @@ export class RequestModel {
     return this
   }
 
-  whereLike(column: keyof RequestType, value: string): RequestModel {
+  whereLike(column: keyof RequestsTable, value: string): RequestModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof RequestType, value: string): RequestModel {
+  static whereLike(column: keyof RequestsTable, value: string): RequestModel {
     const instance = new RequestModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof RequestType, values: any[]): RequestModel {
+  applyWhereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1286,11 +1286,11 @@ export class RequestModel {
     return this
   }
 
-  whereNotIn(column: keyof RequestType, values: any[]): RequestModel {
+  whereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof RequestType, values: any[]): RequestModel {
+  static whereNotIn(column: keyof RequestsTable, values: any[]): RequestModel {
     const instance = new RequestModel(null)
 
     return instance.applyWhereNotIn(column, values)

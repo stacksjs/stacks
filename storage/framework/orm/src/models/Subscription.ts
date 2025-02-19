@@ -1288,7 +1288,7 @@ export class SubscriptionModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
+  applyWhereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1298,17 +1298,17 @@ export class SubscriptionModel {
     return this
   }
 
-  whereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
+  whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof SubscriptionType, value: string): SubscriptionModel {
+  static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+  applyWhereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1318,11 +1318,11 @@ export class SubscriptionModel {
     return this
   }
 
-  whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+  whereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof SubscriptionType, values: any[]): SubscriptionModel {
+  static whereNotIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     return instance.applyWhereNotIn(column, values)

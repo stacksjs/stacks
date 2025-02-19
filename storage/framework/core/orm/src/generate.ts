@@ -1938,7 +1938,7 @@ export async function generateModelString(
           return instance.applyWhereBetween(column, range)
         }
 
-        applyWhereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        applyWhereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
   
           this.updateFromQuery = this.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
@@ -1948,17 +1948,17 @@ export async function generateModelString(
           return this
         }
 
-        whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           return this.applyWhereLike(column, value)
         }
           
-        static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           return instance.applyWhereLike(column, value)
         }
   
-        applyWhereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        applyWhereNotIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
   
           this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1968,11 +1968,11 @@ export async function generateModelString(
           return this
         }
 
-        whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        whereNotIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
           return this.applyWhereNotIn(column, values)
         }
   
-        static whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        static whereNotIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           return instance.applyWhereNotIn(column, values)

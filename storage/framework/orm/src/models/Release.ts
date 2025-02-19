@@ -1108,7 +1108,7 @@ export class ReleaseModel {
     return instance.applyWhereBetween(column, range)
   }
 
-  applyWhereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  applyWhereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1118,17 +1118,17 @@ export class ReleaseModel {
     return this
   }
 
-  whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  applyWhereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1138,11 +1138,11 @@ export class ReleaseModel {
     return this
   }
 
-  whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  whereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
     return this.applyWhereNotIn(column, values)
   }
 
-  static whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  static whereNotIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereNotIn(column, values)
