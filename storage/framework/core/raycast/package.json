@@ -2,7 +2,7 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "buddy",
   "title": "Stacks Buddy",
-  "version": "0.69.0",
+  "version": "0.69.1",
   "description": "The Stacks Raycast extension.",
   "author": "Stacks.js",
   "license": "MIT",

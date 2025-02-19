@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dialog",
   "type": "module",
-  "version": "0.69.0",
+  "version": "0.69.1",
   "description": "A modern dialog component.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],

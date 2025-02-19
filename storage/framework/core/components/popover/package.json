@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/popover",
   "type": "module",
-  "version": "0.69.0",
+  "version": "0.69.1",
   "description": "A modern popover component.",
   "author": "Chris Breuer",
   "contributors": [
