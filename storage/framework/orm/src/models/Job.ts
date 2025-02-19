@@ -659,7 +659,7 @@ export class JobModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
+              if (condition.operator === 'is not') {
                 subquery = subquery.whereNotIn(condition.column, condition.values!)
               }
               else {
@@ -758,7 +758,7 @@ export class JobModel {
           break
 
         case 'whereIn':
-          if (condition.operator === 'not') {
+          if (condition.operator === 'is not') {
             this.whereNotIn(condition.column, condition.values!)
           }
           else {

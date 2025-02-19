@@ -1444,7 +1444,7 @@ export async function generateModelString(
                   break
                   
                 case 'whereIn':
-                  if (condition.operator === 'not') {
+                  if (condition.operator === 'is not') {
                     subquery = subquery.whereNotIn(condition.column, condition.values!)
                   } else {
                     subquery = subquery.whereIn(condition.column, condition.values!)
@@ -1542,7 +1542,7 @@ export async function generateModelString(
                 break
 
               case 'whereIn':
-                if (condition.operator === 'not') {
+                if (condition.operator === 'is not') {
                   this.whereNotIn(condition.column, condition.values!)
                 }
                 else {
