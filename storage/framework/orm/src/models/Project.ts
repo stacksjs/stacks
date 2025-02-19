@@ -1019,7 +1019,7 @@ export class ProjectModel {
     return instance
   }
 
-  whereNotNull(column: string): ProjectModel {
+  whereNotNull(column: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1035,7 +1035,7 @@ export class ProjectModel {
     return this
   }
 
-  static whereNotNull(column: string): ProjectModel {
+  static whereNotNull(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1053,7 +1053,7 @@ export class ProjectModel {
     return instance
   }
 
-  whereNull(column: string): ProjectModel {
+  whereNull(column: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1069,7 +1069,7 @@ export class ProjectModel {
     return this
   }
 
-  static whereNull(column: string): ProjectModel {
+  static whereNull(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

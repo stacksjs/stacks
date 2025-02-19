@@ -1028,7 +1028,7 @@ export class JobModel {
     return instance
   }
 
-  whereNotNull(column: string): JobModel {
+  whereNotNull(column: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1044,7 +1044,7 @@ export class JobModel {
     return this
   }
 
-  static whereNotNull(column: string): JobModel {
+  static whereNotNull(column: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1062,7 +1062,7 @@ export class JobModel {
     return instance
   }
 
-  whereNull(column: string): JobModel {
+  whereNull(column: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1078,7 +1078,7 @@ export class JobModel {
     return this
   }
 
-  static whereNull(column: string): JobModel {
+  static whereNull(column: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

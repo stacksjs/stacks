@@ -1066,7 +1066,7 @@ export class ActivityModel {
     return instance
   }
 
-  whereNotNull(column: string): ActivityModel {
+  whereNotNull(column: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1082,7 +1082,7 @@ export class ActivityModel {
     return this
   }
 
-  static whereNotNull(column: string): ActivityModel {
+  static whereNotNull(column: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1100,7 +1100,7 @@ export class ActivityModel {
     return instance
   }
 
-  whereNull(column: string): ActivityModel {
+  whereNull(column: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1116,7 +1116,7 @@ export class ActivityModel {
     return this
   }
 
-  static whereNull(column: string): ActivityModel {
+  static whereNull(column: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

@@ -1120,7 +1120,7 @@ export class UserModel {
     return instance
   }
 
-  whereNotNull(column: string): UserModel {
+  whereNotNull(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1136,7 +1136,7 @@ export class UserModel {
     return this
   }
 
-  static whereNotNull(column: string): UserModel {
+  static whereNotNull(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1154,7 +1154,7 @@ export class UserModel {
     return instance
   }
 
-  whereNull(column: string): UserModel {
+  whereNull(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1170,7 +1170,7 @@ export class UserModel {
     return this
   }
 
-  static whereNull(column: string): UserModel {
+  static whereNull(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

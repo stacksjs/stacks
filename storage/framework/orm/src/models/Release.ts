@@ -992,7 +992,7 @@ export class ReleaseModel {
     return instance
   }
 
-  whereNotNull(column: string): ReleaseModel {
+  whereNotNull(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1008,7 +1008,7 @@ export class ReleaseModel {
     return this
   }
 
-  static whereNotNull(column: string): ReleaseModel {
+  static whereNotNull(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1026,7 +1026,7 @@ export class ReleaseModel {
     return instance
   }
 
-  whereNull(column: string): ReleaseModel {
+  whereNull(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1042,7 +1042,7 @@ export class ReleaseModel {
     return this
   }
 
-  static whereNull(column: string): ReleaseModel {
+  static whereNull(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

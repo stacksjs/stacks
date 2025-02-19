@@ -992,7 +992,7 @@ export class SubscriberModel {
     return instance
   }
 
-  whereNotNull(column: string): SubscriberModel {
+  whereNotNull(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1008,7 +1008,7 @@ export class SubscriberModel {
     return this
   }
 
-  static whereNotNull(column: string): SubscriberModel {
+  static whereNotNull(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1026,7 +1026,7 @@ export class SubscriberModel {
     return instance
   }
 
-  whereNull(column: string): SubscriberModel {
+  whereNull(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1042,7 +1042,7 @@ export class SubscriberModel {
     return this
   }
 
-  static whereNull(column: string): SubscriberModel {
+  static whereNull(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

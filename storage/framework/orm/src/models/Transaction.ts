@@ -1069,7 +1069,7 @@ export class TransactionModel {
     return instance
   }
 
-  whereNotNull(column: string): TransactionModel {
+  whereNotNull(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1085,7 +1085,7 @@ export class TransactionModel {
     return this
   }
 
-  static whereNotNull(column: string): TransactionModel {
+  static whereNotNull(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1103,7 +1103,7 @@ export class TransactionModel {
     return instance
   }
 
-  whereNull(column: string): TransactionModel {
+  whereNull(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1119,7 +1119,7 @@ export class TransactionModel {
     return this
   }
 
-  static whereNull(column: string): TransactionModel {
+  static whereNull(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

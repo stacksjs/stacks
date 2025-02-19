@@ -1028,7 +1028,7 @@ export class ErrorModel {
     return instance
   }
 
-  whereNotNull(column: string): ErrorModel {
+  whereNotNull(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1044,7 +1044,7 @@ export class ErrorModel {
     return this
   }
 
-  static whereNotNull(column: string): ErrorModel {
+  static whereNotNull(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1062,7 +1062,7 @@ export class ErrorModel {
     return instance
   }
 
-  whereNull(column: string): ErrorModel {
+  whereNull(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1078,7 +1078,7 @@ export class ErrorModel {
     return this
   }
 
-  static whereNull(column: string): ErrorModel {
+  static whereNull(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

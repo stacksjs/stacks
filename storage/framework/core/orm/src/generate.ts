@@ -1827,7 +1827,7 @@ export async function generateModelString(
           return instance
         }
 
-        whereNotNull(column: string): ${modelName}Model {
+        whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
             eb(column, '=', '').or(column, 'not', null)
           )
@@ -1843,7 +1843,7 @@ export async function generateModelString(
           return this
         }
   
-        static whereNotNull(column: string): ${modelName}Model {
+        static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1861,7 +1861,7 @@ export async function generateModelString(
           return instance
         }
 
-        whereNull(column: string): ${modelName}Model {
+        whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
             eb(column, '=', '').or(column, 'is', null)
           )
@@ -1877,7 +1877,7 @@ export async function generateModelString(
           return this
         }
   
-        static whereNull(column: string): ${modelName}Model {
+        static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1894,7 +1894,6 @@ export async function generateModelString(
 
           return instance
         }
-  
   
         ${whereStatements}
   

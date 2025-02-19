@@ -1063,7 +1063,7 @@ export class TeamModel {
     return instance
   }
 
-  whereNotNull(column: string): TeamModel {
+  whereNotNull(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1079,7 +1079,7 @@ export class TeamModel {
     return this
   }
 
-  static whereNotNull(column: string): TeamModel {
+  static whereNotNull(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1097,7 +1097,7 @@ export class TeamModel {
     return instance
   }
 
-  whereNull(column: string): TeamModel {
+  whereNull(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1113,7 +1113,7 @@ export class TeamModel {
     return this
   }
 
-  static whereNull(column: string): TeamModel {
+  static whereNull(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

@@ -1080,7 +1080,7 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereNotNull(column: string): PaymentMethodModel {
+  whereNotNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1096,7 +1096,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  static whereNotNull(column: string): PaymentMethodModel {
+  static whereNotNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1114,7 +1114,7 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereNull(column: string): PaymentMethodModel {
+  whereNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1130,7 +1130,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  static whereNull(column: string): PaymentMethodModel {
+  static whereNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

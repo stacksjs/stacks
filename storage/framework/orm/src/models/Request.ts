@@ -1084,7 +1084,7 @@ export class RequestModel {
     return instance
   }
 
-  whereNotNull(column: string): RequestModel {
+  whereNotNull(column: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1100,7 +1100,7 @@ export class RequestModel {
     return this
   }
 
-  static whereNotNull(column: string): RequestModel {
+  static whereNotNull(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1118,7 +1118,7 @@ export class RequestModel {
     return instance
   }
 
-  whereNull(column: string): RequestModel {
+  whereNull(column: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1134,7 +1134,7 @@ export class RequestModel {
     return this
   }
 
-  static whereNull(column: string): RequestModel {
+  static whereNull(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

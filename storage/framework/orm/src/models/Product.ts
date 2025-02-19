@@ -1060,7 +1060,7 @@ export class ProductModel {
     return instance
   }
 
-  whereNotNull(column: string): ProductModel {
+  whereNotNull(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1076,7 +1076,7 @@ export class ProductModel {
     return this
   }
 
-  static whereNotNull(column: string): ProductModel {
+  static whereNotNull(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1094,7 +1094,7 @@ export class ProductModel {
     return instance
   }
 
-  whereNull(column: string): ProductModel {
+  whereNull(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1110,7 +1110,7 @@ export class ProductModel {
     return this
   }
 
-  static whereNull(column: string): ProductModel {
+  static whereNull(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

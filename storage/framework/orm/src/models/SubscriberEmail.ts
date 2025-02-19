@@ -1021,7 +1021,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereNotNull(column: string): SubscriberEmailModel {
+  whereNotNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1037,7 +1037,7 @@ export class SubscriberEmailModel {
     return this
   }
 
-  static whereNotNull(column: string): SubscriberEmailModel {
+  static whereNotNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1055,7 +1055,7 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereNull(column: string): SubscriberEmailModel {
+  whereNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1071,7 +1071,7 @@ export class SubscriberEmailModel {
     return this
   }
 
-  static whereNull(column: string): SubscriberEmailModel {
+  static whereNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

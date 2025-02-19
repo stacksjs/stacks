@@ -1032,7 +1032,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereNotNull(column: string): AccessTokenModel {
+  whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1048,7 +1048,7 @@ export class AccessTokenModel {
     return this
   }
 
-  static whereNotNull(column: string): AccessTokenModel {
+  static whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1066,7 +1066,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereNull(column: string): AccessTokenModel {
+  whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1082,7 +1082,7 @@ export class AccessTokenModel {
     return this
   }
 
-  static whereNull(column: string): AccessTokenModel {
+  static whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

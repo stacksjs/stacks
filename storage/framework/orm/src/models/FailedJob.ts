@@ -1028,7 +1028,7 @@ export class FailedJobModel {
     return instance
   }
 
-  whereNotNull(column: string): FailedJobModel {
+  whereNotNull(column: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1044,7 +1044,7 @@ export class FailedJobModel {
     return this
   }
 
-  static whereNotNull(column: string): FailedJobModel {
+  static whereNotNull(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1062,7 +1062,7 @@ export class FailedJobModel {
     return instance
   }
 
-  whereNull(column: string): FailedJobModel {
+  whereNull(column: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1078,7 +1078,7 @@ export class FailedJobModel {
     return this
   }
 
-  static whereNull(column: string): FailedJobModel {
+  static whereNull(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

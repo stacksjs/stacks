@@ -1073,7 +1073,7 @@ export class DeploymentModel {
     return instance
   }
 
-  whereNotNull(column: string): DeploymentModel {
+  whereNotNull(column: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1089,7 +1089,7 @@ export class DeploymentModel {
     return this
   }
 
-  static whereNotNull(column: string): DeploymentModel {
+  static whereNotNull(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1107,7 +1107,7 @@ export class DeploymentModel {
     return instance
   }
 
-  whereNull(column: string): DeploymentModel {
+  whereNull(column: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1123,7 +1123,7 @@ export class DeploymentModel {
     return this
   }
 
-  static whereNull(column: string): DeploymentModel {
+  static whereNull(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>

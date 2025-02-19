@@ -1014,7 +1014,7 @@ export class PostModel {
     return instance
   }
 
-  whereNotNull(column: string): PostModel {
+  whereNotNull(column: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'not', null),
     )
@@ -1030,7 +1030,7 @@ export class PostModel {
     return this
   }
 
-  static whereNotNull(column: string): PostModel {
+  static whereNotNull(column: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1048,7 +1048,7 @@ export class PostModel {
     return instance
   }
 
-  whereNull(column: string): PostModel {
+  whereNull(column: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1064,7 +1064,7 @@ export class PostModel {
     return this
   }
 
-  static whereNull(column: string): PostModel {
+  static whereNull(column: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
