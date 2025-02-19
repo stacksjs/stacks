@@ -1349,13 +1349,13 @@ export class ReleaseModel {
     return instance
   }
 
-  having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+  having(column: keyof ReleasesTable, operator: string, value: any): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+  static having(column: keyof ReleasesTable, operator: string, value: any): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1377,13 +1377,13 @@ export class ReleaseModel {
     return instance
   }
 
-  orderByDesc(column: keyof ReleaseType): ReleaseModel {
+  orderByDesc(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ReleaseType): ReleaseModel {
+  static orderByDesc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1391,13 +1391,13 @@ export class ReleaseModel {
     return instance
   }
 
-  orderByAsc(column: keyof ReleaseType): ReleaseModel {
+  orderByAsc(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ReleaseType): ReleaseModel {
+  static orderByAsc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

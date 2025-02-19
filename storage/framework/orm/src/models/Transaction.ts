@@ -1458,13 +1458,13 @@ export class TransactionModel {
     return instance
   }
 
-  having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
+  having(column: keyof TransactionsTable, operator: string, value: any): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
+  static having(column: keyof TransactionsTable, operator: string, value: any): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1486,13 +1486,13 @@ export class TransactionModel {
     return instance
   }
 
-  orderByDesc(column: keyof TransactionType): TransactionModel {
+  orderByDesc(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof TransactionType): TransactionModel {
+  static orderByDesc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1500,13 +1500,13 @@ export class TransactionModel {
     return instance
   }
 
-  orderByAsc(column: keyof TransactionType): TransactionModel {
+  orderByAsc(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof TransactionType): TransactionModel {
+  static orderByAsc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

@@ -1501,13 +1501,13 @@ export class UserModel {
     return instance
   }
 
-  having(column: keyof UserType, operator: string, value: any): UserModel {
+  having(column: keyof UsersTable, operator: string, value: any): UserModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof UserType, operator: string, value: any): UserModel {
+  static having(column: keyof UsersTable, operator: string, value: any): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1529,13 +1529,13 @@ export class UserModel {
     return instance
   }
 
-  orderByDesc(column: keyof UserType): UserModel {
+  orderByDesc(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof UserType): UserModel {
+  static orderByDesc(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1543,13 +1543,13 @@ export class UserModel {
     return instance
   }
 
-  orderByAsc(column: keyof UserType): UserModel {
+  orderByAsc(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof UserType): UserModel {
+  static orderByAsc(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

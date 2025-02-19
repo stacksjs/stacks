@@ -1478,13 +1478,13 @@ export class DeploymentModel {
     return instance
   }
 
-  having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
+  having(column: keyof DeploymentsTable, operator: string, value: any): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof DeploymentType, operator: string, value: any): DeploymentModel {
+  static having(column: keyof DeploymentsTable, operator: string, value: any): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1506,13 +1506,13 @@ export class DeploymentModel {
     return instance
   }
 
-  orderByDesc(column: keyof DeploymentType): DeploymentModel {
+  orderByDesc(column: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof DeploymentType): DeploymentModel {
+  static orderByDesc(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1520,13 +1520,13 @@ export class DeploymentModel {
     return instance
   }
 
-  orderByAsc(column: keyof DeploymentType): DeploymentModel {
+  orderByAsc(column: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof DeploymentType): DeploymentModel {
+  static orderByAsc(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

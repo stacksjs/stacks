@@ -1417,13 +1417,13 @@ export class ErrorModel {
     return instance
   }
 
-  having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
+  having(column: keyof ErrorsTable, operator: string, value: any): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ErrorType, operator: string, value: any): ErrorModel {
+  static having(column: keyof ErrorsTable, operator: string, value: any): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1445,13 +1445,13 @@ export class ErrorModel {
     return instance
   }
 
-  orderByDesc(column: keyof ErrorType): ErrorModel {
+  orderByDesc(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ErrorType): ErrorModel {
+  static orderByDesc(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1459,13 +1459,13 @@ export class ErrorModel {
     return instance
   }
 
-  orderByAsc(column: keyof ErrorType): ErrorModel {
+  orderByAsc(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ErrorType): ErrorModel {
+  static orderByAsc(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

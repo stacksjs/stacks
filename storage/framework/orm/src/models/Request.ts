@@ -1497,13 +1497,13 @@ export class RequestModel {
     return instance
   }
 
-  having(column: keyof RequestType, operator: string, value: any): RequestModel {
+  having(column: keyof RequestsTable, operator: string, value: any): RequestModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof RequestType, operator: string, value: any): RequestModel {
+  static having(column: keyof RequestsTable, operator: string, value: any): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1525,13 +1525,13 @@ export class RequestModel {
     return instance
   }
 
-  orderByDesc(column: keyof RequestType): RequestModel {
+  orderByDesc(column: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof RequestType): RequestModel {
+  static orderByDesc(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1539,13 +1539,13 @@ export class RequestModel {
     return instance
   }
 
-  orderByAsc(column: keyof RequestType): RequestModel {
+  orderByAsc(column: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof RequestType): RequestModel {
+  static orderByAsc(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

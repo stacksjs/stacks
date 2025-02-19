@@ -1417,13 +1417,13 @@ export class JobModel {
     return instance
   }
 
-  having(column: keyof JobType, operator: string, value: any): JobModel {
+  having(column: keyof JobsTable, operator: string, value: any): JobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof JobType, operator: string, value: any): JobModel {
+  static having(column: keyof JobsTable, operator: string, value: any): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1445,13 +1445,13 @@ export class JobModel {
     return instance
   }
 
-  orderByDesc(column: keyof JobType): JobModel {
+  orderByDesc(column: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof JobType): JobModel {
+  static orderByDesc(column: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1459,13 +1459,13 @@ export class JobModel {
     return instance
   }
 
-  orderByAsc(column: keyof JobType): JobModel {
+  orderByAsc(column: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof JobType): JobModel {
+  static orderByAsc(column: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

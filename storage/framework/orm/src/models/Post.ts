@@ -1379,13 +1379,13 @@ export class PostModel {
     return instance
   }
 
-  having(column: keyof PostType, operator: string, value: any): PostModel {
+  having(column: keyof PostsTable, operator: string, value: any): PostModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PostType, operator: string, value: any): PostModel {
+  static having(column: keyof PostsTable, operator: string, value: any): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1407,13 +1407,13 @@ export class PostModel {
     return instance
   }
 
-  orderByDesc(column: keyof PostType): PostModel {
+  orderByDesc(column: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof PostType): PostModel {
+  static orderByDesc(column: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1421,13 +1421,13 @@ export class PostModel {
     return instance
   }
 
-  orderByAsc(column: keyof PostType): PostModel {
+  orderByAsc(column: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof PostType): PostModel {
+  static orderByAsc(column: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

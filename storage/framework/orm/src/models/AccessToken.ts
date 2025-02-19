@@ -1413,13 +1413,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
+  having(column: keyof PersonalAccessTokensTable, operator: string, value: any): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
+  static having(column: keyof PersonalAccessTokensTable, operator: string, value: any): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1441,13 +1441,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+  orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+  static orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1455,13 +1455,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+  orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+  static orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

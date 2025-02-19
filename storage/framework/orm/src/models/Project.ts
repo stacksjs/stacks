@@ -1400,13 +1400,13 @@ export class ProjectModel {
     return instance
   }
 
-  having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
+  having(column: keyof ProjectsTable, operator: string, value: any): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProjectType, operator: string, value: any): ProjectModel {
+  static having(column: keyof ProjectsTable, operator: string, value: any): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1428,13 +1428,13 @@ export class ProjectModel {
     return instance
   }
 
-  orderByDesc(column: keyof ProjectType): ProjectModel {
+  orderByDesc(column: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ProjectType): ProjectModel {
+  static orderByDesc(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1442,13 +1442,13 @@ export class ProjectModel {
     return instance
   }
 
-  orderByAsc(column: keyof ProjectType): ProjectModel {
+  orderByAsc(column: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ProjectType): ProjectModel {
+  static orderByAsc(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

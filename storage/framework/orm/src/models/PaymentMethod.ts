@@ -1485,13 +1485,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
+  having(column: keyof PaymentMethodsTable, operator: string, value: any): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PaymentMethodType, operator: string, value: any): PaymentMethodModel {
+  static having(column: keyof PaymentMethodsTable, operator: string, value: any): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1513,13 +1513,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {
+  orderByDesc(column: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof PaymentMethodType): PaymentMethodModel {
+  static orderByDesc(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1527,13 +1527,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
+  orderByAsc(column: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof PaymentMethodType): PaymentMethodModel {
+  static orderByAsc(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

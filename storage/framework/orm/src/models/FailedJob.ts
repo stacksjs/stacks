@@ -1417,13 +1417,13 @@ export class FailedJobModel {
     return instance
   }
 
-  having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
+  having(column: keyof FailedJobsTable, operator: string, value: any): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof FailedJobType, operator: string, value: any): FailedJobModel {
+  static having(column: keyof FailedJobsTable, operator: string, value: any): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1445,13 +1445,13 @@ export class FailedJobModel {
     return instance
   }
 
-  orderByDesc(column: keyof FailedJobType): FailedJobModel {
+  orderByDesc(column: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof FailedJobType): FailedJobModel {
+  static orderByDesc(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1459,13 +1459,13 @@ export class FailedJobModel {
     return instance
   }
 
-  orderByAsc(column: keyof FailedJobType): FailedJobModel {
+  orderByAsc(column: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof FailedJobType): FailedJobModel {
+  static orderByAsc(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

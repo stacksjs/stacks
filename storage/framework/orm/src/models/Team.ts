@@ -1476,13 +1476,13 @@ export class TeamModel {
     return instance
   }
 
-  having(column: keyof TeamType, operator: string, value: any): TeamModel {
+  having(column: keyof TeamsTable, operator: string, value: any): TeamModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TeamType, operator: string, value: any): TeamModel {
+  static having(column: keyof TeamsTable, operator: string, value: any): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1504,13 +1504,13 @@ export class TeamModel {
     return instance
   }
 
-  orderByDesc(column: keyof TeamType): TeamModel {
+  orderByDesc(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof TeamType): TeamModel {
+  static orderByDesc(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1518,13 +1518,13 @@ export class TeamModel {
     return instance
   }
 
-  orderByAsc(column: keyof TeamType): TeamModel {
+  orderByAsc(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof TeamType): TeamModel {
+  static orderByAsc(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

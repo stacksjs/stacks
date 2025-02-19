@@ -1465,13 +1465,13 @@ export class ProductModel {
     return instance
   }
 
-  having(column: keyof ProductType, operator: string, value: any): ProductModel {
+  having(column: keyof ProductsTable, operator: string, value: any): ProductModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProductType, operator: string, value: any): ProductModel {
+  static having(column: keyof ProductsTable, operator: string, value: any): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1493,13 +1493,13 @@ export class ProductModel {
     return instance
   }
 
-  orderByDesc(column: keyof ProductType): ProductModel {
+  orderByDesc(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ProductType): ProductModel {
+  static orderByDesc(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1507,13 +1507,13 @@ export class ProductModel {
     return instance
   }
 
-  orderByAsc(column: keyof ProductType): ProductModel {
+  orderByAsc(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ProductType): ProductModel {
+  static orderByAsc(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

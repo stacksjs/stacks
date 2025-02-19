@@ -1463,13 +1463,13 @@ export class ActivityModel {
     return instance
   }
 
-  having(column: keyof ActivityType, operator: string, value: any): ActivityModel {
+  having(column: keyof ActivitiesTable, operator: string, value: any): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ActivityType, operator: string, value: any): ActivityModel {
+  static having(column: keyof ActivitiesTable, operator: string, value: any): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1491,13 +1491,13 @@ export class ActivityModel {
     return instance
   }
 
-  orderByDesc(column: keyof ActivityType): ActivityModel {
+  orderByDesc(column: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ActivityType): ActivityModel {
+  static orderByDesc(column: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1505,13 +1505,13 @@ export class ActivityModel {
     return instance
   }
 
-  orderByAsc(column: keyof ActivityType): ActivityModel {
+  orderByAsc(column: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ActivityType): ActivityModel {
+  static orderByAsc(column: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

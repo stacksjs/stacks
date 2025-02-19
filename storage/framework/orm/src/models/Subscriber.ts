@@ -1349,13 +1349,13 @@ export class SubscriberModel {
     return instance
   }
 
-  having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
+  having(column: keyof SubscribersTable, operator: string, value: any): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
+  static having(column: keyof SubscribersTable, operator: string, value: any): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1377,13 +1377,13 @@ export class SubscriberModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberType): SubscriberModel {
+  orderByDesc(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof SubscriberType): SubscriberModel {
+  static orderByDesc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1391,13 +1391,13 @@ export class SubscriberModel {
     return instance
   }
 
-  orderByAsc(column: keyof SubscriberType): SubscriberModel {
+  orderByAsc(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof SubscriberType): SubscriberModel {
+  static orderByAsc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

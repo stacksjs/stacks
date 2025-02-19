@@ -2176,13 +2176,13 @@ export async function generateModelString(
           return instance
         }
 
-        having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+        having(column: keyof ${formattedTableName}Table, operator: string, value: any): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
   
           return this
         }
 
-        static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+        static having(column: keyof ${formattedTableName}Table, operator: string, value: any): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -2204,13 +2204,13 @@ export async function generateModelString(
           return instance
         }
 
-        orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
   
           return this
         }
 
-        static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -2218,13 +2218,13 @@ export async function generateModelString(
           return instance
         }
           
-        orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
   
           return this
         }
   
-        static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')

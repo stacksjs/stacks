@@ -1378,13 +1378,13 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
+  having(column: keyof SubscriberEmailsTable, operator: string, value: any): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriberEmailType, operator: string, value: any): SubscriberEmailModel {
+  static having(column: keyof SubscriberEmailsTable, operator: string, value: any): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1406,13 +1406,13 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+  orderByDesc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+  static orderByDesc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1420,13 +1420,13 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+  orderByAsc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof SubscriberEmailType): SubscriberEmailModel {
+  static orderByAsc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
