@@ -1,7 +1,7 @@
 {
   "name": "stacks-desktop",
   "type": "module",
-  "version": "0.69.2",
+  "version": "0.69.3",
   "private": "true",
   "description": "The Stacks Dashboard.",
   "author": "Chris Breuer",

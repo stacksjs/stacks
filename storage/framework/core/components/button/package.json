@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/button",
   "type": "module",
-  "version": "0.69.2",
+  "version": "0.69.3",
   "description": "Opinionated button components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
