@@ -54,6 +54,7 @@ export interface Database {
   personal_access_tokens: PersonalAccessTokensTable
   team_users: TeamUsersTable
   teams: TeamsTable
+  requests: RequestsTable
   activities: ActivitiesTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable

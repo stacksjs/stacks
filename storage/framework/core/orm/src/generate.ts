@@ -1829,15 +1829,15 @@ export async function generateModelString(
 
         whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
   
           this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
 
           this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
   
           return this
@@ -1847,15 +1847,15 @@ export async function generateModelString(
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
   
           instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
           
           instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'not', null)
+            eb(column, '=', '').or(column, 'is not', null)
           )
 
           return instance

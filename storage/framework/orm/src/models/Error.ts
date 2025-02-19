@@ -1030,15 +1030,15 @@ export class ErrorModel {
 
   whereNotNull(column: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     return this
@@ -1048,15 +1048,15 @@ export class ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'not', null),
+      eb(column, '=', '').or(column, 'is not', null),
     )
 
     return instance
