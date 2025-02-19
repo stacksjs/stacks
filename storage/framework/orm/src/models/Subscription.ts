@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -978,26 +979,31 @@ export class SubscriptionModel {
       .execute()
   }
 
-  applyWhere(instance: SubscriptionModel, column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
+  static where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
   whereColumn(first: keyof SubscriptionsTable, operator: string, second: keyof SubscriptionsTable): SubscriptionModel {

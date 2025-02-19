@@ -1,8 +1,11 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { AccessTokenModel } from './AccessToken'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -941,26 +944,31 @@ export class TeamModel {
       .execute()
   }
 
-  applyWhere(instance: TeamModel, column: keyof TeamsTable, ...args: any[]): TeamModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: keyof TeamsTable, ...args: any[]): TeamModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof TeamsTable, ...args: [V] | [Operator, V]): TeamModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: keyof TeamsTable, ...args: any[]): TeamModel {
+  static where<V = string>(column: keyof TeamsTable, ...args: [V] | [Operator, V]): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
   whereColumn(first: keyof TeamsTable, operator: string, second: keyof TeamsTable): TeamModel {

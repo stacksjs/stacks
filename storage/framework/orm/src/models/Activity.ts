@@ -1,4 +1,5 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -944,26 +945,31 @@ export class ActivityModel {
       .execute()
   }
 
-  applyWhere(instance: ActivityModel, column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof ActivitiesTable, ...args: [V] | [Operator, V]): ActivityModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
+  static where<V = string>(column: keyof ActivitiesTable, ...args: [V] | [Operator, V]): ActivityModel {
     const instance = new ActivityModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
   whereColumn(first: keyof ActivitiesTable, operator: string, second: keyof ActivitiesTable): ActivityModel {

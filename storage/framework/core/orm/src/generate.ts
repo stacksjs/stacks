@@ -835,6 +835,7 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
       import { DB, SubqueryBuilder } from '@stacksjs/orm'
+      import type { Operator } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
@@ -1706,26 +1707,30 @@ export async function generateModelString(
             .execute()
         }
   
-        applyWhere(instance: ${modelName}Model, column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
-          const [operatorOrValue, value] = args
-          const operator = value === undefined ? '=' : operatorOrValue
-          const actualValue = value === undefined ? operatorOrValue : value
+        applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+          if (args.length === 1) {
+            const [value] = args
+            this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+            this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+            this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+          } else {
+            const [operator, value] = args as [Operator, V]
+            this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+            this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+            this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+          }
 
-          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-          return instance
+          return this
         }
 
-        where(column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
-          return this.applyWhere(this, column, ...args)
+        where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
+          return this.applyWhere<V>(column, ...args)
         }
 
-        static where(column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
+        static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          return instance.applyWhere(instance, column, ...args)
+          return instance.applyWhere<V>(column, ...args)
         }
 
         whereColumn(first: keyof ${formattedTableName}Table, operator: string, second: keyof ${formattedTableName}Table): ${modelName}Model {
