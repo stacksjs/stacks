@@ -1733,13 +1733,13 @@ export async function generateModelString(
           return instance.applyWhere<V>(column, ...args)
         }
 
-        whereColumn(first: keyof ${formattedTableName}Table, operator: string, second: keyof ${formattedTableName}Table): ${modelName}Model {
+        whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
           return this
         }
 
-        static whereColumn(first: keyof ${formattedTableName}Table, operator: string, second: keyof ${formattedTableName}Table): ${modelName}Model {
+        static whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -2215,13 +2215,13 @@ export async function generateModelString(
           return instance
         }
 
-        having(column: keyof ${formattedTableName}Table, operator: string, value: any): ${modelName}Model {
+        having(column: keyof ${formattedTableName}Table, operator: Operator, value: any): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
   
           return this
         }
 
-        static having(column: keyof ${formattedTableName}Table, operator: string, value: any): ${modelName}Model {
+        static having(column: keyof ${formattedTableName}Table, operator: Operator, value: any): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

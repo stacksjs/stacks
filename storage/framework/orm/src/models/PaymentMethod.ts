@@ -986,13 +986,13 @@ export class PaymentMethodModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof PaymentMethodsTable, operator: string, second: keyof PaymentMethodsTable): PaymentMethodModel {
+  whereColumn(first: keyof PaymentMethodsTable, operator: Operator, second: keyof PaymentMethodsTable): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof PaymentMethodsTable, operator: string, second: keyof PaymentMethodsTable): PaymentMethodModel {
+  static whereColumn(first: keyof PaymentMethodsTable, operator: Operator, second: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1525,13 +1525,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  having(column: keyof PaymentMethodsTable, operator: string, value: any): PaymentMethodModel {
+  having(column: keyof PaymentMethodsTable, operator: Operator, value: any): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PaymentMethodsTable, operator: string, value: any): PaymentMethodModel {
+  static having(column: keyof PaymentMethodsTable, operator: Operator, value: any): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

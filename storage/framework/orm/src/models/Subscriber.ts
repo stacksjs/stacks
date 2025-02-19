@@ -898,13 +898,13 @@ export class SubscriberModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof SubscribersTable, operator: string, second: keyof SubscribersTable): SubscriberModel {
+  whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof SubscribersTable, operator: string, second: keyof SubscribersTable): SubscriberModel {
+  static whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1389,13 +1389,13 @@ export class SubscriberModel {
     return instance
   }
 
-  having(column: keyof SubscribersTable, operator: string, value: any): SubscriberModel {
+  having(column: keyof SubscribersTable, operator: Operator, value: any): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscribersTable, operator: string, value: any): SubscriberModel {
+  static having(column: keyof SubscribersTable, operator: Operator, value: any): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

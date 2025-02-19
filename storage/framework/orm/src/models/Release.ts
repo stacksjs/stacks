@@ -898,13 +898,13 @@ export class ReleaseModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ReleasesTable, operator: string, second: keyof ReleasesTable): ReleaseModel {
+  whereColumn(first: keyof ReleasesTable, operator: Operator, second: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ReleasesTable, operator: string, second: keyof ReleasesTable): ReleaseModel {
+  static whereColumn(first: keyof ReleasesTable, operator: Operator, second: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1389,13 +1389,13 @@ export class ReleaseModel {
     return instance
   }
 
-  having(column: keyof ReleasesTable, operator: string, value: any): ReleaseModel {
+  having(column: keyof ReleasesTable, operator: Operator, value: any): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ReleasesTable, operator: string, value: any): ReleaseModel {
+  static having(column: keyof ReleasesTable, operator: Operator, value: any): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

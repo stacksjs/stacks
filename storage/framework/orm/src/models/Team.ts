@@ -971,13 +971,13 @@ export class TeamModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof TeamsTable, operator: string, second: keyof TeamsTable): TeamModel {
+  whereColumn(first: keyof TeamsTable, operator: Operator, second: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof TeamsTable, operator: string, second: keyof TeamsTable): TeamModel {
+  static whereColumn(first: keyof TeamsTable, operator: Operator, second: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1518,13 +1518,13 @@ export class TeamModel {
     return instance
   }
 
-  having(column: keyof TeamsTable, operator: string, value: any): TeamModel {
+  having(column: keyof TeamsTable, operator: Operator, value: any): TeamModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TeamsTable, operator: string, value: any): TeamModel {
+  static having(column: keyof TeamsTable, operator: Operator, value: any): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

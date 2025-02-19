@@ -927,13 +927,13 @@ export class SubscriberEmailModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof SubscriberEmailsTable, operator: string, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
+  whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof SubscriberEmailsTable, operator: string, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
+  static whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1418,13 +1418,13 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  having(column: keyof SubscriberEmailsTable, operator: string, value: any): SubscriberEmailModel {
+  having(column: keyof SubscriberEmailsTable, operator: Operator, value: any): SubscriberEmailModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriberEmailsTable, operator: string, value: any): SubscriberEmailModel {
+  static having(column: keyof SubscriberEmailsTable, operator: Operator, value: any): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

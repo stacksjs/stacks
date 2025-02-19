@@ -934,13 +934,13 @@ export class FailedJobModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof FailedJobsTable, operator: string, second: keyof FailedJobsTable): FailedJobModel {
+  whereColumn(first: keyof FailedJobsTable, operator: Operator, second: keyof FailedJobsTable): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof FailedJobsTable, operator: string, second: keyof FailedJobsTable): FailedJobModel {
+  static whereColumn(first: keyof FailedJobsTable, operator: Operator, second: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1457,13 +1457,13 @@ export class FailedJobModel {
     return instance
   }
 
-  having(column: keyof FailedJobsTable, operator: string, value: any): FailedJobModel {
+  having(column: keyof FailedJobsTable, operator: Operator, value: any): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof FailedJobsTable, operator: string, value: any): FailedJobModel {
+  static having(column: keyof FailedJobsTable, operator: Operator, value: any): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

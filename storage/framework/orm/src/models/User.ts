@@ -1026,13 +1026,13 @@ export class UserModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof UsersTable, operator: string, second: keyof UsersTable): UserModel {
+  whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof UsersTable, operator: string, second: keyof UsersTable): UserModel {
+  static whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1541,13 +1541,13 @@ export class UserModel {
     return instance
   }
 
-  having(column: keyof UsersTable, operator: string, value: any): UserModel {
+  having(column: keyof UsersTable, operator: Operator, value: any): UserModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof UsersTable, operator: string, value: any): UserModel {
+  static having(column: keyof UsersTable, operator: Operator, value: any): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

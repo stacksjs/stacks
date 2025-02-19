@@ -920,13 +920,13 @@ export class PostModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof PostsTable, operator: string, second: keyof PostsTable): PostModel {
+  whereColumn(first: keyof PostsTable, operator: Operator, second: keyof PostsTable): PostModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof PostsTable, operator: string, second: keyof PostsTable): PostModel {
+  static whereColumn(first: keyof PostsTable, operator: Operator, second: keyof PostsTable): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1419,13 +1419,13 @@ export class PostModel {
     return instance
   }
 
-  having(column: keyof PostsTable, operator: string, value: any): PostModel {
+  having(column: keyof PostsTable, operator: Operator, value: any): PostModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PostsTable, operator: string, value: any): PostModel {
+  static having(column: keyof PostsTable, operator: Operator, value: any): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

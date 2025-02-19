@@ -934,13 +934,13 @@ export class ErrorModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ErrorsTable, operator: string, second: keyof ErrorsTable): ErrorModel {
+  whereColumn(first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ErrorsTable, operator: string, second: keyof ErrorsTable): ErrorModel {
+  static whereColumn(first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1457,13 +1457,13 @@ export class ErrorModel {
     return instance
   }
 
-  having(column: keyof ErrorsTable, operator: string, value: any): ErrorModel {
+  having(column: keyof ErrorsTable, operator: Operator, value: any): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ErrorsTable, operator: string, value: any): ErrorModel {
+  static having(column: keyof ErrorsTable, operator: Operator, value: any): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

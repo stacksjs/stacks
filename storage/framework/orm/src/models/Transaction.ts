@@ -975,13 +975,13 @@ export class TransactionModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof TransactionsTable, operator: string, second: keyof TransactionsTable): TransactionModel {
+  whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof TransactionsTable, operator: string, second: keyof TransactionsTable): TransactionModel {
+  static whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1498,13 +1498,13 @@ export class TransactionModel {
     return instance
   }
 
-  having(column: keyof TransactionsTable, operator: string, value: any): TransactionModel {
+  having(column: keyof TransactionsTable, operator: Operator, value: any): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TransactionsTable, operator: string, value: any): TransactionModel {
+  static having(column: keyof TransactionsTable, operator: Operator, value: any): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

@@ -979,13 +979,13 @@ export class DeploymentModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof DeploymentsTable, operator: string, second: keyof DeploymentsTable): DeploymentModel {
+  whereColumn(first: keyof DeploymentsTable, operator: Operator, second: keyof DeploymentsTable): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof DeploymentsTable, operator: string, second: keyof DeploymentsTable): DeploymentModel {
+  static whereColumn(first: keyof DeploymentsTable, operator: Operator, second: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1518,13 +1518,13 @@ export class DeploymentModel {
     return instance
   }
 
-  having(column: keyof DeploymentsTable, operator: string, value: any): DeploymentModel {
+  having(column: keyof DeploymentsTable, operator: Operator, value: any): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof DeploymentsTable, operator: string, value: any): DeploymentModel {
+  static having(column: keyof DeploymentsTable, operator: Operator, value: any): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

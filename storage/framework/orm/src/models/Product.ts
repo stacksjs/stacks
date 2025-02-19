@@ -966,13 +966,13 @@ export class ProductModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductsTable, operator: string, second: keyof ProductsTable): ProductModel {
+  whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ProductsTable, operator: string, second: keyof ProductsTable): ProductModel {
+  static whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1505,13 +1505,13 @@ export class ProductModel {
     return instance
   }
 
-  having(column: keyof ProductsTable, operator: string, value: any): ProductModel {
+  having(column: keyof ProductsTable, operator: Operator, value: any): ProductModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProductsTable, operator: string, value: any): ProductModel {
+  static having(column: keyof ProductsTable, operator: Operator, value: any): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

@@ -925,13 +925,13 @@ export class ProjectModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProjectsTable, operator: string, second: keyof ProjectsTable): ProjectModel {
+  whereColumn(first: keyof ProjectsTable, operator: Operator, second: keyof ProjectsTable): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ProjectsTable, operator: string, second: keyof ProjectsTable): ProjectModel {
+  static whereColumn(first: keyof ProjectsTable, operator: Operator, second: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1440,13 +1440,13 @@ export class ProjectModel {
     return instance
   }
 
-  having(column: keyof ProjectsTable, operator: string, value: any): ProjectModel {
+  having(column: keyof ProjectsTable, operator: Operator, value: any): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProjectsTable, operator: string, value: any): ProjectModel {
+  static having(column: keyof ProjectsTable, operator: Operator, value: any): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

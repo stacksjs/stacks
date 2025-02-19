@@ -1006,13 +1006,13 @@ export class SubscriptionModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof SubscriptionsTable, operator: string, second: keyof SubscriptionsTable): SubscriptionModel {
+  whereColumn(first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof SubscriptionsTable, operator: string, second: keyof SubscriptionsTable): SubscriptionModel {
+  static whereColumn(first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1569,13 +1569,13 @@ export class SubscriptionModel {
     return instance
   }
 
-  having(column: keyof SubscriptionsTable, operator: string, value: any): SubscriptionModel {
+  having(column: keyof SubscriptionsTable, operator: Operator, value: any): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriptionsTable, operator: string, value: any): SubscriptionModel {
+  static having(column: keyof SubscriptionsTable, operator: Operator, value: any): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

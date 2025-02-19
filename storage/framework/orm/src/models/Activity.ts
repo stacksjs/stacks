@@ -972,13 +972,13 @@ export class ActivityModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ActivitiesTable, operator: string, second: keyof ActivitiesTable): ActivityModel {
+  whereColumn(first: keyof ActivitiesTable, operator: Operator, second: keyof ActivitiesTable): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ActivitiesTable, operator: string, second: keyof ActivitiesTable): ActivityModel {
+  static whereColumn(first: keyof ActivitiesTable, operator: Operator, second: keyof ActivitiesTable): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1503,13 +1503,13 @@ export class ActivityModel {
     return instance
   }
 
-  having(column: keyof ActivitiesTable, operator: string, value: any): ActivityModel {
+  having(column: keyof ActivitiesTable, operator: Operator, value: any): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ActivitiesTable, operator: string, value: any): ActivityModel {
+  static having(column: keyof ActivitiesTable, operator: Operator, value: any): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

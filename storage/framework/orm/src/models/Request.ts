@@ -990,13 +990,13 @@ export class RequestModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof RequestsTable, operator: string, second: keyof RequestsTable): RequestModel {
+  whereColumn(first: keyof RequestsTable, operator: Operator, second: keyof RequestsTable): RequestModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof RequestsTable, operator: string, second: keyof RequestsTable): RequestModel {
+  static whereColumn(first: keyof RequestsTable, operator: Operator, second: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1537,13 +1537,13 @@ export class RequestModel {
     return instance
   }
 
-  having(column: keyof RequestsTable, operator: string, value: any): RequestModel {
+  having(column: keyof RequestsTable, operator: Operator, value: any): RequestModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof RequestsTable, operator: string, value: any): RequestModel {
+  static having(column: keyof RequestsTable, operator: Operator, value: any): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

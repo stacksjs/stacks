@@ -938,13 +938,13 @@ export class AccessTokenModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof PersonalAccessTokensTable, operator: string, second: keyof PersonalAccessTokensTable): AccessTokenModel {
+  whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof PersonalAccessTokensTable, operator: string, second: keyof PersonalAccessTokensTable): AccessTokenModel {
+  static whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1453,13 +1453,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  having(column: keyof PersonalAccessTokensTable, operator: string, value: any): AccessTokenModel {
+  having(column: keyof PersonalAccessTokensTable, operator: Operator, value: any): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PersonalAccessTokensTable, operator: string, value: any): AccessTokenModel {
+  static having(column: keyof PersonalAccessTokensTable, operator: Operator, value: any): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)

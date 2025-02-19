@@ -934,13 +934,13 @@ export class JobModel {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof JobsTable, operator: string, second: keyof JobsTable): JobModel {
+  whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof JobsTable, operator: string, second: keyof JobsTable): JobModel {
+  static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1457,13 +1457,13 @@ export class JobModel {
     return instance
   }
 
-  having(column: keyof JobsTable, operator: string, value: any): JobModel {
+  having(column: keyof JobsTable, operator: Operator, value: any): JobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof JobsTable, operator: string, value: any): JobModel {
+  static having(column: keyof JobsTable, operator: Operator, value: any): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
