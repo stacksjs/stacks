@@ -897,7 +897,7 @@ export class ProjectModel {
       .execute()
   }
 
-  applyWhere(instance: ProjectModel, column: string, ...args: any[]): ProjectModel {
+  applyWhere(instance: ProjectModel, column: keyof ProjectsTable, ...args: any[]): ProjectModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -909,11 +909,11 @@ export class ProjectModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): ProjectModel {
+  where(column: keyof ProjectsTable, ...args: any[]): ProjectModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ProjectModel {
+  static where(column: keyof ProjectsTable, ...args: any[]): ProjectModel {
     const instance = new ProjectModel(null)
 
     return instance.applyWhere(instance, column, ...args)

@@ -906,7 +906,7 @@ export class ErrorModel {
       .execute()
   }
 
-  applyWhere(instance: ErrorModel, column: string, ...args: any[]): ErrorModel {
+  applyWhere(instance: ErrorModel, column: keyof ErrorsTable, ...args: any[]): ErrorModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -918,11 +918,11 @@ export class ErrorModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): ErrorModel {
+  where(column: keyof ErrorsTable, ...args: any[]): ErrorModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ErrorModel {
+  static where(column: keyof ErrorsTable, ...args: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
     return instance.applyWhere(instance, column, ...args)

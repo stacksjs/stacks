@@ -947,7 +947,7 @@ export class TransactionModel {
       .execute()
   }
 
-  applyWhere(instance: TransactionModel, column: string, ...args: any[]): TransactionModel {
+  applyWhere(instance: TransactionModel, column: keyof TransactionsTable, ...args: any[]): TransactionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -959,11 +959,11 @@ export class TransactionModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): TransactionModel {
+  where(column: keyof TransactionsTable, ...args: any[]): TransactionModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): TransactionModel {
+  static where(column: keyof TransactionsTable, ...args: any[]): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhere(instance, column, ...args)

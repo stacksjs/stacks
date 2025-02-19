@@ -892,7 +892,7 @@ export class PostModel {
       .execute()
   }
 
-  applyWhere(instance: PostModel, column: string, ...args: any[]): PostModel {
+  applyWhere(instance: PostModel, column: keyof PostsTable, ...args: any[]): PostModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -904,11 +904,11 @@ export class PostModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): PostModel {
+  where(column: keyof PostsTable, ...args: any[]): PostModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): PostModel {
+  static where(column: keyof PostsTable, ...args: any[]): PostModel {
     const instance = new PostModel(null)
 
     return instance.applyWhere(instance, column, ...args)

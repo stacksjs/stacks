@@ -998,7 +998,7 @@ export class UserModel {
       .execute()
   }
 
-  applyWhere(instance: UserModel, column: string, ...args: any[]): UserModel {
+  applyWhere(instance: UserModel, column: keyof UsersTable, ...args: any[]): UserModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -1010,11 +1010,11 @@ export class UserModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): UserModel {
+  where(column: keyof UsersTable, ...args: any[]): UserModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): UserModel {
+  static where(column: keyof UsersTable, ...args: any[]): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhere(instance, column, ...args)

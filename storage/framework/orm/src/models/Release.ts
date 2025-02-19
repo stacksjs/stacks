@@ -870,7 +870,7 @@ export class ReleaseModel {
       .execute()
   }
 
-  applyWhere(instance: ReleaseModel, column: string, ...args: any[]): ReleaseModel {
+  applyWhere(instance: ReleaseModel, column: keyof ReleasesTable, ...args: any[]): ReleaseModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -882,11 +882,11 @@ export class ReleaseModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): ReleaseModel {
+  where(column: keyof ReleasesTable, ...args: any[]): ReleaseModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ReleaseModel {
+  static where(column: keyof ReleasesTable, ...args: any[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhere(instance, column, ...args)

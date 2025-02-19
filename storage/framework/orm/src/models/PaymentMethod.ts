@@ -958,7 +958,7 @@ export class PaymentMethodModel {
       .execute()
   }
 
-  applyWhere(instance: PaymentMethodModel, column: string, ...args: any[]): PaymentMethodModel {
+  applyWhere(instance: PaymentMethodModel, column: keyof PaymentMethodsTable, ...args: any[]): PaymentMethodModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -970,11 +970,11 @@ export class PaymentMethodModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): PaymentMethodModel {
+  where(column: keyof PaymentMethodsTable, ...args: any[]): PaymentMethodModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): PaymentMethodModel {
+  static where(column: keyof PaymentMethodsTable, ...args: any[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     return instance.applyWhere(instance, column, ...args)

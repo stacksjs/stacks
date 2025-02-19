@@ -941,7 +941,7 @@ export class TeamModel {
       .execute()
   }
 
-  applyWhere(instance: TeamModel, column: string, ...args: any[]): TeamModel {
+  applyWhere(instance: TeamModel, column: keyof TeamsTable, ...args: any[]): TeamModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -953,11 +953,11 @@ export class TeamModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): TeamModel {
+  where(column: keyof TeamsTable, ...args: any[]): TeamModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): TeamModel {
+  static where(column: keyof TeamsTable, ...args: any[]): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhere(instance, column, ...args)

@@ -10,9 +10,7 @@ export default new Action({
   // async handle(request: UserRequestType) {
     // const id = request.getParam('id')
 
-    const user = await User.whereDoesntHave('posts', (query) => {
-      query.where('job_title', 'Regional Brand Executive')
-    }).first()
+    const user = User.where('job_title')
 
     // user?.update({ job_title: 'Senior Software Engineer' })
     // user?.delete()

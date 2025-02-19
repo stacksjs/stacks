@@ -910,7 +910,7 @@ export class AccessTokenModel {
       .execute()
   }
 
-  applyWhere(instance: AccessTokenModel, column: string, ...args: any[]): AccessTokenModel {
+  applyWhere(instance: AccessTokenModel, column: keyof PersonalAccessTokensTable, ...args: any[]): AccessTokenModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -922,11 +922,11 @@ export class AccessTokenModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): AccessTokenModel {
+  where(column: keyof PersonalAccessTokensTable, ...args: any[]): AccessTokenModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): AccessTokenModel {
+  static where(column: keyof PersonalAccessTokensTable, ...args: any[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhere(instance, column, ...args)

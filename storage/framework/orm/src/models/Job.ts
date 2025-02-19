@@ -906,7 +906,7 @@ export class JobModel {
       .execute()
   }
 
-  applyWhere(instance: JobModel, column: string, ...args: any[]): JobModel {
+  applyWhere(instance: JobModel, column: keyof JobsTable, ...args: any[]): JobModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -918,11 +918,11 @@ export class JobModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): JobModel {
+  where(column: keyof JobsTable, ...args: any[]): JobModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): JobModel {
+  static where(column: keyof JobsTable, ...args: any[]): JobModel {
     const instance = new JobModel(null)
 
     return instance.applyWhere(instance, column, ...args)

@@ -951,7 +951,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  applyWhere(instance: DeploymentModel, column: string, ...args: any[]): DeploymentModel {
+  applyWhere(instance: DeploymentModel, column: keyof DeploymentsTable, ...args: any[]): DeploymentModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -963,11 +963,11 @@ export class DeploymentModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): DeploymentModel {
+  where(column: keyof DeploymentsTable, ...args: any[]): DeploymentModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): DeploymentModel {
+  static where(column: keyof DeploymentsTable, ...args: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     return instance.applyWhere(instance, column, ...args)

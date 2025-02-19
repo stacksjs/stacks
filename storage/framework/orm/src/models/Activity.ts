@@ -944,7 +944,7 @@ export class ActivityModel {
       .execute()
   }
 
-  applyWhere(instance: ActivityModel, column: string, ...args: any[]): ActivityModel {
+  applyWhere(instance: ActivityModel, column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -956,11 +956,11 @@ export class ActivityModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): ActivityModel {
+  where(column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ActivityModel {
+  static where(column: keyof ActivitiesTable, ...args: any[]): ActivityModel {
     const instance = new ActivityModel(null)
 
     return instance.applyWhere(instance, column, ...args)

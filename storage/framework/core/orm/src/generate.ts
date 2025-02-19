@@ -1705,7 +1705,7 @@ export async function generateModelString(
             .execute()
         }
   
-        applyWhere(instance: ${modelName}Model, column: string, ...args: any[]): ${modelName}Model {
+        applyWhere(instance: ${modelName}Model, column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
           const [operatorOrValue, value] = args
           const operator = value === undefined ? '=' : operatorOrValue
           const actualValue = value === undefined ? operatorOrValue : value
@@ -1717,11 +1717,11 @@ export async function generateModelString(
           return instance
         }
 
-        where(column: string, ...args: any[]): ${modelName}Model {
+        where(column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
           return this.applyWhere(this, column, ...args)
         }
 
-        static where(column: string, ...args: any[]): ${modelName}Model {
+        static where(column: keyof ${formattedTableName}Table, ...args: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           return instance.applyWhere(instance, column, ...args)

@@ -978,7 +978,7 @@ export class SubscriptionModel {
       .execute()
   }
 
-  applyWhere(instance: SubscriptionModel, column: string, ...args: any[]): SubscriptionModel {
+  applyWhere(instance: SubscriptionModel, column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -990,11 +990,11 @@ export class SubscriptionModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): SubscriptionModel {
+  where(column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): SubscriptionModel {
+  static where(column: keyof SubscriptionsTable, ...args: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     return instance.applyWhere(instance, column, ...args)

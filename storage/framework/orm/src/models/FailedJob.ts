@@ -906,7 +906,7 @@ export class FailedJobModel {
       .execute()
   }
 
-  applyWhere(instance: FailedJobModel, column: string, ...args: any[]): FailedJobModel {
+  applyWhere(instance: FailedJobModel, column: keyof FailedJobsTable, ...args: any[]): FailedJobModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -918,11 +918,11 @@ export class FailedJobModel {
     return instance
   }
 
-  where(column: string, ...args: any[]): FailedJobModel {
+  where(column: keyof FailedJobsTable, ...args: any[]): FailedJobModel {
     return this.applyWhere(this, column, ...args)
   }
 
-  static where(column: string, ...args: any[]): FailedJobModel {
+  static where(column: keyof FailedJobsTable, ...args: any[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     return instance.applyWhere(instance, column, ...args)
