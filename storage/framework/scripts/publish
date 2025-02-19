@@ -21,7 +21,7 @@ for dir in $dirs; do
   # Change to the directory
   cd $dir
 
-  bun publish --access public || echo "Failed to publish $dir" && exit 1
+  bun publish --access public || echo "Failed to publish $dir"
 
   # Check if the build command was successful
   if [ $? -ne 0 ]; then
