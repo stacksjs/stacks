@@ -619,7 +619,7 @@ export class PostModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PostModel>) => void,
   ): PostModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -681,14 +681,14 @@ export class PostModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PostModel>) => void,
   ): PostModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PostModel>) => void,
   ): PostModel {
     const instance = new PostModel(null)
 

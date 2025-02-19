@@ -633,7 +633,7 @@ export class ErrorModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ErrorModel>) => void,
   ): ErrorModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -695,14 +695,14 @@ export class ErrorModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ErrorModel>) => void,
   ): ErrorModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ErrorModel>) => void,
   ): ErrorModel {
     const instance = new ErrorModel(null)
 

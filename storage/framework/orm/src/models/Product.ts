@@ -661,7 +661,7 @@ export class ProductModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -723,14 +723,14 @@ export class ProductModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     const instance = new ProductModel(null)
 

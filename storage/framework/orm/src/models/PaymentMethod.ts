@@ -681,7 +681,7 @@ export class PaymentMethodModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PaymentMethodModel>) => void,
   ): PaymentMethodModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -743,14 +743,14 @@ export class PaymentMethodModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PaymentMethodModel>) => void,
   ): PaymentMethodModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof PaymentMethodModel>) => void,
   ): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 

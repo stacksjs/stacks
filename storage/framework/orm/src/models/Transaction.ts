@@ -670,7 +670,7 @@ export class TransactionModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -732,14 +732,14 @@ export class TransactionModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     const instance = new TransactionModel(null)
 

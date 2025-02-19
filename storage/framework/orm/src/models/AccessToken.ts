@@ -637,7 +637,7 @@ export class AccessTokenModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -699,14 +699,14 @@ export class AccessTokenModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 

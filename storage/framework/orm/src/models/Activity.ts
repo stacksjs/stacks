@@ -660,7 +660,7 @@ export class ActivityModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ActivityModel>) => void,
   ): ActivityModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -722,14 +722,14 @@ export class ActivityModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ActivityModel>) => void,
   ): ActivityModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ActivityModel>) => void,
   ): ActivityModel {
     const instance = new ActivityModel(null)
 

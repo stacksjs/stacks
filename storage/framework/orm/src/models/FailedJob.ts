@@ -633,7 +633,7 @@ export class FailedJobModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof FailedJobModel>) => void,
   ): FailedJobModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -695,14 +695,14 @@ export class FailedJobModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof FailedJobModel>) => void,
   ): FailedJobModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof FailedJobModel>) => void,
   ): FailedJobModel {
     const instance = new FailedJobModel(null)
 

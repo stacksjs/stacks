@@ -701,7 +701,7 @@ export class SubscriptionModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriptionModel>) => void,
   ): SubscriptionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -763,14 +763,14 @@ export class SubscriptionModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriptionModel>) => void,
   ): SubscriptionModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriptionModel>) => void,
   ): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 

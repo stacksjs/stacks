@@ -1419,7 +1419,7 @@ export async function generateModelString(
 
         applyWhereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           const subqueryBuilder = new SubqueryBuilder()
           
@@ -1476,16 +1476,17 @@ export async function generateModelString(
             
           return this
         }
+
         whereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           return this.applyWhereHas(relation, callback)
         }
 
         static whereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           const instance = new ${modelName}Model(null)
           

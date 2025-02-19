@@ -597,7 +597,7 @@ export class ReleaseModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -659,14 +659,14 @@ export class ReleaseModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     const instance = new ReleaseModel(null)
 
