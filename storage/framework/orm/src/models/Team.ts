@@ -1161,11 +1161,11 @@ export class TeamModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): TeamModel {
+  whereIn(column: keyof TeamsTable, values: any[]): TeamModel {
     return TeamModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): TeamModel {
+  static whereIn(column: keyof TeamsTable, values: any[]): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

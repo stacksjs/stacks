@@ -1098,11 +1098,11 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): AccessTokenModel {
+  whereIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
     return AccessTokenModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): AccessTokenModel {
+  static whereIn(column: keyof PersonalAccessTokensTable, values: any[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

@@ -1102,11 +1102,11 @@ export class ErrorModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): ErrorModel {
+  whereIn(column: keyof ErrorsTable, values: any[]): ErrorModel {
     return ErrorModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): ErrorModel {
+  static whereIn(column: keyof ErrorsTable, values: any[]): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

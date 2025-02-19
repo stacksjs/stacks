@@ -1064,11 +1064,11 @@ export class PostModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): PostModel {
+  whereIn(column: keyof PostsTable, values: any[]): PostModel {
     return PostModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): PostModel {
+  static whereIn(column: keyof PostsTable, values: any[]): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

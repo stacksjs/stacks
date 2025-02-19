@@ -1864,11 +1864,11 @@ export async function generateModelString(
   
         ${whereStatements}
   
-        whereIn(column: string, values: any[]): ${modelName}Model {
+        whereIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
           return ${modelName}Model.whereIn(column, values)
         }
   
-        static whereIn(column: string, values: any[]): ${modelName}Model {
+        static whereIn(column: keyof ${formattedTableName}Table, values: any[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
@@ -2131,7 +2131,6 @@ export async function generateModelString(
             this.mapCustomGetters(model)
             await this.loadRelations(model)
           }
-           
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   

@@ -1063,11 +1063,11 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): SubscriberEmailModel {
+  whereIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
     return SubscriberEmailModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): SubscriberEmailModel {
+  static whereIn(column: keyof SubscriberEmailsTable, values: any[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

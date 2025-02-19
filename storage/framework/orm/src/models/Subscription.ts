@@ -1214,11 +1214,11 @@ export class SubscriptionModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): SubscriptionModel {
+  whereIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
     return SubscriptionModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): SubscriptionModel {
+  static whereIn(column: keyof SubscriptionsTable, values: any[]): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

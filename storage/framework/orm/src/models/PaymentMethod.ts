@@ -1170,11 +1170,11 @@ export class PaymentMethodModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): PaymentMethodModel {
+  whereIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
     return PaymentMethodModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): PaymentMethodModel {
+  static whereIn(column: keyof PaymentMethodsTable, values: any[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

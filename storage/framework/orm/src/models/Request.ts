@@ -1182,11 +1182,11 @@ export class RequestModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): RequestModel {
+  whereIn(column: keyof RequestsTable, values: any[]): RequestModel {
     return RequestModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): RequestModel {
+  static whereIn(column: keyof RequestsTable, values: any[]): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

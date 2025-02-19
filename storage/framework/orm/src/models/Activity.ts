@@ -1148,11 +1148,11 @@ export class ActivityModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): ActivityModel {
+  whereIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
     return ActivityModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): ActivityModel {
+  static whereIn(column: keyof ActivitiesTable, values: any[]): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

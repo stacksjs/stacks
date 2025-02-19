@@ -1186,11 +1186,11 @@ export class UserModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): UserModel {
+  whereIn(column: keyof UsersTable, values: any[]): UserModel {
     return UserModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): UserModel {
+  static whereIn(column: keyof UsersTable, values: any[]): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

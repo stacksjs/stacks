@@ -1085,11 +1085,11 @@ export class ProjectModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): ProjectModel {
+  whereIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
     return ProjectModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): ProjectModel {
+  static whereIn(column: keyof ProjectsTable, values: any[]): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

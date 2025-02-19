@@ -1034,11 +1034,11 @@ export class ReleaseModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): ReleaseModel {
+  whereIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
     return ReleaseModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): ReleaseModel {
+  static whereIn(column: keyof ReleasesTable, values: any[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

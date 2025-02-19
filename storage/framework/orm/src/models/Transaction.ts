@@ -1143,11 +1143,11 @@ export class TransactionModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): TransactionModel {
+  whereIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
     return TransactionModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): TransactionModel {
+  static whereIn(column: keyof TransactionsTable, values: any[]): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

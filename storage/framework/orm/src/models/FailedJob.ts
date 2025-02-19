@@ -1102,11 +1102,11 @@ export class FailedJobModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): FailedJobModel {
+  whereIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
     return FailedJobModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): FailedJobModel {
+  static whereIn(column: keyof FailedJobsTable, values: any[]): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

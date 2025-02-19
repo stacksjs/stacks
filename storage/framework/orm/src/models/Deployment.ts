@@ -1163,11 +1163,11 @@ export class DeploymentModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): DeploymentModel {
+  whereIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
     return DeploymentModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): DeploymentModel {
+  static whereIn(column: keyof DeploymentsTable, values: any[]): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)

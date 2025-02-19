@@ -1150,11 +1150,11 @@ export class ProductModel {
     return instance
   }
 
-  whereIn(column: string, values: any[]): ProductModel {
+  whereIn(column: keyof ProductsTable, values: any[]): ProductModel {
     return ProductModel.whereIn(column, values)
   }
 
-  static whereIn(column: string, values: any[]): ProductModel {
+  static whereIn(column: keyof ProductsTable, values: any[]): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
