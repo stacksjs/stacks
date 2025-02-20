@@ -38,7 +38,7 @@
     "@shikijs/vitepress-twoslash": "^3.0.0",
     "@vite-pwa/assets-generator": "^0.2.6",
     "@vite-pwa/vitepress": "^0.5.3",
-    "unocss": "^65.4.3",
+    "unocss": "^66.0.0",
     "unplugin-icons": "^22.1.0",
     "unplugin-vue-components": "^28.4.0",
     "vite-plugin-pwa": "^0.21.1",
