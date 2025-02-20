@@ -67,7 +67,7 @@
     "@stacksjs/router": "workspace:*",
     "@unhead/vue": "^1.11.19",
     "bun-plugin-unocss": "^0.1.2",
-    "chart.js": "^4.4.7",
+    "chart.js": "^4.4.8",
     "pinia": "^3.0.1",
     "unhead": "^1.11.19",
     "unocss": "66.0.0",

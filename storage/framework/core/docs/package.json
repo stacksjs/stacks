@@ -39,7 +39,7 @@
     "@vite-pwa/assets-generator": "^0.2.6",
     "@vite-pwa/vitepress": "^0.5.3",
     "unplugin-icons": "^22.1.0",
-    "unplugin-vue-components": "^28.2.0",
+    "unplugin-vue-components": "^28.4.0",
     "vite-plugin-pwa": "^0.21.1",
     "vitepress": "1.6.3"
   },
