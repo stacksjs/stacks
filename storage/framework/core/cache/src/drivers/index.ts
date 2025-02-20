@@ -1,10 +1,10 @@
 // index.ts
 import type { CacheDriver } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { dynamodb, type DynamoDBOptions } from './dynamodb'
-import { fileSystem, type FileSystemOptions } from './filesystem'
-import { memory } from './memory'
-import { redis, type RedisOptions } from './redis'
+import { dynamodb, DynamoDBCacheDriver, type DynamoDBOptions } from './dynamodb'
+import { fileSystem, FileSystemCacheDriver, type FileSystemOptions } from './filesystem'
+import { memory, MemoryCacheDriver } from './memory'
+import { redis, RedisCacheDriver, type RedisOptions } from './redis'
 
 // Map of available drivers
 const drivers: Record<string, CacheDriver> = {

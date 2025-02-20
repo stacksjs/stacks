@@ -1,7 +1,7 @@
 // filesystem-cache-driver.ts
 import { BentoCache, bentostore } from 'bentocache'
 import { fileDriver } from 'bentocache/drivers/file'
-import { BaseCacheDriver } from './base-cache-driver'
+import { BaseCacheDriver } from './base'
 
 export interface FileSystemOptions {
   directory?: string
