@@ -1,6 +1,6 @@
 export type Operator = '=' | '<' | '>' | '<=' | '>=' | '<>' | '!=' | 'like' | 'not like' | 'in' | 'not in' | 'between' | 'not between' | 'is' | 'is not'
 
-interface WhereCondition<T = any, V = any> {
+interface WhereCondition<T, V = any> {
   type: 'and' | 'or'
   method: 'where' | 'whereIn' | 'whereNull' | 'whereNotNull' | 'whereBetween' | 'whereExists'
   column: keyof T
@@ -35,7 +35,7 @@ export class SubqueryBuilder<T> {
       method: 'whereIn',
       column,
       values,
-    })
+    } as WhereCondition<T, V>)
   }
 
   whereNotIn<V>(column: keyof T, values: V[]): void {
@@ -45,7 +45,7 @@ export class SubqueryBuilder<T> {
       column,
       values,
       operator: 'not in',
-    })
+    } as WhereCondition<T, V>)
   }
 
   whereNull(column: keyof T): void {

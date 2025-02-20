@@ -651,10 +651,10 @@ export class ProjectModel {
 
             case 'whereIn':
               if (condition.operator === 'is not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -668,7 +668,7 @@ export class ProjectModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -750,10 +750,10 @@ export class ProjectModel {
 
         case 'whereIn':
           if (condition.operator === 'is not') {
-            this.whereNotIn(condition.column, condition.values!)
+            this.whereNotIn(condition.column, condition.values)
           }
           else {
-            this.whereIn(condition.column, condition.values!)
+            this.whereIn(condition.column, condition.values)
           }
 
           break
@@ -767,7 +767,7 @@ export class ProjectModel {
           break
 
         case 'whereBetween':
-          this.whereBetween(condition.column, condition.values!)
+          this.whereBetween(condition.column, condition.values)
           break
 
         case 'whereExists': {
@@ -1200,7 +1200,7 @@ export class ProjectModel {
   }
 
   whereNotIn<V>(column: keyof ProjectsTable, values: V[]): ProjectModel {
-    return this.applyWhereNotIn(column, values)
+    return this.applyWhereNotIn<V>(column, values)
   }
 
   static whereNotIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
