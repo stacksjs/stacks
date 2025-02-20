@@ -53,7 +53,7 @@
     "@aws-sdk/client-route-53-domains": "^3.750.0",
     "@aws-sdk/client-s3": "^3.750.0",
     "@aws-sdk/client-ses": "^3.750.0",
-    "@aws-sdk/client-sesv2": "^3.750.0",
+    "@aws-sdk/client-sesv2": "^3.752.0",
     "@aws-sdk/client-ssm": "^3.750.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
@@ -64,7 +64,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk": "^2.1000.1",
+    "aws-cdk": "^2.1000.2",
     "aws-cdk-lib": "^2.179.0",
     "aws4fetch": "^1.0.20",
     "constructs": "^10.4.2"
