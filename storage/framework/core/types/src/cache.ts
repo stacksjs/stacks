@@ -1,4 +1,3 @@
-import type { BentoCache } from 'bentocache'
 import type { GetOptions } from 'bentocache/types'
 
 export interface CacheOptions {
@@ -119,5 +118,4 @@ export interface CacheDriver {
   clear: () => Promise<void>
   deleteAll: () => Promise<void>
   disconnect: () => Promise<void>
-  client: BentoCache<Record<string, any>>
 }
