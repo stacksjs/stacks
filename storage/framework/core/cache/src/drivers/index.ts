@@ -1,29 +1,56 @@
+// index.ts
 import type { CacheDriver } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
-import { dynamodb } from './dynamodb'
-import { fileSystem } from './filesystem'
-
+import { dynamodb, type DynamoDBOptions } from './dynamodb'
+import { fileSystem, type FileSystemOptions } from './filesystem'
 import { memory } from './memory'
-import { redis } from './redis'
+import { redis, type RedisOptions } from './redis'
 
-const driver = config.cache.driver || 'memory'
-
-let driverInstance = fileSystem
-
-if (driver === 'redis') {
-  driverInstance = redis
+// Map of available drivers
+const drivers: Record<string, CacheDriver> = {
+  redis,
+  fileSystem,
+  memory,
+  dynamodb,
 }
 
-if (driver === 'fileSystem') {
-  driverInstance = fileSystem
-}
+// Get configured driver name with fallback to memory
+const driverName = config.cache?.driver || 'memory'
 
-if (driver === 'memory') {
-  driverInstance = memory
-}
+// Select the appropriate driver
+const selectedDriver = drivers[driverName] || memory
 
-if (driver === 'dynamodb') {
-  driverInstance = dynamodb
-}
+// Export the selected driver as the default cache implementation
+export const cache: CacheDriver = selectedDriver
 
-export const cache: CacheDriver = driverInstance
+// Also export individual drivers and base class for direct usage
+export { BaseCacheDriver } from './base'
+export { dynamodb, DynamoDBCacheDriver, type DynamoDBOptions } from './dynamodb'
+export { fileSystem, FileSystemCacheDriver, type FileSystemOptions } from './filesystem'
+export { memory, MemoryCacheDriver } from './memory'
+export { redis, RedisCacheDriver, type RedisOptions } from './redis'
+
+/**
+ * Create a custom cache driver instance with specific options
+ */
+export function createCache(driver: 'redis', options?: RedisOptions): CacheDriver
+export function createCache(driver: 'fileSystem', options?: FileSystemOptions): CacheDriver
+export function createCache(driver: 'memory', options?: { maxSize?: number; maxItems?: number }): CacheDriver
+export function createCache(driver: 'dynamodb', options?: DynamoDBOptions): CacheDriver
+export function createCache(
+  driver: 'redis' | 'fileSystem' | 'memory' | 'dynamodb',
+  options?: any
+): CacheDriver {
+  switch (driver) {
+    case 'redis':
+      return new RedisCacheDriver(options)
+    case 'fileSystem':
+      return new FileSystemCacheDriver(options)
+    case 'memory':
+      return new MemoryCacheDriver(options)
+    case 'dynamodb':
+      return new DynamoDBCacheDriver(options)
+    default:
+      return memory
+  }
+}
