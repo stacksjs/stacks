@@ -1,12 +1,7 @@
-import type { I18n } from 'vue-email'
+import type { RenderOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { resourcesPath } from '@stacksjs/path'
 import { config } from '@vue-email/compiler'
-
-export interface RenderOptions {
-  props?: Record<string, unknown>
-  i18n?: I18n
-}
 
 interface HtmlResult {
   html: string
