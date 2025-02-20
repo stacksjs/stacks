@@ -1,4 +1,5 @@
 import type { CacheDriver } from '@stacksjs/types'
+import type { GetOptions } from 'bentocache/types'
 import { BentoCache, bentostore } from 'bentocache'
 import { memoryDriver } from 'bentocache/drivers/memory'
 
@@ -36,15 +37,18 @@ export const memory: CacheDriver = {
       value,
     })
   },
-  async get(key: string): Promise<string | undefined | null> {
-    const items = await client.get<string>(key)
+  async get<T>(key: GetOptions<T>): Promise<T> {
+    const items = await client.get<T>(key)
 
     return items
   },
-  async getOrSet(key: string, value: string): Promise<string | undefined | null> {
-    const items = await client.getOrSet(key, () => value)
+  async getOrSet<T>(key: string, value: T): Promise<T> {
+    const result = await client.getOrSet<T>({
+      key,
+      factory: async () => value,
+    })
 
-    return items
+    return result
   },
   async del(key: string): Promise<void> {
     await client.delete({ key })
