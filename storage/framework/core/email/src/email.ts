@@ -57,25 +57,27 @@ export class Email {
     }
   }
 
-  public async onError(error: Error) {
+  public async onError(error: Error): Promise<{ message: string }> {
     log.error(error)
 
     if (!this.message.onError)
-      return
+      return { message: 'error!' }
 
     return await this.message.onError(error)
   }
 
-  public onSuccess() {
+  public async onSuccess(): Promise<{ message: string }> {
     try {
       if (!this.message.onSuccess)
-        return
+        return { message: 'Error!' }
 
       this.message.onSuccess()
     }
     catch (error) {
-      return this.onError(error as Error)
+      return await this.onError(error as Error)
     }
+
+    return { message: 'Success!' }
   }
 }
 
