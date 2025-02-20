@@ -1159,7 +1159,7 @@ export class ProjectModel {
     return this
   }
 
-  whereBetween<V>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
+  whereBetween<V = number>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1444,13 +1444,13 @@ export class ProjectModel {
     return instance
   }
 
-  having(column: keyof ProjectsTable, operator: Operator, value: any): ProjectModel {
+  having<V = string>(column: keyof ProjectsTable, operator: Operator, value: V): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProjectsTable, operator: Operator, value: any): ProjectModel {
+  static having<V = string>(column: keyof ProjectsTable, operator: Operator, value: V): ProjectModel {
     const instance = new ProjectModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1589,7 +1589,7 @@ export class ProjectModel {
   }
 
   // Method to delete (soft delete) the project instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ProjectsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

@@ -1108,7 +1108,7 @@ export class ReleaseModel {
     return this
   }
 
-  whereBetween<V>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
+  whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1393,13 +1393,13 @@ export class ReleaseModel {
     return instance
   }
 
-  having(column: keyof ReleasesTable, operator: Operator, value: any): ReleaseModel {
+  having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ReleasesTable, operator: Operator, value: any): ReleaseModel {
+  static having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1538,7 +1538,7 @@ export class ReleaseModel {
   }
 
   // Method to delete (soft delete) the release instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ReleasesModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

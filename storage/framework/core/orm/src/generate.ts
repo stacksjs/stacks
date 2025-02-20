@@ -2219,13 +2219,13 @@ export async function generateModelString(
           return instance
         }
 
-        having(column: keyof ${formattedTableName}Table, operator: Operator, value: any): ${modelName}Model {
+        having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
   
           return this
         }
 
-        static having(column: keyof ${formattedTableName}Table, operator: Operator, value: any): ${modelName}Model {
+        static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -2370,7 +2370,7 @@ export async function generateModelString(
 
   
         // Method to delete (soft delete) the ${formattedModelName} instance
-        async delete(): Promise<any> {
+        async delete(): Promise<${formattedTableName}Model> {
           if (this.id === undefined)
             this.deleteFromQuery.execute()
             ${mittDeleteFindStatement}

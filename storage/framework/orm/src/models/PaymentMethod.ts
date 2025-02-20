@@ -1244,7 +1244,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  whereBetween<V>(column: keyof PaymentMethodsTable, range: [V, V]): PaymentMethodModel {
+  whereBetween<V = number>(column: keyof PaymentMethodsTable, range: [V, V]): PaymentMethodModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1529,13 +1529,13 @@ export class PaymentMethodModel {
     return instance
   }
 
-  having(column: keyof PaymentMethodsTable, operator: Operator, value: any): PaymentMethodModel {
+  having<V = string>(column: keyof PaymentMethodsTable, operator: Operator, value: V): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PaymentMethodsTable, operator: Operator, value: any): PaymentMethodModel {
+  static having<V = string>(column: keyof PaymentMethodsTable, operator: Operator, value: V): PaymentMethodModel {
     const instance = new PaymentMethodModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1674,7 +1674,7 @@ export class PaymentMethodModel {
   }
 
   // Method to delete (soft delete) the paymentmethod instance
-  async delete(): Promise<any> {
+  async delete(): Promise<PaymentMethodsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

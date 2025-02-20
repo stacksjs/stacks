@@ -1237,7 +1237,7 @@ export class DeploymentModel {
     return this
   }
 
-  whereBetween<V>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
+  whereBetween<V = number>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1522,13 +1522,13 @@ export class DeploymentModel {
     return instance
   }
 
-  having(column: keyof DeploymentsTable, operator: Operator, value: any): DeploymentModel {
+  having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof DeploymentsTable, operator: Operator, value: any): DeploymentModel {
+  static having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
     const instance = new DeploymentModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1667,7 +1667,7 @@ export class DeploymentModel {
   }
 
   // Method to delete (soft delete) the deployment instance
-  async delete(): Promise<any> {
+  async delete(): Promise<DeploymentsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

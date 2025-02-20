@@ -1288,7 +1288,7 @@ export class SubscriptionModel {
     return this
   }
 
-  whereBetween<V>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
+  whereBetween<V = number>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1573,13 +1573,13 @@ export class SubscriptionModel {
     return instance
   }
 
-  having(column: keyof SubscriptionsTable, operator: Operator, value: any): SubscriptionModel {
+  having<V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriptionsTable, operator: Operator, value: any): SubscriptionModel {
+  static having<V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V): SubscriptionModel {
     const instance = new SubscriptionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1718,7 +1718,7 @@ export class SubscriptionModel {
   }
 
   // Method to delete (soft delete) the subscription instance
-  async delete(): Promise<any> {
+  async delete(): Promise<SubscriptionsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

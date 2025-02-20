@@ -1237,7 +1237,7 @@ export class TeamModel {
     return this
   }
 
-  whereBetween<V>(column: keyof TeamsTable, range: [V, V]): TeamModel {
+  whereBetween<V = number>(column: keyof TeamsTable, range: [V, V]): TeamModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1522,13 +1522,13 @@ export class TeamModel {
     return instance
   }
 
-  having(column: keyof TeamsTable, operator: Operator, value: any): TeamModel {
+  having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TeamsTable, operator: Operator, value: any): TeamModel {
+  static having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1667,7 +1667,7 @@ export class TeamModel {
   }
 
   // Method to delete (soft delete) the team instance
-  async delete(): Promise<any> {
+  async delete(): Promise<TeamsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

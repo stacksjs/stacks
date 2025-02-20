@@ -1224,7 +1224,7 @@ export class ProductModel {
     return this
   }
 
-  whereBetween<V>(column: keyof ProductsTable, range: [V, V]): ProductModel {
+  whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1509,13 +1509,13 @@ export class ProductModel {
     return instance
   }
 
-  having(column: keyof ProductsTable, operator: Operator, value: any): ProductModel {
+  having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProductsTable, operator: Operator, value: any): ProductModel {
+  static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1654,7 +1654,7 @@ export class ProductModel {
   }
 
   // Method to delete (soft delete) the product instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ProductsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

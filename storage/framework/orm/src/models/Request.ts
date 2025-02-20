@@ -1256,7 +1256,7 @@ export class RequestModel {
     return this
   }
 
-  whereBetween<V>(column: keyof RequestsTable, range: [V, V]): RequestModel {
+  whereBetween<V = number>(column: keyof RequestsTable, range: [V, V]): RequestModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1541,13 +1541,13 @@ export class RequestModel {
     return instance
   }
 
-  having(column: keyof RequestsTable, operator: Operator, value: any): RequestModel {
+  having<V = string>(column: keyof RequestsTable, operator: Operator, value: V): RequestModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof RequestsTable, operator: Operator, value: any): RequestModel {
+  static having<V = string>(column: keyof RequestsTable, operator: Operator, value: V): RequestModel {
     const instance = new RequestModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1686,7 +1686,7 @@ export class RequestModel {
   }
 
   // Method to delete (soft delete) the request instance
-  async delete(): Promise<any> {
+  async delete(): Promise<RequestsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

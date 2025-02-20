@@ -1176,7 +1176,7 @@ export class ErrorModel {
     return this
   }
 
-  whereBetween<V>(column: keyof ErrorsTable, range: [V, V]): ErrorModel {
+  whereBetween<V = number>(column: keyof ErrorsTable, range: [V, V]): ErrorModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1461,13 +1461,13 @@ export class ErrorModel {
     return instance
   }
 
-  having(column: keyof ErrorsTable, operator: Operator, value: any): ErrorModel {
+  having<V = string>(column: keyof ErrorsTable, operator: Operator, value: V): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ErrorsTable, operator: Operator, value: any): ErrorModel {
+  static having<V = string>(column: keyof ErrorsTable, operator: Operator, value: V): ErrorModel {
     const instance = new ErrorModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1606,7 +1606,7 @@ export class ErrorModel {
   }
 
   // Method to delete (soft delete) the error instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ErrorsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

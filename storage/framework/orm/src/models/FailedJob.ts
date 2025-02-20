@@ -1176,7 +1176,7 @@ export class FailedJobModel {
     return this
   }
 
-  whereBetween<V>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
+  whereBetween<V = number>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1461,13 +1461,13 @@ export class FailedJobModel {
     return instance
   }
 
-  having(column: keyof FailedJobsTable, operator: Operator, value: any): FailedJobModel {
+  having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof FailedJobsTable, operator: Operator, value: any): FailedJobModel {
+  static having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
     const instance = new FailedJobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1606,7 +1606,7 @@ export class FailedJobModel {
   }
 
   // Method to delete (soft delete) the failedjob instance
-  async delete(): Promise<any> {
+  async delete(): Promise<FailedJobsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

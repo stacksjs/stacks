@@ -1217,7 +1217,7 @@ export class TransactionModel {
     return this
   }
 
-  whereBetween<V>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
+  whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1502,13 +1502,13 @@ export class TransactionModel {
     return instance
   }
 
-  having(column: keyof TransactionsTable, operator: Operator, value: any): TransactionModel {
+  having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TransactionsTable, operator: Operator, value: any): TransactionModel {
+  static having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1647,7 +1647,7 @@ export class TransactionModel {
   }
 
   // Method to delete (soft delete) the transaction instance
-  async delete(): Promise<any> {
+  async delete(): Promise<TransactionsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

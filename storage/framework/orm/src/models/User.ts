@@ -1545,13 +1545,13 @@ export class UserModel {
     return instance
   }
 
-  having(column: keyof UsersTable, operator: Operator, value: any): UserModel {
+  having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof UsersTable, operator: Operator, value: any): UserModel {
+  static having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1696,7 +1696,7 @@ export class UserModel {
   }
 
   // Method to delete (soft delete) the user instance
-  async delete(): Promise<any> {
+  async delete(): Promise<UsersModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))

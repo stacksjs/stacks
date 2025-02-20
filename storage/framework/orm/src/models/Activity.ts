@@ -1222,7 +1222,7 @@ export class ActivityModel {
     return this
   }
 
-  whereBetween<V>(column: keyof ActivitiesTable, range: [V, V]): ActivityModel {
+  whereBetween<V = number>(column: keyof ActivitiesTable, range: [V, V]): ActivityModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1507,13 +1507,13 @@ export class ActivityModel {
     return instance
   }
 
-  having(column: keyof ActivitiesTable, operator: Operator, value: any): ActivityModel {
+  having<V = string>(column: keyof ActivitiesTable, operator: Operator, value: V): ActivityModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ActivitiesTable, operator: Operator, value: any): ActivityModel {
+  static having<V = string>(column: keyof ActivitiesTable, operator: Operator, value: V): ActivityModel {
     const instance = new ActivityModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1652,7 +1652,7 @@ export class ActivityModel {
   }
 
   // Method to delete (soft delete) the activity instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ActivitiesModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

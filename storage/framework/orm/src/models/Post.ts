@@ -1138,7 +1138,7 @@ export class PostModel {
     return this
   }
 
-  whereBetween<V>(column: keyof PostsTable, range: [V, V]): PostModel {
+  whereBetween<V = number>(column: keyof PostsTable, range: [V, V]): PostModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1423,13 +1423,13 @@ export class PostModel {
     return instance
   }
 
-  having(column: keyof PostsTable, operator: Operator, value: any): PostModel {
+  having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PostsTable, operator: Operator, value: any): PostModel {
+  static having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
     const instance = new PostModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1568,7 +1568,7 @@ export class PostModel {
   }
 
   // Method to delete (soft delete) the post instance
-  async delete(): Promise<any> {
+  async delete(): Promise<PostsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

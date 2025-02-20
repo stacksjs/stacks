@@ -1172,7 +1172,7 @@ export class AccessTokenModel {
     return this
   }
 
-  whereBetween<V>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
+  whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1457,13 +1457,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  having(column: keyof PersonalAccessTokensTable, operator: Operator, value: any): AccessTokenModel {
+  having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof PersonalAccessTokensTable, operator: Operator, value: any): AccessTokenModel {
+  static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1602,7 +1602,7 @@ export class AccessTokenModel {
   }
 
   // Method to delete (soft delete) the accesstoken instance
-  async delete(): Promise<any> {
+  async delete(): Promise<PersonalAccessTokensModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

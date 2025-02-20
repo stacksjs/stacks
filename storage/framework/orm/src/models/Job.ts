@@ -1176,7 +1176,7 @@ export class JobModel {
     return this
   }
 
-  whereBetween<V>(column: keyof JobsTable, range: [V, V]): JobModel {
+  whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
@@ -1461,13 +1461,13 @@ export class JobModel {
     return instance
   }
 
-  having(column: keyof JobsTable, operator: Operator, value: any): JobModel {
+  having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof JobsTable, operator: Operator, value: any): JobModel {
+  static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
     const instance = new JobModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1606,7 +1606,7 @@ export class JobModel {
   }
 
   // Method to delete (soft delete) the job instance
-  async delete(): Promise<any> {
+  async delete(): Promise<JobsModel> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
