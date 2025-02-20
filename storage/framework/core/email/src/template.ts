@@ -8,7 +8,12 @@ export interface RenderOptions {
   i18n?: I18n
 }
 
-export async function template(path: string, options?: RenderOptions): Promise<string> {
+interface HtmlResult {
+  html: string
+  text: string
+}
+
+export async function template(path: string, options?: RenderOptions): Promise<HtmlResult> {
   const email = config(resourcesPath('emails'), {
     verbose: !!process.env.DEBUG,
     // options: {
