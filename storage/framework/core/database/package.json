@@ -56,7 +56,7 @@
     "@stacksjs/utils": "workspace:*",
     "@types/tar": "^6.1.13",
     "debug": "^4.4.0",
-    "kysely-bun-worker": "^0.7.0",
+    "kysely-bun-worker": "^1.0.1",
     "mkdirp": "^3.0.1",
     "tar": "^7.4.3"
   }
