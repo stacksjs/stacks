@@ -16,36 +16,6 @@ export interface EmailOptions {
   }
 
   default: 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap'
-
-  drivers: {
-    ses?: {
-      region: string
-      credentials: {
-        accessKeyId?: string
-        secretAccessKey?: string
-      }
-      maxRetries?: number
-      retryTimeout?: number
-    }
-    sendgrid?: {
-      apiKey?: string
-      maxRetries?: number
-      retryTimeout?: number
-    }
-    mailgun?: {
-      apiKey?: string
-      domain?: string
-      endpoint?: string
-      maxRetries?: number
-      retryTimeout?: number
-    }
-    mailtrap?: {
-      token?: string
-      inboxId?: string | number
-      maxRetries?: number
-      retryTimeout?: number
-    }
-  }
 }
 
 export type EmailConfig = Partial<EmailOptions>
