@@ -4,15 +4,14 @@ import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'AccessToken', // defaults to the sanitized file name
-  table: 'personal_access_tokens', // defaults to the lowercase, plural name of the model name (or the name of the model file)
-  primaryKey: 'id', // defaults to `id`
-  autoIncrement: true, // defaults to true
-  belongsTo: ['Team'],
+  name: 'AccessToken',
+  table: 'personal_access_tokens',
+  primaryKey: 'id',
+  autoIncrement: true,
+  belongsTo: ['Team', 'User'], // Added User relation
   traits: {
-    useTimestamps: true, // defaults to true
+    useTimestamps: true,
     useSeeder: {
-      // defaults to a count of 10
       count: 10,
     },
   },
@@ -27,7 +26,6 @@ export default {
           required: 'name is required',
         },
       },
-
       factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
@@ -42,7 +40,6 @@ export default {
           maxLength: 'token must have a maximum of 512 characters',
         },
       },
-
       factory: () => faker.string.uuid(),
     },
 
@@ -56,7 +53,6 @@ export default {
           maxLength: 'plainTextToken must have a maximum of 512 characters',
         },
       },
-
       factory: () => faker.string.uuid(),
     },
 
@@ -67,13 +63,78 @@ export default {
         message: {
           required: 'abilities is required',
           maxLength: 'plainTextToken must have a maximum of 512 characters',
-          string:
-            '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
+          string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
-
       factory: () =>
         collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().first(),
+    },
+
+    // New columns
+    lastUsedAt: {
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+        message: {
+          date: 'lastUsedAt must be a valid date',
+        },
+      },
+      factory: () => faker.date.recent(),
+    },
+
+    expiresAt: {
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+        message: {
+          date: 'expiresAt must be a valid date',
+        },
+      },
+      factory: () => faker.date.future(),
+    },
+
+    revokedAt: {
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+        message: {
+          date: 'revokedAt must be a valid date',
+        },
+      },
+      factory: () => null,
+    },
+
+    ipAddress: {
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+        message: {
+          string: 'ipAddress must be a string',
+        },
+      },
+      factory: () => faker.internet.ip(),
+    },
+
+    deviceName: {
+      fillable: true,
+      validation: {
+        rule: schema.string().optional(),
+        message: {
+          string: 'deviceName must be a string',
+        },
+      },
+      factory: () => `${faker.company.name()} Browser on ${faker.system.networkInterface()}`,
+    },
+
+    isSingleUse: {
+      fillable: true,
+      validation: {
+        rule: schema.boolean(),
+        message: {
+          boolean: 'isSingleUse must be a boolean',
+        },
+      },
+      factory: () => false,
     },
   },
 } satisfies Model

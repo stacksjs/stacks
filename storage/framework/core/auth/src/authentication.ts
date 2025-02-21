@@ -1,9 +1,9 @@
 import type { TeamModel } from '../../../orm/src/models/Team'
 import type { UserModel } from '../../../orm/src/models/User'
+import { randomBytes } from 'node:crypto'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
 import { verifyHash } from '@stacksjs/security'
-import { sign, verify } from '@stacksjs/security' // Assuming this exists, if not we can use 'jsonwebtoken'
 import AccessToken from '../../../orm/src/models/AccessToken'
 import Team from '../../../orm/src/models/Team'
 import User from '../../../orm/src/models/User'
@@ -14,16 +14,8 @@ interface Credentials {
   [key: string]: string | undefined
 }
 
-interface TokenPayload {
-  userId: number
-  teamId?: number
-  email: string
-  exp?: number
-}
-
 type AuthToken = `${number}:${number}:${string}`
 
-const TOKEN_EXPIRY = 60 * 60 * 24 // 24 hours
 const authConfig = { username: 'email', password: 'password' }
 
 let authUser: UserModel | null = null
@@ -45,43 +37,78 @@ export async function attempt(credentials: Credentials): Promise<boolean> {
   return false
 }
 
-export async function generateAccessToken(user: UserModel): Promise<string> {
-  const payload: TokenPayload = {
-    userId: user.id as number,
-    email: user.email as string,
-    exp: Math.floor(Date.now() / 1000) + TOKEN_EXPIRY,
-  }
+export async function createAccessToken(user: UserModel, teamId?: number): Promise<AuthToken> {
+  const token = randomBytes(40).toString('hex')
 
-  return sign(payload, process.env.JWT_SECRET || 'your-secret-key')
+  const accessToken = await AccessToken.create({
+    team_id: teamId,
+    token,
+    name: 'auth-token',
+    expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30), // 30 days
+  })
+
+  if (!accessToken?.id)
+    throw new HttpError(500, 'Failed to create access token')
+
+  return `${accessToken.id}:${teamId || 0}:${token}`
 }
 
-export async function verifyAccessToken(token: string): Promise<TokenPayload | null> {
-  try {
-    const payload = await verify(token, process.env.JWT_SECRET || 'your-secret-key') as TokenPayload
-    return payload
-  }
-  catch (error) {
-    return null
-  }
-}
-
-export async function login(credentials: Credentials): Promise<{ token: string } | null> {
+export async function login(credentials: Credentials): Promise<{ token: AuthToken } | null> {
   const isValid = await attempt(credentials)
 
   if (!isValid || !authUser)
     return null
 
-  const token = await generateAccessToken(authUser)
+  // Get user's primary team
+  const teams = await authUser.userTeams()
+  const primaryTeam = teams[0]
+
+  const token = await createAccessToken(authUser, primaryTeam?.id)
   return { token }
 }
 
-export async function getUserFromToken(token: string): Promise<UserModel | null> {
-  const payload = await verifyAccessToken(token)
+export async function validateToken(token: string): Promise<boolean> {
+  const parts = token.split(':')
 
-  if (!payload)
+  if (parts.length !== 3)
+    return false
+
+  const [tokenId, teamId, plainToken] = parts
+
+  const accessToken = await AccessToken.where('id', Number(tokenId))
+    .where('token', plainToken)
+    .where('team_id', Number(teamId))
+    .first()
+
+  if (!accessToken)
+    return false
+
+  // Check if token is expired
+  if (accessToken.expires_at && new Date(accessToken.expires_at) < new Date())
+    return false
+
+  // Update last used timestamp
+  await AccessToken.where('id', accessToken.id).update({
+    last_used_at: new Date(),
+  })
+
+  return true
+}
+
+export async function getUserFromToken(token: string): Promise<UserModel | null> {
+  const parts = token.split(':')
+
+  if (parts.length !== 3)
     return null
 
-  return await User.find(payload.userId)
+  const [tokenId] = parts
+
+  const accessToken = await AccessToken.where('id', Number(tokenId)).first()
+
+  if (!accessToken?.user_id)
+    return null
+
+  return await User.find(accessToken.user_id)
 }
 
 export async function team(): Promise<TeamModel | undefined> {
@@ -114,21 +141,22 @@ export async function team(): Promise<TeamModel | undefined> {
   return await Team.find(Number(accessToken?.team_id))
 }
 
-export async function authToken(): Promise<AuthToken | undefined> {
-  if (authUser) {
-    const teams = await authUser.userTeams()
-    const team = teams[0]
-    const accessTokens = await team.teamAccessTokens()
-    const accessToken = accessTokens[0]
-    const tokenId = accessToken?.id
+export async function revokeToken(token: string): Promise<void> {
+  const parts = token.split(':')
 
-    if (!accessToken)
-      throw new HttpError(500, 'Error generating token!')
+  if (parts.length !== 3)
+    return
 
-    return `${tokenId}:${team.id}:${accessToken.token}`
-  }
+  const [tokenId] = parts
+
+  await AccessToken.where('id', Number(tokenId)).delete()
 }
 
 export async function logout(): Promise<void> {
+  const bearerToken = request.bearerToken()
+
+  if (bearerToken)
+    await revokeToken(bearerToken)
+
   authUser = null
 }

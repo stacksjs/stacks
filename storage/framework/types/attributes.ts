@@ -7,6 +7,12 @@ export interface Attributes {
   token: string
   plain_text_token: string
   abilities: string[]
+  last_used_at: Date | string
+  expires_at: Date | string
+  revoked_at: Date | string
+  ip_address: string
+  device_name: string
+  is_single_use: boolean
   company_name: string
   billing_email: string
   path: string
@@ -14,7 +20,6 @@ export interface Attributes {
   method: string[]
   status_code: number
   duration_ms: number
-  ip_address: string
   memory_usage: number
   user_agent: string
   error_message: string
@@ -59,7 +64,6 @@ export interface Attributes {
   quantity: number
   trial_ends_at: string
   ends_at: string
-  last_used_at: string
   message: string
   stack: string
   additional_info: string
