@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult, RenderOptions, SendGridConfig } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { log } from '@stacksjs/logging'
-import { BaseEmailDriver } from '../base'
 import { template } from '../template'
+import { BaseEmailDriver } from './base'
 
 export class SendGridDriver extends BaseEmailDriver {
   public name = 'sendgrid'

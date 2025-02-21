@@ -16,7 +16,7 @@ export interface EmailOptions {
   }
 
   default: 'ses' | 'sendgrid' | 'mailtrap'
-  
+
   drivers: {
     ses?: {
       region: string

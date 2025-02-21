@@ -38,7 +38,7 @@ export class DynamoDBCacheDriver extends BaseCacheDriver {
         ),
       },
     })
-    
+
     super(client)
   }
 }

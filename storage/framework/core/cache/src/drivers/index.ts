@@ -1,10 +1,13 @@
 // index.ts
 import type { CacheDriver } from '@stacksjs/types'
+import type { DynamoDBOptions } from './dynamodb'
+import type { FileSystemOptions } from './filesystem'
+import type { RedisOptions } from './redis'
 import { config } from '@stacksjs/config'
-import { dynamodb, DynamoDBCacheDriver, type DynamoDBOptions } from './dynamodb'
-import { fileSystem, FileSystemCacheDriver, type FileSystemOptions } from './filesystem'
+import { dynamodb, DynamoDBCacheDriver } from './dynamodb'
+import { fileSystem, FileSystemCacheDriver } from './filesystem'
 import { memory, MemoryCacheDriver } from './memory'
-import { redis, RedisCacheDriver, type RedisOptions } from './redis'
+import { redis, RedisCacheDriver } from './redis'
 
 // Map of available drivers
 const drivers: Record<string, CacheDriver> = {
@@ -35,11 +38,11 @@ export { redis, RedisCacheDriver, type RedisOptions } from './redis'
  */
 export function createCache(driver: 'redis', options?: RedisOptions): CacheDriver
 export function createCache(driver: 'fileSystem', options?: FileSystemOptions): CacheDriver
-export function createCache(driver: 'memory', options?: { maxSize?: number; maxItems?: number }): CacheDriver
+export function createCache(driver: 'memory', options?: { maxSize?: number, maxItems?: number }): CacheDriver
 export function createCache(driver: 'dynamodb', options?: DynamoDBOptions): CacheDriver
 export function createCache(
   driver: 'redis' | 'fileSystem' | 'memory' | 'dynamodb',
-  options?: any
+  options?: any,
 ): CacheDriver {
   switch (driver) {
     case 'redis':

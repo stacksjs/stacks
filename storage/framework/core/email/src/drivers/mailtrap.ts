@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult, MailtrapConfig, RenderOptions } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { log } from '@stacksjs/logging'
-import { BaseEmailDriver } from '../base'
 import { template } from '../template'
+import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {
   public name = 'mailtrap'
