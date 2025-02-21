@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { template } from '../template'
-import { config } from '@stacksjs/config'
 import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {

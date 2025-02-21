@@ -1,6 +1,5 @@
 import type { I18n } from 'vue-email'
 
-
 export interface EmailOptions {
   from: {
     name: string

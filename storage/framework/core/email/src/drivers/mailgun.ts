@@ -1,8 +1,8 @@
 import type { EmailAddress, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { template } from '../template'
-import { config } from '@stacksjs/config'
 import { BaseEmailDriver } from './base'
 
 export class MailgunDriver extends BaseEmailDriver {
@@ -34,13 +34,13 @@ export class MailgunDriver extends BaseEmailDriver {
 
       const formData = new FormData()
       formData.append('from', this.formatMailgunAddress(message.from))
-      
+
       // Handle multiple recipients
       this.formatMailgunAddresses(message.to).forEach(to => formData.append('to', to))
-      
+
       if (message.cc)
         this.formatMailgunAddresses(message.cc).forEach(cc => formData.append('cc', cc))
-      
+
       if (message.bcc)
         this.formatMailgunAddresses(message.bcc).forEach(bcc => formData.append('bcc', bcc))
 
