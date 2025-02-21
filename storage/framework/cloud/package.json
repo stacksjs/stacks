@@ -53,7 +53,7 @@
     "@aws-sdk/client-route-53-domains": "^3.750.0",
     "@aws-sdk/client-s3": "^3.750.0",
     "@aws-sdk/client-ses": "^3.750.0",
-    "@aws-sdk/client-sesv2": "^3.752.0",
+    "@aws-sdk/client-sesv2": "^3.753.0",
     "@aws-sdk/client-ssm": "^3.750.0",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dns": "workspace:*",
