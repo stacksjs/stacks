@@ -9,10 +9,29 @@ export interface EmailOptions {
   mailboxes: string[]
 
   url: string
-  charset: string // e.g. UTF-8
+  charset: string
 
   server: {
     scan?: boolean
+  }
+
+  default: 'ses' | 'sendgrid' | 'mailtrap'
+  
+  drivers: {
+    ses?: {
+      region: string
+      credentials: {
+        accessKeyId?: string
+        secretAccessKey?: string
+      }
+    }
+    sendgrid?: {
+      apiKey?: string
+    }
+    mailtrap?: {
+      token?: string
+      inboxId?: string | number
+    }
   }
 }
 

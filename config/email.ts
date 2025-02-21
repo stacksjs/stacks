@@ -22,4 +22,26 @@ export default {
   server: {
     scan: true, // scans for spam and viruses
   },
+
+  // Add driver configuration
+  default: env.MAIL_DRIVER || 'ses',
+
+  drivers: {
+    ses: {
+      region: env.AWS_SES_REGION || 'us-east-1',
+      credentials: {
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+      },
+    },
+
+    sendgrid: {
+      apiKey: env.SENDGRID_API_KEY,
+    },
+
+    mailtrap: {
+      token: env.MAILTRAP_TOKEN,
+      inboxId: env.MAILTRAP_INBOX_ID,
+    },
+  },
 } satisfies EmailConfig
