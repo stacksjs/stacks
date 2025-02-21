@@ -13,9 +13,9 @@ export class MailgunDriver extends BaseEmailDriver {
 
   constructor() {
     super()
-    this.apiKey = config.email.drivers?.mailgun?.apiKey ?? ''
-    this.domain = config.email.drivers?.mailgun?.domain ?? ''
-    this.endpoint = config.email.drivers?.mailgun?.endpoint ?? 'api.mailgun.net'
+    this.apiKey = config.services.mailgun?.apiKey ?? ''
+    this.domain = config.services.mailgun?.domain ?? ''
+    this.endpoint = config.services.mailgun?.endpoint ?? 'api.mailgun.net'
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -124,9 +124,9 @@ export class MailgunDriver extends BaseEmailDriver {
       return data
     }
     catch (error) {
-      if (attempt < (config.email.drivers?.mailgun?.maxRetries ?? 3)) {
-        const retryTimeout = config.email.drivers?.mailgun?.retryTimeout ?? 1000
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.email.drivers?.mailgun?.maxRetries ?? 3})`)
+      if (attempt < (config.services.mailgun?.maxRetries ?? 3)) {
+        const retryTimeout = config.services.mailgun?.retryTimeout ?? 1000
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.mailgun?.maxRetries ?? 3})`)
         await new Promise(resolve => setTimeout(resolve, retryTimeout))
         return this.sendWithRetry(formData, attempt + 1)
       }

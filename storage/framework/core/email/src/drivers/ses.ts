@@ -12,12 +12,12 @@ export class SESDriver extends BaseEmailDriver {
     super()
 
     const credentials = {
-      accessKeyId: config.email.drivers?.ses?.credentials?.accessKeyId ?? '',
-      secretAccessKey: config.email.drivers?.ses?.credentials?.secretAccessKey ?? '',
+      accessKeyId: config.services.ses?.credentials?.accessKeyId ?? '',
+      secretAccessKey: config.services.ses?.credentials?.secretAccessKey ?? '',
     }
 
     this.client = new SES({
-      region: config.email.drivers?.ses?.region || 'us-east-1',
+      region: config.services.ses?.region || 'us-east-1',
       credentials,
     })
   }

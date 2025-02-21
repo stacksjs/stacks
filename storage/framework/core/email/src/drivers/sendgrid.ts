@@ -11,7 +11,7 @@ export class SendGridDriver extends BaseEmailDriver {
 
   constructor() {
     super()
-    this.apiKey = config.email.drivers?.sendgrid?.apiKey ?? ''
+    this.apiKey = config.services.sendgrid?.apiKey ?? ''
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -127,9 +127,9 @@ export class SendGridDriver extends BaseEmailDriver {
       return response
     }
     catch (error) {
-      if (attempt < (config.email.drivers?.sendgrid?.maxRetries ?? 3)) {
-        const retryTimeout = config.email.drivers?.sendgrid?.retryTimeout ?? 1000
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.email.drivers?.sendgrid?.maxRetries ?? 3})`)
+      if (attempt < (config.services.sendgrid?.maxRetries ?? 3)) {
+        const retryTimeout = config.services.sendgrid?.retryTimeout ?? 1000
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.sendgrid?.maxRetries ?? 3})`)
         await new Promise(resolve => setTimeout(resolve, retryTimeout))
         return this.sendWithRetry(payload, attempt + 1)
       }

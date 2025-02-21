@@ -12,8 +12,8 @@ export class MailtrapDriver extends BaseEmailDriver {
 
   constructor() {
     super()
-    this.token = config.email.drivers?.mailtrap?.token ?? ''
-    this.inboxId = config.email.drivers?.mailtrap?.inboxId ? Number(config.email.drivers.mailtrap.inboxId) : undefined
+    this.token = config.services.mailtrap?.token ?? ''
+    this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -115,9 +115,9 @@ export class MailtrapDriver extends BaseEmailDriver {
       return data
     }
     catch (error) {
-      if (attempt < (config.email.drivers?.mailtrap?.maxRetries ?? 3)) {
-        const retryTimeout = config.email.drivers?.mailtrap?.retryTimeout ?? 1000
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.email.drivers?.mailtrap?.maxRetries ?? 3})`)
+      if (attempt < (config.services.mailtrap?.maxRetries ?? 3)) {
+        const retryTimeout = config.services.mailtrap?.retryTimeout ?? 1000
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.mailtrap?.maxRetries ?? 3})`)
         await new Promise(resolve => setTimeout(resolve, retryTimeout))
 
         return this.sendWithRetry(payload, attempt + 1)
