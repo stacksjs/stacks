@@ -1,7 +1,8 @@
-import type { EmailAddress, EmailMessage, EmailResult, MailtrapConfig, RenderOptions } from '@stacksjs/types'
+import type { EmailAddress, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { log } from '@stacksjs/logging'
 import { template } from '../template'
+import { config } from '@stacksjs/config'
 import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {
@@ -9,10 +10,10 @@ export class MailtrapDriver extends BaseEmailDriver {
   private token: string
   private inboxId?: number
 
-  constructor(config: MailtrapConfig) {
-    super(config)
-    this.token = config.token
-    this.inboxId = config.inboxId
+  constructor() {
+    super()
+    this.token = config.email.drivers?.mailtrap?.token ?? ''
+    this.inboxId = config.email.drivers?.mailtrap?.inboxId ? Number(config.email.drivers.mailtrap.inboxId) : undefined
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -29,10 +30,9 @@ export class MailtrapDriver extends BaseEmailDriver {
       this.validateMessage(message)
       const templ = await template(message.template, options)
 
-      // Convert to Mailtrap format
       const mailtrapPayload = {
         from: {
-          email: message.from.address,
+          email: message.from.address || config.email.from?.address,
           ...(message.from.name && { name: message.from.name }),
         },
         to: this.formatMailtrapAddresses(message.to),
@@ -115,12 +115,16 @@ export class MailtrapDriver extends BaseEmailDriver {
       return data
     }
     catch (error) {
-      if (attempt < this.config.maxRetries) {
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${this.config.maxRetries})`)
-        await new Promise(resolve => setTimeout(resolve, this.config.retryTimeout))
+      if (attempt < (config.email.drivers?.mailtrap?.maxRetries ?? 3)) {
+        const retryTimeout = config.email.drivers?.mailtrap?.retryTimeout ?? 1000
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.email.drivers?.mailtrap?.maxRetries ?? 3})`)
+        await new Promise(resolve => setTimeout(resolve, retryTimeout))
+
         return this.sendWithRetry(payload, attempt + 1)
       }
       throw error
     }
   }
 }
+
+export default MailtrapDriver

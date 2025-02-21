@@ -33,6 +33,8 @@ export interface EmailOptions {
     mailtrap?: {
       token?: string
       inboxId?: string | number
+      maxRetries?: number
+      retryTimeout?: number
     }
   }
 }

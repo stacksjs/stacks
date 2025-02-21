@@ -44,6 +44,8 @@ export default {
     mailtrap: {
       token: env.MAILTRAP_TOKEN,
       inboxId: env.MAILTRAP_INBOX_ID,
+      maxRetries: env.MAILTRAP_MAX_RETRIES ? Number.parseInt(env.MAILTRAP_MAX_RETRIES) : 3,
+      retryTimeout: env.MAILTRAP_RETRY_TIMEOUT ? Number.parseInt(env.MAILTRAP) : 1000,
     },
   },
 } satisfies EmailConfig
