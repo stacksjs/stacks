@@ -1,5 +1,6 @@
 import type { I18n } from 'vue-email'
 
+
 export interface EmailOptions {
   from: {
     name: string
@@ -15,7 +16,7 @@ export interface EmailOptions {
     scan?: boolean
   }
 
-  default: 'ses' | 'sendgrid' | 'mailtrap'
+  default: 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap'
 
   drivers: {
     ses?: {
@@ -24,9 +25,18 @@ export interface EmailOptions {
         accessKeyId?: string
         secretAccessKey?: string
       }
+      maxRetries?: number
+      retryTimeout?: number
     }
     sendgrid?: {
       apiKey?: string
+      maxRetries?: number
+      retryTimeout?: number
+    }
+    mailgun?: {
+      apiKey?: string
+      domain?: string
+      endpoint?: string
       maxRetries?: number
       retryTimeout?: number
     }

@@ -23,7 +23,6 @@ export default {
     scan: true, // scans for spam and viruses
   },
 
-  // Add driver configuration
   default: env.MAIL_DRIVER || 'ses',
 
   drivers: {
@@ -41,11 +40,19 @@ export default {
       retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
     },
 
+    mailgun: {
+      apiKey: env.MAILGUN_API_KEY,
+      domain: env.MAILGUN_DOMAIN,
+      endpoint: env.MAILGUN_ENDPOINT || 'api.mailgun.net',
+      maxRetries: env.MAILGUN_MAX_RETRIES ? Number.parseInt(env.MAILGUN_MAX_RETRIES) : 3,
+      retryTimeout: env.MAILGUN_RETRY_TIMEOUT ? Number.parseInt(env.MAILGUN_RETRY_TIMEOUT) : 1000,
+    },
+
     mailtrap: {
       token: env.MAILTRAP_TOKEN,
       inboxId: env.MAILTRAP_INBOX_ID,
       maxRetries: env.MAILTRAP_MAX_RETRIES ? Number.parseInt(env.MAILTRAP_MAX_RETRIES) : 3,
-      retryTimeout: env.MAILTRAP_RETRY_TIMEOUT ? Number.parseInt(env.MAILTRAP) : 1000,
+      retryTimeout: env.MAILTRAP_RETRY_TIMEOUT ? Number.parseInt(env.MAILTRAP_RETRY_TIMEOUT) : 1000,
     },
   },
 } satisfies EmailConfig
