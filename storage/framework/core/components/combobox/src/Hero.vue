@@ -17,12 +17,11 @@ interface Person {
 }
 
 const people = ref<Person[]>([
-  { id: 1, name: 'Wade Cooper' },
-  { id: 2, name: 'Arlene Mccoy' },
-  { id: 3, name: 'Devon Webb' },
-  { id: 4, name: 'Tom Cook' },
-  { id: 5, name: 'Tanya Fox' },
-  { id: 6, name: 'Hellen Schmidt' },
+  { id: 1, name: 'Chris Breuer' },
+  { id: 2, name: 'Avery Hill' },
+  { id: 3, name: 'Glenn Michael' },
+  { id: 4, name: 'Michael Vincent' },
+  { id: 5, name: 'Blake Ayer' }
 ])
 
 const selected = ref<Person | null>(null)

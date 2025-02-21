@@ -16,12 +16,11 @@ interface Person {
   name: string
 }
 
-const listItems = ref<string>(`Wade Cooper
-Arlene Mccoy
-Devon Webb
-Tom Cook
-Tanya Fox
-Hellen Schmidt
+const listItems = ref<string>(`Chris Breuer
+Avery Hill
+Glenn Michael
+Michael Vincent
+Blake Ayer
 `)
 
 const selected = ref<Person | null>(null)
