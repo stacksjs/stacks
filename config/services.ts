@@ -9,6 +9,11 @@ import { env } from '@stacksjs/env'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  algolia: {
+    appId: '',
+    apiKey: '',
+  },
+
   aws: {
     accountId: env.AWS_ACCOUNT_ID || '',
     appId: env.AWS_ACCESS_KEY_ID || '',
@@ -16,18 +21,9 @@ export default {
     region: env.AWS_DEFAULT_REGION || 'us-east-1',
   },
 
-  ses: {
-    region: env.AWS_SES_REGION || 'us-east-1',
-    credentials: {
-      accessKeyId: env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
-    },
-  },
-
-  sendgrid: {
-    apiKey: env.SENDGRID_API_KEY,
-    maxRetries: env.SENDGRID_MAX_RETRIES ? Number.parseInt(env.SENDGRID_MAX_RETRIES) : 3,
-    retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
+  digitalOcean: {
+    appId: '',
+    apiKey: '',
   },
 
   mailgun: {
@@ -50,19 +46,23 @@ export default {
     apiKey: '',
   },
 
-  digitalOcean: {
-    appId: '',
-    apiKey: '',
-  },
-
-  algolia: {
-    appId: '',
-    apiKey: '',
-  },
-
   meilisearch: {
     appId: '',
     apiKey: '',
+  },
+
+  sendgrid: {
+    apiKey: env.SENDGRID_API_KEY,
+    maxRetries: env.SENDGRID_MAX_RETRIES ? Number.parseInt(env.SENDGRID_MAX_RETRIES) : 3,
+    retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
+  },
+
+  ses: {
+    region: env.AWS_SES_REGION || 'us-east-1',
+    credentials: {
+      accessKeyId: env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+    },
   },
 
   // lemonSqueezy: {

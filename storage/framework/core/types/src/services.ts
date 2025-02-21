@@ -21,6 +21,11 @@ export interface ServicesOptions {
     apiKey: string
   }
 
+  digitalOcean: {
+    appId: string
+    apiKey: string
+  }
+
   // lemonSqueezy?: {
   //   appId: string
   //   apiKey: string
