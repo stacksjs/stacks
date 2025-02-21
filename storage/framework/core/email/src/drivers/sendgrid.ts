@@ -1,5 +1,6 @@
-import type { EmailAddress, EmailMessage, EmailResult, RenderOptions, SendGridConfig } from '@stacksjs/types'
+import type { EmailAddress, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { template } from '../template'
 import { BaseEmailDriver } from './base'
@@ -8,9 +9,9 @@ export class SendGridDriver extends BaseEmailDriver {
   public name = 'sendgrid'
   private apiKey: string
 
-  constructor(config: SendGridConfig) {
-    super(config)
-    this.apiKey = config.apiKey
+  constructor() {
+    super()
+    this.apiKey = config.email.drivers?.sendgrid?.apiKey ?? ''
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -26,7 +27,6 @@ export class SendGridDriver extends BaseEmailDriver {
       this.validateMessage(message)
       const templ = await template(message.template, options)
 
-      // Convert our message format to SendGrid format
       const sendgridPayload = {
         personalizations: [
           {
@@ -37,7 +37,7 @@ export class SendGridDriver extends BaseEmailDriver {
           },
         ],
         from: {
-          email: message.from.address,
+          email: message.from.address || config.email.from?.address,
           ...(message.from.name && { name: message.from.name }),
         },
         content: [
@@ -127,12 +127,15 @@ export class SendGridDriver extends BaseEmailDriver {
       return response
     }
     catch (error) {
-      if (attempt < this.config.maxRetries) {
-        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${this.config.maxRetries})`)
-        await new Promise(resolve => setTimeout(resolve, this.config.retryTimeout))
+      if (attempt < (config.email.drivers?.sendgrid?.maxRetries ?? 3)) {
+        const retryTimeout = config.email.drivers?.sendgrid?.retryTimeout ?? 1000
+        log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.email.drivers?.sendgrid?.maxRetries ?? 3})`)
+        await new Promise(resolve => setTimeout(resolve, retryTimeout))
         return this.sendWithRetry(payload, attempt + 1)
       }
       throw error
     }
   }
 }
+
+export default SendGridDriver

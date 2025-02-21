@@ -27,6 +27,8 @@ export interface EmailOptions {
     }
     sendgrid?: {
       apiKey?: string
+      maxRetries?: number
+      retryTimeout?: number
     }
     mailtrap?: {
       token?: string

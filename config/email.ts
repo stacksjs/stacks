@@ -37,6 +37,8 @@ export default {
 
     sendgrid: {
       apiKey: env.SENDGRID_API_KEY,
+      maxRetries: env.SENDGRID_MAX_RETRIES ? Number.parseInt(env.SENDGRID_MAX_RETRIES) : 3,
+      retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
     },
 
     mailtrap: {
