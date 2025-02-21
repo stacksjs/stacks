@@ -118,7 +118,7 @@ export default {
     deviceName: {
       fillable: true,
       validation: {
-        rule: schema.string().optional(),
+        rule: schema.string(),
         message: {
           string: 'deviceName must be a string',
         },

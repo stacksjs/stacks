@@ -1,5 +1,5 @@
 import type { TeamModel } from '../../../orm/src/models/Team'
-import type { UserModel } from '../../../orm/src/models/User'
+import type { UserModel, UsersTable } from '../../../orm/src/models/User'
 import { randomBytes } from 'node:crypto'
 import { HttpError } from '@stacksjs/error-handling'
 import { request } from '@stacksjs/router'
@@ -23,7 +23,7 @@ let authUser: UserModel | null = null
 export async function attempt(credentials: Credentials): Promise<boolean> {
   let hashCheck = false
 
-  const user = await User.where(authConfig.username, credentials[authConfig.username]).first()
+  const user = await User.where(authConfig.username as keyof UsersTable, credentials[authConfig.username]).first()
   const authPass = credentials[authConfig.password]
 
   if (typeof authPass === 'string' && user?.password)
@@ -95,18 +95,18 @@ export async function validateToken(token: string): Promise<boolean> {
   return true
 }
 
-export async function getUserFromToken(token: string): Promise<UserModel | null> {
+export async function getUserFromToken(token: string): Promise<UserModel | undefined> {
   const parts = token.split(':')
 
   if (parts.length !== 3)
-    return null
+    return undefined
 
   const [tokenId] = parts
 
   const accessToken = await AccessToken.where('id', Number(tokenId)).first()
 
   if (!accessToken?.user_id)
-    return null
+    return undefined
 
   return await User.find(accessToken.user_id)
 }
@@ -114,7 +114,7 @@ export async function getUserFromToken(token: string): Promise<UserModel | null>
 export async function team(): Promise<TeamModel | undefined> {
   if (authUser) {
     const teams = await authUser.userTeams()
-    return teams[0].team
+    return teams[0]
   }
 
   const bearerToken = request.bearerToken()

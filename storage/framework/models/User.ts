@@ -1,7 +1,6 @@
-import type { Model } from '@stacksjs/types'
+import type { Attributes, Model } from '@stacksjs/types'
 // soon, these will be auto-imported
 import { faker } from '@stacksjs/faker'
-import { capitalize } from '@stacksjs/strings'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -108,16 +107,13 @@ export default {
     },
   },
   get: {
-    formalName: (attributes) => {
-      const name = attributes.user?.name as string
-      const nameParts = name.split(' ')
-
-      return `${capitalize(nameParts.pop()!)}, ${capitalize(nameParts.join(' '))}`
+    salutationName: (attributes: Attributes) => {
+      return `Mr. ${attributes.name}`
     },
   },
 
   set: {
-    password: (password: string) => Bun.password.hash(password),
+    password: (attributes: Attributes) => Bun.password.hash(attributes.password),
   },
   dashboard: {
     highlight: true,
