@@ -1652,7 +1652,7 @@ export class ActivityModel {
   }
 
   // Method to delete (soft delete) the activity instance
-  async delete(): Promise<ActivitiesModel> {
+  async delete(): Promise<ActivitiesTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

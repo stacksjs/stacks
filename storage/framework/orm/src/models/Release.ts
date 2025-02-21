@@ -1538,7 +1538,7 @@ export class ReleaseModel {
   }
 
   // Method to delete (soft delete) the release instance
-  async delete(): Promise<ReleasesModel> {
+  async delete(): Promise<ReleasesTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

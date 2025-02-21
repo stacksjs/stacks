@@ -1647,7 +1647,7 @@ export class TransactionModel {
   }
 
   // Method to delete (soft delete) the transaction instance
-  async delete(): Promise<TransactionsModel> {
+  async delete(): Promise<TransactionsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

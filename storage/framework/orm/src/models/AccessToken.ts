@@ -1602,7 +1602,7 @@ export class AccessTokenModel {
   }
 
   // Method to delete (soft delete) the accesstoken instance
-  async delete(): Promise<PersonalAccessTokensModel> {
+  async delete(): Promise<PersonalAccessTokensTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

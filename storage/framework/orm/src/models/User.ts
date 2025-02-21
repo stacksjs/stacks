@@ -834,7 +834,7 @@ export class UserModel {
 
         case 'whereIn':
           if (condition.operator === 'is not') {
-            this.whereNotIn<number>(condition.column, condition.values)
+            this.whereNotIn(condition.column, condition.values)
           }
           else {
             this.whereIn(condition.column, condition.values)
@@ -1696,7 +1696,7 @@ export class UserModel {
   }
 
   // Method to delete (soft delete) the user instance
-  async delete(): Promise<UsersModel> {
+  async delete(): Promise<UsersTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))

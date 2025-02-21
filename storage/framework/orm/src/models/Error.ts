@@ -1606,7 +1606,7 @@ export class ErrorModel {
   }
 
   // Method to delete (soft delete) the error instance
-  async delete(): Promise<ErrorsModel> {
+  async delete(): Promise<ErrorsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

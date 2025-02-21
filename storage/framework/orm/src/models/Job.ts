@@ -1606,7 +1606,7 @@ export class JobModel {
   }
 
   // Method to delete (soft delete) the job instance
-  async delete(): Promise<JobsModel> {
+  async delete(): Promise<JobsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

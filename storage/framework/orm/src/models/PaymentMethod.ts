@@ -1674,7 +1674,7 @@ export class PaymentMethodModel {
   }
 
   // Method to delete (soft delete) the paymentmethod instance
-  async delete(): Promise<PaymentMethodsModel> {
+  async delete(): Promise<PaymentMethodsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

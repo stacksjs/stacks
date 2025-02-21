@@ -1567,7 +1567,7 @@ export class SubscriberEmailModel {
   }
 
   // Method to delete (soft delete) the subscriberemail instance
-  async delete(): Promise<SubscriberEmailsModel> {
+  async delete(): Promise<SubscriberEmailsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

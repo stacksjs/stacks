@@ -1606,7 +1606,7 @@ export class FailedJobModel {
   }
 
   // Method to delete (soft delete) the failedjob instance
-  async delete(): Promise<FailedJobsModel> {
+  async delete(): Promise<FailedJobsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

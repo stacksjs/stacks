@@ -1718,7 +1718,7 @@ export class SubscriptionModel {
   }
 
   // Method to delete (soft delete) the subscription instance
-  async delete(): Promise<SubscriptionsModel> {
+  async delete(): Promise<SubscriptionsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

@@ -1568,7 +1568,7 @@ export class PostModel {
   }
 
   // Method to delete (soft delete) the post instance
-  async delete(): Promise<PostsModel> {
+  async delete(): Promise<PostsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

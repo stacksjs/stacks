@@ -1589,7 +1589,7 @@ export class ProjectModel {
   }
 
   // Method to delete (soft delete) the project instance
-  async delete(): Promise<ProjectsModel> {
+  async delete(): Promise<ProjectsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

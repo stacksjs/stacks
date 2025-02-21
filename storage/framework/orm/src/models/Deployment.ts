@@ -1667,7 +1667,7 @@ export class DeploymentModel {
   }
 
   // Method to delete (soft delete) the deployment instance
-  async delete(): Promise<DeploymentsModel> {
+  async delete(): Promise<DeploymentsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

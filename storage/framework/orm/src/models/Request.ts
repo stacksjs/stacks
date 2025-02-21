@@ -1686,7 +1686,7 @@ export class RequestModel {
   }
 
   // Method to delete (soft delete) the request instance
-  async delete(): Promise<RequestsModel> {
+  async delete(): Promise<RequestsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

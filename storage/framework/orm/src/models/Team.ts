@@ -1667,7 +1667,7 @@ export class TeamModel {
   }
 
   // Method to delete (soft delete) the team instance
-  async delete(): Promise<TeamsModel> {
+  async delete(): Promise<TeamsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

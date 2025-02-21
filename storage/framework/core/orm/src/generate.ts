@@ -2370,7 +2370,7 @@ export async function generateModelString(
 
   
         // Method to delete (soft delete) the ${formattedModelName} instance
-        async delete(): Promise<${formattedTableName}Model> {
+        async delete(): Promise<${formattedTableName}Table> {
           if (this.id === undefined)
             this.deleteFromQuery.execute()
             ${mittDeleteFindStatement}

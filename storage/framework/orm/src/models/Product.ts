@@ -1654,7 +1654,7 @@ export class ProductModel {
   }
 
   // Method to delete (soft delete) the product instance
-  async delete(): Promise<ProductsModel> {
+  async delete(): Promise<ProductsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
