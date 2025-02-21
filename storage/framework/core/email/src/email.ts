@@ -9,8 +9,8 @@ class Mail {
   private drivers: Map<string, EmailDriver> = new Map()
   private defaultDriver: string
 
-  constructor() {
-    this.defaultDriver = config.email.default || 'ses'
+  constructor(options: { defaultDriver?: string } = {}) {
+    this.defaultDriver = options.defaultDriver || config.email.default || 'ses'
     this.registerDefaultDrivers()
   }
 
@@ -24,9 +24,8 @@ class Mail {
   public async send(message: EmailMessage): Promise<EmailResult> {
     const driver = this.drivers.get(this.defaultDriver)
 
-    if (!driver) {
+    if (!driver)
       throw new Error(`Email driver '${this.defaultDriver}' is not available`)
-    }
 
     return driver.send(message)
   }
