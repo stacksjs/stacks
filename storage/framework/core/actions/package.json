@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -59,6 +59,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "markdown-it": "^14.1.0",
-    "vue-component-meta": "^2.2.0"
+    "vue-component-meta": "^2.2.4"
   }
 }

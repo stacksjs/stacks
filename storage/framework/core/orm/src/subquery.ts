@@ -1,46 +1,54 @@
-import { HttpError } from '@stacksjs/error-handling'
+export type Operator = '=' | '<' | '>' | '<=' | '>=' | '<>' | '!=' | 'like' | 'not like' | 'in' | 'not in' | 'between' | 'not between' | 'is' | 'is not'
 
-interface WhereCondition {
+interface WhereCondition<T, V = any> {
   type: 'and' | 'or'
   method: 'where' | 'whereIn' | 'whereNull' | 'whereNotNull' | 'whereBetween' | 'whereExists'
-  column: string
-  operator?: string
-  value?: any
-  values?: any[]
-  callback?: (query: SubqueryBuilder) => void
+  column: keyof T
+  operator?: Operator
+  value?: V
+  values?: V[]
+  callback?: (query: SubqueryBuilder<T>) => void
 }
 
-export class SubqueryBuilder {
-  private conditions: WhereCondition[] = []
+export class SubqueryBuilder<T> {
+  private conditions: WhereCondition<T>[] = []
 
-  where(...args: (string | number | boolean | undefined | null)[]): void {
-    this.addCondition('and', 'where', ...args)
+  where<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue as Operator
+    const actualValue: V = value === undefined ? operatorOrValue as V : value
+
+    this.addCondition('and', 'where', column, operator, actualValue)
   }
 
-  orWhere(...args: (string | number | boolean | undefined | null)[]): void {
-    this.addCondition('or', 'where', ...args)
+  orWhere<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue as Operator
+    const actualValue: V = value === undefined ? operatorOrValue as V : value
+
+    this.addCondition('or', 'where', column, operator, actualValue)
   }
 
-  whereIn(column: string, values: any[]): void {
+  whereIn<V>(column: keyof T, values: V[]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
       column,
       values,
-    })
+    } as WhereCondition<T, V>)
   }
 
-  whereNotIn(column: string, values: any[]): void {
+  whereNotIn<V>(column: keyof T, values: V[]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
       column,
       values,
-      operator: 'not',
-    })
+      operator: 'not in',
+    } as WhereCondition<T, V>)
   }
 
-  whereNull(column: string): void {
+  whereNull(column: keyof T): void {
     this.conditions.push({
       type: 'and',
       method: 'whereNull',
@@ -48,7 +56,7 @@ export class SubqueryBuilder {
     })
   }
 
-  whereNotNull(column: string): void {
+  whereNotNull(column: keyof T): void {
     this.conditions.push({
       type: 'and',
       method: 'whereNotNull',
@@ -56,7 +64,7 @@ export class SubqueryBuilder {
     })
   }
 
-  whereBetween(column: string, range: [any, any]): void {
+  whereBetween<V>(column: keyof T, range: [V, V]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereBetween',
@@ -65,35 +73,20 @@ export class SubqueryBuilder {
     })
   }
 
-  whereExists(callback: (query: SubqueryBuilder) => void): void {
+  whereExists(callback: (query: SubqueryBuilder<T>) => void): void {
     this.conditions.push({
       type: 'and',
       method: 'whereExists',
-      column: '',
+      column: '' as keyof T,
       callback,
     })
   }
 
-  private addCondition(type: 'and' | 'or', method: 'where', ...args: (string | number | boolean | undefined | null)[]): void {
-    let column: any
-    let operator: any
-    let value: any
-
-    if (args.length === 2) {
-      [column, value] = args
-      operator = '='
-    }
-    else if (args.length === 3) {
-      [column, operator, value] = args
-    }
-    else {
-      throw new HttpError(500, 'Invalid number of arguments')
-    }
-
+  private addCondition<V>(type: 'and' | 'or', method: 'where', column: keyof T, operator: Operator, value: V): void {
     this.conditions.push({ type, method, column, operator, value })
   }
 
-  getConditions(): WhereCondition[] {
+  getConditions(): WhereCondition<T>[] {
     return this.conditions
   }
 }

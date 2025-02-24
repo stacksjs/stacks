@@ -1,23 +1,62 @@
-// import { SESEmailProvider } from '@novu/ses'
-// import type { EmailOptions } from '@stacksjs/types'
-// import { notification } from '@stacksjs/config'
-// import type { ResultAsync } from '@stacksjs/error-handling'
-// import { send as sendEmail } from '../send'
+import type { EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
+import { SendEmailCommand, SES } from '@aws-sdk/client-ses'
+import { config } from '@stacksjs/config'
+import { template } from '../template'
+import { BaseEmailDriver } from './base'
 
-// const email = notification.email
-// const env = email?.drivers?.ses
+export class SESDriver extends BaseEmailDriver {
+  public name = 'ses'
+  private client: SES
 
-// // const provider = new SESEmailProvider({
-// const provider = new SESEmailProvider({
-//   region: env?.region || 'us-east-1',
-//   accessKeyId: env?.key || '',
-//   secretAccessKey: env?.secret || '',
-//   senderName: email?.from.name || 'Stacks',
-//   from: email?.from.address || '',
-// })
+  constructor() {
+    super()
 
-// async function send(options: EmailOptions, css?: string): Promise<ResultAsync<any, Error>> {
-//   return sendEmail(options, provider, 'Ses', css)
-// }
+    const credentials = {
+      accessKeyId: config.services.ses?.credentials?.accessKeyId ?? '',
+      secretAccessKey: config.services.ses?.credentials?.secretAccessKey ?? '',
+    }
 
-// export { send as Send, send }
+    this.client = new SES({
+      region: config.services.ses?.region || 'us-east-1',
+      credentials,
+    })
+  }
+
+  public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
+    try {
+      this.validateMessage(message)
+      const templ = await template(message.template, options)
+
+      const params = {
+        Source: message.from?.address || config.email.from?.address,
+
+        Destination: {
+          ToAddresses: this.formatAddresses(message.to),
+          CcAddresses: this.formatAddresses(message.cc),
+          BccAddresses: this.formatAddresses(message.bcc),
+        },
+
+        Message: {
+          Body: {
+            Html: {
+              Charset: config.email.charset || 'UTF-8',
+              Data: templ.html,
+            },
+          },
+          Subject: {
+            Charset: config.email.charset || 'UTF-8',
+            Data: message.subject,
+          },
+        },
+      }
+
+      const response = await this.client.send(new SendEmailCommand(params))
+      return this.handleSuccess(message, response.MessageId)
+    }
+    catch (error) {
+      return this.handleError(error, message)
+    }
+  }
+}
+
+export default SESDriver

@@ -68,14 +68,14 @@ describe('@stacksjs/events', () => {
   test('dispatch is an alias for emit', () => {
     const handler = mock(() => {})
     listen('user:logged-in', handler)
-    dispatch('user:logged-in', { userId: 1 })
+    dispatch('user:logged-in', { id: 1 })
     expect(handler).toHaveBeenCalledWith({ userId: 1 })
   })
 
   test('useEvent is an alias for emit', () => {
     const handler = mock(() => {})
     listen('user:logged-out', handler)
-    useEvent('user:logged-out', { userId: 1 })
+    useEvent('user:logged-out', { id: 1 })
     expect(handler).toHaveBeenCalledWith({ userId: 1 })
   })
 
@@ -95,7 +95,7 @@ describe('@stacksjs/events', () => {
     const handler = mock(() => {})
     listen('user:password-changed', handler)
     off('user:password-changed', handler)
-    dispatch('user:password-changed', { userId: 1 })
+    dispatch('user:password-changed', { id: 1 })
     expect(handler).not.toHaveBeenCalled()
   })
 
@@ -109,7 +109,6 @@ describe('@stacksjs/events', () => {
     const userModel: Partial<UserModel> = { id: 1, name: 'John Doe' }
 
     dispatch('user:registered', { name: 'John Doe' })
-    dispatch('user:updated', userModel)
 
     expect(registeredHandler).toHaveBeenCalledWith({ name: 'John Doe' })
     expect(updatedHandler).toHaveBeenCalledWith(userModel)

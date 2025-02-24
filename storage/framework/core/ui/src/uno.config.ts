@@ -1,3 +1,4 @@
+import type { UserConfig as UnoConfig } from 'unocss'
 import { presetForms } from '@julr/unocss-preset-forms'
 import { ui } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
@@ -12,7 +13,7 @@ import {
   transformerCompileClass,
   transformerDirectives,
   transformerVariantGroup,
-  type UserConfig as UnoConfig,
+
 } from 'unocss'
 import { presetHeadlessUi } from 'unocss-preset-primitives'
 

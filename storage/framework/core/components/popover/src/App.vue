@@ -3,6 +3,7 @@ import Footer from './Footer.vue'
 import Hero from './Hero.vue'
 import Installation from './Installation.vue'
 import Styling from './Styling.vue'
+import PopoverDemo from './PopoverDemo.vue'
 import { useSEOHeader } from './composables/useSEOHeader'
 
 useSEOHeader()
@@ -21,6 +22,7 @@ useSEOHeader()
         <Installation />
         <Usage />
         <Styling />
+        <PopoverDemo />
       </main>
       <Footer />
     </div>

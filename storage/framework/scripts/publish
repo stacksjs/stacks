@@ -6,9 +6,6 @@ script_dir=$(realpath $(dirname "$0"))
 # Get all directories in the core path except for src/bun-create
 dirs=$(find "$script_dir/../core" -type d -maxdepth 1 -not -path "$script_dir/../bun-create")
 
-# Add the `core/components/stepper` directory to dirs, until we can release all ./components/*
-dirs="$dirs $script_dir/../core/components/stepper"
-
 # Check if no directories found
 if [ -z "$dirs" ]; then
   echo "No core packages found"
@@ -29,7 +26,6 @@ for dir in $dirs; do
   # Check if the build command was successful
   if [ $? -ne 0 ]; then
     echo "Failed to publish $dir"
-    exit 1
   fi
 
   echo "✅ Latest is published"

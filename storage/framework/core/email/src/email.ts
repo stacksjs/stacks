@@ -1,80 +1,44 @@
-// import { SES } from '@aws-sdk/client-ses'
-// import { log } from '@stacksjs/logging'
-// import type { RenderOptions } from './template'
-// import { template } from './template'
-// import type { Message, SendEmailParams } from './types'
+import type { EmailDriver, EmailMessage, EmailResult } from '@stacksjs/types'
+import { config } from '@stacksjs/config'
+import { MailgunDriver } from './drivers/mailgun'
+import { MailtrapDriver } from './drivers/mailtrap'
+import { SendGridDriver } from './drivers/sendgrid'
+import { SESDriver } from './drivers/ses'
 
-// export class Email {
-//   private client: SES
+class Mail {
+  private drivers: Map<string, EmailDriver> = new Map()
+  private defaultDriver: string
 
-//   constructor(private message: Message) {
-//     this.client = new SES({ region: 'us-east-1' })
-//     this.message = message
-//   }
+  constructor(options: { defaultDriver?: string } = {}) {
+    this.defaultDriver = options.defaultDriver || config.email.default || 'ses'
+    this.registerDefaultDrivers()
+  }
 
-//   public async send(options?: RenderOptions): Promise<{ message: string }> {
-//     log.info('Sending email...')
-//     const path = this.message.template
+  private registerDefaultDrivers(): void {
+    this.drivers.set('ses', new SESDriver())
+    this.drivers.set('sendgrid', new SendGridDriver())
+    this.drivers.set('mailgun', new MailgunDriver())
+    this.drivers.set('mailtrap', new MailtrapDriver())
+  }
 
-//     try {
-//       const templ = await template(path, options)
+  public async send(message: EmailMessage): Promise<EmailResult> {
+    const driver = this.drivers.get(this.defaultDriver)
 
-//       const params: SendEmailParams = {
-//         Source: this.message.from?.address || '',
+    if (!driver)
+      throw new Error(`Email driver '${this.defaultDriver}' is not available`)
 
-//         Destination: {
-//           ToAddresses: [this.message.to],
-//         },
+    return driver.send(message)
+  }
 
-//         Message: {
-//           Body: {
-//             Html: {
-//               Charset: 'UTF-8',
-//               Data: templ.html,
-//             },
-//           },
+  // Optional method to switch drivers on the fly
+  public use(driver: string): this {
+    if (!this.drivers.has(driver)) {
+      throw new Error(`Email driver '${driver}' is not available`)
+    }
+    this.defaultDriver = driver
+    return this
+  }
+}
 
-//           Subject: {
-//             Charset: 'UTF-8',
-//             Data: this.message.subject,
-//           },
-//         },
-//       }
-
-//       await this.client.sendEmail(params)
-
-//       let returnMsg: { message: string } = { message: 'Email sent' }
-
-//       if (this.message.handle) returnMsg = await this.message.handle()
-
-//       await this.onSuccess()
-
-//       return returnMsg
-//     } catch (error) {
-//       return this.onError(error as Error)
-//     }
-//   }
-
-//   public async onError(error: Error) {
-//     log.error(error)
-
-//     if (!this.message.onError) return
-
-//     return await this.message.onError(error)
-//   }
-
-//   // public onSuccess() {
-//   //   try {
-//   //     if (!this.message.onSuccess) return
-
-//   //     this.message.onSuccess()
-//   //   } catch (error) {
-//   //     return this.onError(error as Error)
-//   //   }
-//   // }
-// }
-
-// export type { Message }
-
-// // export const email = (options: Message) => new Email(options)
-// export default Email
+// Export a singleton instance
+export const mail: Mail = new Mail()

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/auths",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Opinionated auth components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -35,10 +35,10 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@microsoft/api-extractor": "^7.49.2",
+    "@microsoft/api-extractor": "^7.50.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
-    "unplugin-icons": "^22.0.0"
+    "unplugin-icons": "^22.1.0"
   }
 }

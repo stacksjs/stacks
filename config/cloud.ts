@@ -12,41 +12,41 @@ import security from './security'
 export default {
   sites: {
     root: 'stacksjs.org',
-    path: 'dist',
+    path: '../storage/framework/views/web',
+
+    docs: {
+      domain: 'docs.stacksjs.org',
+      path: '../storage/framework/docs/dist',
+    },
 
     modals: {
       domain: 'modals.stacksjs.org',
-      path: 'dist',
+      path: '../storage/framework/core/components/modals',
     },
 
     stepper: {
       domain: 'stepper.stacksjs.org',
-      path: 'dist',
+      path: '../storage/framework/core/components/stepper',
     },
 
     notification: {
       domain: 'notification.stacksjs.org',
-      path: 'dist',
-    },
-
-    docs: {
-      domain: 'docs.stacksjs.org',
-      path: 'dist',
+      path: '../storage/framework/core/components/notification',
     },
 
     tlsx: {
       domain: 'tlsx.stacksjs.org',
-      path: 'dist',
+      path: '../../tlsx/docs/dist',
     },
 
     dtsx: {
       domain: 'dtsx.stacksjs.org',
-      path: 'dist',
+      path: '../../dtsx/docs/dist',
     },
 
-    spreadsheet: {
-      domain: 'spreadsheet.stacksjs.org',
-      path: 'dist',
+    spreadsheets: {
+      domain: 'spreadsheets.stacksjs.org',
+      path: '../../spreadsheets/docs/dist',
     },
   },
 

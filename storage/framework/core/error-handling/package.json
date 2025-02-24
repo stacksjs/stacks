@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/error-handling",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Type safe error handling.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -40,6 +40,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "neverthrow": "^8.1.1"
+    "neverthrow": "^8.2.0"
   }
 }

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import {
+  TransitionRoot,
   Combobox,
   ComboboxButton,
   ComboboxInput,
@@ -15,32 +16,37 @@ interface Person {
   name: string
 }
 
-const people = ref<Person[]>([
-  { id: 1, name: 'Wade Cooper' },
-  { id: 2, name: 'Arlene Mccoy' },
-  { id: 3, name: 'Devon Webb' },
-  { id: 4, name: 'Tom Cook' },
-  { id: 5, name: 'Tanya Fox' },
-  { id: 6, name: 'Hellen Schmidt' },
-])
+const listItems = ref<string>(`Chris Breuer
+Avery Hill
+Glenn Michael
+Michael Vincent
+Blake Ayer
+`)
 
 const selected = ref<Person | null>(null)
 const query = ref<string>('')
-const filteredPeople = computed(() =>
-  query.value === ''
-    ? people
-    : people.value.filter((person: Person) =>
-        person.name
-          .toLowerCase()
-          .replace(/\s+/g, '')
-          .includes(query.value.toLowerCase().replace(/\s+/g, '')),
-      ),
-) as Ref<Person[]>
+const items = computed(() => {
+
+  return listItems.value
+        .trim()
+        .split('\n')
+        .filter((item: string) =>
+          item.toLowerCase().includes(query.value.toLowerCase())
+        )
+}) as Ref<string[]>
 </script>
 
 <template>
-  <div class="flex gap-2">
-    <div class="relative z-20 mr-auto inline-block flex text-left">
+  <div class="flex flex-col gap-2">
+    <div class="flex text-left">
+      <label for="comment" class="block text-lg font-medium text-gray-900">Enter your list:</label>
+    </div>
+    <div class="mt-2">
+      <div class="flex flex-col">
+        <textarea rows="4"  v-model='listItems' class="block flex w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"></textarea>
+      </div>
+    </div>
+    <div class="flex z-20 mr-auto flex text-left">
       <Combobox v-model="selected">
         <div class="relative mt-1">
           <div
@@ -68,18 +74,18 @@ const filteredPeople = computed(() =>
               class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm focus:outline-none"
             >
               <div
-                v-if="filteredPeople.length === 0 && query !== ''"
+                v-if="items.length === 0 && query !== ''"
                 class="relative cursor-default select-none px-4 py-2 text-gray-700"
               >
                 Nothing found.
               </div>
 
               <ComboboxOption
-                v-for="person in filteredPeople"
-                :key="person.id"
+                v-for="(item, index) in items"
+                :key="index"
                 v-slot="{ selected, active }"
                 as="template"
-                :value="person"
+                :value="item"
               >
                 <li
                   class="relative cursor-default select-none py-2 pl-10 pr-4"
@@ -92,7 +98,7 @@ const filteredPeople = computed(() =>
                     class="block truncate"
                     :class="{ 'font-medium': selected, 'font-normal': !selected }"
                   >
-                    {{ person.name }}
+                    {{ item }}
                   </span>
                   <span
                     v-if="selected"

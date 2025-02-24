@@ -1,6 +1,236 @@
 <script lang="ts" setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
+
 useHead({
-  title: 'Dashboard - Libraries',
+  title: 'Dashboard - Releases',
+})
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        callback: (value: number) => {
+          if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
+          if (value >= 1000) return (value / 1000).toFixed(1) + 'k'
+          return value
+        }
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const,
+      align: 'end' as const,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        boxWidth: 12,
+        padding: 15,
+      },
+    },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.y !== null) {
+            const value = context.parsed.y
+            if (value >= 1000000) label += (value / 1000000).toFixed(1) + 'M'
+            else if (value >= 1000) label += (value / 1000).toFixed(1) + 'k'
+            else label += value
+          }
+          return label + ' downloads'
+        }
+      }
+    }
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+const timeRangeOptions = {
+  '7': 'Last 7 days',
+  '30': 'Last 30 days',
+  '90': 'Last 90 days',
+  '365': 'Last year'
+} as const
+
+const timeRange = ref<keyof typeof timeRangeOptions>('30')
+const isLoading = ref(false)
+
+// Helper function to format dates
+const formatDate = (daysAgo: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Generate date labels for the selected time range
+const generateDateLabels = (days: number) => {
+  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
+}
+
+interface ReleaseStats {
+  labels: string[]
+  downloads: number[]
+  releaseTimes: number[]
+}
+
+interface ReleaseStatsMap {
+  '7': ReleaseStats
+  '30': ReleaseStats
+  '90': ReleaseStats
+  '365': ReleaseStats
+}
+
+const releaseStats = ref<ReleaseStatsMap>({
+  '7': {
+    labels: generateDateLabels(7),
+    downloads: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
+    releaseTimes: [3.2, 2.8, 3.5, 2.9, 3.1, 3.4, 3.0]
+  },
+  '30': {
+    labels: generateDateLabels(30),
+    downloads: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20000) + 10000),
+    releaseTimes: Array.from({ length: 30 }, () => Math.random() * 2 + 2)
+  },
+  '90': {
+    labels: generateDateLabels(90),
+    downloads: Array.from({ length: 90 }, () => Math.floor(Math.random() * 20000) + 10000),
+    releaseTimes: Array.from({ length: 90 }, () => Math.random() * 2 + 2)
+  },
+  '365': {
+    labels: generateDateLabels(365),
+    downloads: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
+    releaseTimes: Array.from({ length: 365 }, () => Math.random() * 2 + 2)
+  }
+})
+
+// Function to fetch release data from API
+const fetchReleaseData = async (days: keyof typeof timeRangeOptions) => {
+  isLoading.value = true
+  try {
+    // Here you would make your API call
+    // const response = await fetch(`/api/releases/stats?days=${days}`)
+    // const data = await response.json()
+    // releaseStats.value[days] = data
+
+    // For now we're using the mock data already set in releaseStats
+    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+  } catch (error) {
+    console.error('Error fetching release data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Watch for time range changes
+watch(timeRange, async (newRange) => {
+  await fetchReleaseData(newRange)
+})
+
+// Chart data for downloads
+const downloadsData = computed(() => ({
+  labels: releaseStats.value[timeRange.value].labels,
+  datasets: [{
+    label: 'Downloads',
+    data: releaseStats.value[timeRange.value].downloads,
+    borderColor: 'rgb(59, 130, 246)',
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    fill: true,
+  }]
+}))
+
+// Chart data for release times
+const releaseTimeData = computed(() => ({
+  labels: releaseStats.value[timeRange.value].labels,
+  datasets: [{
+    label: 'Release Time (minutes)',
+    data: releaseStats.value[timeRange.value].releaseTimes,
+    borderColor: 'rgb(234, 179, 8)',
+    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+    fill: true,
+  }]
+}))
+
+// Release time chart options (customize y-axis label)
+const releaseTimeOptions = {
+  ...chartOptions,
+  plugins: {
+    ...chartOptions.plugins,
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.y !== null) {
+            label += context.parsed.y.toFixed(1) + ' mins'
+          }
+          return label
+        }
+      }
+    }
+  }
+}
+
+// Initial data fetch
+onMounted(async () => {
+  await fetchReleaseData(timeRange.value)
 })
 </script>
 
@@ -8,9 +238,20 @@ useHead({
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
-        <h3 class="text-base text-gray-900 font-semibold leading-6">
-          Last 30 days
-        </h3>
+        <div class="flex items-center justify-between">
+          <h3 class="text-base text-gray-900 font-semibold leading-6">
+            {{ timeRangeOptions[timeRange] }}
+          </h3>
+          <select
+            v-model="timeRange"
+            class="text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="365">Last year</option>
+          </select>
+        </div>
 
         <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
@@ -92,6 +333,43 @@ useHead({
             </dd>
           </div>
         </dl>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="mb-8 px-4 lg:px-8 sm:px-6">
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
+        <!-- Downloads Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Download Activity</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Release download trends over time</p>
+            </div>
+            <div class="h-[300px] relative">
+              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+              <Line :data="downloadsData" :options="chartOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Release Time Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Release Times</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time to complete releases</p>
+            </div>
+            <div class="h-[300px] relative">
+              <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+              <Line :data="releaseTimeData" :options="releaseTimeOptions" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

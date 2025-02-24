@@ -1,8 +1,8 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscribersTable {
@@ -78,6 +78,51 @@ export class SubscriberModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: SubscriberJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: SubscriberJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }
@@ -102,7 +147,7 @@ export class SubscriberModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriberType): Partial<SubscriberType> {
+  getOriginal(column?: keyof SubscriberJsonResponse): Partial<SubscriberJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -168,6 +213,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
@@ -198,8 +244,10 @@ export class SubscriberModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -207,9 +255,13 @@ export class SubscriberModel {
   }
 
   static async first(): Promise<SubscriberModel | undefined> {
+    const instance = new SubscriberModel(null)
+
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -222,8 +274,10 @@ export class SubscriberModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No SubscriberModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -241,7 +295,11 @@ export class SubscriberModel {
   }
 
   static async all(): Promise<SubscriberModel[]> {
+    const instance = new SubscriberModel(null)
+
     const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberType) => {
       return new SubscriberModel(model)
@@ -258,6 +316,7 @@ export class SubscriberModel {
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new SubscriberModel(model as SubscriberType)
@@ -275,7 +334,7 @@ export class SubscriberModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<SubscriberModel[]> {
+  async applyFindMany(ids: number[]): Promise<SubscriberModel[]> {
     let query = DB.instance.selectFrom('subscribers').where('id', 'in', ids)
 
     const instance = new SubscriberModel(null)
@@ -284,9 +343,20 @@ export class SubscriberModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: SubscriberModel) => instance.parseResult(new SubscriberModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<SubscriberModel[]> {
+    const instance = new SubscriberModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<SubscriberModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): SubscriberModel {
@@ -470,6 +540,7 @@ export class SubscriberModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: SubscriberModel) => {
@@ -527,7 +598,7 @@ export class SubscriberModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriberModel>) => void,
   ): SubscriberModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -552,11 +623,11 @@ export class SubscriberModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -570,7 +641,7 @@ export class SubscriberModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -589,14 +660,14 @@ export class SubscriberModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriberModel>) => void,
   ): SubscriberModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof SubscriberModel>) => void,
   ): SubscriberModel {
     const instance = new SubscriberModel(null)
 
@@ -624,10 +695,10 @@ export class SubscriberModel {
   static doesntHave(relation: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<SubscribersTable>) => void): SubscriberModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -635,64 +706,61 @@ export class SubscriberModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.subscriber_id`, '=', 'subscribers.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): SubscriberModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<SubscribersTable>) => void): SubscriberModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<SubscribersTable>) => void,
   ): SubscriberModel {
     const instance = new SubscriberModel(null)
 
@@ -740,25 +808,32 @@ export class SubscriberModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
-
+  async applyCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscriber).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriber
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('subscribers')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
-
-    if (model)
-      dispatch('subscriber:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
 
     return model
+  }
+
+  async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
+    return await this.applyCreate(newSubscriber)
+  }
+
+  static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
+    const instance = new SubscriberModel(null)
+
+    return await instance.applyCreate(newSubscriber)
   }
 
   static async createMany(newSubscriber: NewSubscriber[]): Promise<void> {
@@ -796,35 +871,40 @@ export class SubscriberModel {
       .execute()
   }
 
-  applyWhere(instance: SubscriberModel, column: string, ...args: any[]): SubscriberModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): SubscriberModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof SubscribersTable, ...args: [V] | [Operator, V]): SubscriberModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): SubscriberModel {
+  static where<V = string>(column: keyof SubscribersTable, ...args: [V] | [Operator, V]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): SubscriberModel {
+  whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): SubscriberModel {
+  static whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -832,7 +912,7 @@ export class SubscriberModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): SubscriberModel {
+  applyWhereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -843,11 +923,11 @@ export class SubscriberModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): SubscriberModel {
+  whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): SubscriberModel {
+  static whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -918,11 +998,57 @@ export class SubscriberModel {
     return instance
   }
 
-  whereNull(column: string): SubscriberModel {
-    return SubscriberModel.whereNull(column)
+  whereNotNull(column: keyof SubscribersTable): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): SubscriberModel {
+  static whereNotNull(column: keyof SubscribersTable): SubscriberModel {
+    const instance = new SubscriberModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof SubscribersTable): SubscriberModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -930,6 +1056,10 @@ export class SubscriberModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -944,23 +1074,27 @@ export class SubscriberModel {
     return instance
   }
 
-  whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
-    return SubscriberModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof SubscribersTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+  whereIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof SubscriberType, range: [any, any]): SubscriberModel {
+  applyWhereBetween<V>(column: keyof SubscribersTable, range: [V, V]): SubscriberModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -974,17 +1108,17 @@ export class SubscriberModel {
     return this
   }
 
-  whereBetween(column: keyof SubscriberType, range: [any, any]): SubscriberModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof SubscribersTable, range: [V, V]): SubscriberModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof SubscriberType, range: [any, any]): SubscriberModel {
+  static whereBetween<V = number>(column: keyof SubscribersTable, range: [V, V]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof SubscriberType, value: string): SubscriberModel {
+  applyWhereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -994,17 +1128,17 @@ export class SubscriberModel {
     return this
   }
 
-  whereLike(column: keyof SubscriberType, value: string): SubscriberModel {
+  whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof SubscriberType, value: string): SubscriberModel {
+  static whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+  applyWhereNotIn<V>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1014,14 +1148,14 @@ export class SubscriberModel {
     return this
   }
 
-  whereNotIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof SubscriberType, values: any[]): SubscriberModel {
+  static whereNotIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
     const instance = new SubscriberModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1038,6 +1172,8 @@ export class SubscriberModel {
   }
 
   static async latest(): Promise<SubscriberType | undefined> {
+    const instance = new SubscriberModel(null)
+
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1046,12 +1182,16 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new SubscriberModel(model as SubscriberType)
 
     return data
   }
 
   static async oldest(): Promise<SubscriberType | undefined> {
+    const instance = new SubscriberModel(null)
+
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1059,6 +1199,8 @@ export class SubscriberModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -1069,7 +1211,8 @@ export class SubscriberModel {
     condition: Partial<SubscriberType>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
-    // Get the key and value from the condition object
+    const instance = new SubscriberModel(null)
+
     const key = Object.keys(condition)[0] as keyof SubscriberType
 
     if (!key) {
@@ -1085,10 +1228,13 @@ export class SubscriberModel {
       .executeTakeFirst()
 
     if (existingSubscriber) {
+      instance.mapCustomGetters(existingSubscriber)
+      await instance.loadRelations(existingSubscriber)
+
       return new SubscriberModel(existingSubscriber as SubscriberType)
     }
     else {
-      return await this.create(newSubscriber)
+      return await instance.create(newSubscriber)
     }
   }
 
@@ -1135,7 +1281,7 @@ export class SubscriberModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newSubscriber)
+      return await instance.create(newSubscriber)
     }
   }
 
@@ -1198,8 +1344,10 @@ export class SubscriberModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new SubscriberModel(model as SubscriberType)
 
@@ -1217,13 +1365,13 @@ export class SubscriberModel {
     return data
   }
 
-  orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+  orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof SubscriberType, order: 'asc' | 'desc'): SubscriberModel {
+  static orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1231,13 +1379,13 @@ export class SubscriberModel {
     return instance
   }
 
-  groupBy(column: keyof SubscriberType): SubscriberModel {
+  groupBy(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof SubscriberType): SubscriberModel {
+  static groupBy(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1245,13 +1393,13 @@ export class SubscriberModel {
     return instance
   }
 
-  having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
+  having<V = string>(column: keyof SubscribersTable, operator: Operator, value: V): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof SubscriberType, operator: string, value: any): SubscriberModel {
+  static having<V = string>(column: keyof SubscribersTable, operator: Operator, value: V): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1273,13 +1421,13 @@ export class SubscriberModel {
     return instance
   }
 
-  orderByDesc(column: keyof SubscriberType): SubscriberModel {
+  orderByDesc(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof SubscriberType): SubscriberModel {
+  static orderByDesc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1287,13 +1435,13 @@ export class SubscriberModel {
     return instance
   }
 
-  orderByAsc(column: keyof SubscriberType): SubscriberModel {
+  orderByAsc(column: keyof SubscribersTable): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof SubscriberType): SubscriberModel {
+  static orderByAsc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1307,6 +1455,8 @@ export class SubscriberModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewSubscriber
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('subscribers')
       .set(filteredValues)
@@ -1329,6 +1479,8 @@ export class SubscriberModel {
       this.updateFromQuery.set(subscriber).execute()
     }
 
+    await this.mapCustomSetters(subscriber)
+
     await DB.instance.updateTable('subscribers')
       .set(subscriber)
       .where('id', '=', this.id)
@@ -1349,16 +1501,10 @@ export class SubscriberModel {
     if (!this)
       throw new HttpError(500, 'Subscriber data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewSubscriber
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('subscribers')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1392,7 +1538,7 @@ export class SubscriberModel {
   }
 
   // Method to delete (soft delete) the subscriber instance
-  async delete(): Promise<any> {
+  async delete(): Promise<SubscribersTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

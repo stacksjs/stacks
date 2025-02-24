@@ -1,8 +1,8 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
@@ -78,6 +78,51 @@ export class ReleaseModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ReleaseJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: ReleaseJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }
@@ -102,7 +147,7 @@ export class ReleaseModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ReleaseType): Partial<ReleaseType> {
+  getOriginal(column?: keyof ReleaseJsonResponse): Partial<ReleaseJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -168,6 +213,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
@@ -198,8 +244,10 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -207,9 +255,13 @@ export class ReleaseModel {
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -222,8 +274,10 @@ export class ReleaseModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -241,7 +295,11 @@ export class ReleaseModel {
   }
 
   static async all(): Promise<ReleaseModel[]> {
+    const instance = new ReleaseModel(null)
+
     const models = await DB.instance.selectFrom('releases').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseType) => {
       return new ReleaseModel(model)
@@ -258,6 +316,7 @@ export class ReleaseModel {
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ReleaseModel(model as ReleaseType)
@@ -275,7 +334,7 @@ export class ReleaseModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
+  async applyFindMany(ids: number[]): Promise<ReleaseModel[]> {
     let query = DB.instance.selectFrom('releases').where('id', 'in', ids)
 
     const instance = new ReleaseModel(null)
@@ -284,9 +343,20 @@ export class ReleaseModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ReleaseModel[]> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ReleaseModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ReleaseModel {
@@ -470,6 +540,7 @@ export class ReleaseModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ReleaseModel) => {
@@ -527,7 +598,7 @@ export class ReleaseModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -552,11 +623,11 @@ export class ReleaseModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -570,7 +641,7 @@ export class ReleaseModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -589,14 +660,14 @@ export class ReleaseModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -624,10 +695,10 @@ export class ReleaseModel {
   static doesntHave(relation: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ReleasesTable>) => void): ReleaseModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -635,64 +706,61 @@ export class ReleaseModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.release_id`, '=', 'releases.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ReleaseModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ReleasesTable>) => void): ReleaseModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ReleasesTable>) => void,
   ): ReleaseModel {
     const instance = new ReleaseModel(null)
 
@@ -740,25 +808,32 @@ export class ReleaseModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
-
+  async applyCreate(newRelease: NewRelease): Promise<ReleaseModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newRelease).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewRelease
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('releases')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
-
-    if (model)
-      dispatch('release:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
 
     return model
+  }
+
+  async create(newRelease: NewRelease): Promise<ReleaseModel> {
+    return await this.applyCreate(newRelease)
+  }
+
+  static async create(newRelease: NewRelease): Promise<ReleaseModel> {
+    const instance = new ReleaseModel(null)
+
+    return await instance.applyCreate(newRelease)
   }
 
   static async createMany(newRelease: NewRelease[]): Promise<void> {
@@ -796,35 +871,40 @@ export class ReleaseModel {
       .execute()
   }
 
-  applyWhere(instance: ReleaseModel, column: string, ...args: any[]): ReleaseModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): ReleaseModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof ReleasesTable, ...args: [V] | [Operator, V]): ReleaseModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ReleaseModel {
+  static where<V = string>(column: keyof ReleasesTable, ...args: [V] | [Operator, V]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ReleaseModel {
+  whereColumn(first: keyof ReleasesTable, operator: Operator, second: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ReleaseModel {
+  static whereColumn(first: keyof ReleasesTable, operator: Operator, second: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -832,7 +912,7 @@ export class ReleaseModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ReleaseModel {
+  applyWhereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -843,11 +923,11 @@ export class ReleaseModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ReleaseModel {
+  whereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ReleaseModel {
+  static whereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -918,11 +998,57 @@ export class ReleaseModel {
     return instance
   }
 
-  whereNull(column: string): ReleaseModel {
-    return ReleaseModel.whereNull(column)
+  whereNotNull(column: keyof ReleasesTable): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): ReleaseModel {
+  static whereNotNull(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof ReleasesTable): ReleaseModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -930,6 +1056,10 @@ export class ReleaseModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -944,23 +1074,27 @@ export class ReleaseModel {
     return instance
   }
 
-  whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
-    return ReleaseModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof ReleasesTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+  applyWhereBetween<V>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -974,17 +1108,17 @@ export class ReleaseModel {
     return this
   }
 
-  whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ReleaseType, range: [any, any]): ReleaseModel {
+  static whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  applyWhereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -994,17 +1128,17 @@ export class ReleaseModel {
     return this
   }
 
-  whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ReleaseType, value: string): ReleaseModel {
+  static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  applyWhereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1014,14 +1148,14 @@ export class ReleaseModel {
     return this
   }
 
-  whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof ReleaseType, values: any[]): ReleaseModel {
+  static whereNotIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     const instance = new ReleaseModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1038,6 +1172,8 @@ export class ReleaseModel {
   }
 
   static async latest(): Promise<ReleaseType | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1046,12 +1182,16 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new ReleaseModel(model as ReleaseType)
 
     return data
   }
 
   static async oldest(): Promise<ReleaseType | undefined> {
+    const instance = new ReleaseModel(null)
+
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1059,6 +1199,8 @@ export class ReleaseModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1069,7 +1211,8 @@ export class ReleaseModel {
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
-    // Get the key and value from the condition object
+    const instance = new ReleaseModel(null)
+
     const key = Object.keys(condition)[0] as keyof ReleaseType
 
     if (!key) {
@@ -1085,10 +1228,13 @@ export class ReleaseModel {
       .executeTakeFirst()
 
     if (existingRelease) {
+      instance.mapCustomGetters(existingRelease)
+      await instance.loadRelations(existingRelease)
+
       return new ReleaseModel(existingRelease as ReleaseType)
     }
     else {
-      return await this.create(newRelease)
+      return await instance.create(newRelease)
     }
   }
 
@@ -1135,7 +1281,7 @@ export class ReleaseModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newRelease)
+      return await instance.create(newRelease)
     }
   }
 
@@ -1198,8 +1344,10 @@ export class ReleaseModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ReleaseModel(model as ReleaseType)
 
@@ -1217,13 +1365,13 @@ export class ReleaseModel {
     return data
   }
 
-  orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+  orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ReleaseType, order: 'asc' | 'desc'): ReleaseModel {
+  static orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1231,13 +1379,13 @@ export class ReleaseModel {
     return instance
   }
 
-  groupBy(column: keyof ReleaseType): ReleaseModel {
+  groupBy(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ReleaseType): ReleaseModel {
+  static groupBy(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1245,13 +1393,13 @@ export class ReleaseModel {
     return instance
   }
 
-  having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+  having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ReleaseType, operator: string, value: any): ReleaseModel {
+  static having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1273,13 +1421,13 @@ export class ReleaseModel {
     return instance
   }
 
-  orderByDesc(column: keyof ReleaseType): ReleaseModel {
+  orderByDesc(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ReleaseType): ReleaseModel {
+  static orderByDesc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1287,13 +1435,13 @@ export class ReleaseModel {
     return instance
   }
 
-  orderByAsc(column: keyof ReleaseType): ReleaseModel {
+  orderByAsc(column: keyof ReleasesTable): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ReleaseType): ReleaseModel {
+  static orderByAsc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1307,6 +1455,8 @@ export class ReleaseModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewRelease
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('releases')
       .set(filteredValues)
@@ -1329,6 +1479,8 @@ export class ReleaseModel {
       this.updateFromQuery.set(release).execute()
     }
 
+    await this.mapCustomSetters(release)
+
     await DB.instance.updateTable('releases')
       .set(release)
       .where('id', '=', this.id)
@@ -1349,16 +1501,10 @@ export class ReleaseModel {
     if (!this)
       throw new HttpError(500, 'Release data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewRelease
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('releases')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1392,7 +1538,7 @@ export class ReleaseModel {
   }
 
   // Method to delete (soft delete) the release instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ReleasesTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

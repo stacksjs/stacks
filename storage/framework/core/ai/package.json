@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ai",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Stacks Artificial Intelligence.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -42,8 +42,8 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-bedrock-runtime": "^3.741.0",
-    "@aws-sdk/credential-providers": "^3.741.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.751.0",
+    "@aws-sdk/credential-providers": "^3.750.0",
     "@stacksjs/development": "workspace:*",
     "aws-sdk-client-mock": "^4.1.0"
   }

@@ -1,9 +1,13 @@
 import type {
   Attributes,
-  BaseRelation,
+  AttributesElements,
+  BaseBelongsToMany,
+  BaseHasOneThrough,
   FieldArrayElement,
   Model,
   ModelElement,
+  ModelNames,
+  Relation,
   RelationConfig,
   TableNames,
 } from '@stacksjs/types'
@@ -59,71 +63,208 @@ export function hasRelations(obj: any, key: string): boolean {
 }
 
 export async function getRelations(model: Model, modelName: string): Promise<RelationConfig[]> {
-  const relationsArray = ['hasOne', 'belongsTo', 'hasMany', 'belongsToMany', 'hasOneThrough']
   const relationships = []
 
-  for (const relation of relationsArray) {
-    if (hasRelations(model, relation)) {
-      for (const relationInstance of model[relation as keyof Model] as BaseRelation) {
-        let relationModel = relationInstance.model
-        let modelRelation: Model
-        let modelPath: string
-        if (isString(relationInstance)) {
-          relationModel = relationInstance
-        }
+  if (model.hasOne) {
+    for (const relationInstance of model.hasOne) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasOne'))
+    }
+  }
 
-        const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-        const userModelPath = path.userModelsPath(`${modelName}.ts`)
-        const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-        const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  if (model.hasMany) {
+    for (const relationInstance of model.hasMany) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'hasMany'))
+    }
+  }
 
-        if (fs.existsSync(modelRelationPath))
-          modelRelation = (await import(modelRelationPath)).default as Model
-        else
-          modelRelation = (await import(coreModelRelationPath)).default as Model
+  if (model.belongsTo) {
+    for (const relationInstance of model.belongsTo) {
+      relationships.push(await processHasOneAndMany(relationInstance, model, modelName, 'belongsTo'))
+    }
+  }
 
-        if (fs.existsSync(userModelPath))
-          modelPath = userModelPath
-        else
-          modelPath = coreModelPath
+  if (model.hasOneThrough) {
+    for (const relationInstance of model.hasOneThrough) {
+      relationships.push(await processHasThrough(relationInstance, model, modelName, 'hasOneThrough'))
+    }
+  }
 
-        const modelRelationTable = getTableName(modelRelation, modelRelationPath)
-        const table = getTableName(model, modelPath)
-        const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
-        const formattedModelName = snakeCase(modelName)
-
-        const relationshipData: RelationConfig = {
-          relationship: relation,
-          model: relationModel,
-          table: modelRelationTable as TableNames,
-          relationTable: table as TableNames,
-          foreignKey: relationInstance.foreignKey || `${formattedModelName}_id`,
-          modelKey: `${modelRelationName}_id`,
-          relationName: relationInstance.relationName || '',
-          relationModel: modelName,
-          throughModel: relationInstance.through || '',
-          throughForeignKey: relationInstance.throughForeignKey || '',
-          pivotForeign: relationInstance.foreignKey || `${formattedModelName}_id`,
-          pivotKey: `${modelRelationName}_id`,
-          pivotTable:
-            relationInstance?.pivotTable
-            || getPivotTableName(plural(formattedModelName), plural(modelRelation.table || '')),
-        }
-
-        if (['belongsToMany', 'belongsTo'].includes(relation))
-          relationshipData.foreignKey = ''
-
-        if (['belongsToMany'].includes(relation)) {
-          relationshipData.pivotForeign = relationInstance.foreignKey || `${formattedModelName}_id`
-          relationshipData.pivotKey = `${modelRelationName}_id`
-        }
-
-        relationships.push(relationshipData)
-      }
+  if (model.belongsToMany) {
+    for (const relationInstance of model.belongsToMany) {
+      relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany'))
     }
   }
 
   return relationships
+}
+
+async function processHasThrough(relationInstance: ModelNames | BaseHasOneThrough<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+  let throughModel = ''
+  let throughForeignKey = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+    throughModel = relationInstance.through
+    throughForeignKey = relationInstance.throughForeignKey || ''
+  }
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel,
+    throughForeignKey,
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsToMany<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let pivotTable = ''
+  let pivotForeign = ''
+
+  const formattedModelName = snakeCase(modelName)
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    pivotTable = relationInstance.pivotTable || ''
+    pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
+  }
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: '',
+    modelKey: `${modelRelationName}_id`,
+    relationName: '',
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: pivotTable as TableNames,
+  }
+
+  return relationshipData
+}
+
+async function processHasOneAndMany(relationInstance: ModelNames | Relation<ModelNames>, model: Model, modelName: string, relation: string) {
+  let relationModel = ''
+  let modelRelation: Model
+  let modelPath: string
+  let relationName = ''
+
+  if (isString(relationInstance)) {
+    relationModel = relationInstance
+  }
+  else {
+    relationModel = relationInstance.model
+    relationName = relationInstance.relationName || ''
+  }
+
+  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
+  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
+  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+
+  if (fs.existsSync(modelRelationPath))
+    modelRelation = (await import(modelRelationPath)).default as Model
+  else
+    modelRelation = (await import(coreModelRelationPath)).default as Model
+
+  if (fs.existsSync(userModelPath))
+    modelPath = userModelPath
+  else
+    modelPath = coreModelPath
+
+  const modelRelationTable = getTableName(modelRelation, modelRelationPath)
+  const table = getTableName(model, modelPath)
+  const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
+  const formattedModelName = snakeCase(modelName)
+
+  const relationshipData: RelationConfig = {
+    relationship: relation,
+    model: relationModel,
+    table: modelRelationTable as TableNames,
+    relationTable: table as TableNames,
+    foreignKey: `${formattedModelName}_id`,
+    modelKey: `${modelRelationName}_id`,
+    relationName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: `${formattedModelName}_id`,
+    pivotKey: `${modelRelationName}_id`,
+    pivotTable: table as TableNames,
+  }
+
+  if (relation === 'belongsTo')
+    relationshipData.foreignKey = ''
+
+  return relationshipData
 }
 
 export function getRelationType(relation: string): string {
@@ -235,7 +376,7 @@ export async function fetchOtherModelRelations(modelName?: string): Promise<Rela
   return modelRelations
 }
 
-export function getHiddenAttributes(attributes: Attributes | undefined): string[] {
+export function getHiddenAttributes(attributes: AttributesElements | undefined): string[] {
   if (attributes === undefined)
     return []
 
@@ -358,10 +499,84 @@ export async function writeTableNames(): Promise<void> {
   await fs.promises.writeFile(typeFilePath, fileString, 'utf8')
 }
 
+export async function writeModelAttributes(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  let fieldString = `export interface Attributes { \n`
+  const attributesTypeFile = path.frameworkPath('types/attributes.ts')
+
+  const processedFields = new Set<string>()
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+    const modeFileElement = modelFiles[i] as string
+
+    const attributes = await extractFields(model, modeFileElement)
+
+    for (const attribute of attributes) {
+      const fieldName = snakeCase(attribute.field)
+
+      // Skip if field already exists
+      if (processedFields.has(fieldName)) {
+        continue
+      }
+
+      const entity = mapEntity(attribute)
+
+      fieldString += ` ${fieldName}: ${entity}\n     `
+
+      // Add to processed fields
+      processedFields.add(fieldName)
+    }
+  }
+
+  fieldString += '} \n'
+
+  await fs.writeFile(attributesTypeFile, fieldString)
+}
+
+export async function writeModelEvents(): Promise<void> {
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  let eventString = ``
+  let observerString = ``
+  let observerImports = ``
+  const attributesTypeFile = Bun.file(path.frameworkPath('types/events.ts'))
+
+  for (let i = 0; i < modelFiles.length; i++) {
+    const modelPath = modelFiles[i] as string
+    const model = (await import(modelPath)).default as Model
+
+    const modelName = getModelName(model, modelPath)
+
+    const formattedModelName = modelName.toLocaleLowerCase()
+
+    const observer = model?.traits?.observe
+
+    if (typeof observer === 'boolean') {
+      if (observer) {
+        observerString += `'${formattedModelName}:created': ${modelName}Model\n`
+        observerString += `'${formattedModelName}:updated': ${modelName}Model\n`
+        observerString += `'${formattedModelName}:deleted': ${modelName}Model\n`
+
+        observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'`
+      }
+    }
+  }
+
+  eventString += `
+  ${observerImports} \n\n
+
+  export interface ModelEvents {\n 
+    ${observerString}
+  }`
+
+  const writer = attributesTypeFile.writer()
+
+  writer.write(eventString)
+}
+
 export async function writeModelRequest(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
-
-  const requestD = Bun.file(path.frameworkPath('types/requests.d.ts'))
 
   let importTypes = ``
   let importTypesString = ``
@@ -518,9 +733,9 @@ export async function writeModelRequest(): Promise<void> {
 
   typeString += `export type ModelRequest = ${importTypesString}`
 
-  const requestWrite = requestD.writer()
+  const requestD = path.frameworkPath('types/requests.d.ts')
 
-  requestWrite.write(typeString)
+  await fs.writeFile(requestD, typeString)
 }
 
 export async function writeOrmActions(apiRoute: string, modelName: string, actionPath?: string): Promise<void> {
@@ -804,8 +1019,8 @@ export async function generateApiRoutes(modelFiles: string[]): Promise<void> {
 
 export async function deleteExistingModels(modelStringFile?: string): Promise<void> {
   const typePath = path.frameworkPath(`orm/src/types.ts`)
-  if (fs.existsSync(typePath))
-    await fs.promises.unlink(typePath)
+
+  await fs.writeFile(typePath, '')
 
   if (modelStringFile) {
     const modelPath = path.frameworkPath(`orm/src/models/${modelStringFile}.ts`)
@@ -816,6 +1031,7 @@ export async function deleteExistingModels(modelStringFile?: string): Promise<vo
   }
 
   const modelPaths = globSync([path.frameworkPath(`orm/src/models/*.ts`)], { absolute: true })
+
   await Promise.all(
     modelPaths.map(async (modelPath) => {
       if (fs.existsSync(modelPath)) {
@@ -846,14 +1062,24 @@ export async function deleteExistingOrmActions(modelStringFile?: string): Promis
 
 export async function deleteExistingModelNameTypes(): Promise<void> {
   const typeFile = path.corePath('types/src/model-names.ts')
-  if (fs.existsSync(typeFile))
-    await fs.promises.unlink(typeFile)
+  await fs.writeFile(typeFile, '')
+}
+
+export async function deleteAttributeTypes(): Promise<void> {
+  const typeFile = path.frameworkPath('types/attributes.ts')
+
+  await fs.writeFile(typeFile, '')
+}
+
+export async function deleteModelEvents(): Promise<void> {
+  const eventFile = path.frameworkPath('types/events.ts')
+
+  await fs.writeFile(eventFile, '')
 }
 
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
-  if (fs.existsSync(requestD))
-    await fs.promises.unlink(requestD)
+  await fs.writeFile(requestD, '')
 
   if (modelStringFile) {
     const requestFile = path.frameworkPath(`requests/${modelStringFile}.ts`)
@@ -872,8 +1098,7 @@ export async function deleteExistingModelRequest(modelStringFile?: string): Prom
 
 export async function deleteExistingOrmRoute(): Promise<void> {
   const ormRoute = path.frameworkPath('orm/routes.ts')
-  if (fs.existsSync(ormRoute))
-    await fs.promises.unlink(ormRoute)
+  await fs.writeFile(ormRoute, '')
 }
 
 export async function generateKyselyTypes(): Promise<void> {
@@ -960,6 +1185,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '}'
 
   const file = Bun.file(path.frameworkPath('orm/src/types.ts'))
+
   const writer = file.writer()
 
   writer.write(text)
@@ -984,6 +1210,14 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Deleting old Model Name types...')
     await deleteExistingModelNameTypes()
     log.success('Deleted Model Name types')
+
+    log.info('Deleting old attribute types...')
+    await deleteAttributeTypes()
+    log.success('Deleted old attribute types')
+
+    log.info('Deleting old model events...')
+    await deleteModelEvents()
+    log.success('Deleted old model events')
 
     log.info('Deleting old Model Requests...')
     await deleteExistingModelRequest(modelStringFile)
@@ -1019,6 +1253,24 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     }
     catch (error) {
       handleError('Error while writing Model Requests', error)
+    }
+
+    try {
+      log.info('Writing Model Attributes...')
+      await writeModelAttributes()
+      log.success('Wrote Model Attributes')
+    }
+    catch (error) {
+      handleError('Error while writing Model Attributes', error)
+    }
+
+    try {
+      log.info('Writing Model Events...')
+      await writeModelEvents()
+      log.success('Wrote Model Events')
+    }
+    catch (error) {
+      handleError('Error while writing Model Events', error)
     }
 
     log.info('Generating API Routes...')

@@ -258,4 +258,5 @@ export const alias: Record<string, string> = {
   '~/views': p.viewsPath(),
   '~/views/*': p.viewsPath('*'),
   '~/*': p.projectPath('*'),
+  '@/*': p.resourcesPath('*'),
 }

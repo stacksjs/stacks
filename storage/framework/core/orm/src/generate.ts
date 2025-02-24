@@ -6,21 +6,37 @@ import type {
 import { camelCase, pascalCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { fetchOtherModelRelations, getFillableAttributes, getGuardedAttributes, getHiddenAttributes, getRelationCount, getRelations, getRelationType, mapEntity } from './utils'
 
-async function generateCustomAccessors(model: Model) {
-  let output = ''
+// const userModel = (await import(path.userModelsPath('User.ts'))).default
 
+// generateCustomAccessors(userModel)
+
+function generateCustomAccessors(model: Model): string {
+  let output = ''
   if (model.get) {
     for (const [methodName, getter] of Object.entries(model.get)) {
-      const getterStr = removeArrow(getter.toString())
-      output += `get ${methodName}${getterStr}\n`
+      const getterStr = getter.toString()
+      output += removeAttrString(`${methodName}: ${getterStr}, \n`)
     }
   }
 
   return output
 }
 
-function removeArrow(fnStr: string) {
-  return fnStr.replace('=>', '')
+function generateCustomSetters(model: Model): string {
+  let output = ''
+
+  if (model.set) {
+    for (const [methodName, getter] of Object.entries(model.set)) {
+      const getterStr = getter.toString()
+      output += removeAttrString(`${methodName}: ${getterStr}, \n`)
+    }
+  }
+
+  return output
+}
+
+function removeAttrString(getterFn: string): string {
+  return getterFn.replace('(attributes)', '()').replace('attributes', 'model')
 }
 
 function getUpvoteTableName(model: Model, tableName: string): string {
@@ -87,6 +103,7 @@ export async function generateModelString(
   let privateSoftDeletes = ''
 
   const getterOutput = await generateCustomAccessors(model)
+  const setterOutput = await generateCustomSetters(model)
 
   const relations = await getRelations(model, modelName)
 
@@ -818,6 +835,7 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
       import { DB, SubqueryBuilder } from '@stacksjs/orm'
+      import type { Operator } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
@@ -897,11 +915,58 @@ export async function generateModelString(
           this.hasSaved = false
         }
 
+        mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
+          const data = models
+              
+          if (Array.isArray(data)) {
+            data.map((model: ${modelName}JsonResponse) => {
+               
+              const customGetter = {
+                default: () => {
+                },
+
+                ${getterOutput}
+              }
+
+              for (const [key, fn] of Object.entries(customGetter)) {
+                model[key] = fn()
+              }
+
+              return model
+            })
+          } else {
+            const model = data
+
+            const customGetter = {
+              default: () => {
+              },
+
+              ${getterOutput}
+            }
+
+            for (const [key, fn] of Object.entries(customGetter)) {
+              model[key] = fn()
+            }
+          }
+        }
+
+        async mapCustomSetters(model: ${modelName}JsonResponse): Promise<void> {
+          const customSetter = {
+            default: () => {
+            },
+
+            ${setterOutput}
+          }
+
+          for (const [key, fn] of Object.entries(customSetter)) {
+              model[key] = await fn()
+          }
+        }
+
         ${getFields}
-        ${getterOutput}
         ${setFields}
         
-        getOriginal(column?: keyof ${modelName}Type): Partial<${modelName}Type> {
+        getOriginal(column?: keyof ${modelName}JsonResponse): Partial<${modelName}JsonResponse> {
           if (column) {
             return this.originalAttributes[column]
           }
@@ -967,6 +1032,7 @@ export async function generateModelString(
           if (!model)
             return undefined
 
+          this.mapCustomGetters(model)
           await this.loadRelations(model)
           
           const data = new ${modelName}Model(model as ${modelName}Type)
@@ -997,8 +1063,10 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().executeTakeFirst()
           }
 
-          if (model)
+          if (model) {
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1006,10 +1074,14 @@ export async function generateModelString(
         }
         
         static async first(): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .executeTakeFirst()
-            
+
+          instance.mapCustomGetters(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
   
           return data
@@ -1021,8 +1093,10 @@ export async function generateModelString(
           if (model === undefined)
             throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
           
-          if (model)
+          if (model) {
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -1040,7 +1114,11 @@ export async function generateModelString(
         }
   
         static async all(): Promise<${modelName}Model[]> {
+          const instance = new ${modelName}Model(null)
+
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
+
+          instance.mapCustomGetters(models)
 
           const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
             return new ${modelName}Model(model)
@@ -1059,6 +1137,7 @@ export async function generateModelString(
           
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
 
+          this.mapCustomGetters(model)
           await this.loadRelations(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
@@ -1075,8 +1154,8 @@ export async function generateModelString(
           
           return await instance.applyFindOrFail(id)
         }
-  
-        static async findMany(ids: number[]): Promise<${modelName}Model[]> {
+
+        async applyFindMany(ids: number[]): Promise<${modelName}Model[]> {
           let query = DB.instance.selectFrom('${tableName}').where('id', 'in', ids)
   
           const instance = new ${modelName}Model(null)
@@ -1087,10 +1166,22 @@ export async function generateModelString(
   
           const models = await query.execute()
 
+          instance.mapCustomGetters(models)
           await instance.loadRelations(models)
   
           return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
+  
+        static async findMany(ids: number[]): Promise<${modelName}Model[]> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.applyFindMany(ids)
+        }
+
+        async findMany(ids: number[]): Promise<${modelName}Model[]> {
+          return await this.applyFindMany(ids)
+        }
+
         skip(count: number): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.offset(count)
 
@@ -1271,6 +1362,7 @@ export async function generateModelString(
             models = await this.selectFromQuery.selectAll().execute()
           }
 
+          this.mapCustomGetters(models)
           await this.loadRelations(models)
   
           const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
@@ -1328,7 +1420,7 @@ export async function generateModelString(
 
         applyWhereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           const subqueryBuilder = new SubqueryBuilder()
           
@@ -1352,10 +1444,10 @@ export async function generateModelString(
                   break
                   
                 case 'whereIn':
-                  if (condition.operator === 'not') {
-                    subquery = subquery.whereNotIn(condition.column, condition.values!)
+                  if (condition.operator === 'is not') {
+                    subquery = subquery.whereNotIn(condition.column, condition.values)
                   } else {
-                    subquery = subquery.whereIn(condition.column, condition.values!)
+                    subquery = subquery.whereIn(condition.column, condition.values)
                   }
 
                   break
@@ -1369,7 +1461,7 @@ export async function generateModelString(
                   break
                   
                   case 'whereBetween':
-                    subquery = subquery.whereBetween(condition.column, condition.values!)
+                    subquery = subquery.whereBetween(condition.column, condition.values)
                     break
                   
                   case 'whereExists': {
@@ -1385,16 +1477,17 @@ export async function generateModelString(
             
           return this
         }
+
         whereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           return this.applyWhereHas(relation, callback)
         }
 
         static whereHas(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
           const instance = new ${modelName}Model(null)
           
@@ -1422,73 +1515,72 @@ export async function generateModelString(
         static doesntHave(relation: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          return instance.doesntHave(relation)
+          return instance.applyDoesntHave(relation)
         }
 
-        applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+        applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void): ${modelName}Model {
           const subqueryBuilder = new SubqueryBuilder()
-          
+
           callback(subqueryBuilder)
           const conditions = subqueryBuilder.getConditions()
-        
+
           this.selectFromQuery = this.selectFromQuery
             .where(({ exists, selectFrom, not }: any) => {
-              let subquery = selectFrom(relation)
+              const subquery = selectFrom(relation)
                 .select('1')
                 .whereRef(\`\${relation}.${formattedModelName}_id\`, '=', '${tableName}.id')
-  
-            conditions.forEach((condition) => {
-              switch (condition.method) {
-                case 'where':
-                  if (condition.type === 'and') {
-                    subquery = subquery.where(condition.column, condition.operator!, condition.value)
-                  } else {
-                    subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-                  }
-                  break
-                  
-                case 'whereIn':
-                  if (condition.operator === 'not') {
-                    subquery = subquery.whereNotIn(condition.column, condition.values!)
-                  } else {
-                    subquery = subquery.whereIn(condition.column, condition.values!)
-                  }
 
-                  break
-                  
-                  case 'whereNull':
-                    subquery = subquery.whereNull(condition.column)
-                    break
-                    
-                  case 'whereNotNull':
-                    subquery = subquery.whereNotNull(condition.column)
-                  break
-                  
-                  case 'whereBetween':
-                    subquery = subquery.whereBetween(condition.column, condition.values!)
-                    break
-                  
-                  case 'whereExists': {
-                    const nestedBuilder = new SubqueryBuilder()
-                    condition.callback!(nestedBuilder)
-                  break
-                }
-              }
+              return not(exists(subquery))
             })
-      
-            return not(exists(subquery))
+
+          conditions.forEach((condition) => {
+            switch (condition.method) {
+              case 'where':
+                if (condition.type === 'and') {
+                  this.where(condition.column, condition.operator!, condition.value)
+                }
+                break
+
+              case 'whereIn':
+                if (condition.operator === 'is not') {
+                  this.whereNotIn(condition.column, condition.values)
+                }
+                else {
+                  this.whereIn(condition.column, condition.values)
+                }
+
+                break
+
+              case 'whereNull':
+                this.whereNull(condition.column)
+                break
+
+              case 'whereNotNull':
+                this.whereNotNull(condition.column)
+                break
+
+              case 'whereBetween':
+                this.whereBetween(condition.column, condition.values)
+                break
+
+              case 'whereExists': {
+                const nestedBuilder = new SubqueryBuilder()
+                condition.callback!(nestedBuilder)
+                break
+              }
+            }
           })
-            
+
           return this
         }
 
-        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ${modelName}Model {
+        whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void): ${modelName}Model {
           return this.applyWhereDoesntHave(relation, callback)
         }
 
         static whereDoesntHave(
           relation: string,
-          callback: (query: SubqueryBuilder) => void
+          callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void
         ): ${modelName}Model {
           const instance = new ${modelName}Model(null)
           
@@ -1535,28 +1627,37 @@ export async function generateModelString(
 
           return await instance.applyPaginate(options)
         }
-  
-        static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
 
+        async applyCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const filteredValues = Object.fromEntries(
             Object.entries(new${modelName}).filter(([key]) => 
-              !instance.guarded.includes(key) && instance.fillable.includes(key)
+              !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
 
+          await this.mapCustomSetters(filteredValues)
+          
           ${uuidQuery}
 
           const result = await DB.instance.insertInto('${tableName}')
             .values(filteredValues)
             .executeTakeFirst()
 
-          const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
+          const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
 
-          if (model)
-            dispatch('${formattedModelName}:created', model)
+          ${mittCreateStatement}
 
           return model
+        }
+        
+        async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+          return await this.applyCreate(new${modelName})
+        }
+  
+        static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
+          const instance = new ${modelName}Model(null)
+
+          return await instance.applyCreate(new${modelName})
         }
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
@@ -1606,35 +1707,39 @@ export async function generateModelString(
             .execute()
         }
   
-        applyWhere(instance: ${modelName}Model, column: string, ...args: any[]): ${modelName}Model {
-          const [operatorOrValue, value] = args
-          const operator = value === undefined ? '=' : operatorOrValue
-          const actualValue = value === undefined ? operatorOrValue : value
+        applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+          if (args.length === 1) {
+            const [value] = args
+            this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+            this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+            this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+          } else {
+            const [operator, value] = args as [Operator, V]
+            this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+            this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+            this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+          }
 
-          instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-          instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-          return instance
+          return this
         }
 
-        where(column: string, ...args: any[]): ${modelName}Model {
-          return this.applyWhere(this, column, ...args)
+        where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
+          return this.applyWhere<V>(column, ...args)
         }
 
-        static where(column: string, ...args: any[]): ${modelName}Model {
+        static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          return instance.applyWhere(instance, column, ...args)
+          return instance.applyWhere<V>(column, ...args)
         }
 
-        whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+        whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
           return this
         }
 
-        static whereColumn(first: string, operator: string, second: string): ${modelName}Model {
+        static whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -1642,7 +1747,7 @@ export async function generateModelString(
           return instance
         }
 
-        applyWhereRef(column: string, ...args: string[]): ${modelName}Model {
+        applyWhereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           const [operatorOrValue, value] = args
           const operator = value === undefined ? '=' : operatorOrValue
           const actualValue = value === undefined ? operatorOrValue : value
@@ -1653,11 +1758,11 @@ export async function generateModelString(
           return instance
         }
         
-        whereRef(column: string, ...args: string[]): ${modelName}Model {
+        whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           return this.applyWhereRef(column, ...args)
         }
 
-        static whereRef(column: string, ...args: string[]): ${modelName}Model {
+        static whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
           return instance.applyWhereRef(column, ...args)
@@ -1728,11 +1833,57 @@ export async function generateModelString(
           return instance
         }
 
-        whereNull(column: string): ${modelName}Model {
-          return ${modelName}Model.whereNull(column)
+        whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+  
+          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+
+          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+  
+          return this
         }
   
-        static whereNull(column: string): ${modelName}Model {
+        static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+  
+          instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+  
+          instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+          
+          instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is not', null)
+          )
+
+          return instance
+        }
+
+        whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+  
+          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+
+          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+  
+          return this
+        }
+  
+        static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1742,30 +1893,37 @@ export async function generateModelString(
           instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
             eb(column, '=', '').or(column, 'is', null)
           )
-  
+          
+          instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+            eb(column, '=', '').or(column, 'is', null)
+          )
+
           return instance
         }
-  
   
         ${whereStatements}
+
+        applyWhereIn<V>(column: keyof ${formattedTableName}Table, values: V[]) {
+          this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
   
-        whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          return ${modelName}Model.whereIn(column, values)
-        }
+          this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
   
-        static whereIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
   
-          instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-  
-          instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-  
-          instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-  
-          return instance
+          return this
         }
 
-        applyWhereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          return this.applyWhereIn<V>(column, values)
+        }
+  
+        static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          const instance = new ${modelName}Model(null)
+  
+          return instance.applyWhereIn<V>(column, values)
+        }
+
+        applyWhereBetween<V>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
           if (range.length !== 2) {
             throw new HttpError(500, 'Range must have exactly two values: [min, max]')
           }
@@ -1779,17 +1937,17 @@ export async function generateModelString(
           return this
         }
 
-        whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
-          return this.applyWhereBetween(column, range)
+        whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
+          return this.applyWhereBetween<V>(column, range)
         }
 
-        static whereBetween(column: keyof ${modelName}Type, range: [any, any]): ${modelName}Model {
+        static whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
 
-          return instance.applyWhereBetween(column, range)
+          return instance.applyWhereBetween<V>(column, range)
         }
 
-        applyWhereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        applyWhereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
   
           this.updateFromQuery = this.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
@@ -1799,17 +1957,17 @@ export async function generateModelString(
           return this
         }
 
-        whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           return this.applyWhereLike(column, value)
         }
           
-        static whereLike(column: keyof ${modelName}Type, value: string): ${modelName}Model {
+        static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           return instance.applyWhereLike(column, value)
         }
   
-        applyWhereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        applyWhereNotIn<V>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
   
           this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1819,14 +1977,14 @@ export async function generateModelString(
           return this
         }
 
-        whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
-          return this.applyWhereNotIn(column, values)
+        whereNotIn<V>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          return this.applyWhereNotIn<V>(column, values)
         }
   
-        static whereNotIn(column: keyof ${modelName}Type, values: any[]): ${modelName}Model {
+        static whereNotIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
-          return instance.applyWhereNotIn(column, values)
+          return instance.applyWhereNotIn<V>(column, values)
         }
   
          async exists(): Promise<boolean> {
@@ -1843,6 +2001,8 @@ export async function generateModelString(
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'desc')
@@ -1851,12 +2011,16 @@ export async function generateModelString(
           if (!model)
             return undefined
 
+          instance.mapCustomGetters(model)
+
           const data = new ${modelName}Model(model as ${modelName}Type)
 
           return data
         }
 
         static async oldest(): Promise<${modelName}Type | undefined> {
+          const instance = new ${modelName}Model(null)
+
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
             .orderBy('id', 'asc')
@@ -1864,6 +2028,8 @@ export async function generateModelString(
 
           if (!model)
             return undefined
+
+          instance.mapCustomGetters(model)
 
           const data = new ${modelName}Model(model as ${modelName}Type)
 
@@ -1874,7 +2040,8 @@ export async function generateModelString(
           condition: Partial<${modelName}Type>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
-          // Get the key and value from the condition object
+          const instance = new ${modelName}Model(null)
+
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
           if (!key) {
@@ -1890,10 +2057,13 @@ export async function generateModelString(
             .executeTakeFirst()
   
           if (existing${modelName}) {
+            instance.mapCustomGetters(existing${modelName})
+            await instance.loadRelations(existing${modelName})
+            
             return new ${modelName}Model(existing${modelName} as ${modelName}Type)
           }
           else {
-            return await this.create(new${modelName})
+            return await instance.create(new${modelName})
           }
         }
   
@@ -1939,7 +2109,7 @@ export async function generateModelString(
             return new ${modelName}Model(updated${modelName} as ${modelName}Type)
           } else {
             // If not found, create a new record
-            return await this.create(new${modelName})
+            return await instance.create(new${modelName})
           }
         }
 
@@ -2000,8 +2170,10 @@ export async function generateModelString(
             model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
           }
 
-          if (model)
+          if (model) {
+            this.mapCustomGetters(model)
             await this.loadRelations(model)
+          }
 
           const data = new ${modelName}Model(model as ${modelName}Type)
   
@@ -2019,13 +2191,13 @@ export async function generateModelString(
           return data
         }
 
-        orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
   
           return this
         }
   
-        static orderBy(column: keyof ${modelName}Type, order: 'asc' | 'desc'): ${modelName}Model {
+        static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -2033,13 +2205,13 @@ export async function generateModelString(
           return instance
         }
 
-        groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.groupBy(column)
   
           return this
         }
   
-        static groupBy(column: keyof ${modelName}Type): ${modelName}Model {
+        static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -2047,13 +2219,13 @@ export async function generateModelString(
           return instance
         }
 
-        having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+        having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
   
           return this
         }
 
-        static having(column: keyof ${modelName}Type, operator: string, value: any): ${modelName}Model {
+        static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -2075,13 +2247,13 @@ export async function generateModelString(
           return instance
         }
 
-        orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
   
           return this
         }
 
-        static orderByDesc(column: keyof ${modelName}Type): ${modelName}Model {
+        static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -2089,13 +2261,13 @@ export async function generateModelString(
           return instance
         }
           
-        orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
   
           return this
         }
   
-        static orderByAsc(column: keyof ${modelName}Type): ${modelName}Model {
+        static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(null)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -2109,6 +2281,8 @@ export async function generateModelString(
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
+
+          await this.mapCustomSetters(filteredValues)
 
           await DB.instance.updateTable('${tableName}')
             .set(filteredValues)
@@ -2132,6 +2306,8 @@ export async function generateModelString(
           if (this.id === undefined) {
             this.updateFromQuery.set(${formattedModelName}).execute()
           }
+
+          await this.mapCustomSetters(${formattedModelName})
   
           await DB.instance.updateTable('${tableName}')
             .set(${formattedModelName})
@@ -2155,17 +2331,11 @@ export async function generateModelString(
         async save(): Promise<void> {
           if (!this)
             throw new HttpError(500, '${modelName} data is undefined')
-          
-           const filteredValues = Object.fromEntries(
-            Object.entries(this.attributes).filter(([key]) => 
-              !this.guarded.includes(key) && this.fillable.includes(key)
-            ),
-          ) as New${modelName}
+        
+          await this.mapCustomSetters(this.attributes)
 
           if (this.id === undefined) {
-            await DB.instance.insertInto('${tableName}')
-              .values(filteredValues)
-              .executeTakeFirstOrThrow()
+            await this.create(this.attributes)
           }
           else {
             await this.update(this.attributes)
@@ -2200,7 +2370,7 @@ export async function generateModelString(
 
   
         // Method to delete (soft delete) the ${formattedModelName} instance
-        async delete(): Promise<any> {
+        async delete(): Promise<${formattedTableName}Table> {
           if (this.id === undefined)
             this.deleteFromQuery.execute()
             ${mittDeleteFindStatement}

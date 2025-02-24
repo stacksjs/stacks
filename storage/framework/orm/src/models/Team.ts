@@ -1,9 +1,11 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { AccessTokenModel } from './AccessToken'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
@@ -87,6 +89,51 @@ export class TeamModel {
     this.deleteFromQuery = DB.instance.deleteFrom('teams')
     this.hasSelect = false
     this.hasSaved = false
+  }
+
+  mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: TeamJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: TeamJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
   }
 
   get personal_access_tokens(): AccessTokenModel[] | undefined {
@@ -173,7 +220,7 @@ export class TeamModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TeamType): Partial<TeamType> {
+  getOriginal(column?: keyof TeamJsonResponse): Partial<TeamJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -239,6 +286,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
@@ -269,8 +317,10 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 
@@ -278,9 +328,13 @@ export class TeamModel {
   }
 
   static async first(): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -293,8 +347,10 @@ export class TeamModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TeamModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 
@@ -312,7 +368,11 @@ export class TeamModel {
   }
 
   static async all(): Promise<TeamModel[]> {
+    const instance = new TeamModel(null)
+
     const models = await DB.instance.selectFrom('teams').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: TeamType) => {
       return new TeamModel(model)
@@ -329,6 +389,7 @@ export class TeamModel {
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TeamModel(model as TeamType)
@@ -346,7 +407,7 @@ export class TeamModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<TeamModel[]> {
+  async applyFindMany(ids: number[]): Promise<TeamModel[]> {
     let query = DB.instance.selectFrom('teams').where('id', 'in', ids)
 
     const instance = new TeamModel(null)
@@ -355,9 +416,20 @@ export class TeamModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<TeamModel[]> {
+    const instance = new TeamModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<TeamModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): TeamModel {
@@ -541,6 +613,7 @@ export class TeamModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TeamModel) => {
@@ -598,7 +671,7 @@ export class TeamModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TeamModel>) => void,
   ): TeamModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -623,11 +696,11 @@ export class TeamModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -641,7 +714,7 @@ export class TeamModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -660,14 +733,14 @@ export class TeamModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TeamModel>) => void,
   ): TeamModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TeamModel>) => void,
   ): TeamModel {
     const instance = new TeamModel(null)
 
@@ -695,10 +768,10 @@ export class TeamModel {
   static doesntHave(relation: string): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TeamModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TeamsTable>) => void): TeamModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -706,64 +779,61 @@ export class TeamModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.team_id`, '=', 'teams.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TeamModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TeamsTable>) => void): TeamModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<TeamsTable>) => void,
   ): TeamModel {
     const instance = new TeamModel(null)
 
@@ -811,25 +881,32 @@ export class TeamModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newTeam: NewTeam): Promise<TeamModel> {
-    const instance = new TeamModel(null)
-
+  async applyCreate(newTeam: NewTeam): Promise<TeamModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTeam
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('teams')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
-
-    if (model)
-      dispatch('team:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
 
     return model
+  }
+
+  async create(newTeam: NewTeam): Promise<TeamModel> {
+    return await this.applyCreate(newTeam)
+  }
+
+  static async create(newTeam: NewTeam): Promise<TeamModel> {
+    const instance = new TeamModel(null)
+
+    return await instance.applyCreate(newTeam)
   }
 
   static async createMany(newTeam: NewTeam[]): Promise<void> {
@@ -867,35 +944,40 @@ export class TeamModel {
       .execute()
   }
 
-  applyWhere(instance: TeamModel, column: string, ...args: any[]): TeamModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): TeamModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof TeamsTable, ...args: [V] | [Operator, V]): TeamModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): TeamModel {
+  static where<V = string>(column: keyof TeamsTable, ...args: [V] | [Operator, V]): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): TeamModel {
+  whereColumn(first: keyof TeamsTable, operator: Operator, second: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): TeamModel {
+  static whereColumn(first: keyof TeamsTable, operator: Operator, second: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -903,7 +985,7 @@ export class TeamModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): TeamModel {
+  applyWhereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -914,11 +996,11 @@ export class TeamModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): TeamModel {
+  whereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): TeamModel {
+  static whereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -989,11 +1071,57 @@ export class TeamModel {
     return instance
   }
 
-  whereNull(column: string): TeamModel {
-    return TeamModel.whereNull(column)
+  whereNotNull(column: keyof TeamsTable): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): TeamModel {
+  static whereNotNull(column: keyof TeamsTable): TeamModel {
+    const instance = new TeamModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof TeamsTable): TeamModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1001,6 +1129,10 @@ export class TeamModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -1071,23 +1203,27 @@ export class TeamModel {
     return instance
   }
 
-  whereIn(column: keyof TeamType, values: any[]): TeamModel {
-    return TeamModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof TeamsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof TeamType, values: any[]): TeamModel {
+  whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
     const instance = new TeamModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
+  applyWhereBetween<V>(column: keyof TeamsTable, range: [V, V]): TeamModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1101,17 +1237,17 @@ export class TeamModel {
     return this
   }
 
-  whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof TeamsTable, range: [V, V]): TeamModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof TeamType, range: [any, any]): TeamModel {
+  static whereBetween<V = number>(column: keyof TeamsTable, range: [V, V]): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof TeamType, value: string): TeamModel {
+  applyWhereLike(column: keyof TeamsTable, value: string): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1121,17 +1257,17 @@ export class TeamModel {
     return this
   }
 
-  whereLike(column: keyof TeamType, value: string): TeamModel {
+  whereLike(column: keyof TeamsTable, value: string): TeamModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof TeamType, value: string): TeamModel {
+  static whereLike(column: keyof TeamsTable, value: string): TeamModel {
     const instance = new TeamModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+  applyWhereNotIn<V>(column: keyof TeamsTable, values: V[]): TeamModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1141,14 +1277,14 @@ export class TeamModel {
     return this
   }
 
-  whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof TeamsTable, values: V[]): TeamModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof TeamType, values: any[]): TeamModel {
+  static whereNotIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
     const instance = new TeamModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1165,6 +1301,8 @@ export class TeamModel {
   }
 
   static async latest(): Promise<TeamType | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1173,12 +1311,16 @@ export class TeamModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new TeamModel(model as TeamType)
 
     return data
   }
 
   static async oldest(): Promise<TeamType | undefined> {
+    const instance = new TeamModel(null)
+
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1186,6 +1328,8 @@ export class TeamModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new TeamModel(model as TeamType)
 
@@ -1196,7 +1340,8 @@ export class TeamModel {
     condition: Partial<TeamType>,
     newTeam: NewTeam,
   ): Promise<TeamModel> {
-    // Get the key and value from the condition object
+    const instance = new TeamModel(null)
+
     const key = Object.keys(condition)[0] as keyof TeamType
 
     if (!key) {
@@ -1212,10 +1357,13 @@ export class TeamModel {
       .executeTakeFirst()
 
     if (existingTeam) {
+      instance.mapCustomGetters(existingTeam)
+      await instance.loadRelations(existingTeam)
+
       return new TeamModel(existingTeam as TeamType)
     }
     else {
-      return await this.create(newTeam)
+      return await instance.create(newTeam)
     }
   }
 
@@ -1262,7 +1410,7 @@ export class TeamModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newTeam)
+      return await instance.create(newTeam)
     }
   }
 
@@ -1325,8 +1473,10 @@ export class TeamModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TeamModel(model as TeamType)
 
@@ -1344,13 +1494,13 @@ export class TeamModel {
     return data
   }
 
-  orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+  orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof TeamType, order: 'asc' | 'desc'): TeamModel {
+  static orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1358,13 +1508,13 @@ export class TeamModel {
     return instance
   }
 
-  groupBy(column: keyof TeamType): TeamModel {
+  groupBy(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof TeamType): TeamModel {
+  static groupBy(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1372,13 +1522,13 @@ export class TeamModel {
     return instance
   }
 
-  having(column: keyof TeamType, operator: string, value: any): TeamModel {
+  having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TeamType, operator: string, value: any): TeamModel {
+  static having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1400,13 +1550,13 @@ export class TeamModel {
     return instance
   }
 
-  orderByDesc(column: keyof TeamType): TeamModel {
+  orderByDesc(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof TeamType): TeamModel {
+  static orderByDesc(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1414,13 +1564,13 @@ export class TeamModel {
     return instance
   }
 
-  orderByAsc(column: keyof TeamType): TeamModel {
+  orderByAsc(column: keyof TeamsTable): TeamModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof TeamType): TeamModel {
+  static orderByAsc(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1434,6 +1584,8 @@ export class TeamModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTeam
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('teams')
       .set(filteredValues)
@@ -1456,6 +1608,8 @@ export class TeamModel {
       this.updateFromQuery.set(team).execute()
     }
 
+    await this.mapCustomSetters(team)
+
     await DB.instance.updateTable('teams')
       .set(team)
       .where('id', '=', this.id)
@@ -1476,16 +1630,10 @@ export class TeamModel {
     if (!this)
       throw new HttpError(500, 'Team data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewTeam
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('teams')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1519,7 +1667,7 @@ export class TeamModel {
   }
 
   // Method to delete (soft delete) the team instance
-  async delete(): Promise<any> {
+  async delete(): Promise<TeamsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
@@ -1532,7 +1680,7 @@ export class TeamModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await DB.instance.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('users')
       .where('user_id', '=', this.id)
       .selectAll()
       .execute()

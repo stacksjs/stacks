@@ -1,21 +1,33 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { TeamModel } from './Team'
+import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Team from './Team'
+
+import User from './User'
 
 export interface PersonalAccessTokensTable {
   id?: number
   team_id?: number
   team?: TeamModel
+  user_id?: number
+  user?: UserModel
   name?: string
   token?: string
   plain_text_token?: string
   abilities?: string[]
+  last_used_at?: Date | string
+  expires_at?: Date | string
+  revoked_at?: Date | string
+  ip_address?: string
+  device_name?: string
+  is_single_use?: boolean
 
   created_at?: Date
 
@@ -53,7 +65,7 @@ interface QueryOptions {
 
 export class AccessTokenModel {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
-  private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'uuid', 'team_id']
+  private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
   protected attributes: Partial<AccessTokenJsonResponse> = {}
   protected originalAttributes: Partial<AccessTokenJsonResponse> = {}
@@ -86,12 +98,65 @@ export class AccessTokenModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: AccessTokenJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: AccessTokenJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get team_id(): number | undefined {
     return this.attributes.team_id
   }
 
   get team(): TeamModel | undefined {
     return this.attributes.team
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
   }
 
   get id(): number | undefined {
@@ -112,6 +177,30 @@ export class AccessTokenModel {
 
   get abilities(): string[] | undefined {
     return this.attributes.abilities
+  }
+
+  get last_used_at(): Date | string | undefined {
+    return this.attributes.last_used_at
+  }
+
+  get expires_at(): Date | string | undefined {
+    return this.attributes.expires_at
+  }
+
+  get revoked_at(): Date | string | undefined {
+    return this.attributes.revoked_at
+  }
+
+  get ip_address(): string | undefined {
+    return this.attributes.ip_address
+  }
+
+  get device_name(): string | undefined {
+    return this.attributes.device_name
+  }
+
+  get is_single_use(): boolean | undefined {
+    return this.attributes.is_single_use
   }
 
   get created_at(): Date | undefined {
@@ -138,11 +227,35 @@ export class AccessTokenModel {
     this.attributes.abilities = value
   }
 
+  set last_used_at(value: Date | string) {
+    this.attributes.last_used_at = value
+  }
+
+  set expires_at(value: Date | string) {
+    this.attributes.expires_at = value
+  }
+
+  set revoked_at(value: Date | string) {
+    this.attributes.revoked_at = value
+  }
+
+  set ip_address(value: string) {
+    this.attributes.ip_address = value
+  }
+
+  set device_name(value: string) {
+    this.attributes.device_name = value
+  }
+
+  set is_single_use(value: boolean) {
+    this.attributes.is_single_use = value
+  }
+
   set updated_at(value: Date) {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof AccessTokenType): Partial<AccessTokenType> {
+  getOriginal(column?: keyof AccessTokenJsonResponse): Partial<AccessTokenJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -208,6 +321,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
@@ -238,8 +352,10 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -247,9 +363,13 @@ export class AccessTokenModel {
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -262,8 +382,10 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -281,7 +403,11 @@ export class AccessTokenModel {
   }
 
   static async all(): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(null)
+
     const models = await DB.instance.selectFrom('personal_access_tokens').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenType) => {
       return new AccessTokenModel(model)
@@ -298,6 +424,7 @@ export class AccessTokenModel {
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
@@ -315,7 +442,7 @@ export class AccessTokenModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+  async applyFindMany(ids: number[]): Promise<AccessTokenModel[]> {
     let query = DB.instance.selectFrom('personal_access_tokens').where('id', 'in', ids)
 
     const instance = new AccessTokenModel(null)
@@ -324,9 +451,20 @@ export class AccessTokenModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<AccessTokenModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): AccessTokenModel {
@@ -510,6 +648,7 @@ export class AccessTokenModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
@@ -567,7 +706,7 @@ export class AccessTokenModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -592,11 +731,11 @@ export class AccessTokenModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -610,7 +749,7 @@ export class AccessTokenModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -629,14 +768,14 @@ export class AccessTokenModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof AccessTokenModel>) => void,
   ): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -664,10 +803,10 @@ export class AccessTokenModel {
   static doesntHave(relation: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PersonalAccessTokensTable>) => void): AccessTokenModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -675,64 +814,61 @@ export class AccessTokenModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): AccessTokenModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PersonalAccessTokensTable>) => void): AccessTokenModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<PersonalAccessTokensTable>) => void,
   ): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
@@ -780,25 +916,32 @@ export class AccessTokenModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
-    const instance = new AccessTokenModel(null)
-
+  async applyCreate(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newAccessToken).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewAccessToken
+
+    await this.mapCustomSetters(filteredValues)
 
     const result = await DB.instance.insertInto('personal_access_tokens')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
-
-    if (model)
-      dispatch('accesstoken:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
 
     return model
+  }
+
+  async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+    return await this.applyCreate(newAccessToken)
+  }
+
+  static async create(newAccessToken: NewAccessToken): Promise<AccessTokenModel> {
+    const instance = new AccessTokenModel(null)
+
+    return await instance.applyCreate(newAccessToken)
   }
 
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
@@ -836,35 +979,40 @@ export class AccessTokenModel {
       .execute()
   }
 
-  applyWhere(instance: AccessTokenModel, column: string, ...args: any[]): AccessTokenModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): AccessTokenModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]): AccessTokenModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): AccessTokenModel {
+  static where<V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+  whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): AccessTokenModel {
+  static whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -872,7 +1020,7 @@ export class AccessTokenModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): AccessTokenModel {
+  applyWhereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -883,11 +1031,11 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): AccessTokenModel {
+  whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): AccessTokenModel {
+  static whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -958,11 +1106,57 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereNull(column: string): AccessTokenModel {
-    return AccessTokenModel.whereNull(column)
+  whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): AccessTokenModel {
+  static whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -970,6 +1164,10 @@ export class AccessTokenModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -1008,23 +1206,75 @@ export class AccessTokenModel {
     return instance
   }
 
-  whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
-    return AccessTokenModel.whereIn(column, values)
-  }
-
-  static whereIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  static whereLastUsedAt(value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
+    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
 
     return instance
   }
 
-  applyWhereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
+  static whereExpiresAt(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expiresAt', '=', value)
+
+    return instance
+  }
+
+  static whereRevokedAt(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('revokedAt', '=', value)
+
+    return instance
+  }
+
+  static whereIpAddress(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('ipAddress', '=', value)
+
+    return instance
+  }
+
+  static whereDeviceName(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('deviceName', '=', value)
+
+    return instance
+  }
+
+  static whereIsSingleUse(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('isSingleUse', '=', value)
+
+    return instance
+  }
+
+  applyWhereIn<V>(column: keyof PersonalAccessTokensTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
+  }
+
+  whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    const instance = new AccessTokenModel(null)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
+  applyWhereBetween<V>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1038,17 +1288,17 @@ export class AccessTokenModel {
     return this
   }
 
-  whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof AccessTokenType, range: [any, any]): AccessTokenModel {
+  static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  applyWhereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1058,17 +1308,17 @@ export class AccessTokenModel {
     return this
   }
 
-  whereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof AccessTokenType, value: string): AccessTokenModel {
+  static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  applyWhereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1078,14 +1328,14 @@ export class AccessTokenModel {
     return this
   }
 
-  whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof AccessTokenType, values: any[]): AccessTokenModel {
+  static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1102,6 +1352,8 @@ export class AccessTokenModel {
   }
 
   static async latest(): Promise<AccessTokenType | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1110,12 +1362,16 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new AccessTokenModel(model as AccessTokenType)
 
     return data
   }
 
   static async oldest(): Promise<AccessTokenType | undefined> {
+    const instance = new AccessTokenModel(null)
+
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1123,6 +1379,8 @@ export class AccessTokenModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1133,7 +1391,8 @@ export class AccessTokenModel {
     condition: Partial<AccessTokenType>,
     newAccessToken: NewAccessToken,
   ): Promise<AccessTokenModel> {
-    // Get the key and value from the condition object
+    const instance = new AccessTokenModel(null)
+
     const key = Object.keys(condition)[0] as keyof AccessTokenType
 
     if (!key) {
@@ -1149,10 +1408,13 @@ export class AccessTokenModel {
       .executeTakeFirst()
 
     if (existingAccessToken) {
+      instance.mapCustomGetters(existingAccessToken)
+      await instance.loadRelations(existingAccessToken)
+
       return new AccessTokenModel(existingAccessToken as AccessTokenType)
     }
     else {
-      return await this.create(newAccessToken)
+      return await instance.create(newAccessToken)
     }
   }
 
@@ -1199,7 +1461,7 @@ export class AccessTokenModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newAccessToken)
+      return await instance.create(newAccessToken)
     }
   }
 
@@ -1262,8 +1524,10 @@ export class AccessTokenModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new AccessTokenModel(model as AccessTokenType)
 
@@ -1281,13 +1545,13 @@ export class AccessTokenModel {
     return data
   }
 
-  orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+  orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof AccessTokenType, order: 'asc' | 'desc'): AccessTokenModel {
+  static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1295,13 +1559,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  groupBy(column: keyof AccessTokenType): AccessTokenModel {
+  groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof AccessTokenType): AccessTokenModel {
+  static groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1309,13 +1573,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
+  having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof AccessTokenType, operator: string, value: any): AccessTokenModel {
+  static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1337,13 +1601,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+  orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof AccessTokenType): AccessTokenModel {
+  static orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1351,13 +1615,13 @@ export class AccessTokenModel {
     return instance
   }
 
-  orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+  orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof AccessTokenType): AccessTokenModel {
+  static orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1371,6 +1635,8 @@ export class AccessTokenModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewAccessToken
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('personal_access_tokens')
       .set(filteredValues)
@@ -1393,6 +1659,8 @@ export class AccessTokenModel {
       this.updateFromQuery.set(accesstoken).execute()
     }
 
+    await this.mapCustomSetters(accesstoken)
+
     await DB.instance.updateTable('personal_access_tokens')
       .set(accesstoken)
       .where('id', '=', this.id)
@@ -1413,16 +1681,10 @@ export class AccessTokenModel {
     if (!this)
       throw new HttpError(500, 'AccessToken data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewAccessToken
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('personal_access_tokens')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1456,7 +1718,7 @@ export class AccessTokenModel {
   }
 
   // Method to delete (soft delete) the accesstoken instance
-  async delete(): Promise<any> {
+  async delete(): Promise<PersonalAccessTokensTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
@@ -1471,6 +1733,20 @@ export class AccessTokenModel {
 
     const model = await Team
       .where('id', '=', this.team_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
       .first()
 
     if (!model)
@@ -1519,6 +1795,12 @@ export class AccessTokenModel {
       token: this.token,
       plain_text_token: this.plain_text_token,
       abilities: this.abilities,
+      last_used_at: this.last_used_at,
+      expires_at: this.expires_at,
+      revoked_at: this.revoked_at,
+      ip_address: this.ip_address,
+      device_name: this.device_name,
+      is_single_use: this.is_single_use,
 
       created_at: this.created_at,
 
@@ -1526,6 +1808,8 @@ export class AccessTokenModel {
 
       team_id: this.team_id,
       team: this.team,
+      user_id: this.user_id,
+      user: this.user,
       ...this.customColumns,
     }
 
@@ -1599,6 +1883,48 @@ export async function wherePlainTextToken(value: string): Promise<AccessTokenMod
 
 export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereLastUsedAt(value: Date | string): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereExpiresAt(value: Date | string): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereRevokedAt(value: Date | string): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereIpAddress(value: string): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereDeviceName(value: string): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+}
+
+export async function whereIsSingleUse(value: boolean): Promise<AccessTokenModel[]> {
+  const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))

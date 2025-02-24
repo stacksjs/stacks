@@ -1,5 +1,6 @@
 // thanks to mitt for the base of this wonderful functional event emitter
 
+import type { ModelEvents } from '@stacksjs/types'
 import type { UserModel } from '../../../orm/src/models/User'
 
 export type EventType = string | symbol
@@ -103,6 +104,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
      */
     emit<Key extends keyof Events>(type: Key, evt?: Events[Key]) {
       let handlers = (all as EventHandlerMap<Events>).get(type)
+
       if (handlers) {
         ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
           if (evt !== undefined)
@@ -110,6 +112,7 @@ export default function mitt<Events extends Record<EventType, unknown>>(
         })
       }
       handlers = (all as EventHandlerMap<Events>).get('*')
+
       if (handlers) {
         ;(handlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
           if (evt !== undefined)
@@ -143,32 +146,30 @@ export default function mitt<Events extends Record<EventType, unknown>>(
  */
 
 // TODO: need to create an action that auto generates this Events type from the ./app/Events
-interface StacksEvents {
-  'user:registered': object
-  'user:logged-in': object
-  'user:logged-out': object
-  'user:updated': Partial<UserModel>
-  'user:created': Partial<UserModel>
-  'user:deleted': Partial<UserModel>
-  'user:password-reset': object
-  'user:password-changed': object
-  'subscription:created': any
-  'subscription:canceled': any
-  'paymentMethods:fetched': any
-  'customer:fetched': any
-  'paymentMethod:fetched': any
-  'subscription:fetched': any
-  'paymentMethod:deleted': any
+export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
+  'user:registered': Partial<UserModel>
+  'user:logged-in': Partial<UserModel>
+  'user:logged-out': Partial<UserModel>
+  'user:password-reset': Partial<UserModel>
+  'user:password-changed': Partial<UserModel>
 }
 
 const events: Emitter<StacksEvents> = mitt<StacksEvents>()
+
+// Export clean, typed methods
+type Dispatch = <Key extends keyof StacksEvents>(type: Key, event: StacksEvents[Key]) => void
+type Listen = <Key extends keyof StacksEvents>(type: Key, handler: Handler<StacksEvents[Key]>) => void
+type Off = <Key extends keyof StacksEvents>(type: Key, handler?: Handler<StacksEvents[Key]>) => void
+
 const emitter: Emitter<StacksEvents> = events
-const useEvent: typeof emitter.emit = emitter.emit.bind(emitter)
-const useEvents = events
-const dispatch: typeof emitter.emit = emitter.emit.bind(emitter)
+const useEvents: Emitter<StacksEvents> = events
 
-const listen: typeof emitter.on = emitter.on.bind(emitter)
-const off: typeof emitter.off = emitter.off.bind(emitter)
-const all: typeof emitter.all = emitter.all
+const dispatch: Dispatch = emitter.emit
+const useEvent: Dispatch = dispatch
+const all: EventHandlerMap<StacksEvents> = emitter.all
+const listen: Listen = emitter.on
+const useListen: Listen = emitter.on
 
-export { all, dispatch, events, listen, mitt, off, useEvent, useEvents }
+const off: Off = emitter.off
+
+export { all, dispatch, emitter, events, listen, mitt, off, useEvent, useEvents, useListen }

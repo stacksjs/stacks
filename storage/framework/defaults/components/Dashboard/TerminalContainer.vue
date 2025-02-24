@@ -1,55 +1,106 @@
-<script setup>
+<script setup lang="ts">
 defineProps({
   live: Boolean,
+  path: {
+    type: String,
+    default: '~/Code/stacks',
+  },
+  branch: {
+    type: String,
+    default: 'main',
+  },
+  version: {
+    type: String,
+    default: 'v1.2.3',
+  },
 })
 </script>
 
 <template>
-  <div class="">
-    <div class="h-full w-full flex flex-col rounded-lg bg-[#1D1F21] text-[#C5C8C6] font-mono shadow">
-      <header class="flex items-center justify-between border-b border-[#282a2e] rounded-t-lg bg-[#373b41] p-4">
+  <div class="font-mono">
+    <div class="h-full w-full flex flex-col rounded-lg bg-[#0D1117] text-[#C9D1D9] shadow">
+      <!-- Terminal Header -->
+      <header class="flex items-center justify-between rounded-t-lg bg-[#161B22] px-3 py-2">
         <div class="flex items-center gap-2">
-          <div class="h-3 w-3 rounded-full bg-[#CC6666]" />
-          <div class="h-3 w-3 rounded-full bg-[#E6E074]" />
-          <div class="h-3 w-3 rounded-full bg-[#68B5BD]" />
+          <div class="h-3 w-3 rounded-full bg-[#FF5F56]" />
+          <div class="h-3 w-3 rounded-full bg-[#FFBD2E]" />
+          <div class="h-3 w-3 rounded-full bg-[#27C93F]" />
         </div>
-
-        <div v-if="live" class="text-sm">
-          Live Terminal Output
-        </div>
-        <div v-else class="text-sm">
-          root@localhost:~
+        <div class="absolute left-1/2 -translate-x-1/2 text-sm text-[#8B949E]">
+          📁 {{ path }}
         </div>
       </header>
 
-      <div class="h-54 w-full overflow-auto p-4">
-        <div class="text-sm leading-7">
-          <p class="text-[#68B5BD]">
-            root@localhost:~$ ls
-          </p>
-          <p>Desktop Documents Downloads Music Pictures Public Templates Videos</p>
-          <p class="pt-2 text-[#68B5BD]">
-            root@localhost:~$ pwd
-          </p>
-          <p>/home/root</p>
-          <p class="pt-2 text-[#68B5BD]">
-            root@localhost:~$ whoami
-          </p>
-          <p>root</p>
+      <!-- Terminal Content -->
+      <div class="p-4 text-sm leading-6">
+        <div class="flex items-center gap-2 text-[#C9D1D9]">
+          <span class="text-[#8B949E]">{{ path }}</span>
+          <span>on</span>
+          <span class="flex items-center gap-1">
+            <span class="text-[#7EE787]">{{ branch }}</span>
+          </span>
+          <span>via</span>
+          <span class="flex items-center gap-1">
+            <span class="text-[#8B949E]">🐰</span>
+            <span class="text-[#FF7B72]">{{ version }}</span>
+          </span>
         </div>
-      </div>
 
-      <div v-if="!live" class="flex items-center gap-2 border-t border-[#282a2e] p-4">
-        <span class="text-[#68B5BD]">root@localhost:~$</span>
-        <input
-          class="w-full bg-[#1D1F21] text-[#C5C8C6] focus:outline-none"
-          placeholder="Type your command..."
-          type="text"
-        >
-        <button class="rounded bg-[#68B5BD] px-4 py-2 text-[#1D1F21]">
-          Run
-        </button>
+        <div class="flex items-center gap-2 text-[#C9D1D9] mt-1">
+          <span class="text-[#8B949E]">❯</span>
+          <span>ls</span>
+        </div>
+
+        <div class="mt-2 grid grid-cols-4 gap-4">
+          <div v-for="file in [
+            'CHANGELOG.md', 'LICENSE.md', 'README.md', 'app',
+            'bootstrap', 'buddy', 'cloud', 'commitlint.config.ts',
+            'bun.lock', 'bunfig.toml', 'config', 'database',
+            'docs', 'eslint.config.ts', 'node_modules', 'package.json',
+            'pkgx.yaml', 'public', 'resources', 'routes',
+            'storage', 'tests', 'tsconfig.json', '~'
+          ]" :key="file" class="text-[#C9D1D9]">
+            {{ file }}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 text-[#C9D1D9] mt-4">
+          <span class="text-[#8B949E]">{{ path }}</span>
+          <span>on</span>
+          <span class="flex items-center gap-1">
+            <span class="text-[#7EE787]">{{ branch }}</span>
+          </span>
+          <span>via</span>
+          <span class="flex items-center gap-1">
+            <span class="text-[#8B949E]">🐰</span>
+            <span class="text-[#FF7B72]">{{ version }}</span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2 text-[#C9D1D9] mt-1">
+          <span class="text-[#8B949E]">❯</span>
+          <input
+            type="text"
+            class="flex-1 bg-transparent border-0 outline-0 focus:outline-0 focus:ring-0 active:outline-0 active:ring-0"
+            style="-webkit-tap-highlight-color: transparent;"
+          >
+        </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cli-cursor {
+  opacity: 1;
+}
+
+.cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+</style>

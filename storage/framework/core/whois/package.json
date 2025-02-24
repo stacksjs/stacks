@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/whois",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -45,6 +45,6 @@
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "node-fetch": "^3.3.2",
-    "socks": "^2.8.3"
+    "socks": "^2.8.4"
   }
 }

@@ -1,11 +1,11 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
@@ -95,6 +95,51 @@ export class TransactionModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: TransactionJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: TransactionJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get user_id(): number | undefined {
     return this.attributes.user_id
   }
@@ -175,7 +220,7 @@ export class TransactionModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TransactionType): Partial<TransactionType> {
+  getOriginal(column?: keyof TransactionJsonResponse): Partial<TransactionJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -241,6 +286,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
@@ -271,8 +317,10 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -280,9 +328,13 @@ export class TransactionModel {
   }
 
   static async first(): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -295,8 +347,10 @@ export class TransactionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -314,7 +368,11 @@ export class TransactionModel {
   }
 
   static async all(): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(null)
+
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: TransactionType) => {
       return new TransactionModel(model)
@@ -331,6 +389,7 @@ export class TransactionModel {
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new TransactionModel(model as TransactionType)
@@ -348,7 +407,7 @@ export class TransactionModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<TransactionModel[]> {
+  async applyFindMany(ids: number[]): Promise<TransactionModel[]> {
     let query = DB.instance.selectFrom('transactions').where('id', 'in', ids)
 
     const instance = new TransactionModel(null)
@@ -357,9 +416,20 @@ export class TransactionModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<TransactionModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): TransactionModel {
@@ -543,6 +613,7 @@ export class TransactionModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: TransactionModel) => {
@@ -600,7 +671,7 @@ export class TransactionModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -625,11 +696,11 @@ export class TransactionModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -643,7 +714,7 @@ export class TransactionModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -662,14 +733,14 @@ export class TransactionModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -697,10 +768,10 @@ export class TransactionModel {
   static doesntHave(relation: string): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TransactionsTable>) => void): TransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -708,64 +779,61 @@ export class TransactionModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.transaction_id`, '=', 'transactions.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): TransactionModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<TransactionsTable>) => void): TransactionModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<TransactionsTable>) => void,
   ): TransactionModel {
     const instance = new TransactionModel(null)
 
@@ -813,14 +881,14 @@ export class TransactionModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
-
+  async applyCreate(newTransaction: NewTransaction): Promise<TransactionModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
+
+    await this.mapCustomSetters(filteredValues)
 
     filteredValues.uuid = randomUUIDv7()
 
@@ -828,12 +896,19 @@ export class TransactionModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
-
-    if (model)
-      dispatch('transaction:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
 
     return model
+  }
+
+  async create(newTransaction: NewTransaction): Promise<TransactionModel> {
+    return await this.applyCreate(newTransaction)
+  }
+
+  static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
+    const instance = new TransactionModel(null)
+
+    return await instance.applyCreate(newTransaction)
   }
 
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {
@@ -873,35 +948,40 @@ export class TransactionModel {
       .execute()
   }
 
-  applyWhere(instance: TransactionModel, column: string, ...args: any[]): TransactionModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): TransactionModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof TransactionsTable, ...args: [V] | [Operator, V]): TransactionModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): TransactionModel {
+  static where<V = string>(column: keyof TransactionsTable, ...args: [V] | [Operator, V]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): TransactionModel {
+  whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): TransactionModel {
+  static whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -909,7 +989,7 @@ export class TransactionModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): TransactionModel {
+  applyWhereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -920,11 +1000,11 @@ export class TransactionModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): TransactionModel {
+  whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): TransactionModel {
+  static whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -995,11 +1075,57 @@ export class TransactionModel {
     return instance
   }
 
-  whereNull(column: string): TransactionModel {
-    return TransactionModel.whereNull(column)
+  whereNotNull(column: keyof TransactionsTable): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): TransactionModel {
+  static whereNotNull(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof TransactionsTable): TransactionModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1007,6 +1133,10 @@ export class TransactionModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -1053,23 +1183,27 @@ export class TransactionModel {
     return instance
   }
 
-  whereIn(column: keyof TransactionType, values: any[]): TransactionModel {
-    return TransactionModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof TransactionsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof TransactionType, range: [any, any]): TransactionModel {
+  applyWhereBetween<V>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1083,17 +1217,17 @@ export class TransactionModel {
     return this
   }
 
-  whereBetween(column: keyof TransactionType, range: [any, any]): TransactionModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof TransactionType, range: [any, any]): TransactionModel {
+  static whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof TransactionType, value: string): TransactionModel {
+  applyWhereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1103,17 +1237,17 @@ export class TransactionModel {
     return this
   }
 
-  whereLike(column: keyof TransactionType, value: string): TransactionModel {
+  whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof TransactionType, value: string): TransactionModel {
+  static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     const instance = new TransactionModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  applyWhereNotIn<V>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1123,14 +1257,14 @@ export class TransactionModel {
     return this
   }
 
-  whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof TransactionsTable, values: V[]): TransactionModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof TransactionType, values: any[]): TransactionModel {
+  static whereNotIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
     const instance = new TransactionModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1147,6 +1281,8 @@ export class TransactionModel {
   }
 
   static async latest(): Promise<TransactionType | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1155,12 +1291,16 @@ export class TransactionModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new TransactionModel(model as TransactionType)
 
     return data
   }
 
   static async oldest(): Promise<TransactionType | undefined> {
+    const instance = new TransactionModel(null)
+
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1168,6 +1308,8 @@ export class TransactionModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1178,7 +1320,8 @@ export class TransactionModel {
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
-    // Get the key and value from the condition object
+    const instance = new TransactionModel(null)
+
     const key = Object.keys(condition)[0] as keyof TransactionType
 
     if (!key) {
@@ -1194,10 +1337,13 @@ export class TransactionModel {
       .executeTakeFirst()
 
     if (existingTransaction) {
+      instance.mapCustomGetters(existingTransaction)
+      await instance.loadRelations(existingTransaction)
+
       return new TransactionModel(existingTransaction as TransactionType)
     }
     else {
-      return await this.create(newTransaction)
+      return await instance.create(newTransaction)
     }
   }
 
@@ -1244,7 +1390,7 @@ export class TransactionModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newTransaction)
+      return await instance.create(newTransaction)
     }
   }
 
@@ -1307,8 +1453,10 @@ export class TransactionModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new TransactionModel(model as TransactionType)
 
@@ -1326,13 +1474,13 @@ export class TransactionModel {
     return data
   }
 
-  orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
+  orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof TransactionType, order: 'asc' | 'desc'): TransactionModel {
+  static orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1340,13 +1488,13 @@ export class TransactionModel {
     return instance
   }
 
-  groupBy(column: keyof TransactionType): TransactionModel {
+  groupBy(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof TransactionType): TransactionModel {
+  static groupBy(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1354,13 +1502,13 @@ export class TransactionModel {
     return instance
   }
 
-  having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
+  having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof TransactionType, operator: string, value: any): TransactionModel {
+  static having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1382,13 +1530,13 @@ export class TransactionModel {
     return instance
   }
 
-  orderByDesc(column: keyof TransactionType): TransactionModel {
+  orderByDesc(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof TransactionType): TransactionModel {
+  static orderByDesc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1396,13 +1544,13 @@ export class TransactionModel {
     return instance
   }
 
-  orderByAsc(column: keyof TransactionType): TransactionModel {
+  orderByAsc(column: keyof TransactionsTable): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof TransactionType): TransactionModel {
+  static orderByAsc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1416,6 +1564,8 @@ export class TransactionModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewTransaction
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('transactions')
       .set(filteredValues)
@@ -1438,6 +1588,8 @@ export class TransactionModel {
       this.updateFromQuery.set(transaction).execute()
     }
 
+    await this.mapCustomSetters(transaction)
+
     await DB.instance.updateTable('transactions')
       .set(transaction)
       .where('id', '=', this.id)
@@ -1458,16 +1610,10 @@ export class TransactionModel {
     if (!this)
       throw new HttpError(500, 'Transaction data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewTransaction
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('transactions')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1501,7 +1647,7 @@ export class TransactionModel {
   }
 
   // Method to delete (soft delete) the transaction instance
-  async delete(): Promise<any> {
+  async delete(): Promise<TransactionsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

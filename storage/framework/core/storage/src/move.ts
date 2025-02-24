@@ -1,4 +1,5 @@
-import { err, handleError, ok, type Result } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from './fs'

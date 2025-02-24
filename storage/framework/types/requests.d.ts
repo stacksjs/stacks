@@ -58,13 +58,19 @@ interface RequestDataAccessToken {
   token: string
   plain_text_token: string
   abilities: string[]
+  last_used_at: date
+  expires_at: date
+  revoked_at: date
+  ip_address: string
+  device_name: string
+  is_single_use: boolean
   team_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface AccessTokenRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'token' | 'plain_text_token') => string) & ((key: 'abilities') => string[]) & ((key: 'team_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'token' | 'plain_text_token' | 'ip_address' | 'device_name') => string) & ((key: 'abilities') => string[]) & ((key: 'last_used_at' | 'expires_at' | 'revoked_at') => date) & ((key: 'is_single_use') => boolean) & ((key: 'team_id') => string)
 
   all: () => RequestDataAccessToken
   id: number
@@ -72,6 +78,12 @@ export interface AccessTokenRequestType extends Request {
   token: string
   plain_text_token: string
   abilities: string[]
+  last_used_at: date
+  expires_at: date
+  revoked_at: date
+  ip_address: string
+  device_name: string
+  is_single_use: boolean
   team_id: number
   created_at?: Date
   updated_at?: Date
@@ -104,6 +116,39 @@ export interface TeamRequestType extends Request {
   description: string
   path: string
   is_personal: boolean
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataRequest {
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface RequestRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'method') => string[]) & ((key: 'path' | 'ip_address' | 'user_agent' | 'error_message') => string) & ((key: 'status_code' | 'duration_ms' | 'memory_usage') => number)
+
+  all: () => RequestDataRequest
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
   created_at?: Date
   updated_at?: Date
 }
@@ -333,6 +378,39 @@ export interface PaymentMethodRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataRequest {
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface RequestRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'method') => string[]) & ((key: 'path' | 'ip_address' | 'user_agent' | 'error_message') => string) & ((key: 'status_code' | 'duration_ms' | 'memory_usage') => number)
+
+  all: () => RequestDataRequest
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataTransaction {
   id: number
   name: string
@@ -449,4 +527,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | ProductRequestType | PaymentMethodRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | RequestRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | ProductRequestType | PaymentMethodRequestType | RequestRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | ErrorRequestType

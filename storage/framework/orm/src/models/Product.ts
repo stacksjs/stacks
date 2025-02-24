@@ -1,9 +1,9 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductsTable {
@@ -86,6 +86,51 @@ export class ProductModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: ProductJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: ProductJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get id(): number | undefined {
     return this.attributes.id
   }
@@ -166,7 +211,7 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductType): Partial<ProductType> {
+  getOriginal(column?: keyof ProductJsonResponse): Partial<ProductJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -232,6 +277,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
@@ -262,8 +308,10 @@ export class ProductModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 
@@ -271,9 +319,13 @@ export class ProductModel {
   }
 
   static async first(): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -286,8 +338,10 @@ export class ProductModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No ProductModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 
@@ -305,7 +359,11 @@ export class ProductModel {
   }
 
   static async all(): Promise<ProductModel[]> {
+    const instance = new ProductModel(null)
+
     const models = await DB.instance.selectFrom('products').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: ProductType) => {
       return new ProductModel(model)
@@ -322,6 +380,7 @@ export class ProductModel {
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new ProductModel(model as ProductType)
@@ -339,7 +398,7 @@ export class ProductModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<ProductModel[]> {
+  async applyFindMany(ids: number[]): Promise<ProductModel[]> {
     let query = DB.instance.selectFrom('products').where('id', 'in', ids)
 
     const instance = new ProductModel(null)
@@ -348,9 +407,20 @@ export class ProductModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<ProductModel[]> {
+    const instance = new ProductModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<ProductModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): ProductModel {
@@ -534,6 +604,7 @@ export class ProductModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: ProductModel) => {
@@ -591,7 +662,7 @@ export class ProductModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -616,11 +687,11 @@ export class ProductModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -634,7 +705,7 @@ export class ProductModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -653,14 +724,14 @@ export class ProductModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
     const instance = new ProductModel(null)
 
@@ -688,10 +759,10 @@ export class ProductModel {
   static doesntHave(relation: string): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -699,64 +770,61 @@ export class ProductModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.product_id`, '=', 'products.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): ProductModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<ProductsTable>) => void,
   ): ProductModel {
     const instance = new ProductModel(null)
 
@@ -804,14 +872,14 @@ export class ProductModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newProduct: NewProduct): Promise<ProductModel> {
-    const instance = new ProductModel(null)
-
+  async applyCreate(newProduct: NewProduct): Promise<ProductModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProduct).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProduct
+
+    await this.mapCustomSetters(filteredValues)
 
     filteredValues.uuid = randomUUIDv7()
 
@@ -819,12 +887,19 @@ export class ProductModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
-
-    if (model)
-      dispatch('product:created', model)
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
 
     return model
+  }
+
+  async create(newProduct: NewProduct): Promise<ProductModel> {
+    return await this.applyCreate(newProduct)
+  }
+
+  static async create(newProduct: NewProduct): Promise<ProductModel> {
+    const instance = new ProductModel(null)
+
+    return await instance.applyCreate(newProduct)
   }
 
   static async createMany(newProduct: NewProduct[]): Promise<void> {
@@ -864,35 +939,40 @@ export class ProductModel {
       .execute()
   }
 
-  applyWhere(instance: ProductModel, column: string, ...args: any[]): ProductModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): ProductModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): ProductModel {
+  static where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): ProductModel {
+  whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): ProductModel {
+  static whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -900,7 +980,7 @@ export class ProductModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): ProductModel {
+  applyWhereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -911,11 +991,11 @@ export class ProductModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): ProductModel {
+  whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): ProductModel {
+  static whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
     const instance = new ProductModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -986,11 +1066,57 @@ export class ProductModel {
     return instance
   }
 
-  whereNull(column: string): ProductModel {
-    return ProductModel.whereNull(column)
+  whereNotNull(column: keyof ProductsTable): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): ProductModel {
+  static whereNotNull(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof ProductsTable): ProductModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -998,6 +1124,10 @@ export class ProductModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -1060,23 +1190,27 @@ export class ProductModel {
     return instance
   }
 
-  whereIn(column: keyof ProductType, values: any[]): ProductModel {
-    return ProductModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof ProductsTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof ProductType, values: any[]): ProductModel {
+  whereIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
     const instance = new ProductModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
+  applyWhereBetween<V>(column: keyof ProductsTable, range: [V, V]): ProductModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1090,17 +1224,17 @@ export class ProductModel {
     return this
   }
 
-  whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof ProductType, range: [any, any]): ProductModel {
+  static whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof ProductType, value: string): ProductModel {
+  applyWhereLike(column: keyof ProductsTable, value: string): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1110,17 +1244,17 @@ export class ProductModel {
     return this
   }
 
-  whereLike(column: keyof ProductType, value: string): ProductModel {
+  whereLike(column: keyof ProductsTable, value: string): ProductModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ProductType, value: string): ProductModel {
+  static whereLike(column: keyof ProductsTable, value: string): ProductModel {
     const instance = new ProductModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+  applyWhereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1130,14 +1264,14 @@ export class ProductModel {
     return this
   }
 
-  whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof ProductType, values: any[]): ProductModel {
+  static whereNotIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
     const instance = new ProductModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1154,6 +1288,8 @@ export class ProductModel {
   }
 
   static async latest(): Promise<ProductType | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1162,12 +1298,16 @@ export class ProductModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new ProductModel(model as ProductType)
 
     return data
   }
 
   static async oldest(): Promise<ProductType | undefined> {
+    const instance = new ProductModel(null)
+
     const model = await DB.instance.selectFrom('products')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1175,6 +1315,8 @@ export class ProductModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new ProductModel(model as ProductType)
 
@@ -1185,7 +1327,8 @@ export class ProductModel {
     condition: Partial<ProductType>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
-    // Get the key and value from the condition object
+    const instance = new ProductModel(null)
+
     const key = Object.keys(condition)[0] as keyof ProductType
 
     if (!key) {
@@ -1201,10 +1344,13 @@ export class ProductModel {
       .executeTakeFirst()
 
     if (existingProduct) {
+      instance.mapCustomGetters(existingProduct)
+      await instance.loadRelations(existingProduct)
+
       return new ProductModel(existingProduct as ProductType)
     }
     else {
-      return await this.create(newProduct)
+      return await instance.create(newProduct)
     }
   }
 
@@ -1251,7 +1397,7 @@ export class ProductModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newProduct)
+      return await instance.create(newProduct)
     }
   }
 
@@ -1314,8 +1460,10 @@ export class ProductModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new ProductModel(model as ProductType)
 
@@ -1333,13 +1481,13 @@ export class ProductModel {
     return data
   }
 
-  orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
+  orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ProductType, order: 'asc' | 'desc'): ProductModel {
+  static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1347,13 +1495,13 @@ export class ProductModel {
     return instance
   }
 
-  groupBy(column: keyof ProductType): ProductModel {
+  groupBy(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ProductType): ProductModel {
+  static groupBy(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1361,13 +1509,13 @@ export class ProductModel {
     return instance
   }
 
-  having(column: keyof ProductType, operator: string, value: any): ProductModel {
+  having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof ProductType, operator: string, value: any): ProductModel {
+  static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1389,13 +1537,13 @@ export class ProductModel {
     return instance
   }
 
-  orderByDesc(column: keyof ProductType): ProductModel {
+  orderByDesc(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ProductType): ProductModel {
+  static orderByDesc(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1403,13 +1551,13 @@ export class ProductModel {
     return instance
   }
 
-  orderByAsc(column: keyof ProductType): ProductModel {
+  orderByAsc(column: keyof ProductsTable): ProductModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ProductType): ProductModel {
+  static orderByAsc(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1423,6 +1571,8 @@ export class ProductModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewProduct
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('products')
       .set(filteredValues)
@@ -1445,6 +1595,8 @@ export class ProductModel {
       this.updateFromQuery.set(product).execute()
     }
 
+    await this.mapCustomSetters(product)
+
     await DB.instance.updateTable('products')
       .set(product)
       .where('id', '=', this.id)
@@ -1465,16 +1617,10 @@ export class ProductModel {
     if (!this)
       throw new HttpError(500, 'Product data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewProduct
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('products')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1508,7 +1654,7 @@ export class ProductModel {
   }
 
   // Method to delete (soft delete) the product instance
-  async delete(): Promise<any> {
+  async delete(): Promise<ProductsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 

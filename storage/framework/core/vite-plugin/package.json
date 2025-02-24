@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/vite-plugin",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "The Stacks Vite plugins.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -93,15 +93,15 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "markdown-it-link-attributes": "^4.0.1",
     "markdown-it-shiki": "^0.9.0",
-    "unplugin-auto-import": "^19.0.0",
-    "unplugin-vue-components": "^28.0.0",
-    "unplugin-vue-markdown": "^28.3.0",
-    "vite": "^6.0.11",
+    "unplugin-auto-import": "^19.1.0",
+    "unplugin-vue-components": "^28.4.0",
+    "unplugin-vue-markdown": "^28.3.1",
+    "vite": "^6.1.1",
     "vite-plugin-full-reload": "^1.2.0",
-    "vite-plugin-inspect": "^10.1.0",
-    "vite-plugin-pages": "^0.32.4",
+    "vite-plugin-inspect": "^11.0.0",
+    "vite-plugin-pages": "^0.32.5",
     "vite-plugin-pwa": "^0.21.1",
-    "vite-ssg": "^25.0.0",
+    "vite-ssg": "^25.2.0",
     "vite-ssg-sitemap": "^0.8.1"
   }
 }

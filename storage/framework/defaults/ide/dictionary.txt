@@ -45,6 +45,7 @@ certutil
 changelist
 changelogen
 changelogithub
+chartjs
 chatbots
 chrisbbreuer
 chrisbreuer

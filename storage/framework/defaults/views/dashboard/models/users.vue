@@ -31,7 +31,62 @@
               </p>
             </dd>
           </div>
+
+          <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
+            <dt>
+              <div class="absolute rounded-md bg-green-500 p-3">
+                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
+              </div>
+              <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+                Active Sessions
+              </p>
+            </dt>
+            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
+              <p class="text-2xl text-gray-900 font-semibold">
+                4,938
+              </p>
+              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
+                <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+                </svg>
+                <span class="sr-only"> Increased by </span>
+                271
+              </p>
+            </dd>
+          </div>
         </dl>
+      </div>
+    </div>
+
+    <div class="mb-8 px-4 lg:px-8 sm:px-6">
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">User Growth & Activity</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track user registrations and active sessions over time</p>
+            </div>
+            <div class="flex items-center space-x-4">
+              <select
+                v-model="timeRange"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+              </select>
+            </div>
+          </div>
+          <div class="h-[400px] relative">
+            <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+            <Line :data="chartData" :options="chartOptions" />
+          </div>
+        </div>
       </div>
     </div>
 
@@ -130,3 +185,181 @@
     </div>
   </div>
 </template>
+
+<script lang="ts" setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+  Scale,
+  CoreScaleOptions,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
+
+useHead({
+  title: 'Dashboard - Users',
+})
+
+const timeRange = ref<'7' | '30' | '90' | '365'>('30')
+const isLoading = ref(false)
+
+// Helper function to format dates
+const formatDate = (daysAgo: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Generate date labels for the selected time range
+const generateDateLabels = (days: number) => {
+  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
+}
+
+// Generate mock growth data
+const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
+  return Array.from({ length: days }, (_, i) => {
+    const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
+    const daysFromStart = days - 1 - i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  }).reverse()
+}
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      type: 'linear' as const,
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        callback: function(this: Scale<CoreScaleOptions>, tickValue: string | number) {
+          const value = Number(tickValue)
+          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
+          if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
+          return value.toString()
+        }
+      },
+    },
+    x: {
+      type: 'category' as const,
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const,
+      align: 'end' as const,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        boxWidth: 12,
+        padding: 15,
+      },
+    },
+    tooltip: {
+      mode: 'index' as const,
+      intersect: false,
+      callbacks: {
+        label: (context: any) => {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.y !== null) {
+            const value = context.parsed.y
+            if (value >= 1000000) return `${label}${(value / 1000000).toFixed(1)}M users`
+            if (value >= 1000) return `${label}${(value / 1000).toFixed(1)}k users`
+            return `${label}${value} users`
+          }
+          return label
+        }
+      }
+    }
+  },
+  interaction: {
+    mode: 'index' as const,
+    intersect: false,
+  },
+} as const
+
+// Chart data
+const chartData = computed(() => {
+  const days = parseInt(timeRange.value)
+  const labels = generateDateLabels(days)
+  const baseCount = 2000 // Starting with 2k users
+  const dailyGrowth = 20 // Average 20 new users per day
+
+  return {
+    labels,
+    datasets: [{
+      label: 'Total Users',
+      data: generateGrowthData(days, baseCount, dailyGrowth),
+      borderColor: 'rgb(59, 130, 246)', // Blue color for users
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+      tension: 0.4
+    }, {
+      label: 'Active Sessions',
+      data: generateGrowthData(days, Math.floor(baseCount * 0.4), Math.floor(dailyGrowth * 0.4)), // ~40% of total users are active
+      borderColor: 'rgb(34, 197, 94)', // Green color for active sessions
+      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+      fill: true,
+      tension: 0.4
+    }]
+  }
+})
+
+// Watch for time range changes
+watch(timeRange, async () => {
+  isLoading.value = true
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
+
+// Initial load
+onMounted(async () => {
+  isLoading.value = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading.value = false
+})
+</script>

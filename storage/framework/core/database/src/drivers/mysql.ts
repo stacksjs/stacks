@@ -1,7 +1,8 @@
+import type { Ok } from '@stacksjs/error-handling'
 import type { Attribute, Attributes, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
-import { type Ok, ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 

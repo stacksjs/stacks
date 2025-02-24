@@ -1,5 +1,6 @@
+import type { Err, Ok } from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
-import { type Err, ok, type Ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'

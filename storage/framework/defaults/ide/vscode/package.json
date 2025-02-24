@@ -28,7 +28,7 @@
   "icon": "logo.png",
   "files": ["LICENSE.md", "logo.png"],
   "engines": {
-    "vscode": "^1.96.4"
+    "vscode": "^1.97.2"
   },
   "scripts": {
     "package": "bunx --bun vsce package",

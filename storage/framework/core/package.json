@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -370,7 +370,7 @@
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/eslint-config": "^3.15.1-beta.4",
+    "@stacksjs/eslint-config": "^4.2.1-beta.1",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/git": "workspace:*",

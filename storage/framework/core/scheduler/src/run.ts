@@ -1,5 +1,6 @@
+import type { Err, Ok } from '@stacksjs/error-handling'
 import type { JobOptions } from '@stacksjs/types'
-import { type Err, ok, type Ok } from '@stacksjs/error-handling'
+import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'

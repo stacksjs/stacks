@@ -1,0 +1,11 @@
+---
+description: Key code conventions
+globs: 
+---
+## Key Conventions
+
+- If there are two equally valid implementations, the browser version should be preferred
+- Aim for 100% test coverage
+- Avoid usage of `any`
+- Reuse eslint-ignore comments where present, unless not needed
+- ensure we log everything properly, including for debug reasons

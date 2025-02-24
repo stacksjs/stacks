@@ -1,9 +1,10 @@
+import type { PublicKeyCredentialRequestOptionsJSON } from '@stacksjs/auth'
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import {
   generateAuthenticationOptions,
   getUserPasskeys,
-  type PublicKeyCredentialRequestOptionsJSON,
+
 } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 

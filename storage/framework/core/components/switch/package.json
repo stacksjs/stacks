@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/switch",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "A modern switch component.",
   "author": "Chris Breuer",
   "contributors": [
@@ -52,11 +52,11 @@
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.3",
-    "@microsoft/api-extractor": "^7.49.2",
+    "@microsoft/api-extractor": "^7.50.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@vue/tsconfig": "^0.7.0",
-    "unocss": "65.4.3",
-    "unplugin-icons": "^22.0.0"
+    "unocss": "66.0.0",
+    "unplugin-icons": "^22.1.0"
   }
 }

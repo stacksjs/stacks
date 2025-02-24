@@ -22,4 +22,6 @@ export default {
   server: {
     scan: true, // scans for spam and viruses
   },
+
+  default: env.MAIL_DRIVER || 'ses',
 } satisfies EmailConfig

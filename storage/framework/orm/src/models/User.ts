@@ -1,4 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
+import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
@@ -7,6 +9,7 @@ import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
+
 import { cache } from '@stacksjs/cache'
 
 import { sql } from '@stacksjs/database'
@@ -16,8 +19,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
-
-import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction, type Stripe } from '@stacksjs/payments'
+import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
 
 import Team from './Team'
 
@@ -105,6 +107,61 @@ export class UserModel {
     this.hasSaved = false
   }
 
+  mapCustomGetters(models: UserJsonResponse | UserJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: UserJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+          salutationName: () => {
+            return `Mr. ${model.name}`
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+        salutationName: () => {
+          return `Mr. ${model.name}`
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: UserJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+      password: () => Bun.password.hash(model.password),
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
   get subscriber(): SubscriberModel | undefined {
     return this.attributes.subscriber
   }
@@ -169,10 +226,6 @@ export class UserModel {
     return this.attributes.updated_at
   }
 
-  get firstName(name) {
-    return name.split(' ')[0]
-  }
-
   set stripe_id(value: string) {
     this.attributes.stripe_id = value
   }
@@ -205,7 +258,7 @@ export class UserModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof UserType): Partial<UserType> {
+  getOriginal(column?: keyof UserJsonResponse): Partial<UserJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -271,6 +324,7 @@ export class UserModel {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
@@ -301,8 +355,10 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 
@@ -310,9 +366,13 @@ export class UserModel {
   }
 
   static async first(): Promise<UserModel | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -325,8 +385,10 @@ export class UserModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, 'No UserModel results found for query')
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 
@@ -344,7 +406,11 @@ export class UserModel {
   }
 
   static async all(): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
     const models = await DB.instance.selectFrom('users').selectAll().execute()
+
+    instance.mapCustomGetters(models)
 
     const data = await Promise.all(models.map(async (model: UserType) => {
       return new UserModel(model)
@@ -361,6 +427,7 @@ export class UserModel {
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
+    this.mapCustomGetters(model)
     await this.loadRelations(model)
 
     const data = new UserModel(model as UserType)
@@ -378,7 +445,7 @@ export class UserModel {
     return await instance.applyFindOrFail(id)
   }
 
-  static async findMany(ids: number[]): Promise<UserModel[]> {
+  async applyFindMany(ids: number[]): Promise<UserModel[]> {
     let query = DB.instance.selectFrom('users').where('id', 'in', ids)
 
     const instance = new UserModel(null)
@@ -387,9 +454,20 @@ export class UserModel {
 
     const models = await query.execute()
 
+    instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
     return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<UserModel[]> {
+    const instance = new UserModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<UserModel[]> {
+    return await this.applyFindMany(ids)
   }
 
   skip(count: number): UserModel {
@@ -573,6 +651,7 @@ export class UserModel {
       models = await this.selectFromQuery.selectAll().execute()
     }
 
+    this.mapCustomGetters(models)
     await this.loadRelations(models)
 
     const data = await Promise.all(models.map(async (model: UserModel) => {
@@ -630,7 +709,7 @@ export class UserModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof UserModel>) => void,
   ): UserModel {
     const subqueryBuilder = new SubqueryBuilder()
 
@@ -655,11 +734,11 @@ export class UserModel {
               break
 
             case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
               }
               else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
+                subquery = subquery.whereIn(condition.column, condition.values)
               }
 
               break
@@ -673,7 +752,7 @@ export class UserModel {
               break
 
             case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
+              subquery = subquery.whereBetween(condition.column, condition.values)
               break
 
             case 'whereExists': {
@@ -692,14 +771,14 @@ export class UserModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof UserModel>) => void,
   ): UserModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<keyof UserModel>) => void,
   ): UserModel {
     const instance = new UserModel(null)
 
@@ -727,10 +806,10 @@ export class UserModel {
   static doesntHave(relation: string): UserModel {
     const instance = new UserModel(null)
 
-    return instance.doesntHave(relation)
+    return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<UsersTable>) => void): UserModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -738,64 +817,61 @@ export class UserModel {
 
     this.selectFromQuery = this.selectFromQuery
       .where(({ exists, selectFrom, not }: any) => {
-        let subquery = selectFrom(relation)
+        const subquery = selectFrom(relation)
           .select('1')
           .whereRef(`${relation}.user_id`, '=', 'users.id')
-
-        conditions.forEach((condition) => {
-          switch (condition.method) {
-            case 'where':
-              if (condition.type === 'and') {
-                subquery = subquery.where(condition.column, condition.operator!, condition.value)
-              }
-              else {
-                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
-              }
-              break
-
-            case 'whereIn':
-              if (condition.operator === 'not') {
-                subquery = subquery.whereNotIn(condition.column, condition.values!)
-              }
-              else {
-                subquery = subquery.whereIn(condition.column, condition.values!)
-              }
-
-              break
-
-            case 'whereNull':
-              subquery = subquery.whereNull(condition.column)
-              break
-
-            case 'whereNotNull':
-              subquery = subquery.whereNotNull(condition.column)
-              break
-
-            case 'whereBetween':
-              subquery = subquery.whereBetween(condition.column, condition.values!)
-              break
-
-            case 'whereExists': {
-              const nestedBuilder = new SubqueryBuilder()
-              condition.callback!(nestedBuilder)
-              break
-            }
-          }
-        })
 
         return not(exists(subquery))
       })
 
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value)
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values)
+          }
+          else {
+            this.whereIn(condition.column, condition.values)
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.values)
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder) => void): UserModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<UsersTable>) => void): UserModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder) => void,
+    callback: (query: SubqueryBuilder<UsersTable>) => void,
   ): UserModel {
     const instance = new UserModel(null)
 
@@ -843,14 +919,14 @@ export class UserModel {
     return await instance.applyPaginate(options)
   }
 
-  static async create(newUser: NewUser): Promise<UserModel> {
-    const instance = new UserModel(null)
-
+  async applyCreate(newUser: NewUser): Promise<UserModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newUser).filter(([key]) =>
-        !instance.guarded.includes(key) && instance.fillable.includes(key),
+        !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewUser
+
+    await this.mapCustomSetters(filteredValues)
 
     filteredValues.uuid = randomUUIDv7()
 
@@ -858,12 +934,22 @@ export class UserModel {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await instance.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
     if (model)
       dispatch('user:created', model)
 
     return model
+  }
+
+  async create(newUser: NewUser): Promise<UserModel> {
+    return await this.applyCreate(newUser)
+  }
+
+  static async create(newUser: NewUser): Promise<UserModel> {
+    const instance = new UserModel(null)
+
+    return await instance.applyCreate(newUser)
   }
 
   static async createMany(newUser: NewUser[]): Promise<void> {
@@ -913,35 +999,40 @@ export class UserModel {
       .execute()
   }
 
-  applyWhere(instance: UserModel, column: string, ...args: any[]): UserModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, operator, actualValue)
-    instance.updateFromQuery = instance.updateFromQuery.where(column, operator, actualValue)
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, operator, actualValue)
-
-    return instance
+    return this
   }
 
-  where(column: string, ...args: any[]): UserModel {
-    return this.applyWhere(this, column, ...args)
+  where<V = string>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    return this.applyWhere<V>(column, ...args)
   }
 
-  static where(column: string, ...args: any[]): UserModel {
+  static where<V = string>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
     const instance = new UserModel(null)
 
-    return instance.applyWhere(instance, column, ...args)
+    return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: string, operator: string, second: string): UserModel {
+  whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: string, operator: string, second: string): UserModel {
+  static whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
@@ -949,7 +1040,7 @@ export class UserModel {
     return instance
   }
 
-  applyWhereRef(column: string, ...args: string[]): UserModel {
+  applyWhereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
@@ -960,11 +1051,11 @@ export class UserModel {
     return instance
   }
 
-  whereRef(column: string, ...args: string[]): UserModel {
+  whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: string, ...args: string[]): UserModel {
+  static whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereRef(column, ...args)
@@ -1035,11 +1126,57 @@ export class UserModel {
     return instance
   }
 
-  whereNull(column: string): UserModel {
-    return UserModel.whereNull(column)
+  whereNotNull(column: keyof UsersTable): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
   }
 
-  static whereNull(column: string): UserModel {
+  static whereNotNull(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof UsersTable): UserModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
@@ -1047,6 +1184,10 @@ export class UserModel {
     )
 
     instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
 
@@ -1085,23 +1226,27 @@ export class UserModel {
     return instance
   }
 
-  whereIn(column: keyof UserType, values: any[]): UserModel {
-    return UserModel.whereIn(column, values)
+  applyWhereIn<V>(column: keyof UsersTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
   }
 
-  static whereIn(column: keyof UserType, values: any[]): UserModel {
+  whereIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
     const instance = new UserModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(column, 'in', values)
-
-    instance.updateFromQuery = instance.updateFromQuery.where(column, 'in', values)
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where(column, 'in', values)
-
-    return instance
+    return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween(column: keyof UserType, range: [any, any]): UserModel {
+  applyWhereBetween<V>(column: keyof UsersTable, range: [V, V]): UserModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1115,17 +1260,17 @@ export class UserModel {
     return this
   }
 
-  whereBetween(column: keyof UserType, range: [any, any]): UserModel {
-    return this.applyWhereBetween(column, range)
+  whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
+    return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween(column: keyof UserType, range: [any, any]): UserModel {
+  static whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
     const instance = new UserModel(null)
 
-    return instance.applyWhereBetween(column, range)
+    return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof UserType, value: string): UserModel {
+  applyWhereLike(column: keyof UsersTable, value: string): UserModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1135,17 +1280,17 @@ export class UserModel {
     return this
   }
 
-  whereLike(column: keyof UserType, value: string): UserModel {
+  whereLike(column: keyof UsersTable, value: string): UserModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof UserType, value: string): UserModel {
+  static whereLike(column: keyof UsersTable, value: string): UserModel {
     const instance = new UserModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn(column: keyof UserType, values: any[]): UserModel {
+  applyWhereNotIn<V>(column: keyof UsersTable, values: V[]): UserModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1155,14 +1300,14 @@ export class UserModel {
     return this
   }
 
-  whereNotIn(column: keyof UserType, values: any[]): UserModel {
-    return this.applyWhereNotIn(column, values)
+  whereNotIn<V>(column: keyof UsersTable, values: V[]): UserModel {
+    return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn(column: keyof UserType, values: any[]): UserModel {
+  static whereNotIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
     const instance = new UserModel(null)
 
-    return instance.applyWhereNotIn(column, values)
+    return instance.applyWhereNotIn<V>(column, values)
   }
 
   async exists(): Promise<boolean> {
@@ -1179,6 +1324,8 @@ export class UserModel {
   }
 
   static async latest(): Promise<UserType | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'desc')
@@ -1187,12 +1334,16 @@ export class UserModel {
     if (!model)
       return undefined
 
+    instance.mapCustomGetters(model)
+
     const data = new UserModel(model as UserType)
 
     return data
   }
 
   static async oldest(): Promise<UserType | undefined> {
+    const instance = new UserModel(null)
+
     const model = await DB.instance.selectFrom('users')
       .selectAll()
       .orderBy('id', 'asc')
@@ -1200,6 +1351,8 @@ export class UserModel {
 
     if (!model)
       return undefined
+
+    instance.mapCustomGetters(model)
 
     const data = new UserModel(model as UserType)
 
@@ -1210,7 +1363,8 @@ export class UserModel {
     condition: Partial<UserType>,
     newUser: NewUser,
   ): Promise<UserModel> {
-    // Get the key and value from the condition object
+    const instance = new UserModel(null)
+
     const key = Object.keys(condition)[0] as keyof UserType
 
     if (!key) {
@@ -1226,10 +1380,13 @@ export class UserModel {
       .executeTakeFirst()
 
     if (existingUser) {
+      instance.mapCustomGetters(existingUser)
+      await instance.loadRelations(existingUser)
+
       return new UserModel(existingUser as UserType)
     }
     else {
-      return await this.create(newUser)
+      return await instance.create(newUser)
     }
   }
 
@@ -1276,7 +1433,7 @@ export class UserModel {
     }
     else {
       // If not found, create a new record
-      return await this.create(newUser)
+      return await instance.create(newUser)
     }
   }
 
@@ -1339,8 +1496,10 @@ export class UserModel {
       model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
     }
 
-    if (model)
+    if (model) {
+      this.mapCustomGetters(model)
       await this.loadRelations(model)
+    }
 
     const data = new UserModel(model as UserType)
 
@@ -1358,13 +1517,13 @@ export class UserModel {
     return data
   }
 
-  orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
+  orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof UserType, order: 'asc' | 'desc'): UserModel {
+  static orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
@@ -1372,13 +1531,13 @@ export class UserModel {
     return instance
   }
 
-  groupBy(column: keyof UserType): UserModel {
+  groupBy(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof UserType): UserModel {
+  static groupBy(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
@@ -1386,13 +1545,13 @@ export class UserModel {
     return instance
   }
 
-  having(column: keyof UserType, operator: string, value: any): UserModel {
+  having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having(column: keyof UserType, operator: string, value: any): UserModel {
+  static having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
@@ -1414,13 +1573,13 @@ export class UserModel {
     return instance
   }
 
-  orderByDesc(column: keyof UserType): UserModel {
+  orderByDesc(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof UserType): UserModel {
+  static orderByDesc(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
@@ -1428,13 +1587,13 @@ export class UserModel {
     return instance
   }
 
-  orderByAsc(column: keyof UserType): UserModel {
+  orderByAsc(column: keyof UsersTable): UserModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof UserType): UserModel {
+  static orderByAsc(column: keyof UsersTable): UserModel {
     const instance = new UserModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
@@ -1448,6 +1607,8 @@ export class UserModel {
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
     ) as NewUser
+
+    await this.mapCustomSetters(filteredValues)
 
     await DB.instance.updateTable('users')
       .set(filteredValues)
@@ -1473,6 +1634,8 @@ export class UserModel {
       this.updateFromQuery.set(user).execute()
     }
 
+    await this.mapCustomSetters(user)
+
     await DB.instance.updateTable('users')
       .set(user)
       .where('id', '=', this.id)
@@ -1496,16 +1659,10 @@ export class UserModel {
     if (!this)
       throw new HttpError(500, 'User data is undefined')
 
-    const filteredValues = Object.fromEntries(
-      Object.entries(this.attributes).filter(([key]) =>
-        !this.guarded.includes(key) && this.fillable.includes(key),
-      ),
-    ) as NewUser
+    await this.mapCustomSetters(this.attributes)
 
     if (this.id === undefined) {
-      await DB.instance.insertInto('users')
-        .values(filteredValues)
-        .executeTakeFirstOrThrow()
+      await this.create(this.attributes)
     }
     else {
       await this.update(this.attributes)
@@ -1539,7 +1696,7 @@ export class UserModel {
   }
 
   // Method to delete (soft delete) the user instance
-  async delete(): Promise<any> {
+  async delete(): Promise<UsersTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -1555,7 +1712,7 @@ export class UserModel {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const results = await DB.instance.selectFrom('team_users')
+    const results = await DB.instance.selectFrom('teams')
       .where('team_id', '=', this.id)
       .selectAll()
       .execute()

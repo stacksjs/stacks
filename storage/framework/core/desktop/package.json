@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/desktop",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "The Stacks Desktop engine.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -55,6 +55,8 @@
     "@stacksjs/server": "workspace:*",
     "@tauri-apps/api": "^1.6.0",
     "@tauri-apps/cli": "^1.6.3",
+    "@types/d3": "^7.4.3",
+    "d3": "^7.9.0",
     "unified-network": "^0.6.4",
     "vue": "^3.5.13"
   }

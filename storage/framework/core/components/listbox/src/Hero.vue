@@ -14,11 +14,11 @@ interface Person {
 }
 
 const people: Person[] = [
-  { id: 1, name: 'Durward Reynolds', unavailable: false },
-  { id: 2, name: 'Kenton Towne', unavailable: false },
-  { id: 3, name: 'Therese Wunsch', unavailable: false },
-  { id: 4, name: 'Benedict Kessler', unavailable: true },
-  { id: 5, name: 'Katelyn Rohan', unavailable: false },
+  { id: 1, name: 'Chris Breuer', unavailable: false },
+  { id: 2, name: 'Avery Hill', unavailable: false },
+  { id: 3, name: 'Glenn Michael', unavailable: false },
+  { id: 4, name: 'Michael Vincent', unavailable: true },
+  { id: 5, name: 'Blake Ayer', unavailable: false },
 ]
 
 const selectedPerson = ref<Person>(people[0] as Person)

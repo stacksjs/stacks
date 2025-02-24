@@ -1,3 +1,4 @@
+import type { CLI, GeneratorOptions } from '@stacksjs/types'
 import process from 'node:process'
 import {
   generateComponentMeta,
@@ -14,7 +15,7 @@ import {
 import { intro, log, outro } from '@stacksjs/cli'
 import { generateModelFiles } from '@stacksjs/orm'
 import { initiateImports } from '@stacksjs/server'
-import { type CLI, ExitCode, type GeneratorOptions } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types'
 
 export function generate(buddy: CLI): void {
   const descriptions = {

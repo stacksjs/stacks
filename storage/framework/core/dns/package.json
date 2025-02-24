@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dns",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Easily manage your DNS.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -43,7 +43,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-route-53": "^3.741.0",
+    "@aws-sdk/client-route-53": "^3.750.0",
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/dnsx": "^0.2.2",
@@ -52,6 +52,6 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "aws-cdk-lib": "^2.177.0"
+    "aws-cdk-lib": "^2.180.0"
   }
 }

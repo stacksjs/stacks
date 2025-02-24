@@ -10,27 +10,31 @@ export interface BaseRelation {
   relationName?: string
 }
 
-interface Relation<T = string> extends BaseRelation {
+export interface Relation<T = string> extends BaseRelation {
   model: T
 }
 
-interface HasOne<T = string> extends Array<Relation<T>> {}
-interface HasMany<T = string> extends Array<Relation<T>> {}
-interface BelongsTo<T = string> extends Array<Relation<T>> {}
-interface BelongsToMany<T = string> extends Array<{
+export interface HasOne<T = string> extends Array<Relation<T>> {}
+export interface HasMany<T = string> extends Array<Relation<T>> {}
+export interface BelongsTo<T = string> extends Array<Relation<T>> {}
+
+export interface BelongsToMany<T = string> extends Array<BaseBelongsToMany<T> | T> {}
+export interface HasOneThrough<T = string> extends Array<BaseHasOneThrough<T> | T> {}
+
+export interface BaseBelongsToMany<T = string> {
   model: T
   firstForeignKey?: string
   secondForeignKey?: string
   pivotTable?: string
-} | T> {}
+}
 
-interface HasOneThrough<T = string> extends Array<{
+export interface BaseHasOneThrough<T = string> {
   model: T
   through: T
   foreignKey?: string
   throughForeignKey?: string
   relationName?: string
-}> {}
+}
 
 export interface FieldArrayElement {
   entity: string
@@ -74,10 +78,10 @@ interface ActivityLogOption {
 }
 
 export interface Relations {
-  hasOne?: HasOne<ModelNames> | ModelNames[]
-  hasMany?: HasMany<ModelNames> | ModelNames[]
-  belongsTo?: BelongsTo<ModelNames> | ModelNames[]
-  belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
+  hasOne: HasOne<ModelNames> | ModelNames[]
+  hasMany: HasMany<ModelNames> | ModelNames[]
+  belongsTo: BelongsTo<ModelNames> | ModelNames[]
+  belongsToMany: BelongsToMany<ModelNames> | ModelNames[]
 }
 
 export interface ApiSettings {
@@ -147,7 +151,7 @@ export interface ModelOptions extends Base {
     likeable?: boolean | LikeableOptions
   }
 
-  attributes?: Attributes
+  attributes?: AttributesElements
 
   // relationships
   hasOne?: HasOne<ModelNames> | ModelNames[]
@@ -158,7 +162,7 @@ export interface ModelOptions extends Base {
 
   belongsToMany?: BelongsToMany<ModelNames> | ModelNames[]
 
-  hasOneThrough?: HasOneThrough<ModelNames>
+  hasOneThrough?: HasOneThrough<ModelNames> | ModelNames[]
 
   scopes?: {
     [key: string]: (value: any) => any
@@ -189,7 +193,7 @@ export interface Attribute {
   // validation?: String | Number | Boolean | Date
 }
 
-export interface Attributes {
+export interface AttributesElements {
   [key: string]: Attribute
 }
 

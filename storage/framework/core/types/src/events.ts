@@ -28,3 +28,5 @@
 export interface Events {
   [key: string]: string[]
 }
+
+export * from '../../../types/events'

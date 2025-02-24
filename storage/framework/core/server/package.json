@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/server",
   "type": "module",
-  "version": "0.68.2",
+  "version": "0.69.5",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -48,6 +48,6 @@
     "@stacksjs/router": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "bun-plugin-auto-imports": "^0.3.1",
-    "vite": "^6.0.11"
+    "vite": "^6.1.1"
   }
 }

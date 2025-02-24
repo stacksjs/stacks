@@ -246,7 +246,6 @@ async function handleCopyCode() {
         <div v-else class="i-heroicons-document-duplicate text-gray-500" />
       </button>
     </div>
-    {{ currentTransition }}
     <transition name="fade" appear>
       <Dialog v-if="visible" @close="handleClose">
         <transition :name="currentTransition" appear>

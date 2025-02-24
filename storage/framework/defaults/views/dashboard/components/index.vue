@@ -1,6 +1,226 @@
 <script lang="ts" setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import { useHead } from '@vueuse/head'
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
+
 useHead({
   title: 'Dashboard - Components',
+})
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        callback: (value: number) => {
+          if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
+          if (value >= 1000) return (value / 1000).toFixed(1) + 'k'
+          return value
+        }
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top' as const,
+      align: 'end' as const,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        boxWidth: 12,
+        padding: 15,
+      },
+    },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          let label = context.dataset.label || ''
+          if (label) label += ': '
+          if (context.parsed.y !== null) {
+            const value = context.parsed.y
+            if (value >= 1000000) label += (value / 1000000).toFixed(1) + 'M'
+            else if (value >= 1000) label += (value / 1000).toFixed(1) + 'k'
+            else label += value
+          }
+          return label + ' downloads'
+        }
+      }
+    }
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+const comparePackage = ref('')
+const timeRange = ref<'7' | '30' | '90' | '365'>('7')
+const isLoading = ref(false)
+
+// Helper function to format dates
+const formatDate = (daysAgo: number) => {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric'
+  })
+}
+
+// Generate date labels for the selected time range
+const generateDateLabels = (days: number) => {
+  // Start from oldest date and move towards today
+  return Array.from({ length: days }, (_, i) => formatDate(i))
+}
+
+// Generate mock growth data
+const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
+  // Start from oldest date and move towards today
+  return Array.from({ length: days }, (_, i) => {
+    const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
+    const daysFromStart = i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  })
+}
+
+interface DownloadStats {
+  labels: string[]
+  data: number[]
+  compareData: number[]
+}
+
+interface DownloadStatsMap {
+  '7': DownloadStats
+  '30': DownloadStats
+  '90': DownloadStats
+  '365': DownloadStats
+}
+
+const downloadStats = ref<DownloadStatsMap>({
+  '7': {
+    labels: generateDateLabels(7),
+    data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
+    compareData: [9500, 11800, 10200, 12800, 15200, 14100, 13200]
+  },
+  '30': {
+    labels: generateDateLabels(30),
+    data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 8000)
+  },
+  '90': {
+    labels: generateDateLabels(90),
+    data: Array.from({ length: 90 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 90 }, () => Math.floor(Math.random() * 15000) + 8000)
+  },
+  '365': {
+    labels: generateDateLabels(365),
+    data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000)
+  }
+})
+
+// Function to fetch download data from API
+const fetchDownloadData = async (days: '7' | '30' | '90' | '365') => {
+  isLoading.value = true
+  try {
+    // Here you would make your API call
+    // const response = await fetch(`/api/downloads?days=${days}`)
+    // const data = await response.json()
+    // downloadStats.value[days] = data
+
+    // For now we're using the mock data already set in downloadStats
+    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+  } catch (error) {
+    console.error('Error fetching download data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// Watch for time range changes
+watch(timeRange, async (newRange) => {
+  await fetchDownloadData(newRange)
+})
+
+// Mock data for downloads chart
+const downloadsData = computed(() => ({
+  labels: downloadStats.value[timeRange.value].labels,
+  datasets: [
+    {
+      label: '@your/package',
+      data: downloadStats.value[timeRange.value].data,
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+    },
+    ...(comparePackage.value ? [{
+      label: comparePackage.value,
+      data: downloadStats.value[timeRange.value].compareData,
+      borderColor: 'rgb(234, 179, 8)',
+      backgroundColor: 'rgba(234, 179, 8, 0.1)',
+      fill: true,
+    }] : [])
+  ]
+}))
+
+const handleCompare = async () => {
+  if (comparePackage.value) {
+    // Here you would fetch comparison data from API
+    // await fetchComparisonData(comparePackage.value, timeRange.value)
+    await fetchDownloadData(timeRange.value)
+  }
+}
+
+// Initial data fetch
+onMounted(async () => {
+  await fetchDownloadData(timeRange.value)
 })
 </script>
 
@@ -92,6 +312,49 @@ useHead({
             </dd>
           </div>
         </dl>
+      </div>
+    </div>
+
+    <!-- Downloads Chart -->
+    <div class="mb-8 px-4 lg:px-8 sm:px-6">
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Download Activity</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Compare package downloads over time</p>
+            </div>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model="comparePackage"
+                  type="text"
+                  placeholder="Compare with package..."
+                  @keyup.enter="handleCompare"
+                  class="block w-64 rounded-md border-0 py-1.5 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                />
+                <button
+                  @click="handleCompare"
+                  class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  Compare
+                </button>
+              </div>
+              <select
+                v-model="timeRange"
+                class="text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              >
+                <option value="7">Last 7 days</option>
+                <option value="30">Last 30 days</option>
+                <option value="90">Last 90 days</option>
+                <option value="365">Last year</option>
+              </select>
+            </div>
+          </div>
+          <div class="h-[400px]">
+            <Line :data="downloadsData" :options="chartOptions" />
+          </div>
+        </div>
       </div>
     </div>
 
