@@ -28,7 +28,9 @@ export class MailtrapDriver extends BaseEmailDriver {
 
     try {
       this.validateMessage(message)
-      const templ = await template(message.template, options)
+      let templ
+      if (message.template)
+        templ = await template(message.template, options)
 
       const mailtrapPayload = {
         from: {
@@ -39,7 +41,7 @@ export class MailtrapDriver extends BaseEmailDriver {
         ...(message.cc && { cc: this.formatMailtrapAddresses(message.cc) }),
         ...(message.bcc && { bcc: this.formatMailtrapAddresses(message.bcc) }),
         subject: message.subject,
-        html: templ.html,
+        ...(templ?.html && { html: templ.html }),
         ...(message.text && { text: message.text }),
         ...(message.attachments && {
           attachments: message.attachments.map(attachment => ({
@@ -91,8 +93,8 @@ export class MailtrapDriver extends BaseEmailDriver {
 
   private async sendWithRetry(payload: any, attempt = 1): Promise<any> {
     const endpoint = this.inboxId
-      ? `https://send.api.mailtrap.io/api/send/${this.inboxId}`
-      : 'https://send.api.mailtrap.io/api/send'
+      ? `https://sandbox.api.mailtrap.io/send/${this.inboxId}`
+      : 'https://sandbox.api.mailtrap.io/send'
 
     try {
       const response = await fetch(endpoint, {

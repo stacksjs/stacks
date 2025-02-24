@@ -63,7 +63,7 @@ export interface EmailMessage {
   /** Email subject line */
   subject: string
   /** Path to email template or HTML content */
-  template: string
+  template?: string
   /** Optional plain text fallback */
   text?: string
   /** Optional attachments */

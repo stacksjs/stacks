@@ -1,3 +1,5 @@
-// export * as mailgun from './mailgun'
-// export * as nodemailer from './nodemailer'
+export * as mailgun from './mailgun'
+export * as mailtrap from './mailtrap'
+export * as nodemailer from './nodemailer'
+export * as sendgrid from './sendgrid'
 export * as ses from './ses'
