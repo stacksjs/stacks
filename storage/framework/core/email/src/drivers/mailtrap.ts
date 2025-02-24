@@ -92,9 +92,11 @@ export class MailtrapDriver extends BaseEmailDriver {
   }
 
   private async sendWithRetry(payload: any, attempt = 1): Promise<any> {
-    const endpoint = this.inboxId
-      ? `https://sandbox.api.mailtrap.io/send/${this.inboxId}`
-      : 'https://sandbox.api.mailtrap.io/send'
+    if (!this.inboxId) {
+      throw new Error('Mailtrap inbox ID is required but not provided. Please set MAILTRAP_INBOX_ID in your environment variables.')
+    }
+
+    const endpoint = `https://sandbox.api.mailtrap.io/api/send/${this.inboxId}`
 
     try {
       const response = await fetch(endpoint, {

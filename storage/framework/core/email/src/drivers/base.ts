@@ -35,10 +35,6 @@ export abstract class BaseEmailDriver implements EmailDriver {
       throw new Error('Email subject is required')
     }
 
-    if (!message.template) {
-      throw new Error('Email template path is required')
-    }
-
     return true
   }
 
