@@ -107,3 +107,22 @@ export interface RenderOptions {
   props?: Record<string, unknown>
   i18n?: I18n
 }
+
+
+export interface MailtrapSuccessResponse {
+  success: boolean
+  message_ids: string[]
+  errors?: never
+}
+
+export interface MailtrapErrorResponse {
+  success: false
+  errors: {
+    email?: string[]
+    message?: string[]
+    [key: string]: string[] | undefined
+  }
+  message_ids?: never
+}
+
+export type MailtrapResponse = MailtrapSuccessResponse | MailtrapErrorResponse

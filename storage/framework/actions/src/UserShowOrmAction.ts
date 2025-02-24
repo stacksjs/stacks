@@ -1,6 +1,5 @@
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import User from '../../orm/src/models/User'
 
 export default new Action({
   name: 'User Show',
@@ -10,7 +9,7 @@ export default new Action({
   // async handle(request: UserRequestType) {
     // const id = request.getParam('id')
 
-    const user = User.where('job_title')
+    // const user = await Error.whereColumn('id', '')
 
     // user?.update({ job_title: 'Senior Software Engineer' })
     // user?.delete()
