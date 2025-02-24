@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ComboboxDemo: typeof import('./../../../../resources/components/Docs/combobox/ComboboxDemo.vue')['default']
     Home: typeof import('./../../defaults/components/Docs/Home.vue')['default']
     HomeContributors: typeof import('./../../defaults/components/Docs/HomeContributors.vue')['default']
     HomeSponsors: typeof import('./../../defaults/components/Docs/HomeSponsors.vue')['default']
