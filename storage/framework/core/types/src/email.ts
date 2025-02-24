@@ -108,7 +108,6 @@ export interface RenderOptions {
   i18n?: I18n
 }
 
-
 export interface MailtrapSuccessResponse {
   success: boolean
   message_ids: string[]

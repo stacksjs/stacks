@@ -1,4 +1,5 @@
 import type { EmailAddress, EmailDriver, EmailDriverConfig, EmailMessage, EmailResult, RenderOptions } from '@stacksjs/types'
+import { log } from '@stacksjs/logging'
 
 export abstract class BaseEmailDriver implements EmailDriver {
   public abstract name: string
