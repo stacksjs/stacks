@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import Example from './Example.vue'
+import StepperDemo from './StepperDemo.vue'
 import Footer from './Footer.vue'
 import Hero from './Hero.vue'
 import Installation from './Installation.vue'
@@ -17,7 +17,7 @@ import Usage from './Usage.vue'
       >
         <Installation />
         <Usage />
-        <Example />
+        <StepperDemo />
         <Footer />
       </main>
     </div>
