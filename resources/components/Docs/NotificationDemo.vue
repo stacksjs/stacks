@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-import type { Position, Theme } from './types'
+import type { Position, Theme } from '../../../storage/framework/core/components/notification/src/types'
 import { ref } from 'vue'
-import { Notification } from '.'
-import Expand from './Expand.vue'
-import Others from './Others.vue'
-import Pos from './Position.vue'
-import Styling from './Styling.vue'
-import Theming from './Theming.vue'
-import Types from './Types.vue'
+import { Notification } from '@stacksjs/notification'
+import Expand from '../../../storage/framework/core/components/notification/src/Expand.vue'
+import Others from '../../../storage/framework/core/components/notification/src/Others.vue'
+import Pos from '../../../storage/framework/core/components/notification/src/Position.vue'
+import Styling from '../../../storage/framework/core/components/notification/src/Styling.vue'
+import Theming from '../../../storage/framework/core/components/notification/src/Theming.vue'
+import Types from '../../../storage/framework/core/components/notification/src/Types.vue'
 
 const expand = ref(false)
 const position = ref<Position>('top-right')

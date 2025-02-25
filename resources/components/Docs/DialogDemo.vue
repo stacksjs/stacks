@@ -1,10 +1,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { Transition } from './types'
-import Dialog from './components/Dialog.vue'
-import DialogPanel from './components/DialogPanel.vue'
+import { Dialog, DialogPanel } from '@stacksjs/dialog'
 
 const visible = ref(false)
+
+type Transition = 'fade' | 'slideInDown' | 'pop' | 'fadeInRightBig' | 'jackInTheBox' | 'slideInRight' | 'custom-transition'
 
 const currentTransition = ref<Transition>('fade')
 const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jackInTheBox', 'slideInDown', 'slideInRight', 'custom-transition'])
@@ -70,7 +70,7 @@ function handleClose() {
   </div>
 </template>
 
-<style scoped>
+<style>
 button {
   border: 0px solid #000;
 }
@@ -222,5 +222,4 @@ button {
   opacity: 0;
   transform: scale(0.1) rotate(-30deg);
 }
-/* @unocss-placeholder */
 </style>

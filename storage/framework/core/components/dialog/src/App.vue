@@ -1,12 +1,11 @@
 <script lang="ts" setup>
-import { defineCustomElement, ref } from 'vue'
+import { ref } from 'vue'
 import Dialog from './components/Dialog.vue'
 import DialogPanel from './components/DialogPanel.vue'
 import Hero from './Hero.vue'
 import Installation from './Installation.vue'
 import Transitions from './Transitions.vue'
 import Usage from './Usage.vue'
-import DialogDemo from './DialogDemo.vue'
 
 import { useSEOHeader } from './composables/useSEOHeader'
 
@@ -21,10 +20,6 @@ function handleOpen() {
 function handleClose() {
   visible.value = false
 }
-
-defineCustomElement({
-  shadow: true,
-})
 </script>
 
 <template>
@@ -40,7 +35,6 @@ defineCustomElement({
         <Installation />
         <Usage />
         <Transitions />
-        <DialogDemo />
       </main>
 
       <Transition name="fade" appear>

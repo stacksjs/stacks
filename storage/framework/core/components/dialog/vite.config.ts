@@ -24,7 +24,7 @@ export default defineConfig(({ mode }) => {
       include: /\.(stx|vue|md)($|\?)/,
     }),
     UnoCSS({
-      mode: 'shadow-dom',
+      mode: 'global',
     }),
     Components({
       extensions: ['stx', 'vue', 'md'],

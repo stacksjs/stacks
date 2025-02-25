@@ -7,11 +7,15 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    ComboboxDemo: typeof import('./../../../../resources/components/Docs/combobox/ComboboxDemo.vue')['default']
+    ComboboxDemo: typeof import('./../../../../resources/components/Docs/ComboboxDemo.vue')['default']
+    DialogDemo: typeof import('./../../../../resources/components/Docs/DialogDemo.vue')['default']
+    DropdownDemo: typeof import('./../../../../resources/components/Docs/DropdownDemo.vue')['default']
     Home: typeof import('./../../defaults/components/Docs/Home.vue')['default']
     HomeContributors: typeof import('./../../defaults/components/Docs/HomeContributors.vue')['default']
     HomeSponsors: typeof import('./../../defaults/components/Docs/HomeSponsors.vue')['default']
     HomeTeam: typeof import('./../../defaults/components/Docs/HomeTeam.vue')['default']
+    ListboxDemo: typeof import('./../../../../resources/components/Docs/ListboxDemo.vue')['default']
+    NotificationDemo: typeof import('./../../../../resources/components/Docs/NotificationDemo.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']

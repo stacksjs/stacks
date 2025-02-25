@@ -1,5 +1,9 @@
-# Dialog Demo
+---
+editLink: false
+---
 
-<DialogDemo />
+# Listbox Demo
+
+<ListboxDemo />
 
 For more detailed documentation and examples, please visit our documentation site.
