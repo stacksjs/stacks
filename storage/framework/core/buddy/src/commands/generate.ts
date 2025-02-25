@@ -161,7 +161,6 @@ export function generate(buddy: CLI): void {
         })
       }
       catch (error) {
-        throw error
         log.error('There was an error generating your model files', error)
         process.exit(ExitCode.FatalError)
       }
