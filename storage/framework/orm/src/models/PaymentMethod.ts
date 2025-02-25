@@ -1,6 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
-import type { TransactionModel } from './Transaction'
+import type { PaymentTransactionModel } from './PaymentTransaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -13,7 +13,7 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id?: number
-  transactions?: TransactionModel[] | undefined
+  payment_transactions?: PaymentTransactionModel[] | undefined
   user_id?: number
   user?: UserModel
   type?: string
@@ -139,8 +139,8 @@ export class PaymentMethodModel {
     }
   }
 
-  get transactions(): TransactionModel[] | undefined {
-    return this.attributes.transactions
+  get payment_transactions(): PaymentTransactionModel[] | undefined {
+    return this.attributes.payment_transactions
   }
 
   get user_id(): number | undefined {
@@ -1745,7 +1745,7 @@ export class PaymentMethodModel {
 
       updated_at: this.updated_at,
 
-      transactions: this.transactions,
+      payment_transactions: this.payment_transactions,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

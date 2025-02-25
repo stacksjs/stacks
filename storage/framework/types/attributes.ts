@@ -44,26 +44,26 @@ export interface Attributes {
   payload: string
   exception: string
   failed_at: Date | string
-  key: number
-  unit_price: number
-  image: string
-  provider_id: string
   type: string
   last_four: number
   brand: string
   exp_month: number
   exp_year: number
   is_default: boolean
+  provider_id: string
   amount: number
   attempts: number
   available_at: number
   reserved_at: Date | string
   provider_status: string
+  unit_price: number
   provider_type: string
   provider_price_id: string
   quantity: number
   trial_ends_at: string
   ends_at: string
+  key: number
+  image: string
   message: string
   stack: string
   additional_info: string

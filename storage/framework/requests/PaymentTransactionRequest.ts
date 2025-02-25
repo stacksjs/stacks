@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { TransactionRequestType } from '../types/requests'
+import type { PaymentTransactionRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataTransaction {
+interface RequestDataPaymentTransaction {
   id: number
   name: string
   description: string
@@ -23,7 +23,7 @@ interface RequestDataTransaction {
   created_at?: Date
   updated_at?: Date
 }
-export class TransactionRequest extends Request<RequestDataTransaction> implements TransactionRequestType {
+export class PaymentTransactionRequest extends Request<RequestDataPaymentTransaction> implements PaymentTransactionRequestType {
   public id = 1
   public name = ''
   public description = ''
@@ -37,7 +37,7 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Transaction', this.all())
+      await validateField('PaymentTransaction', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -45,4 +45,4 @@ export class TransactionRequest extends Request<RequestDataTransaction> implemen
   }
 }
 
-export const transactionRequest = new TransactionRequest()
+export const paymenttransactionRequest = new PaymentTransactionRequest()

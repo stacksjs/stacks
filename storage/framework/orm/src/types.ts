@@ -5,8 +5,9 @@ import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { JobsTable } from '../src/models/Job'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
+import type { PaymentProductsTable } from '../src/models/PaymentProduct'
+import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
-import type { ProductsTable } from '../src/models/Product'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
@@ -14,7 +15,6 @@ import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
 import type { TeamsTable } from '../src/models/Team'
-import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 
 export interface TeamUsersTable {
@@ -62,12 +62,12 @@ export interface Database {
   users: UsersTable
   posts: PostsTable
   failed_jobs: FailedJobsTable
-  products: ProductsTable
   payment_methods: PaymentMethodsTable
+  payment_transactions: PaymentTransactionsTable
   requests: RequestsTable
-  transactions: TransactionsTable
   jobs: JobsTable
   subscriptions: SubscriptionsTable
+  payment_products: PaymentProductsTable
   errors: ErrorsTable
   passkeys: PasskeysTable
   migrations: MigrationsTable

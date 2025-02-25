@@ -318,35 +318,6 @@ export interface FailedJobRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataProduct {
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ProductRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'status' | 'image' | 'provider_id') => string) & ((key: 'description' | 'key' | 'unit_price') => number)
-
-  all: () => RequestDataProduct
-  id: number
-  name: string
-  description: number
-  key: number
-  unit_price: number
-  status: string
-  image: string
-  provider_id: string
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataPaymentMethod {
   id: number
   type: string
@@ -374,6 +345,35 @@ export interface PaymentMethodRequestType extends Request {
   is_default: boolean
   provider_id: string
   user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataPaymentTransaction {
+  id: number
+  name: string
+  description: string
+  amount: number
+  type: string
+  provider_id: string
+  user_id: number
+  payment_method_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PaymentTransactionRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'payment_method_id') => string)
+
+  all: () => RequestDataPaymentTransaction
+  id: number
+  name: string
+  description: string
+  amount: number
+  type: string
+  provider_id: string
+  user_id: number
+  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -407,35 +407,6 @@ export interface RequestRequestType extends Request {
   user_agent: string
   error_message: string
   deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataTransaction {
-  id: number
-  name: string
-  description: string
-  amount: number
-  type: string
-  provider_id: string
-  user_id: number
-  payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface TransactionRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'type' | 'provider_id') => string) & ((key: 'amount') => number) & ((key: 'user_id') => string) & ((key: 'payment_method_id') => string)
-
-  all: () => RequestDataTransaction
-  id: number
-  name: string
-  description: string
-  amount: number
-  type: string
-  provider_id: string
-  user_id: number
-  payment_method_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -502,6 +473,35 @@ export interface SubscriptionRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataPaymentProduct {
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PaymentProductRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'name' | 'status' | 'image' | 'provider_id') => string) & ((key: 'description' | 'key' | 'unit_price') => number)
+
+  all: () => RequestDataPaymentProduct
+  id: number
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataError {
   id: number
   type: string
@@ -527,4 +527,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | RequestRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | ProductRequestType | PaymentMethodRequestType | RequestRequestType | TransactionRequestType | JobRequestType | SubscriptionRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | RequestRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType

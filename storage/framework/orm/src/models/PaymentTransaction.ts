@@ -1,19 +1,28 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PaymentMethodModel } from './PaymentMethod'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-export interface ProductsTable {
+import PaymentMethod from './PaymentMethod'
+
+import User from './User'
+
+export interface PaymentTransactionsTable {
   id?: number
+  user_id?: number
+  user?: UserModel
+  payment_method_id?: number
+  payment_method?: PaymentMethodModel
   name?: string
-  description?: number
-  key?: number
-  unit_price?: number
-  status?: string
-  image?: string
+  description?: string
+  amount?: number
+  type?: string
   provider_id?: string
   uuid?: string
 
@@ -23,8 +32,8 @@ export interface ProductsTable {
 
 }
 
-interface ProductResponse {
-  data: ProductJsonResponse[]
+interface PaymentTransactionResponse {
+  data: PaymentTransactionJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -33,16 +42,16 @@ interface ProductResponse {
   next_cursor: number | null
 }
 
-export interface ProductJsonResponse extends Omit<ProductsTable, 'password'> {
+export interface PaymentTransactionJsonResponse extends Omit<PaymentTransactionsTable, 'password'> {
   [key: string]: any
 }
 
-export type ProductType = Selectable<ProductsTable>
-export type NewProduct = Partial<Insertable<ProductsTable>>
-export type ProductUpdate = Updateable<ProductsTable>
+export type PaymentTransactionType = Selectable<PaymentTransactionsTable>
+export type NewPaymentTransaction = Partial<Insertable<PaymentTransactionsTable>>
+export type PaymentTransactionUpdate = Updateable<PaymentTransactionsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductType, order: SortDirection }
+interface SortOptions { column: PaymentTransactionType, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -51,12 +60,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductModel {
-  private readonly hidden: Array<keyof ProductJsonResponse> = []
-  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
-  private readonly guarded: Array<keyof ProductJsonResponse> = []
-  protected attributes: Partial<ProductJsonResponse> = {}
-  protected originalAttributes: Partial<ProductJsonResponse> = {}
+export class PaymentTransactionModel {
+  private readonly hidden: Array<keyof PaymentTransactionJsonResponse> = []
+  private readonly fillable: Array<keyof PaymentTransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'payment_method_id']
+  private readonly guarded: Array<keyof PaymentTransactionJsonResponse> = []
+  protected attributes: Partial<PaymentTransactionJsonResponse> = {}
+  protected originalAttributes: Partial<PaymentTransactionJsonResponse> = {}
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -66,31 +75,31 @@ export class ProductModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(product: Partial<ProductType> | null) {
-    if (product) {
-      this.attributes = { ...product }
-      this.originalAttributes = { ...product }
+  constructor(paymenttransaction: Partial<PaymentTransactionType> | null) {
+    if (paymenttransaction) {
+      this.attributes = { ...paymenttransaction }
+      this.originalAttributes = { ...paymenttransaction }
 
-      Object.keys(product).forEach((key) => {
+      Object.keys(paymenttransaction).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (product as ProductJsonResponse)[key]
+          this.customColumns[key] = (paymenttransaction as PaymentTransactionJsonResponse)[key]
         }
       })
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('products')
-    this.updateFromQuery = DB.instance.updateTable('products')
-    this.deleteFromQuery = DB.instance.deleteFrom('products')
+    this.selectFromQuery = DB.instance.selectFrom('payment_transactions')
+    this.updateFromQuery = DB.instance.updateTable('payment_transactions')
+    this.deleteFromQuery = DB.instance.deleteFrom('payment_transactions')
     this.hasSelect = false
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
+  mapCustomGetters(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: ProductJsonResponse) => {
+      data.map((model: PaymentTransactionJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -119,7 +128,7 @@ export class ProductModel {
     }
   }
 
-  async mapCustomSetters(model: ProductJsonResponse): Promise<void> {
+  async mapCustomSetters(model: PaymentTransactionJsonResponse): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -129,6 +138,22 @@ export class ProductModel {
     for (const [key, fn] of Object.entries(customSetter)) {
       model[key] = await fn()
     }
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get payment_method_id(): number | undefined {
+    return this.attributes.payment_method_id
+  }
+
+  get payment_method(): PaymentMethodModel | undefined {
+    return this.attributes.payment_method
   }
 
   get id(): number | undefined {
@@ -143,24 +168,16 @@ export class ProductModel {
     return this.attributes.name
   }
 
-  get description(): number | undefined {
+  get description(): string | undefined {
     return this.attributes.description
   }
 
-  get key(): number | undefined {
-    return this.attributes.key
+  get amount(): number | undefined {
+    return this.attributes.amount
   }
 
-  get unit_price(): number | undefined {
-    return this.attributes.unit_price
-  }
-
-  get status(): string | undefined {
-    return this.attributes.status
-  }
-
-  get image(): string | undefined {
-    return this.attributes.image
+  get type(): string | undefined {
+    return this.attributes.type
   }
 
   get provider_id(): string | undefined {
@@ -183,24 +200,16 @@ export class ProductModel {
     this.attributes.name = value
   }
 
-  set description(value: number) {
+  set description(value: string) {
     this.attributes.description = value
   }
 
-  set key(value: number) {
-    this.attributes.key = value
+  set amount(value: number) {
+    this.attributes.amount = value
   }
 
-  set unit_price(value: number) {
-    this.attributes.unit_price = value
-  }
-
-  set status(value: string) {
-    this.attributes.status = value
-  }
-
-  set image(value: string) {
-    this.attributes.image = value
+  set type(value: string) {
+    this.attributes.type = value
   }
 
   set provider_id(value: string) {
@@ -211,7 +220,7 @@ export class ProductModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductJsonResponse): Partial<ProductJsonResponse> {
+  getOriginal(column?: keyof PaymentTransactionJsonResponse): Partial<PaymentTransactionJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -219,10 +228,10 @@ export class ProductModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ProductJsonResponse> {
-    return this.fillable.reduce<Partial<ProductJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductsTable]
-      const originalValue = this.originalAttributes[key as keyof ProductsTable]
+  getChanges(): Partial<PaymentTransactionJsonResponse> {
+    return this.fillable.reduce<Partial<PaymentTransactionJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof PaymentTransactionsTable]
+      const originalValue = this.originalAttributes[key as keyof PaymentTransactionsTable]
 
       if (currentValue !== originalValue) {
         changes[key] = currentValue
@@ -232,7 +241,7 @@ export class ProductModel {
     }, {})
   }
 
-  isDirty(column?: keyof ProductType): boolean {
+  isDirty(column?: keyof PaymentTransactionType): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -244,15 +253,15 @@ export class ProductModel {
     })
   }
 
-  isClean(column?: keyof ProductType): boolean {
+  isClean(column?: keyof PaymentTransactionType): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ProductType): boolean {
+  wasChanged(column?: keyof PaymentTransactionType): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
+  select(params: (keyof PaymentTransactionType)[] | RawBuilder<string> | string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -260,8 +269,8 @@ export class ProductModel {
     return this
   }
 
-  static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
-    const instance = new ProductModel(null)
+  static select(params: (keyof PaymentTransactionType)[] | RawBuilder<string> | string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -271,8 +280,8 @@ export class ProductModel {
     return instance
   }
 
-  async applyFind(id: number): Promise<ProductModel | undefined> {
-    const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFind(id: number): Promise<PaymentTransactionModel | undefined> {
+    const model = await DB.instance.selectFrom('payment_transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -280,26 +289,26 @@ export class ProductModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
-    cache.getOrSet(`product:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymenttransaction:${id}`, JSON.stringify(model))
 
     return data
   }
 
-  async find(id: number): Promise<ProductModel | undefined> {
+  async find(id: number): Promise<PaymentTransactionModel | undefined> {
     return await this.applyFind(id)
   }
 
-  // Method to find a Product by ID
-  static async find(id: number): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+  // Method to find a PaymentTransaction by ID
+  static async find(id: number): Promise<PaymentTransactionModel | undefined> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductModel | undefined> {
-    let model: ProductModel | undefined
+  async first(): Promise<PaymentTransactionModel | undefined> {
+    let model: PaymentTransactionModel | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -313,95 +322,95 @@ export class ProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  static async first(): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+  static async first(): Promise<PaymentTransactionModel | undefined> {
+    const instance = new PaymentTransactionModel(null)
 
-    const model = await DB.instance.selectFrom('products')
+    const model = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .executeTakeFirst()
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  async applyFirstOrFail(): Promise<ProductModel | undefined> {
+  async applyFirstOrFail(): Promise<PaymentTransactionModel | undefined> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductModel results found for query')
+      throw new ModelNotFoundException(404, 'No PaymentTransactionModel results found for query')
 
     if (model) {
       this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  async firstOrFail(): Promise<ProductModel | undefined> {
+  async firstOrFail(): Promise<PaymentTransactionModel | undefined> {
     return await this.applyFirstOrFail()
   }
 
-  static async firstOrFail(): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+  static async firstOrFail(): Promise<PaymentTransactionModel | undefined> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+  static async all(): Promise<PaymentTransactionModel[]> {
+    const instance = new PaymentTransactionModel(null)
 
-    const models = await DB.instance.selectFrom('products').selectAll().execute()
+    const models = await DB.instance.selectFrom('payment_transactions').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ProductType) => {
-      return new ProductModel(model)
+    const data = await Promise.all(models.map(async (model: PaymentTransactionType) => {
+      return new PaymentTransactionModel(model)
     }))
 
     return data
   }
 
-  async applyFindOrFail(id: number): Promise<ProductModel> {
-    const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFindOrFail(id: number): Promise<PaymentTransactionModel> {
+    const model = await DB.instance.selectFrom('payment_transactions').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No PaymentTransactionModel results for ${id}`)
 
-    cache.getOrSet(`product:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymenttransaction:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  async findOrFail(id: number): Promise<ProductModel> {
+  async findOrFail(id: number): Promise<PaymentTransactionModel> {
     return await this.applyFindOrFail(id)
   }
 
-  static async findOrFail(id: number): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+  static async findOrFail(id: number): Promise<PaymentTransactionModel> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ProductModel[]> {
-    let query = DB.instance.selectFrom('products').where('id', 'in', ids)
+  async applyFindMany(ids: number[]): Promise<PaymentTransactionModel[]> {
+    let query = DB.instance.selectFrom('payment_transactions').where('id', 'in', ids)
 
-    const instance = new ProductModel(null)
+    const instance = new PaymentTransactionModel(null)
 
     query = query.selectAll()
 
@@ -410,34 +419,34 @@ export class ProductModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
+    return models.map((modelItem: PaymentTransactionModel) => instance.parseResult(new PaymentTransactionModel(modelItem)))
   }
 
-  static async findMany(ids: number[]): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+  static async findMany(ids: number[]): Promise<PaymentTransactionModel[]> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyFindMany(ids)
   }
 
-  async findMany(ids: number[]): Promise<ProductModel[]> {
+  async findMany(ids: number[]): Promise<PaymentTransactionModel[]> {
     return await this.applyFindMany(ids)
   }
 
-  skip(count: number): ProductModel {
+  skip(count: number): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.offset(count)
 
     return this
   }
 
-  static skip(count: number): ProductModel {
-    const instance = new ProductModel(null)
+  static skip(count: number): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
     return instance
   }
 
-  async applyChunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: PaymentTransactionModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
@@ -463,49 +472,49 @@ export class ProductModel {
     }
   }
 
-  async chunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
+  async chunk(size: number, callback: (models: PaymentTransactionModel[]) => Promise<void>): Promise<void> {
     await this.applyChunk(size, callback)
   }
 
-  static async chunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
-    const instance = new ProductModel(null)
+  static async chunk(size: number, callback: (models: PaymentTransactionModel[]) => Promise<void>): Promise<void> {
+    const instance = new PaymentTransactionModel(null)
 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ProductModel {
+  take(count: number): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.limit(count)
 
     return this
   }
 
-  static take(count: number): ProductModel {
-    const instance = new ProductModel(null)
+  static take(count: number): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
   }
 
-  static async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
-    const instance = new ProductModel(null)
+  static async pluck<K extends keyof PaymentTransactionModel>(field: K): Promise<PaymentTransactionModel[K][]> {
+    const instance = new PaymentTransactionModel(null)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
-      return model.map((modelItem: ProductModel) => modelItem[field])
+      return model.map((modelItem: PaymentTransactionModel) => modelItem[field])
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
 
-    return model.map((modelItem: ProductModel) => modelItem[field])
+    return model.map((modelItem: PaymentTransactionModel) => modelItem[field])
   }
 
-  async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
-    return ProductModel.pluck(field)
+  async pluck<K extends keyof PaymentTransactionModel>(field: K): Promise<PaymentTransactionModel[K][]> {
+    return PaymentTransactionModel.pluck(field)
   }
 
   static async count(): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new PaymentTransactionModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -522,8 +531,8 @@ export class ProductModel {
     return result.count || 0
   }
 
-  static async max(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+  static async max(field: keyof PaymentTransactionModel): Promise<number> {
+    const instance = new PaymentTransactionModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -532,7 +541,7 @@ export class ProductModel {
     return result.max
   }
 
-  async max(field: keyof ProductModel): Promise<number> {
+  async max(field: keyof PaymentTransactionModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max`)
       .executeTakeFirst()
@@ -540,8 +549,8 @@ export class ProductModel {
     return result.max
   }
 
-  static async min(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+  static async min(field: keyof PaymentTransactionModel): Promise<number> {
+    const instance = new PaymentTransactionModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -550,7 +559,7 @@ export class ProductModel {
     return result.min
   }
 
-  async min(field: keyof ProductModel): Promise<number> {
+  async min(field: keyof PaymentTransactionModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
@@ -558,8 +567,8 @@ export class ProductModel {
     return result.min
   }
 
-  static async avg(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+  static async avg(field: keyof PaymentTransactionModel): Promise<number> {
+    const instance = new PaymentTransactionModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -568,7 +577,7 @@ export class ProductModel {
     return result.avg
   }
 
-  async avg(field: keyof ProductModel): Promise<number> {
+  async avg(field: keyof PaymentTransactionModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
@@ -576,8 +585,8 @@ export class ProductModel {
     return result.avg
   }
 
-  static async sum(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+  static async sum(field: keyof PaymentTransactionModel): Promise<number> {
+    const instance = new PaymentTransactionModel(null)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -586,7 +595,7 @@ export class ProductModel {
     return result.sum
   }
 
-  async sum(field: keyof ProductModel): Promise<number> {
+  async sum(field: keyof PaymentTransactionModel): Promise<number> {
     const result = this.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
@@ -594,7 +603,7 @@ export class ProductModel {
     return result.sum
   }
 
-  async applyGet(): Promise<ProductModel[]> {
+  async applyGet(): Promise<PaymentTransactionModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -607,51 +616,51 @@ export class ProductModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ProductModel) => {
-      return new ProductModel(model)
+    const data = await Promise.all(models.map(async (model: PaymentTransactionModel) => {
+      return new PaymentTransactionModel(model)
     }))
 
     return data
   }
 
-  async get(): Promise<ProductModel[]> {
+  async get(): Promise<PaymentTransactionModel[]> {
     return await this.applyGet()
   }
 
-  static async get(): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+  static async get(): Promise<PaymentTransactionModel[]> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyGet()
   }
 
-  has(relation: string): ProductModel {
+  has(relation: string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
       ),
     )
 
     return this
   }
 
-  static has(relation: string): ProductModel {
-    const instance = new ProductModel(null)
+  static has(relation: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id'),
+          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
       ),
     )
 
     return instance
   }
 
-  static whereExists(callback: (qb: any) => any): ProductModel {
-    const instance = new ProductModel(null)
+  static whereExists(callback: (qb: any) => any): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -662,8 +671,8 @@ export class ProductModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
-  ): ProductModel {
+    callback: (query: SubqueryBuilder<keyof PaymentTransactionModel>) => void,
+  ): PaymentTransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -673,7 +682,7 @@ export class ProductModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id')
+          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -724,27 +733,27 @@ export class ProductModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
-  ): ProductModel {
+    callback: (query: SubqueryBuilder<keyof PaymentTransactionModel>) => void,
+  ): PaymentTransactionModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
-  ): ProductModel {
-    const instance = new ProductModel(null)
+    callback: (query: SubqueryBuilder<keyof PaymentTransactionModel>) => void,
+  ): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereHas(relation, callback)
   }
 
-  applyDoesntHave(relation: string): ProductModel {
+  applyDoesntHave(relation: string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.product_id`, '=', 'products.id'),
+            .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
         ),
       ),
     )
@@ -752,17 +761,17 @@ export class ProductModel {
     return this
   }
 
-  doesntHave(relation: string): ProductModel {
+  doesntHave(relation: string): PaymentTransactionModel {
     return this.applyDoesntHave(relation)
   }
 
-  static doesntHave(relation: string): ProductModel {
-    const instance = new ProductModel(null)
+  static doesntHave(relation: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PaymentTransactionsTable>) => void): PaymentTransactionModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -772,7 +781,7 @@ export class ProductModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.product_id`, '=', 'products.id')
+          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id')
 
         return not(exists(subquery))
       })
@@ -818,28 +827,28 @@ export class ProductModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductsTable>) => void): ProductModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<PaymentTransactionsTable>) => void): PaymentTransactionModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder<ProductsTable>) => void,
-  ): ProductModel {
-    const instance = new ProductModel(null)
+    callback: (query: SubqueryBuilder<PaymentTransactionsTable>) => void,
+  ): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
 
-  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
-    const totalRecordsResult = await DB.instance.selectFrom('products')
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentTransactionResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('payment_transactions')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const productsWithExtra = await DB.instance.selectFrom('products')
+    const payment_transactionsWithExtra = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -847,11 +856,11 @@ export class ProductModel {
       .execute()
 
     let nextCursor = null
-    if (productsWithExtra.length > (options.limit ?? 10))
-      nextCursor = productsWithExtra.pop()?.id ?? null
+    if (payment_transactionsWithExtra.length > (options.limit ?? 10))
+      nextCursor = payment_transactionsWithExtra.pop()?.id ?? null
 
     return {
-      data: productsWithExtra,
+      data: payment_transactionsWithExtra,
       paging: {
         total_records: totalRecords,
         page: options.page || 1,
@@ -861,80 +870,80 @@ export class ProductModel {
     }
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentTransactionResponse> {
     return await this.applyPaginate(options)
   }
 
-  // Method to get all products
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
-    const instance = new ProductModel(null)
+  // Method to get all payment_transactions
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentTransactionResponse> {
+    const instance = new PaymentTransactionModel(null)
 
     return await instance.applyPaginate(options)
   }
 
-  async applyCreate(newProduct: NewProduct): Promise<ProductModel> {
+  async applyCreate(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newProduct).filter(([key]) =>
+      Object.entries(newPaymentTransaction).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProduct
+    ) as NewPaymentTransaction
 
     await this.mapCustomSetters(filteredValues)
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('products')
+    const result = await DB.instance.insertInto('payment_transactions')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentTransactionModel
 
     return model
   }
 
-  async create(newProduct: NewProduct): Promise<ProductModel> {
-    return await this.applyCreate(newProduct)
+  async create(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
+    return await this.applyCreate(newPaymentTransaction)
   }
 
-  static async create(newProduct: NewProduct): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+  static async create(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
+    const instance = new PaymentTransactionModel(null)
 
-    return await instance.applyCreate(newProduct)
+    return await instance.applyCreate(newPaymentTransaction)
   }
 
-  static async createMany(newProduct: NewProduct[]): Promise<void> {
-    const instance = new ProductModel(null)
+  static async createMany(newPaymentTransaction: NewPaymentTransaction[]): Promise<void> {
+    const instance = new PaymentTransactionModel(null)
 
-    const valuesFiltered = newProduct.map((newProduct: NewProduct) => {
+    const valuesFiltered = newPaymentTransaction.map((newPaymentTransaction: NewPaymentTransaction) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newProduct).filter(([key]) =>
+        Object.entries(newPaymentTransaction).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewProduct
+      ) as NewPaymentTransaction
 
       filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
 
-    await DB.instance.insertInto('products')
+    await DB.instance.insertInto('payment_transactions')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
-  static async forceCreate(newProduct: NewProduct): Promise<ProductModel> {
-    const result = await DB.instance.insertInto('products')
-      .values(newProduct)
+  static async forceCreate(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
+    const result = await DB.instance.insertInto('payment_transactions')
+      .values(newPaymentTransaction)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentTransactionModel
 
     return model
   }
 
-  // Method to remove a Product
+  // Method to remove a PaymentTransaction
   static async remove(id: number): Promise<any> {
-    return await DB.instance.deleteFrom('products')
+    return await DB.instance.deleteFrom('payment_transactions')
       .where('id', '=', id)
       .execute()
   }
@@ -956,66 +965,66 @@ export class ProductModel {
     return this
   }
 
-  where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
+  where<V = string>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]): PaymentTransactionModel {
     return this.applyWhere<V>(column, ...args)
   }
 
-  static where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
-    const instance = new ProductModel(null)
+  static where<V = string>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
+  whereColumn(first: keyof PaymentTransactionsTable, operator: Operator, second: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static whereColumn(first: keyof PaymentTransactionsTable, operator: Operator, second: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
   }
 
-  applyWhereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
+  applyWhereRef(column: keyof PaymentTransactionsTable, ...args: string[]): PaymentTransactionModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new ProductModel(null)
+    const instance = new PaymentTransactionModel(null)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
   }
 
-  whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
+  whereRef(column: keyof PaymentTransactionsTable, ...args: string[]): PaymentTransactionModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
-    const instance = new ProductModel(null)
+  static whereRef(column: keyof PaymentTransactionsTable, ...args: string[]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ProductModel {
+  whereRaw(sqlStatement: string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
 
     return this
   }
 
-  static whereRaw(sqlStatement: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereRaw(sqlStatement: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): ProductModel {
+  applyOrWhere(...conditions: [string, any][]): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -1037,28 +1046,28 @@ export class ProductModel {
     return this
   }
 
-  orWhere(...conditions: [string, any][]): ProductModel {
+  orWhere(...conditions: [string, any][]): PaymentTransactionModel {
     return this.applyOrWhere(...conditions)
   }
 
-  static orWhere(...conditions: [string, any][]): ProductModel {
-    const instance = new ProductModel(null)
+  static orWhere(...conditions: [string, any][]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyOrWhere(...conditions)
   }
 
   when(
     condition: boolean,
-    callback: (query: ProductModel) => ProductModel,
-  ): ProductModel {
-    return ProductModel.when(condition, callback)
+    callback: (query: PaymentTransactionModel) => PaymentTransactionModel,
+  ): PaymentTransactionModel {
+    return PaymentTransactionModel.when(condition, callback)
   }
 
   static when(
     condition: boolean,
-    callback: (query: ProductModel) => ProductModel,
-  ): ProductModel {
-    let instance = new ProductModel(null)
+    callback: (query: PaymentTransactionModel) => PaymentTransactionModel,
+  ): PaymentTransactionModel {
+    let instance = new PaymentTransactionModel(null)
 
     if (condition)
       instance = callback(instance)
@@ -1066,7 +1075,7 @@ export class ProductModel {
     return instance
   }
 
-  whereNotNull(column: keyof ProductsTable): ProductModel {
+  whereNotNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
     )
@@ -1082,8 +1091,8 @@ export class ProductModel {
     return this
   }
 
-  static whereNotNull(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static whereNotNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1100,7 +1109,7 @@ export class ProductModel {
     return instance
   }
 
-  whereNull(column: keyof ProductsTable): ProductModel {
+  whereNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1116,8 +1125,8 @@ export class ProductModel {
     return this
   }
 
-  static whereNull(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static whereNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1134,63 +1143,47 @@ export class ProductModel {
     return instance
   }
 
-  static whereName(value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereName(value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
     return instance
   }
 
-  static whereDescription(value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereDescription(value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
     return instance
   }
 
-  static whereKey(value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereAmount(value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
-
-    return instance
-  }
-
-  static whereUnitPrice(value: string): ProductModel {
-    const instance = new ProductModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
 
     return instance
   }
 
-  static whereStatus(value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereType(value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
-
-    return instance
-  }
-
-  static whereImage(value: string): ProductModel {
-    const instance = new ProductModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('image', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
     return instance
   }
 
-  static whereProviderId(value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereProviderId(value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
 
     return instance
   }
 
-  applyWhereIn<V>(column: keyof ProductsTable, values: V[]) {
+  applyWhereIn<V>(column: keyof PaymentTransactionsTable, values: V[]) {
     this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
@@ -1200,17 +1193,17 @@ export class ProductModel {
     return this
   }
 
-  whereIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
+  whereIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
     return this.applyWhereIn<V>(column, values)
   }
 
-  static whereIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
-    const instance = new ProductModel(null)
+  static whereIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween<V>(column: keyof ProductsTable, range: [V, V]): ProductModel {
+  applyWhereBetween<V>(column: keyof PaymentTransactionsTable, range: [V, V]): PaymentTransactionModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1224,17 +1217,17 @@ export class ProductModel {
     return this
   }
 
-  whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
+  whereBetween<V = number>(column: keyof PaymentTransactionsTable, range: [V, V]): PaymentTransactionModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
-    const instance = new ProductModel(null)
+  static whereBetween<V = number>(column: keyof PaymentTransactionsTable, range: [V, V]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof ProductsTable, value: string): ProductModel {
+  applyWhereLike(column: keyof PaymentTransactionsTable, value: string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1244,17 +1237,17 @@ export class ProductModel {
     return this
   }
 
-  whereLike(column: keyof ProductsTable, value: string): ProductModel {
+  whereLike(column: keyof PaymentTransactionsTable, value: string): PaymentTransactionModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ProductsTable, value: string): ProductModel {
-    const instance = new ProductModel(null)
+  static whereLike(column: keyof PaymentTransactionsTable, value: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
+  applyWhereNotIn<V>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1264,12 +1257,12 @@ export class ProductModel {
     return this
   }
 
-  whereNotIn<V>(column: keyof ProductsTable, values: V[]): ProductModel {
+  whereNotIn<V>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
     return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
-    const instance = new ProductModel(null)
+  static whereNotIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1287,10 +1280,10 @@ export class ProductModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ProductType | undefined> {
-    const instance = new ProductModel(null)
+  static async latest(): Promise<PaymentTransactionType | undefined> {
+    const instance = new PaymentTransactionModel(null)
 
-    const model = await DB.instance.selectFrom('products')
+    const model = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
@@ -1300,15 +1293,15 @@ export class ProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  static async oldest(): Promise<ProductType | undefined> {
-    const instance = new ProductModel(null)
+  static async oldest(): Promise<PaymentTransactionType | undefined> {
+    const instance = new PaymentTransactionModel(null)
 
-    const model = await DB.instance.selectFrom('products')
+    const model = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .orderBy('id', 'asc')
       .executeTakeFirst()
@@ -1318,18 +1311,18 @@ export class ProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
   static async firstOrCreate(
-    condition: Partial<ProductType>,
-    newProduct: NewProduct,
-  ): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    condition: Partial<PaymentTransactionType>,
+    newPaymentTransaction: NewPaymentTransaction,
+  ): Promise<PaymentTransactionModel> {
+    const instance = new PaymentTransactionModel(null)
 
-    const key = Object.keys(condition)[0] as keyof ProductType
+    const key = Object.keys(condition)[0] as keyof PaymentTransactionType
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1338,29 +1331,29 @@ export class ProductModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProduct = await DB.instance.selectFrom('products')
+    const existingPaymentTransaction = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingProduct) {
-      instance.mapCustomGetters(existingProduct)
-      await instance.loadRelations(existingProduct)
+    if (existingPaymentTransaction) {
+      instance.mapCustomGetters(existingPaymentTransaction)
+      await instance.loadRelations(existingPaymentTransaction)
 
-      return new ProductModel(existingProduct as ProductType)
+      return new PaymentTransactionModel(existingPaymentTransaction as PaymentTransactionType)
     }
     else {
-      return await instance.create(newProduct)
+      return await instance.create(newPaymentTransaction)
     }
   }
 
   static async updateOrCreate(
-    condition: Partial<ProductType>,
-    newProduct: NewProduct,
-  ): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    condition: Partial<PaymentTransactionType>,
+    newPaymentTransaction: NewPaymentTransaction,
+  ): Promise<PaymentTransactionModel> {
+    const instance = new PaymentTransactionModel(null)
 
-    const key = Object.keys(condition)[0] as keyof ProductType
+    const key = Object.keys(condition)[0] as keyof PaymentTransactionType
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1369,39 +1362,39 @@ export class ProductModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProduct = await DB.instance.selectFrom('products')
+    const existingPaymentTransaction = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingProduct) {
+    if (existingPaymentTransaction) {
       // If found, update the existing record
-      await DB.instance.updateTable('products')
-        .set(newProduct)
+      await DB.instance.updateTable('payment_transactions')
+        .set(newPaymentTransaction)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedProduct = await DB.instance.selectFrom('products')
+      const updatedPaymentTransaction = await DB.instance.selectFrom('payment_transactions')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
 
-      if (!updatedProduct) {
+      if (!updatedPaymentTransaction) {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       instance.hasSaved = true
 
-      return new ProductModel(updatedProduct as ProductType)
+      return new PaymentTransactionModel(updatedPaymentTransaction as PaymentTransactionType)
     }
     else {
       // If not found, create a new record
-      return await instance.create(newProduct)
+      return await instance.create(newPaymentTransaction)
     }
   }
 
-  async loadRelations(models: ProductJsonResponse | ProductJsonResponse[]): Promise<void> {
+  async loadRelations(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1412,14 +1405,14 @@ export class ProductModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('product_id', 'in', modelIds)
+        .where('paymenttransaction_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProductJsonResponse) => {
-          const records = relatedRecords.filter((record: { product_id: number }) => {
-            return record.product_id === model.id
+        models.map((model: PaymentTransactionJsonResponse) => {
+          const records = relatedRecords.filter((record: { paymenttransaction_id: number }) => {
+            return record.paymenttransaction_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1427,8 +1420,8 @@ export class ProductModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { product_id: number }) => {
-          return record.product_id === models.id
+        const records = relatedRecords.filter((record: { paymenttransaction_id: number }) => {
+          return record.paymenttransaction_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1436,22 +1429,22 @@ export class ProductModel {
     }
   }
 
-  with(relations: string[]): ProductModel {
+  with(relations: string[]): PaymentTransactionModel {
     this.withRelations = relations
 
     return this
   }
 
-  static with(relations: string[]): ProductModel {
-    const instance = new ProductModel(null)
+  static with(relations: string[]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.withRelations = relations
 
     return instance
   }
 
-  async last(): Promise<ProductType | undefined> {
-    let model: ProductModel | undefined
+  async last(): Promise<PaymentTransactionType | undefined> {
+    let model: PaymentTransactionModel | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1465,116 +1458,116 @@ export class ProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  static async last(): Promise<ProductType | undefined> {
-    const model = await DB.instance.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  static async last(): Promise<PaymentTransactionType | undefined> {
+    const model = await DB.instance.selectFrom('payment_transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const data = new PaymentTransactionModel(model as PaymentTransactionType)
 
     return data
   }
 
-  orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
+  orderBy(column: keyof PaymentTransactionsTable, order: 'asc' | 'desc'): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
-    const instance = new ProductModel(null)
+  static orderBy(column: keyof PaymentTransactionsTable, order: 'asc' | 'desc'): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
-  groupBy(column: keyof ProductsTable): ProductModel {
+  groupBy(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static groupBy(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
     return instance
   }
 
-  having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
+  having<V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
-    const instance = new ProductModel(null)
+  static having<V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
-  inRandomOrder(): ProductModel {
+  inRandomOrder(): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }
 
-  static inRandomOrder(): ProductModel {
-    const instance = new ProductModel(null)
+  static inRandomOrder(): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return instance
   }
 
-  orderByDesc(column: keyof ProductsTable): ProductModel {
+  orderByDesc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static orderByDesc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
-  orderByAsc(column: keyof ProductsTable): ProductModel {
+  orderByAsc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+  static orderByAsc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
-  async update(newProduct: ProductUpdate): Promise<ProductModel | undefined> {
+  async update(newPaymentTransaction: PaymentTransactionUpdate): Promise<PaymentTransactionModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newProduct).filter(([key]) =>
+      Object.entries(newPaymentTransaction).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProduct
+    ) as NewPaymentTransaction
 
     await this.mapCustomSetters(filteredValues)
 
-    await DB.instance.updateTable('products')
+    await DB.instance.updateTable('payment_transactions')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1590,15 +1583,15 @@ export class ProductModel {
     return undefined
   }
 
-  async forceUpdate(product: ProductUpdate): Promise<ProductModel | undefined> {
+  async forceUpdate(paymenttransaction: PaymentTransactionUpdate): Promise<PaymentTransactionModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(product).execute()
+      this.updateFromQuery.set(paymenttransaction).execute()
     }
 
-    await this.mapCustomSetters(product)
+    await this.mapCustomSetters(paymenttransaction)
 
-    await DB.instance.updateTable('products')
-      .set(product)
+    await DB.instance.updateTable('payment_transactions')
+      .set(paymenttransaction)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1615,7 +1608,7 @@ export class ProductModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new HttpError(500, 'Product data is undefined')
+      throw new HttpError(500, 'PaymentTransaction data is undefined')
 
     await this.mapCustomSetters(this.attributes)
 
@@ -1629,12 +1622,12 @@ export class ProductModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ProductType>): ProductModel {
+  fill(data: Partial<PaymentTransactionType>): PaymentTransactionModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProduct
+    ) as NewPaymentTransaction
 
     this.attributes = {
       ...this.attributes,
@@ -1644,7 +1637,7 @@ export class ProductModel {
     return this
   }
 
-  forceFill(data: Partial<ProductType>): ProductModel {
+  forceFill(data: Partial<PaymentTransactionType>): PaymentTransactionModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1653,17 +1646,45 @@ export class ProductModel {
     return this
   }
 
-  // Method to delete (soft delete) the product instance
-  async delete(): Promise<ProductsTable> {
+  // Method to delete (soft delete) the paymenttransaction instance
+  async delete(): Promise<PaymentTransactionsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('products')
+    return await DB.instance.deleteFrom('payment_transactions')
       .where('id', '=', this.id)
       .execute()
   }
 
-  distinct(column: keyof ProductType): ProductModel {
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
+  async paymentMethodBelong(): Promise<PaymentMethodModel> {
+    if (this.payment_method_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await PaymentMethod
+      .where('id', '=', this.payment_method_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
+  distinct(column: keyof PaymentTransactionType): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1671,8 +1692,8 @@ export class ProductModel {
     return this
   }
 
-  static distinct(column: keyof ProductType): ProductModel {
-    const instance = new ProductModel(null)
+  static distinct(column: keyof PaymentTransactionType): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1681,74 +1702,76 @@ export class ProductModel {
     return instance
   }
 
-  join(table: string, firstCol: string, secondCol: string): ProductModel {
+  join(table: string, firstCol: string, secondCol: string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
 
-  static join(table: string, firstCol: string, secondCol: string): ProductModel {
-    const instance = new ProductModel(null)
+  static join(table: string, firstCol: string, secondCol: string): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
 
-  toJSON(): Partial<ProductJsonResponse> {
-    const output: Partial<ProductJsonResponse> = {
+  toJSON(): Partial<PaymentTransactionJsonResponse> {
+    const output: Partial<PaymentTransactionJsonResponse> = {
 
       id: this.id,
       name: this.name,
       description: this.description,
-      key: this.key,
-      unit_price: this.unit_price,
-      status: this.status,
-      image: this.image,
+      amount: this.amount,
+      type: this.type,
       provider_id: this.provider_id,
 
       created_at: this.created_at,
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
+      payment_method_id: this.payment_method_id,
+      payment_method: this.payment_method,
       ...this.customColumns,
     }
 
     return output
   }
 
-  parseResult(model: ProductModel): ProductModel {
+  parseResult(model: PaymentTransactionModel): PaymentTransactionModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof ProductModel]
+      delete model[hiddenAttribute as keyof PaymentTransactionModel]
     }
 
     return model
   }
 }
 
-async function find(id: number): Promise<ProductModel | undefined> {
-  const query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
+async function find(id: number): Promise<PaymentTransactionModel | undefined> {
+  const query = DB.instance.selectFrom('payment_transactions').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
   if (!model)
     return undefined
 
-  return new ProductModel(model)
+  return new PaymentTransactionModel(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await ProductModel.count()
+  const results = await PaymentTransactionModel.count()
 
   return results
 }
 
-export async function create(newProduct: NewProduct): Promise<ProductModel> {
-  const result = await DB.instance.insertInto('products')
-    .values(newProduct)
+export async function create(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
+  const result = await DB.instance.insertInto('payment_transactions')
+    .values(newPaymentTransaction)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as PaymentTransactionModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1756,60 +1779,46 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('products')
+  await DB.instance.deleteFrom('payment_transactions')
     .where('id', '=', id)
     .execute()
 }
 
-export async function whereName(value: string): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('name', '=', value)
+export async function whereName(value: string): Promise<PaymentTransactionModel[]> {
+  const query = DB.instance.selectFrom('payment_transactions').where('name', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: PaymentTransactionModel) => new PaymentTransactionModel(modelItem))
 }
 
-export async function whereDescription(value: number): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('description', '=', value)
+export async function whereDescription(value: string): Promise<PaymentTransactionModel[]> {
+  const query = DB.instance.selectFrom('payment_transactions').where('description', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: PaymentTransactionModel) => new PaymentTransactionModel(modelItem))
 }
 
-export async function whereKey(value: number): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('key', '=', value)
+export async function whereAmount(value: number): Promise<PaymentTransactionModel[]> {
+  const query = DB.instance.selectFrom('payment_transactions').where('amount', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: PaymentTransactionModel) => new PaymentTransactionModel(modelItem))
 }
 
-export async function whereUnitPrice(value: number): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('unit_price', '=', value)
+export async function whereType(value: string): Promise<PaymentTransactionModel[]> {
+  const query = DB.instance.selectFrom('payment_transactions').where('type', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: PaymentTransactionModel) => new PaymentTransactionModel(modelItem))
 }
 
-export async function whereStatus(value: string): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('status', '=', value)
+export async function whereProviderId(value: string): Promise<PaymentTransactionModel[]> {
+  const query = DB.instance.selectFrom('payment_transactions').where('provider_id', '=', value)
   const results = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: PaymentTransactionModel) => new PaymentTransactionModel(modelItem))
 }
 
-export async function whereImage(value: string): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('image', '=', value)
-  const results = await query.execute()
+export const PaymentTransaction = PaymentTransactionModel
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
-}
-
-export async function whereProviderId(value: string): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('provider_id', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
-}
-
-export const Product = ProductModel
-
-export default Product
+export default PaymentTransaction

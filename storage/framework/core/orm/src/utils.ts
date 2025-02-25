@@ -1252,7 +1252,8 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       log.success('Wrote Model Requests')
     }
     catch (error) {
-      handleError('Error while writing Model Requests', error)
+      throw error
+      // handleError('Error while writing Model Requests', error)
     }
 
     try {
@@ -1330,7 +1331,8 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     await ensureCodeStyle()
   }
   catch (error) {
-    handleError('Error while generating model files', error)
+    throw error
+    // handleError('Error while generating model files', error)
   }
 }
 

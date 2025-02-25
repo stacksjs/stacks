@@ -4,6 +4,7 @@ import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel } from './PaymentMethod'
+import type { PaymentTransactionModel } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
@@ -29,7 +30,7 @@ export interface UsersTable {
   subscriptions?: SubscriptionModel[] | undefined
   payment_methods?: PaymentMethodModel[] | undefined
   posts?: PostModel[] | undefined
-  transactions?: TransactionModel[] | undefined
+  payment_transactions?: PaymentTransactionModel[] | undefined
   name?: string
   email?: string
   job_title?: string
@@ -182,8 +183,8 @@ export class UserModel {
     return this.attributes.posts
   }
 
-  get transactions(): TransactionModel[] | undefined {
-    return this.attributes.transactions
+  get payment_transactions(): PaymentTransactionModel[] | undefined {
+    return this.attributes.payment_transactions
   }
 
   get id(): number | undefined {
@@ -2028,7 +2029,7 @@ export class UserModel {
       subscriptions: this.subscriptions,
       payment_methods: this.payment_methods,
       posts: this.posts,
-      transactions: this.transactions,
+      payment_transactions: this.payment_transactions,
       ...this.customColumns,
     }
 

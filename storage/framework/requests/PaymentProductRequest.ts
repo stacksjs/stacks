@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { ProductRequestType } from '../types/requests'
+import type { PaymentProductRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataProduct {
+interface RequestDataPaymentProduct {
   id: number
   name: string
   description: number
@@ -23,7 +23,7 @@ interface RequestDataProduct {
   created_at?: Date
   updated_at?: Date
 }
-export class ProductRequest extends Request<RequestDataProduct> implements ProductRequestType {
+export class PaymentProductRequest extends Request<RequestDataPaymentProduct> implements PaymentProductRequestType {
   public id = 1
   public name = ''
   public description = 0
@@ -37,7 +37,7 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('Product', this.all())
+      await validateField('PaymentProduct', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -45,4 +45,4 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   }
 }
 
-export const productRequest = new ProductRequest()
+export const paymentproductRequest = new PaymentProductRequest()
