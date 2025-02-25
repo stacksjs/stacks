@@ -1,4 +1,4 @@
-import type { Attribute, Attributes, Model, VineType } from '@stacksjs/types'
+import type { Attribute, AttributesElements, Model, VineType } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { handleError } from '@stacksjs/error-handling'
@@ -46,14 +46,14 @@ export async function deleteFrameworkModels(): Promise<void> {
   }
 }
 
-export async function getLastMigrationFields(modelName: string): Promise<Attributes> {
+export async function getLastMigrationFields(modelName: string): Promise<AttributesElements> {
   const oldModelPath = path.frameworkPath(`models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model
-  let fields = {} as Attributes
+  let fields = {} as AttributesElements
 
   if (typeof model.attributes === 'object')
     fields = model.attributes
-  else fields = JSON.parse(model.attributes || '{}') as Attributes
+  else fields = JSON.parse(model.attributes || '{}') as AttributesElements
 
   return fields
 }
@@ -103,78 +103,6 @@ function hasFunction(rule: VineType, functionName: string): boolean {
   return typeof rule[functionName] === 'function'
 }
 
-export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
-  if (hasFunction(rule, 'getChoices')) {
-    if (driver === 'sqlite') {
-      return `'text'`
-    }
-
-    // Condition checker if an attribute is enum, could not think any conditions atm
-    const enumChoices = rule.getChoices() as string[]
-
-    // Convert each string value to its corresponding string structure
-    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
-
-    // Construct the ENUM definition
-    const enumDefinition = `sql\`enum(${enumStructure})\``
-
-    return enumDefinition
-  }
-
-  if (rule[Symbol.for('schema_name')].includes('string'))
-    // Default column type for strings
-    return prepareTextColumnType(rule)
-
-  if (rule[Symbol.for('schema_name')].includes('number'))
-    return `'integer'`
-  if (rule[Symbol.for('schema_name')].includes('boolean'))
-    return `'boolean'`
-  if (rule[Symbol.for('schema_name')].includes('date'))
-    return `'date'`
-
-  // need to now handle all other types
-
-  // Add cases for other types as needed, similar to the original function
-  switch (rule) {
-    case 'integer':
-      return `'int'`
-    case 'boolean':
-      return `'boolean'`
-    case 'date':
-      return `'date'`
-    case 'datetime':
-      return `'timestamp'`
-    case 'float':
-      return `'float'`
-    case 'decimal':
-      return `'decimal'`
-    default:
-      return `'text'` // Fallback for unknown types
-  }
-}
-
-export function prepareTextColumnType(rule: VineType) {
-  let columnType = 'varchar(255)'
-
-  // Find min and max length validations
-  const minLengthValidation = rule.validations.find((v: any) => v.options?.min !== undefined)
-  const maxLengthValidation = rule.validations.find((v: any) => v.options?.max !== undefined)
-
-  // If there's a max length validation, adjust the column type accordingly
-  if (maxLengthValidation) {
-    const maxLength = maxLengthValidation.options.max
-
-    columnType = `varchar(${maxLength})`
-  }
-
-  // If there's only a min length validation and no max, consider using text
-  // This is a simplistic approach; adjust based on your actual requirements
-  if (minLengthValidation && !maxLengthValidation)
-    columnType = 'text'
-
-  return `'${columnType}'`
-}
-
 export function findCharacterLength(rule: VineType): { min: number, max: number } | undefined {
   const result: any = {}
 
@@ -200,6 +128,211 @@ export function findCharacterLength(rule: VineType): { min: number, max: number 
   return result
 }
 
+export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
+  if (hasFunction(rule, 'getChoices')) {
+    if (driver === 'sqlite') {
+      return `'text'`
+    }
+
+    // Condition checker if an attribute is enum, could not think any conditions atm
+    const enumChoices = rule.getChoices() as string[]
+
+    // Convert each string value to its corresponding string structure
+    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
+
+    // Construct the ENUM definition
+    const enumDefinition = `sql\`enum(${enumStructure})\``
+
+    return enumDefinition
+  }
+
+  // Use existing schema_name check to determine main type
+  const schemaName = rule[Symbol.for('schema_name')] || ''
+
+  if (schemaName.includes('string')) {
+    return prepareTextColumnType(rule)
+  }
+
+  if (schemaName.includes('number')) {
+    return prepareNumberColumnType(rule)
+  }
+
+  if (schemaName.includes('boolean')) {
+    return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
+  }
+
+  if (schemaName.includes('date')) {
+    return prepareDateTimeColumnType(rule, driver)
+  }
+
+  if (schemaName.includes('array') || schemaName.includes('object')) {
+    return driver === 'sqlite' ? `'text'` : `'json'`
+  }
+
+  // Fallback for other types
+  switch (rule) {
+    case 'integer':
+      return `'int'`
+    case 'boolean':
+      return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
+    case 'date':
+      return `'date'`
+    case 'datetime':
+      return driver === 'sqlite' ? `'text'` : `'datetime'`
+    case 'timestamp':
+      return `'timestamp'`
+    case 'float':
+      return `'float'`
+    case 'decimal':
+      return `'decimal(10,2)'`
+    case 'uuid':
+      return driver === 'sqlite' ? `'text'` : `'char(36)'`
+    case 'binary':
+      return driver === 'sqlite' ? `'blob'` : `'longblob'`
+    default:
+      return `'text'` // Fallback for unknown types
+  }
+}
+
+// Use existing prepareTextColumnType function
+export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string {
+  // For SQLite, all text fields are just 'text'
+  if (driver === 'sqlite')
+    return `'text'`
+
+  let columnType = 'varchar(255)' // Default
+
+  // Find min and max length validations using your existing function
+  const characterLength = findCharacterLength(rule)
+
+  // If there's a max length validation, adjust the column type accordingly
+  if (characterLength && characterLength.max) {
+    const maxLength = characterLength.max
+
+    // Choose appropriate MySQL type based on length
+    if (maxLength <= 255) {
+      columnType = `varchar(${maxLength})`
+    }
+    else if (maxLength <= 65535) {
+      columnType = 'text'
+    }
+    else if (maxLength <= 16777215) {
+      columnType = 'mediumtext'
+    }
+    else {
+      columnType = 'longtext'
+    }
+  }
+  else {
+    // Check for specific string formats if they exist in validations
+    for (const validation of rule.validations || []) {
+      if (validation.rule === 'email') {
+        return `'varchar(255)'`
+      }
+      else if (validation.rule === 'url') {
+        return `'varchar(2048)'`
+      }
+      else if (validation.rule === 'uuid') {
+        return `'char(36)'`
+      }
+      else if (validation.rule === 'ip') {
+        return `'varchar(45)'` // IPv6 can be up to 45 chars
+      }
+    }
+  }
+
+  return `'${columnType}'`
+}
+
+// Add new function for numeric column types
+export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): string {
+  if (driver === 'sqlite')
+    return `'numeric'`
+
+  // Check precision and scale
+  let precision = 10
+  let scale = 2
+  let isDecimal = false
+
+  // Check validations for precision/scale
+  for (const validation of rule.validations || []) {
+    if (validation.options?.precision) {
+      precision = validation.options.precision
+      isDecimal = true
+    }
+    if (validation.options?.scale) {
+      scale = validation.options.scale
+      isDecimal = true
+    }
+  }
+
+  // Check for integer-only constraint
+  const isInteger = rule.validations.some((v: any) => v.rule === 'integer')
+
+  if (isDecimal) {
+    return `'decimal(${precision},${scale})'`
+  }
+
+  if (isInteger) {
+    // Look for min/max values to determine appropriate integer type
+    let min: number | undefined
+    let max: number | undefined
+
+    for (const validation of rule.validations || []) {
+      if (validation.options?.min !== undefined)
+        min = validation.options.min
+      if (validation.options?.max !== undefined)
+        max = validation.options.max
+    }
+
+    // If we have both bounds, choose an appropriate type
+    if (min !== undefined && max !== undefined) {
+      if (min >= -128 && max <= 127) {
+        return `'tinyint'`
+      }
+      else if (min >= -32768 && max <= 32767) {
+        return `'smallint'`
+      }
+      else if (min >= -8388608 && max <= 8388607) {
+        return `'mediumint'`
+      }
+      else if (min >= -2147483648 && max <= 2147483647) {
+        return `'int'`
+      }
+      else {
+        return `'bigint'`
+      }
+    }
+
+    // Default int type
+    return `'int'`
+  }
+
+  // Default to decimal for floating point numbers
+  return `'decimal(10,2)'`
+}
+
+// Add new function for date/time column types
+export function prepareDateTimeColumnType(rule: VineType, driver = 'mysql'): string {
+  if (driver === 'sqlite')
+    return `'text'` // SQLite uses TEXT for dates
+
+  // Try to determine specific date type
+  for (const validation of rule.validations || []) {
+    if (validation.rule === 'date')
+      return `'date'`
+    if (validation.rule === 'datetime')
+      return `'datetime'`
+    if (validation.rule === 'time')
+      return `'time'`
+    if (validation.rule === 'timestamp')
+      return `'timestamp'`
+  }
+
+  // Default to datetime
+  return `'datetime'`
+}
+
 export function compareRanges(range1: Range, range2: Range): boolean {
   return range1.min === range2.min && range1.max === range2.max
 }
@@ -207,7 +340,7 @@ export function compareRanges(range1: Range, range2: Range): boolean {
 export async function checkPivotMigration(dynamicPart: string): Promise<boolean> {
   const files = await fs.readdir(path.userMigrationsPath())
 
-  return files.some((migrationFile) => {
+  return files.some((migrationFile: string) => {
     // Escape special characters in the dynamic part to ensure it's treated as a literal string
     const escapedDynamicPart = dynamicPart.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -230,7 +363,7 @@ export function pluckChanges(array1: string[], array2: string[]): { added: strin
   return { added, removed }
 }
 
-export function arrangeColumns(attributes: Attributes | undefined): Array<[string, Attribute]> {
+export function arrangeColumns(attributes: AttributesElements | undefined): Array<[string, Attribute]> {
   if (!attributes)
     return []
 
