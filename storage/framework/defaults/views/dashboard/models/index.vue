@@ -226,6 +226,30 @@ const erdLinks: ERDLink[] = [
 const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined>
 
+// Add download function
+const downloadDiagram = () => {
+  if (!diagramContainer.value) return
+
+  const svg = diagramContainer.value.querySelector('svg')
+  if (!svg) return
+
+  // Get SVG content
+  const svgData = svg.outerHTML
+  const blob = new Blob([svgData], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+
+  // Create download link
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'model-relationships.svg'
+  document.body.appendChild(link)
+  link.click()
+
+  // Clean up
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 // Create model diagram
 const createDiagram = () => {
   if (!diagramContainer.value) return
@@ -450,6 +474,13 @@ onUnmounted(() => {
                 (Drag nodes to rearrange)
               </span>
             </div>
+            <button
+              @click="downloadDiagram"
+              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 transition-colors duration-200"
+            >
+              <div class="i-heroicons-arrow-down-tray w-5 h-5" />
+              Download SVG
+            </button>
           </div>
           <div ref="diagramContainer" class="w-full h-[800px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
         </div>
