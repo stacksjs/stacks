@@ -280,7 +280,7 @@ const switchTeam = (team: Team) => {
                         v-if="currentTeam.id === team.id"
                         class="ml-auto"
                       >
-                        <div class="i-hugeicons-check h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-600 dark:text-blue-400" />
                       </div>
                     </div>
                   </button>
@@ -320,7 +320,7 @@ const switchTeam = (team: Team) => {
                 draggable="true"
                 :style="{
                   transform: calculateTransform(sectionKey),
-                  transition: dragTarget && dragTarget.value === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+                  transition: dragTarget === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                   position: 'relative',
                   zIndex: draggedItem === sectionKey ? 20 : 10
                 }"
@@ -367,8 +367,7 @@ const switchTeam = (team: Team) => {
                     <div>
                       <RouterLink
                         :to="item.to"
-                        class="sidebar-links group"
-                        @click.prevent="item.children ? toggleItem(item.to) : $router.push(item.to)"
+                        class="sidebar-links group relative"
                       >
                         <template v-if="item.icon">
                           <div :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
@@ -378,12 +377,20 @@ const switchTeam = (team: Team) => {
                             {{ item.letter }}
                           </span>
                         </template>
-                        <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
-                        <div
-                          v-if="item.children"
-                          class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 ml-auto"
-                          :class="{ 'transform rotate-90': expandedItems[item.to] }"
-                        />
+                        <div class="flex items-center justify-between flex-1">
+                          <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
+                          <button
+                            v-if="item.children"
+                            type="button"
+                            class="p-1 -m-1"
+                            @click.stop.prevent="toggleItem(item.to)"
+                          >
+                            <div
+                              class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
+                              :class="{ 'transform rotate-90': expandedItems[item.to] }"
+                            />
+                          </button>
+                        </div>
                       </RouterLink>
 
                       <ul
