@@ -5,6 +5,7 @@ import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'AccessToken',
+  description: 'An access token for a user',
   table: 'personal_access_tokens',
   primaryKey: 'id',
   autoIncrement: true,

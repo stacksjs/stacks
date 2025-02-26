@@ -101,6 +101,26 @@
               <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">User Model Relationships</h3>
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing User model relationships. Click on any model to view details.</p>
             </div>
+            <div class="flex items-center space-x-2">
+              <button
+                @click="downloadSVG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              >
+                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                SVG
+              </button>
+              <button
+                @click="downloadPNG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              >
+                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                PNG
+              </button>
+            </div>
           </div>
           <div class="flex">
             <div ref="diagramContainer" class="h-[400px] relative flex-1">
@@ -111,6 +131,10 @@
               <div class="flex items-center mb-4">
                 <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+              </div>
+
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
               </div>
 
               <div class="mb-4">
@@ -132,18 +156,7 @@
               </div>
 
               <router-link
-                v-if="selectedModel.id === 'user'"
-                :to="getModelRoute('team')"
-                class="flex items-center justify-center w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150 group"
-              >
-                Next: Team Model
-                <svg class="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </router-link>
-
-              <router-link
-                v-else
+                v-if="selectedModel.id !== 'user'"
                 :to="getModelRoute(selectedModel.id)"
                 class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
               >
@@ -568,6 +581,7 @@ const router = useRouter()
 interface ModelNode extends d3.SimulationNodeDatum {
   id: string
   name: string
+  description: string
   properties: string[]
   relationships: string[]
   emoji: string
@@ -593,6 +607,7 @@ const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
+    description: 'Core user model representing application users with authentication and profile information.',
     properties: ['id', 'name', 'email', 'password'],
     relationships: ['teams', 'accessTokens', 'activities', 'posts'],
     emoji: '👤',
@@ -601,6 +616,7 @@ const models: ModelNode[] = [
   {
     id: 'team',
     name: 'Team',
+    description: 'Represents a group of users who collaborate together. Teams can have multiple users and users can belong to multiple teams.',
     properties: ['id', 'name', 'owner_id'],
     relationships: ['users'],
     emoji: '👥',
@@ -609,6 +625,7 @@ const models: ModelNode[] = [
   {
     id: 'accessToken',
     name: 'AccessToken',
+    description: 'Manages API authentication tokens for users. Each token grants specific permissions for API access.',
     properties: ['id', 'token', 'user_id'],
     relationships: ['user'],
     emoji: '🔑',
@@ -617,6 +634,7 @@ const models: ModelNode[] = [
   {
     id: 'activity',
     name: 'Activity',
+    description: 'Tracks user actions and events within the application for analytics and audit purposes.',
     properties: ['id', 'type', 'user_id'],
     relationships: ['user'],
     emoji: '📊',
@@ -625,6 +643,7 @@ const models: ModelNode[] = [
   {
     id: 'post',
     name: 'Post',
+    description: 'User-generated content model for sharing updates, articles, or other text-based content.',
     properties: ['id', 'title', 'content'],
     relationships: ['user'],
     emoji: '📝',
@@ -655,6 +674,79 @@ const getModelRoute = (modelId: string) => {
     post: '/models/posts'
   }
   return routes[modelId] || '/models'
+}
+
+// Add these functions before the onMounted hook
+const downloadSVG = () => {
+  if (!diagramContainer.value) return
+
+  const svgElement = diagramContainer.value.querySelector('svg')
+  if (!svgElement) return
+
+  // Create a copy of the SVG to modify for download
+  const svgClone = svgElement.cloneNode(true) as SVGElement
+  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  const svgData = new XMLSerializer().serializeToString(svgClone)
+  const blob = new Blob([svgData], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'user-model-relationships.svg'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+const downloadPNG = () => {
+  if (!diagramContainer.value) return
+
+  const svgElement = diagramContainer.value.querySelector('svg')
+  if (!svgElement) return
+
+  // Create a copy of the SVG to modify for download
+  const svgClone = svgElement.cloneNode(true) as SVGElement
+  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  const svgData = new XMLSerializer().serializeToString(svgClone)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // Create an image from the SVG
+  const img = new Image()
+  const blob = new Blob([svgData], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+
+  img.onload = () => {
+    // Set canvas size to match the SVG
+    canvas.width = img.width
+    canvas.height = img.height
+
+    // Draw white background and the image
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0)
+
+    // Convert to PNG and download
+    canvas.toBlob((pngBlob) => {
+      if (!pngBlob) return
+      const pngUrl = URL.createObjectURL(pngBlob)
+      const link = document.createElement('a')
+      link.href = pngUrl
+      link.download = 'user-model-relationships.png'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(pngUrl)
+    }, 'image/png')
+
+    URL.revokeObjectURL(url)
+  }
+
+  img.src = url
 }
 </script>
 
