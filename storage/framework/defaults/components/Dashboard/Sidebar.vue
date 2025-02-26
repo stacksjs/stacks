@@ -161,6 +161,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   models: {
     items: [
+      { to: '/models', icon: 'i-hugeicons-dashboard-speed-02', text: 'Overview' },
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
