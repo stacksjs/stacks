@@ -173,7 +173,7 @@ const sectionContent: Record<string, SectionContent> = {
         icon: 'i-hugeicons-cloud',
         text: 'Cloud',
         children: [
-          { to: '/servers', icon: 'i-hugeicons-server-stack-01', text: 'Servers' },
+          { to: '/servers', icon: 'i-hugeicons-server-stack-02', text: 'Servers' },
           { to: '/workers', icon: 'i-hugeicons-labor', text: 'Workers' }
         ]
       },
