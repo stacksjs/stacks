@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { onClickOutside } from '@vueuse/core'
+import { onClickOutside, useLocalStorage } from '@vueuse/core'
 
 // Add Team interface
 interface Team {
@@ -43,7 +43,7 @@ const calculateTransform = (section: string) => {
 }
 
 // State for each section's collapse status
-const sections = ref<Sections>({
+const sections = useLocalStorage<Sections>('sidebar-sections', {
   library: true,
   app: true,
   models: true,
@@ -51,13 +51,13 @@ const sections = ref<Sections>({
 })
 
 // Add separate state for nested items
-const expandedItems = ref<Record<string, boolean>>({
+const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded-items', {
   '/cloud': false,
   '/queue': false
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = ref(['library', 'app', 'models', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'models', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
