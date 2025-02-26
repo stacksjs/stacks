@@ -1,5 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { onClickOutside } from '@vueuse/core'
+
+// Add Team interface
+interface Team {
+  id: number
+  name: string
+  email: string
+  type: 'Personal' | 'Professional'
+}
 
 interface SidebarItem {
   to: string
@@ -184,6 +193,34 @@ const sectionContent: Record<string, SectionContent> = {
     ]
   }
 }
+
+// Add team switcher state
+const showTeamSwitcher = ref(false)
+const teamSwitcherRef = ref<HTMLElement | null>(null)
+
+// Close team switcher when clicking outside
+onClickOutside(teamSwitcherRef, () => {
+  showTeamSwitcher.value = false
+})
+
+// Mock teams data with proper typing
+const teams = ref<Team[]>([
+  { id: 1, name: 'Stacks.js', email: 'chris@stacksjs.org', type: 'Personal' },
+  { id: 2, name: 'Jetbrains', email: 'support@jetbrains.com', type: 'Professional' }
+])
+
+const currentTeam = ref<Team>(teams.value[0] ?? {
+  id: 1,
+  name: 'Stacks.js',
+  email: 'chris@stacksjs.org',
+  type: 'Personal'
+})
+
+const switchTeam = (team: Team) => {
+  currentTeam.value = team
+  showTeamSwitcher.value = false
+  // Add your team switching logic here
+}
 </script>
 
 <template>
@@ -195,7 +232,72 @@ const sectionContent: Record<string, SectionContent> = {
           <RouterLink to="/">
             <img class="h-12 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
           </RouterLink>
-          <div class="i-hugeicons-more-horizontal h-6 w-6 cursor-pointer text-gray-700 transition duration-150 ease-in-out hover:bg-gray-900 dark:text-gray-200 group-hover:text-gray-700 dark:hover:bg-blue-gray-100" />
+
+          <!-- Team Switcher -->
+          <div class="relative" ref="teamSwitcherRef">
+            <button
+              type="button"
+              class="block p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
+              @click="showTeamSwitcher = !showTeamSwitcher"
+            >
+              <div class="i-hugeicons-more-horizontal-circle-01 h-6 w-6 cursor-pointer text-gray-400 transition duration-150 ease-in-out hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100" />
+            </button>
+
+            <!-- Team Switcher Dropdown -->
+            <div
+              v-if="showTeamSwitcher"
+              class="absolute right-0 z-10 mt-2 w-72 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700"
+              role="menu"
+              aria-orientation="vertical"
+              tabindex="-1"
+            >
+              <div class="px-4 py-2">
+                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Switch Team</h3>
+              </div>
+
+              <div class="border-t border-gray-100 dark:border-gray-700">
+                <div class="max-h-96 overflow-y-auto py-2">
+                  <button
+                    v-for="team in teams"
+                    :key="team.id"
+                    class="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-blue-gray-700"
+                    :class="{ 'bg-gray-50 dark:bg-blue-gray-700': currentTeam.id === team.id }"
+                    @click="switchTeam(team)"
+                  >
+                    <div class="flex items-center">
+                      <div class="h-8 w-8 flex-shrink-0">
+                        <img
+                          src="https://avatars.githubusercontent.com/u/6228425?v=4"
+                          alt=""
+                          class="h-8 w-8 rounded-full"
+                        >
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ team.name }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ team.email }}</p>
+                      </div>
+                      <div
+                        v-if="currentTeam.id === team.id"
+                        class="ml-auto"
+                      >
+                        <div class="i-hugeicons-check h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-2">
+                <RouterLink
+                  to="/models/teams"
+                  class="block w-full rounded-md px-3 py-2 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-150"
+                  @click="showTeamSwitcher = false"
+                >
+                  Manage Teams
+                </RouterLink>
+              </div>
+            </div>
+          </div>
         </div>
 
         <nav class="flex flex-1 flex-col">
@@ -205,7 +307,7 @@ const sectionContent: Record<string, SectionContent> = {
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
-                    <div class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
+                    <div class="i-hugeicons-home-05 h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Home
                   </RouterLink>
                 </li>
@@ -218,7 +320,7 @@ const sectionContent: Record<string, SectionContent> = {
                 draggable="true"
                 :style="{
                   transform: calculateTransform(sectionKey),
-                  transition: dragTarget?.value && dragTarget.value === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+                  transition: dragTarget && dragTarget.value === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                   position: 'relative',
                   zIndex: draggedItem === sectionKey ? 20 : 10
                 }"
@@ -261,7 +363,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="mt-2 -mx-2 space-y-1 section-content"
                   :class="sections[sectionKey] ? 'expanded' : 'collapsed'"
                 >
-                  <li v-for="item in sectionContent[sectionKey].items" :key="item.to">
+                  <li v-for="item in (sectionContent[sectionKey]?.items ?? [])" :key="item.to">
                     <div>
                       <RouterLink
                         :to="item.to"
@@ -269,7 +371,7 @@ const sectionContent: Record<string, SectionContent> = {
                         @click.prevent="item.children ? toggleItem(item.to) : $router.push(item.to)"
                       >
                         <template v-if="item.icon">
-                          <div :class="[item.icon, 'h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                          <div :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
                         </template>
                         <template v-else-if="item.letter">
                           <span class="h-6 w-6 flex shrink-0 items-center justify-center border border-gray-200 rounded-lg bg-white text-[0.625rem] text-gray-400 font-medium dark:border-gray-600 group-hover:border-blue-600 group-hover:text-blue-600">
@@ -292,7 +394,7 @@ const sectionContent: Record<string, SectionContent> = {
                       >
                         <li v-for="child in item.children" :key="child.to">
                           <RouterLink :to="child.to" class="sidebar-child-link group">
-                            <div :class="[child.icon, 'h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                            <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
                             <span class="truncate">{{ child.text }}</span>
                           </RouterLink>
                         </li>
@@ -311,7 +413,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="sidebar-bottom-link"
                   :class="{ 'active-bottom-link': $route.path === '/buddy' }"
                 >
-                  <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                  <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
 
                 <RouterLink
@@ -319,7 +421,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="sidebar-bottom-link"
                   :class="{ 'active-bottom-link': $route.path === '/environment' }"
                 >
-                  <div class="i-hugeicons-key-01 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                  <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
 
                 <RouterLink
@@ -327,7 +429,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="sidebar-bottom-link"
                   :class="{ 'active-bottom-link': $route.path === '/access-tokens' }"
                 >
-                  <div class="i-hugeicons-shield-key h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                  <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
 
                 <RouterLink
@@ -335,7 +437,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="sidebar-bottom-link"
                   :class="{ 'active-bottom-link': $route.path.startsWith('/settings/ai') }"
                 >
-                  <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-500 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                  <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
               </div>
             </li>
