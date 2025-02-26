@@ -8,10 +8,9 @@ import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
 
-const appEnv = app.env || 'local'
-
 export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {
-  const driver = database.default ?? 'sqlite'
+  const appEnv = app.env || 'local'
+  const driver = database.default || 'sqlite'
 
   log.debug(`Using database driver: ${driver}`)
 

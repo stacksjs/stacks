@@ -14,9 +14,12 @@ export function originRequestFunctionHash(): string | undefined {
   }
 }
 
-const docsSrc = [path.projectPath('docs'), path.frameworkPath('docs/dist')]
-
 export function websiteSourceHash(): string | undefined {
+  const docsSrc = [
+    path.projectPath('docs'),
+    path.frameworkPath('docs/dist'),
+  ]
+
   const websiteSrc = [
     path.projectPath('resources/views'),
     path.projectPath('resources/assets'),
@@ -28,9 +31,14 @@ export function websiteSourceHash(): string | undefined {
     path.frameworkPath('views/web'),
   ]
 
-  return config.appath.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
+  return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
 }
 
 export function docsSourceHash(): string | undefined {
+  const docsSrc = [
+    path.projectPath('docs'),
+    path.frameworkPath('docs/dist'),
+  ]
+
   return hashPaths(docsSrc)
 }
