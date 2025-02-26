@@ -226,28 +226,98 @@ const erdLinks: ERDLink[] = [
 const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined>
 
-// Add download function
-const downloadDiagram = () => {
-  if (!diagramContainer.value) return
+// Add format state
+const downloadFormat = ref<'svg' | 'png'>('svg')
+const isDownloading = ref(false)
+
+// Update download function to support both formats
+const downloadDiagram = async () => {
+  if (!diagramContainer.value) {
+    console.error('No diagram container found')
+    return
+  }
 
   const svg = diagramContainer.value.querySelector('svg')
-  if (!svg) return
+  if (!svg) {
+    console.error('No SVG element found')
+    return
+  }
 
-  // Get SVG content
-  const svgData = svg.outerHTML
-  const blob = new Blob([svgData], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(blob)
+  isDownloading.value = true
 
-  // Create download link
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'model-relationships.svg'
-  document.body.appendChild(link)
-  link.click()
+  try {
+    if (downloadFormat.value === 'svg') {
+      // SVG download
+      const svgData = new XMLSerializer().serializeToString(svg)
+      const blob = new Blob([svgData], { type: 'image/svg+xml' })
+      const url = URL.createObjectURL(blob)
 
-  // Clean up
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'model-relationships.svg'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } else {
+      // PNG download
+      const svgData = new XMLSerializer().serializeToString(svg)
+      const blob = new Blob([svgData], { type: 'image/svg+xml' })
+      const url = URL.createObjectURL(blob)
+
+      const img = new Image()
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      if (!ctx) {
+        throw new Error('Could not get canvas context')
+      }
+
+      // Set canvas size to match SVG
+      const svgSize = svg.getBoundingClientRect()
+      const scale = 2 // For better resolution
+      canvas.width = svgSize.width * scale
+      canvas.height = svgSize.height * scale
+
+      // Set white background
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+      // Scale for better resolution
+      ctx.scale(scale, scale)
+
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            ctx.drawImage(img, 0, 0)
+            const pngUrl = canvas.toDataURL('image/png')
+
+            const link = document.createElement('a')
+            link.href = pngUrl
+            link.download = 'model-relationships.png'
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+
+            URL.revokeObjectURL(url)
+            resolve(true)
+          } catch (error) {
+            reject(error)
+          }
+        }
+
+        img.onerror = () => {
+          reject(new Error('Failed to load SVG into image'))
+        }
+
+        img.src = url
+      })
+    }
+  } catch (error) {
+    console.error('Error downloading diagram:', error)
+  } finally {
+    isDownloading.value = false
+  }
 }
 
 // Create model diagram
@@ -469,18 +539,29 @@ onUnmounted(() => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Model Relationships</h4>
+              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Entity Relationship Diagram</h4>
               <span class="text-sm text-gray-500 dark:text-gray-400">
                 (Drag nodes to rearrange)
               </span>
             </div>
-            <button
-              @click="downloadDiagram"
-              class="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 transition-colors duration-200"
-            >
-              <div class="i-heroicons-arrow-down-tray w-5 h-5" />
-              Download SVG
-            </button>
+            <div class="inline-flex rounded-md shadow-sm">
+              <select
+                v-model="downloadFormat"
+                class="h-9 text-sm border-0 rounded-l-md bg-white dark:bg-blue-gray-600 py-1.5 pl-3 pr-7 text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+              >
+                <option value="svg">SVG</option>
+                <option value="png">PNG</option>
+              </select>
+              <button
+                @click="downloadDiagram"
+                :disabled="isDownloading"
+                class="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-r-md shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                <div v-if="isDownloading" class="i-heroicons-arrow-path w-4 h-4 animate-spin" />
+                <div v-else class="i-heroicons-arrow-down-tray w-4 h-4" />
+                Download
+              </button>
+            </div>
           </div>
           <div ref="diagramContainer" class="w-full h-[800px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
         </div>

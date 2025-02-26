@@ -276,7 +276,7 @@ const sectionContent: Record<string, SectionContent> = {
                             {{ item.letter }}
                           </span>
                         </template>
-                        <span class="truncate">{{ item.text }}</span>
+                        <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
                         <div
                           v-if="item.children"
                           class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 ml-auto"
