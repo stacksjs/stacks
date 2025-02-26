@@ -72,11 +72,55 @@
           <div class="flex items-center justify-between mb-6">
             <div>
               <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Team Model Relationships</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing Team model relationships. Click on any model to navigate to its details.</p>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing Team model relationships. Click on any model to view details.</p>
             </div>
           </div>
-          <div ref="diagramContainer" class="h-[400px] relative">
-            <!-- D3 diagram will be rendered here -->
+          <div class="flex">
+            <div ref="diagramContainer" class="h-[400px] relative flex-1">
+              <!-- D3 diagram will be rendered here -->
+            </div>
+
+            <div v-if="selectedModel" class="w-64 ml-6 p-4 bg-gray-50 dark:bg-blue-gray-600 rounded-lg">
+              <div class="flex items-center mb-4">
+                <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+              </div>
+
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
+              </div>
+
+              <div class="mb-4">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
+                <ul class="space-y-1">
+                  <li v-for="prop in selectedModel.properties" :key="prop" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                    {{ prop }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="mb-6">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
+                <ul class="space-y-1">
+                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                    <router-link
+                      :to="getModelRoute(rel.toLowerCase())"
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                    >
+                      {{ rel }}
+                    </router-link>
+                  </li>
+                </ul>
+              </div>
+
+              <router-link
+                v-if="selectedModel.id !== 'team'"
+                :to="getModelRoute(selectedModel.id)"
+                class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
+              >
+                View Details
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -402,54 +446,15 @@ watch(timeRange, async () => {
   isLoading.value = false
 })
 
-// Initial load
-onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
-})
-
-// Get router instance
-const router = useRouter()
-
-// Function to get route path for a model
-const getModelRoute = (modelId: string) => {
-  const routes: Record<string, string> = {
-    user: '/models/users',
-    team: '/models/teams',
-    accessToken: '/models/access-tokens',
-    activity: '/models/activities',
-    post: '/models/posts'
-  }
-  return routes[modelId] || '/models'
-}
-
-// Model node interface
-interface ModelNode extends d3.SimulationNodeDatum {
-  id: string
-  name: string
-  properties: string[]
-  relationships: string[]
-  emoji: string
-  color: string
-  x?: number
-  y?: number
-  fx?: number | null
-  fy?: number | null
-}
-
-// Relationship link interface
-interface RelationshipLink {
-  source: string | ModelNode
-  target: string | ModelNode
-  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
-}
+// Add selectedModel ref before the models definition
+const selectedModel = ref<ModelNode | null>(null)
 
 // Team model and its relationships
 const models: ModelNode[] = [
   {
     id: 'team',
     name: 'Team',
+    description: 'Represents a collaborative group with shared resources and permissions. Teams can contain multiple users and are used for organizing access control.',
     properties: ['id', 'name', 'owner_id'],
     relationships: ['users', 'owner'],
     emoji: '👥',
@@ -458,6 +463,7 @@ const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
+    description: 'Core user model representing team members and owners. Users can belong to multiple teams and can own teams.',
     properties: ['id', 'name', 'email', 'password'],
     relationships: ['teams'],
     emoji: '👤',
@@ -476,7 +482,13 @@ const relationships: RelationshipLink[] = [
 const diagramContainer = ref<HTMLElement | null>(null)
 let simulation: d3.Simulation<ModelNode, undefined>
 
-onMounted(() => {
+onMounted(async () => {
+  // Set Team model as active by default
+  const teamModel = models.find(model => model.id === 'team')
+  if (teamModel) {
+    selectedModel.value = teamModel
+  }
+
   if (!diagramContainer.value) return
 
   const width = 800
@@ -532,8 +544,10 @@ onMounted(() => {
       .on('end', dragended))
     .style('cursor', 'pointer') // Add pointer cursor
     .on('click', (event, d) => {
-      // Navigate to the model's page
-      router.push(getModelRoute(d.id))
+      selectedModel.value = d
+      if (event.detail === 2) {
+        router.push(getModelRoute(d.id))
+      }
     })
 
   // Add hover effect to nodes
@@ -601,6 +615,43 @@ onMounted(() => {
     event.subject.fy = null
   }
 })
+
+// Get router instance
+const router = useRouter()
+
+// Function to get route path for a model
+const getModelRoute = (modelId: string) => {
+  const routes: Record<string, string> = {
+    user: '/models/users',
+    users: '/models/users',
+    team: '/models/teams',
+    teams: '/models/teams',
+    owner: '/models/users'
+  }
+  return routes[modelId] || '/models'
+}
+
+// Model node interface
+interface ModelNode extends d3.SimulationNodeDatum {
+  id: string
+  name: string
+  description: string
+  properties: string[]
+  relationships: string[]
+  emoji: string
+  color: string
+  x?: number
+  y?: number
+  fx?: number | null
+  fy?: number | null
+}
+
+// Relationship link interface
+interface RelationshipLink {
+  source: string | ModelNode
+  target: string | ModelNode
+  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
+}
 </script>
 
 <style scoped>

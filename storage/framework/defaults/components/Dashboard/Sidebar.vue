@@ -205,7 +205,7 @@ const sectionContent: Record<string, SectionContent> = {
               <ul role="list" class="mt-2 -mx-2 space-y-1">
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
-                    <div class="i-hugeicons-home-03 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
+                    <div class="i-hugeicons-home-05 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Home
                   </RouterLink>
                 </li>
