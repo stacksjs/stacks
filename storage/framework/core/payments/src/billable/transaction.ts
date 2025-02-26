@@ -1,7 +1,7 @@
-import type { TransactionModel } from '../../../../orm/src/models/Transaction'
+// import type { TransactionModel } from '../../../../orm/src/models/Transaction'
 import type { UserModel } from '../../../../orm/src/models/User'
-import Product from '../../../../orm/src/models/Product'
-import { Transaction } from '../../../../orm/src/models/Transaction'
+// import Product from '../../../../orm/src/models/Product'
+// import { Transaction } from '../../../../orm/src/models/Transaction'
 
 export interface ManageTransaction {
   store: (user: UserModel, productId: number) => Promise<TransactionModel>

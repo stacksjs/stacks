@@ -1,6 +1,5 @@
 import type { Err, Ok, Result } from '@stacksjs/error-handling'
 import type { MigrationResult } from 'kysely'
-import { $ } from 'bun'
 import { log } from '@stacksjs/cli'
 import { database } from '@stacksjs/config'
 import { err, handleError, ok } from '@stacksjs/error-handling'
@@ -119,7 +118,7 @@ export async function haveModelFieldsChangedSinceLastMigration(modelPath: string
 
   // now that we know the date, we need to check the git history for changes to the model file since that date
   const cmd = ``
-  const gitHistory = await $`${cmd}`.text()
+  const gitHistory = await Bun.$`${cmd}`.text()
 
   // if there are updates, then we need to check whether
   // the updates include the any updates to the model

@@ -1,11 +1,11 @@
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { path as p } from '@stacksjs/path'
+import { path } from '@stacksjs/path'
 import { hashPaths } from '@stacksjs/storage'
 
 export function originRequestFunctionHash(): string | undefined {
   try {
-    return hashPaths(p.cloudPath('src/edge'))
+    return hashPaths(path.cloudPath('src/edge'))
   }
   catch (error: any) {
     log.error('Are we in a Docker container? Failed to hash paths. Error below:')
@@ -14,21 +14,21 @@ export function originRequestFunctionHash(): string | undefined {
   }
 }
 
-const docsSrc = [p.projectPath('docs'), p.frameworkPath('docs/dist')]
+const docsSrc = [path.projectPath('docs'), path.frameworkPath('docs/dist')]
 
 export function websiteSourceHash(): string | undefined {
   const websiteSrc = [
-    p.projectPath('resources/views'),
-    p.projectPath('resources/assets'),
-    p.projectPath('resources/lang'),
-    p.projectPath('resources/functions'),
-    p.projectPath('resources/components'),
-    p.projectPath('resources/modules'),
-    p.projectPath('resources/stores'),
-    p.frameworkPath('views/web'),
+    path.projectPath('resources/views'),
+    path.projectPath('resources/assets'),
+    path.projectPath('resources/lang'),
+    path.projectPath('resources/functions'),
+    path.projectPath('resources/components'),
+    path.projectPath('resources/modules'),
+    path.projectPath('resources/stores'),
+    path.frameworkPath('views/web'),
   ]
 
-  return config.app.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
+  return config.appath.docMode === true ? hashPaths(docsSrc) : hashPaths(websiteSrc)
 }
 
 export function docsSourceHash(): string | undefined {

@@ -1,5 +1,4 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
-import { randomUUIDv7 } from 'bun'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { fetchOtherModelRelations, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
@@ -112,12 +111,12 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   }
 
   if (relationalModelUuid)
-    record.uuid = randomUUIDv7()
+    record.uuid = Bun.randomUUIDv7()
 
   const data = await db.insertInto(relationModelTable).values(record).executeTakeFirstOrThrow()
 
   if (useUuid)
-    record2.uuid = randomUUIDv7()
+    record2.uuid = Bun.randomUUIDv7()
 
   const data2 = await db.insertInto(relationTable).values(record2).executeTakeFirstOrThrow()
   const relationData = data.insertId || 1
@@ -161,7 +160,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   }
 
   if (useUuid)
-    record.uuid = randomUUIDv7()
+    record.uuid = Bun.randomUUIDv7()
 
   const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
 
