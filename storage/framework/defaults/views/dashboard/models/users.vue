@@ -149,8 +149,13 @@
               <div class="mb-6">
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
                 <ul class="space-y-1">
-                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
-                    {{ rel }}
+                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                    <router-link
+                      :to="getModelRoute(rel.toLowerCase())"
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                    >
+                      {{ rel }}
+                    </router-link>
                   </li>
                 </ul>
               </div>
@@ -669,9 +674,13 @@ const getModelRoute = (modelId: string) => {
   const routes: Record<string, string> = {
     user: '/models/users',
     team: '/models/teams',
+    teams: '/models/teams',
     accessToken: '/models/access-tokens',
+    accessTokens: '/models/access-tokens',
     activity: '/models/activities',
-    post: '/models/posts'
+    activities: '/models/activities',
+    post: '/models/posts',
+    posts: '/models/posts'
   }
   return routes[modelId] || '/models'
 }
