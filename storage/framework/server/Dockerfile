@@ -1,5 +1,5 @@
 # Build stage
-FROM oven/bun:1.2.3-debian AS builder
+FROM oven/bun:1.2.4-debian AS builder
 WORKDIR /usr/src
 
 # Copy source files
@@ -15,7 +15,7 @@ COPY ./tsconfig.docker.json ./tsconfig.json
 # RUN bun run build
 
 # Final stage
-FROM oven/bun:1.2.3-debian AS release
+FROM oven/bun:1.2.4-debian AS release
 WORKDIR /usr/src
 
 # Copy built files from builder stage
