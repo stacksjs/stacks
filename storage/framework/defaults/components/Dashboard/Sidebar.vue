@@ -46,7 +46,7 @@ const calculateTransform = (section: string) => {
 const sections = useLocalStorage<Sections>('sidebar-sections', {
   library: true,
   app: true,
-  models: true,
+  data: true,
   management: true
 })
 
@@ -57,7 +57,7 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'models', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -168,9 +168,9 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
     ]
   },
-  models: {
+  data: {
     items: [
-      { to: '/models', icon: 'i-hugeicons-dashboard-speed-02', text: 'Overview' },
+      { to: '/models', icon: 'i-hugeicons-dashboard-speed-02', text: 'General' },
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
@@ -185,7 +185,6 @@ const sectionContent: Record<string, SectionContent> = {
         children: [
           { to: '/servers', icon: 'i-hugeicons-cloud-server', text: 'Servers' },
           { to: '/serverless', icon: 'i-hugeicons-cloud-angled-zap', text: 'Serverless' },
-          { to: '/workers', icon: 'i-hugeicons-labor', text: 'Workers' },
         ]
       },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },

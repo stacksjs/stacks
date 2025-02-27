@@ -784,7 +784,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Infrastructure Diagram</h4>
+              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Cloud Diagram</h4>
               <!-- AWS Icon -->
               <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
                 <div class="i-hugeicons-amazon w-6 h-6"></div>

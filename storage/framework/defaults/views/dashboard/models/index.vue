@@ -524,10 +524,10 @@ onUnmounted(() => {
             <div class="i-hugeicons-dashboard-speed-02 w-8 h-8 text-blue-500" />
             <div>
               <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Models Overview
+                Data Visualization
               </h3>
               <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-                Visualize your application's models and their relationships.
+                Visualize your application's data models.
               </p>
             </div>
           </div>
