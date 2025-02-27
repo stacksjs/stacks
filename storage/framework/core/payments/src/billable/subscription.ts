@@ -1,10 +1,9 @@
 import type Stripe from 'stripe'
-import type { SubscriptionModel, SubscriptionsTable } from '../../../../orm/src/models/Subscription'
+import type { SubscriptionsTable } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
-import { manageCustomer, managePrice, stripe } from '..'
-
-import { Subscription } from '../../../../orm/src/models/Subscription'
 import { db } from '@stacksjs/database'
+
+import { manageCustomer, managePrice, stripe } from '..'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
@@ -127,23 +126,19 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function updateStoredSubscription(subscriptionId: string): Promise<void> {
-    const subscription = await Subscription.where('provider_id', subscriptionId).first()
-
-    subscription?.update({ provider_status: 'canceled' })
+    await db.updateTable('subscriptions').set({ provider_status: 'canceled' }).where('provider_id', '=', subscriptionId).executeTakeFirst()
   }
 
-  async function isActive(subscription: SubscriptionModel): Promise<boolean> {
+  async function isActive(subscription: SubscriptionsTable): Promise<boolean> {
     return subscription.provider_status === 'active'
   }
 
-  async function isTrial(subscription: SubscriptionModel): Promise<boolean> {
+  async function isTrial(subscription: SubscriptionsTable): Promise<boolean> {
     return subscription.provider_status === 'trialing'
   }
 
   async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
-    const subscription = await Subscription.where('user_id', user.id)
-      .where('type', type)
-      .first()
+    const subscription = await db.selectFrom('subscriptions').where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
       return false
@@ -152,9 +147,7 @@ export const manageSubscription: SubscriptionManager = (() => {
   }
 
   async function isValid(user: UserModel, type: string): Promise<boolean> {
-    const subscription = await Subscription.where('user_id', user.id)
-      .where('type', type)
-      .first()
+    const subscription = await db.selectFrom('subscriptions').where('user_id', '=', user.id).where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
       return false
@@ -165,7 +158,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     return active || trial
   }
 
-  async function storeSubscription(user: UserModel, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
+  async function storeSubscription(user: UserModel, type: string, lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
     const data = removeNullValues({
       user_id: user.id,
       type,
@@ -180,7 +173,8 @@ export const manageSubscription: SubscriptionManager = (() => {
       last_used_at: options.current_period_end != null ? String(options.current_period_end) : undefined,
     })
 
-    const subscriptionModel = await Subscription.create(data)
+    const subscriptionModelCreated = await db.insertInto('subscriptions').values(data).executeTakeFirst()
+    const subscriptionModel = await db.selectFrom('subscriptions').where('id', '=', Number(subscriptionModelCreated.insertId)).selectAll().executeTakeFirst()
 
     return subscriptionModel
   }
