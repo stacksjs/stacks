@@ -32,7 +32,7 @@ const servers = ref<Record<string, ServerConfig>>({
     size: 't3.micro',
     diskSize: 20,
     serverOS: 'ubuntu-24-lts-x86_64',
-    bunVersion: 'v1.2.3',
+    bunVersion: 'v1.2.4',
     database: 'sqlite',
     databaseName: 'stacks',
     searchEngine: 'meilisearch'
