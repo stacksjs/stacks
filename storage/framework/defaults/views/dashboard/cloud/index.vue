@@ -155,21 +155,11 @@ const serverTypes: ServerType[] = [
 ]
 
 const bunVersions = [
+  'v1.2.4',
   'v1.2.3',
   'v1.2.2',
   'v1.2.1',
   'v1.2.0',
-  'v1.1.20',
-  'v1.1.15',
-  'v1.1.10',
-  'v1.1.5',
-  'v1.1.0',
-  'v1.0.25',
-  'v1.0.20',
-  'v1.0.15',
-  'v1.0.10',
-  'v1.0.5',
-  'v1.0.0',
 ]
 
 // State
@@ -608,45 +598,6 @@ onMounted(() => {
   if (diagramContainer.value) {
     updateVisualization()
   }
-})
-
-// CDK code generation
-const cdkCode = computed(() => {
-  return `import * as cdk from 'aws-cdk-lib'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2'
-
-export class StacksInfrastructureStack extends cdk.Stack {
-  constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
-    super(scope, id, props)
-
-    // VPC
-    const vpc = new ec2.Vpc(this, 'StacksVPC', {
-      maxAzs: 2,
-    })
-
-    ${cloudConfig.value.useLoadBalancer ? `
-    // Load Balancer
-    const lb = new elbv2.ApplicationLoadBalancer(this, 'StacksLB', {
-      vpc,
-      internetFacing: true,
-    })` : ''}
-
-    ${Object.entries(cloudConfig.value.servers).map(([key, server]) => `
-    // ${server.name}
-    const ${key}Instance = new ec2.Instance(this, '${key}Instance', {
-      vpc,
-      instanceType: ec2.InstanceType.of(
-        ec2.InstanceClass.T3,
-        ec2.InstanceSize.MICRO
-      ),
-      machineImage: new ec2.GenericLinuxImage({
-        'us-east-1': '${server.serverOS}',
-      }),
-      userData: ec2.UserData.custom(\`${server.userData}\`),
-    })`).join('\n')}
-  }
-}`
 })
 
 // Methods
