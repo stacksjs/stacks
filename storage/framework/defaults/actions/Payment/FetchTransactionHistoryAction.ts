@@ -10,7 +10,7 @@ export default new Action({
     const userId = Number(request.getParam('id'))
     const user = await User.find(userId)
 
-    const transactions = await Transaction.where('user_id', user?.id).get()
+    const transactions = await PaymentTransaction.where('user_id', user?.id).get()
 
     return response.json(transactions)
   },

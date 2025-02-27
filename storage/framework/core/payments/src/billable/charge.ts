@@ -45,12 +45,7 @@ export const manageCharge: ManageCharge = (() => {
       ...options,
     }
 
-    try {
-      return await stripe.refund.create(refundParams)
-    }
-    catch (error) {
-      log.error('Error creating refund:', error)
-    }
+    return await stripe.refund.create(refundParams)
   }
 
   async function charge(user: UserModel, amount: number, paymentMethod: string, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {

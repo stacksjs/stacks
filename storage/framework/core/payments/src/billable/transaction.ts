@@ -1,16 +1,16 @@
-// import type { TransactionModel } from '../../../../orm/src/models/Transaction'
+import type { PaymentTransactionModel } from '../../../../orm/src/models/PaymentTransaction'
 import type { UserModel } from '../../../../orm/src/models/User'
-// import Product from '../../../../orm/src/models/Product'
-// import { Transaction } from '../../../../orm/src/models/Transaction'
+import PaymentProduct from '../../../../orm/src/models/PaymentProduct'
+import { PaymentTransaction } from '../../../../orm/src/models/PaymentTransaction'
 
 export interface ManageTransaction {
-  store: (user: UserModel, productId: number) => Promise<TransactionModel>
-  list: (user: UserModel) => Promise<TransactionModel[]>
+  store: (user: UserModel, productId: number) => Promise<PaymentTransactionModel>
+  list: (user: UserModel) => Promise<PaymentTransactionModel[]>
 }
 
 export const manageTransaction: ManageTransaction = (() => {
-  async function store(user: UserModel, productId: number): Promise<TransactionModel> {
-    const product = await Product.find(productId)
+  async function store(user: UserModel, productId: number): Promise<PaymentTransactionModel> {
+    const product = await PaymentProduct.find(productId)
 
     const data = {
       name: product?.name,
@@ -22,13 +22,13 @@ export const manageTransaction: ManageTransaction = (() => {
       user_id: user.id,
     }
 
-    const transaction = await Transaction.create(data)
+    const transaction = await PaymentTransaction.create(data)
 
     return transaction
   }
 
-  async function list(user: UserModel): Promise<TransactionModel[]> {
-    const transaction = await Transaction.where('user_id', user.id).get()
+  async function list(user: UserModel): Promise<PaymentTransactionModel[]> {
+    const transaction = await PaymentTransaction.where('user_id', user.id).get()
 
     return transaction
   }
