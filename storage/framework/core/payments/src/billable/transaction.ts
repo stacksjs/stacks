@@ -1,16 +1,15 @@
-import type { PaymentTransactionModel } from '../../../../orm/src/models/PaymentTransaction'
+import type { PaymentTransactionModel, PaymentTransactionsTable } from '../../../../orm/src/models/PaymentTransaction'
 import type { UserModel } from '../../../../orm/src/models/User'
-import PaymentProduct from '../../../../orm/src/models/PaymentProduct'
-import { PaymentTransaction } from '../../../../orm/src/models/PaymentTransaction'
+import { db } from '@stacksjs/database'
 
 export interface ManageTransaction {
-  store: (user: UserModel, productId: number) => Promise<PaymentTransactionModel>
-  list: (user: UserModel) => Promise<PaymentTransactionModel[]>
+  store: (user: UserModel, productId: number) => Promise<PaymentTransactionsTable>
+  list: (user: UserModel) => Promise<PaymentTransactionsTable[]>
 }
 
 export const manageTransaction: ManageTransaction = (() => {
-  async function store(user: UserModel, productId: number): Promise<PaymentTransactionModel> {
-    const product = await PaymentProduct.find(productId)
+  async function store(user: UserModel, productId: number): Promise<PaymentTransactionsTable> {
+    const product = await db.selectFrom('payment_products').where('id', '=', productId).selectAll().executeTakeFirst()
 
     const data = {
       name: product?.name,
@@ -22,13 +21,15 @@ export const manageTransaction: ManageTransaction = (() => {
       user_id: user.id,
     }
 
-    const transaction = await PaymentTransaction.create(data)
+    const createdTransaction = await db.insertInto('payment_transactions').values(data).executeTakeFirst()
+
+    const transaction = await db.selectFrom('payment_transactions').where('id', '=', Number(createdTransaction.insertId)).selectAll().executeTakeFirst()
 
     return transaction
   }
 
-  async function list(user: UserModel): Promise<PaymentTransactionModel[]> {
-    const transaction = await PaymentTransaction.where('user_id', user.id).get()
+  async function list(user: UserModel): Promise<PaymentTransactionsTable[]> {
+    const transaction = await db.selectFrom('payment_transactions').where('user_id', '=', user.id).selectAll().execute()
 
     return transaction
   }

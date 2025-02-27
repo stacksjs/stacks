@@ -1,9 +1,10 @@
 import type Stripe from 'stripe'
-import type { SubscriptionModel } from '../../../../orm/src/models/Subscription'
+import type { SubscriptionModel, SubscriptionsTable } from '../../../../orm/src/models/Subscription'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { manageCustomer, managePrice, stripe } from '..'
 
 import { Subscription } from '../../../../orm/src/models/Subscription'
+import { db } from '@stacksjs/database'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
@@ -184,14 +185,17 @@ export const manageSubscription: SubscriptionManager = (() => {
     return subscriptionModel
   }
 
-  async function updateSubscription(activeSubId: number, type: string, options: Stripe.Subscription): Promise<SubscriptionModel> {
-    const subscription = await Subscription.find(activeSubId) as SubscriptionModel
+  async function updateSubscription(activeSubId: number, type: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
+    const subscription = await db.selectFrom('subscriptions').where('id', '=', activeSubId).selectAll().executeTakeFirst()
 
-    subscription?.update({
-      type,
-      provider_price_id: options.items.data[0].price.id,
-      unit_price: Number(options.items.data[0].price.unit_amount),
-    })
+    await db?.updateTable('subscriptions')
+      .set({
+        type,
+        provider_price_id: options.items.data[0].price.id,
+        unit_price: Number(options.items.data[0].price.unit_amount),
+      })
+      .where('id', '=', activeSubId)
+      .executeTakeFirst()
 
     return subscription
   }
