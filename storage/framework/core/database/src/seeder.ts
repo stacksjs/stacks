@@ -24,8 +24,6 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
   const tableName = await getTableName(model, modelPath)
 
-  const ormModel = (await import(path.storagePath(`framework/orm/src/models/${name}`))).default
-
   const seedCount
     = typeof model.traits?.useSeeder === 'object' && model.traits?.useSeeder?.count ? model.traits.useSeeder.count : 10
 
@@ -63,7 +61,7 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       }
     }
 
-    await ormModel.create(record)
+    await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
   }
 }
 
