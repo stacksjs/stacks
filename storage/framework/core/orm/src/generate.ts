@@ -397,8 +397,8 @@ export async function generateModelString(
   }
 
   if (useBillable) {
-    paymentImports += `import { PaymentMethodModel } from './PaymentMethod'\n`
-    paymentImports += `import { TransactionModel } from './Transaction'`
+    paymentImports += `import { PaymentMethodsTable } from './PaymentMethod'\n`
+    paymentImports += `import { PaymentTransactionsTable } from './PaymentTransaction'`
 
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createStripeCustomer(this, options)
@@ -412,7 +412,7 @@ export async function generateModelString(
         return customer
       }
   
-      async storeTransaction(productId: number): Promise<TransactionModel> {
+      async storeTransaction(productId: number): Promise<PaymentTransactionsTable | undefined> {
         const transaction = await manageTransaction.store(this, productId)
   
         return transaction
@@ -433,7 +433,7 @@ export async function generateModelString(
         return customer
       }
   
-       async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
+       async defaultPaymentMethod(): Promise<PaymentMethodsTable | undefined> {
         const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
   
         return defaultPaymentMethod
@@ -491,7 +491,7 @@ export async function generateModelString(
         return deletedPaymentMethod
       }
   
-      async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodModel | undefined> {
+      async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodsTable | undefined> {
         const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
   
         return defaultPaymentMethod
@@ -523,7 +523,7 @@ export async function generateModelString(
         return manageInvoice.list(this)
       }
   
-      async transactionHistory(): Promise<TransactionModel[]> {
+      async transactionHistory(): Promise<PaymentTransactionsTable[]> {
         return manageTransaction.list(this)
       }
   
@@ -551,7 +551,7 @@ export async function generateModelString(
         return await manageSubscription.isIncomplete(this, type)
       }
       
-      async paymentMethods(cardType?: string): Promise<PaymentMethodModel[]> {
+      async paymentMethods(cardType?: string): Promise<PaymentMethodsTable[]> {
         return await managePaymentMethod.listPaymentMethods(this, cardType)
       }
         

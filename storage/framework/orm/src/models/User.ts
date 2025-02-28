@@ -3,12 +3,11 @@ import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
-import type { PaymentMethodModel } from './PaymentMethod'
-import type { PaymentTransactionModel } from './PaymentTransaction'
+import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
+import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
-import type { TransactionModel } from './Transaction'
 import { randomUUIDv7 } from 'bun'
 
 import { cache } from '@stacksjs/cache'
@@ -1749,7 +1748,7 @@ export class UserModel {
     return customer
   }
 
-  async storeTransaction(productId: number): Promise<TransactionModel> {
+  async storeTransaction(productId: number): Promise<PaymentTransactionsTable | undefined> {
     const transaction = await manageTransaction.store(this, productId)
 
     return transaction
@@ -1770,7 +1769,7 @@ export class UserModel {
     return customer
   }
 
-  async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
+  async defaultPaymentMethod(): Promise<PaymentMethodsTable | undefined> {
     const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
 
     return defaultPaymentMethod
@@ -1828,7 +1827,7 @@ export class UserModel {
     return deletedPaymentMethod
   }
 
-  async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodModel | undefined> {
+  async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodsTable | undefined> {
     const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
 
     return defaultPaymentMethod
@@ -1860,7 +1859,7 @@ export class UserModel {
     return manageInvoice.list(this)
   }
 
-  async transactionHistory(): Promise<TransactionModel[]> {
+  async transactionHistory(): Promise<PaymentTransactionsTable[]> {
     return manageTransaction.list(this)
   }
 
@@ -1888,7 +1887,7 @@ export class UserModel {
     return await manageSubscription.isIncomplete(this, type)
   }
 
-  async paymentMethods(cardType?: string): Promise<PaymentMethodModel[]> {
+  async paymentMethods(cardType?: string): Promise<PaymentMethodsTable[]> {
     return await managePaymentMethod.listPaymentMethods(this, cardType)
   }
 
