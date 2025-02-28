@@ -1,8 +1,9 @@
 import type Stripe from 'stripe'
-import type { PaymentMethodModel } from '../../../../orm/src/models/PaymentMethod'
+import type { PaymentMethodModel, PaymentMethodsTable } from '../../../../orm/src/models/PaymentMethod'
 import type { UserModel } from '../../../../orm/src/models/User'
 import { stripe } from '..'
 import PaymentMethod from '../../../../orm/src/models/PaymentMethod'
+import { db } from '@stacksjs/database'
 
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>
@@ -11,9 +12,9 @@ export interface ManagePaymentMethod {
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.Customer>>
   storePaymentMethod: (user: UserModel, paymentMethodId: Stripe.PaymentMethod) => Promise<PaymentMethodModel>
   deletePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
-  retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodModel | undefined>
+  retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodsTable | undefined>
   retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodModel | undefined>
-  listPaymentMethods: (user: UserModel, cardType?: string) => Promise<PaymentMethodModel[]>
+  listPaymentMethods: (user: UserModel, cardType?: string) => Promise<PaymentMethodsTable[]>
 }
 
 export const managePaymentMethod: ManagePaymentMethod = (() => {
@@ -49,7 +50,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
     const paymentMethod = await stripe.paymentMethod.retrieve(paymentMethodId)
 
-    const paymentMethodModel = await PaymentMethod.where('provider_id', paymentMethodId).first()
+    const paymentMethodModel = await db.selectFrom('payment_methods').where('provider_id', '=', paymentMethodId).selectAll().executeTakeFirst()
 
     if (paymentMethod.customer !== user.stripe_id) {
       await stripe.paymentMethod.attach(paymentMethod.id, {
@@ -73,7 +74,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const pm = await PaymentMethod.find(paymentId)
+    const pm = await db.selectFrom('payment_methods').where('id', '=', paymentId).selectAll().executeTakeFirst()
 
     const paymentMethod = await stripe.paymentMethod.retrieve(String(pm?.provider_id))
 
@@ -89,9 +90,9 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       },
     })
 
-    await PaymentMethod.where('user_id', 1).update({ is_default: false })
+    await db.updateTable('payment_methods').set({ is_default: false }).where('user_id', '=', 1).executeTakeFirst()
 
-    pm?.update({ is_default: true })
+    await db.updateTable('payment_methods').set({ is_default: true }).where('id', '=', paymentId).executeTakeFirst()
 
     return updatedCustomer
   }
@@ -162,28 +163,25 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
 
   async function listPaymentMethods(
     user: UserModel,
-  ): Promise<PaymentMethodModel[]> {
+  ): Promise<PaymentMethodsTable[]> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethods = await PaymentMethod.where('user_id', user.id)
-      .orWhere(
-        ['is_default', 'is', null],
-        ['is_default', '=', false],
-        ['is_default', '=', ''],
-      )
-      .get()
+    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where((eb) => eb.or([
+      eb('is_default', 'is', null),
+      eb('is_default', '=', false),
+    ])).where('user_id', '=', user.id).execute()
 
     return paymentMethods
   }
 
-  async function retrievePaymentMethod(user: UserModel, paymentMethodId: number): Promise<PaymentMethodModel | undefined> {
+  async function retrievePaymentMethod(user: UserModel, paymentMethodId: number): Promise<PaymentMethodsTable | undefined> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethod = await PaymentMethod.find(paymentMethodId)
+    const paymentMethod = await db.selectFrom('payment_methods').where('id', '=', paymentMethodId).selectAll().executeTakeFirst()
 
     return paymentMethod
   }
