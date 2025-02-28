@@ -1,5 +1,5 @@
 import type { Ok } from '@stacksjs/error-handling'
-import type { Attribute, Attributes, Model } from '@stacksjs/types'
+import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { ok } from '@stacksjs/error-handling'
@@ -134,7 +134,7 @@ async function createTableMigration(modelPath: string) {
 
   await createPivotTableMigration(model, modelPath)
 
-  const otherModelRelations = await fetchOtherModelRelations(model, modelPath)
+  const otherModelRelations = await fetchOtherModelRelations(modelPath)
   const useTimestamps = model.traits?.useTimestamps ?? model.traits?.timestampable ?? true
   const useSoftDeletes = model.traits?.useSoftDeletes ?? model.traits?.softDeletable ?? false
 
@@ -237,7 +237,7 @@ async function createAlterTableMigration(modelPath: string) {
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.attributes as Attributes
+  const currentFields = model.attributes as AttributesElements
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
   const fieldsToAdd = changes?.added || []
   const fieldsToRemove = changes?.removed || []

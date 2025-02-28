@@ -25,7 +25,39 @@ export class SendGridDriver extends BaseEmailDriver {
 
     try {
       this.validateMessage(message)
-      const templ = await template(message.template, options)
+
+      // Only attempt to render template if one is provided
+      let htmlContent: string | undefined
+      if (message.template) {
+        const templ = await template(message.template, options)
+        if (templ && 'html' in templ) {
+          htmlContent = templ.html
+        }
+      }
+
+      // Prepare content array based on available content
+      const content = []
+
+      // Add HTML content if available
+      if (htmlContent) {
+        content.push({
+          type: 'text/html',
+          value: htmlContent,
+        })
+      }
+
+      // Add text content if available
+      if (message.text) {
+        content.push({
+          type: 'text/plain',
+          value: message.text,
+        })
+      }
+
+      // If no content was added, throw an error
+      if (content.length === 0) {
+        throw new Error('Email must have either HTML or text content')
+      }
 
       const sendgridPayload = {
         personalizations: [
@@ -40,24 +72,7 @@ export class SendGridDriver extends BaseEmailDriver {
           email: message.from.address || config.email.from?.address,
           ...(message.from.name && { name: message.from.name }),
         },
-        content: [
-          {
-            type: 'text/html',
-            value: templ.html,
-          },
-        ],
-        ...(message.text && {
-          content: [
-            {
-              type: 'text/html',
-              value: templ.html,
-            },
-            {
-              type: 'text/plain',
-              value: message.text,
-            },
-          ],
-        }),
+        content,
         ...(message.attachments && {
           attachments: message.attachments.map(attachment => ({
             filename: attachment.filename,

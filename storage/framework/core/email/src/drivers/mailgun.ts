@@ -30,7 +30,15 @@ export class MailgunDriver extends BaseEmailDriver {
 
     try {
       this.validateMessage(message)
-      const templ = await template(message.template, options)
+
+      // Only attempt to render template if one is provided
+      let htmlContent: string | undefined
+      if (message.template) {
+        const templ = await template(message.template, options)
+        if (templ && 'html' in templ) {
+          htmlContent = templ.html
+        }
+      }
 
       const formData = new FormData()
       formData.append('from', this.formatMailgunAddress(message.from))
@@ -45,7 +53,11 @@ export class MailgunDriver extends BaseEmailDriver {
         this.formatMailgunAddresses(message.bcc).forEach(bcc => formData.append('bcc', bcc))
 
       formData.append('subject', message.subject)
-      formData.append('html', templ.html)
+
+      // Only append html content if it exists
+      if (htmlContent) {
+        formData.append('html', htmlContent)
+      }
 
       if (message.text)
         formData.append('text', message.text)

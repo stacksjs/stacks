@@ -1,5 +1,5 @@
 import type { Ok } from '@stacksjs/error-handling'
-import type { Attribute, Attributes, Model } from '@stacksjs/types'
+import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { app } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
@@ -371,7 +371,7 @@ async function createAlterTableMigration(modelPath: string) {
   // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
-  const currentFields = model.attributes as Attributes
+  const currentFields = model.attributes as AttributesElements
 
   // Determine fields to add and remove
 
@@ -449,7 +449,7 @@ async function createAlterTableMigration(modelPath: string) {
   }
 }
 
-function reArrangeColumns(attributes: Attributes | undefined, tableName: string): string {
+function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {
   const fields = arrangeColumns(attributes)
   let migrationContent = ''
 

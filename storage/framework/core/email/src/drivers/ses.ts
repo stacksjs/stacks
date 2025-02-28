@@ -25,7 +25,38 @@ export class SESDriver extends BaseEmailDriver {
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
     try {
       this.validateMessage(message)
-      const templ = await template(message.template, options)
+
+      // Only attempt to render template if one is provided
+      let htmlContent: string | undefined
+      if (message.template) {
+        const templ = await template(message.template, options)
+        if (templ && 'html' in templ) {
+          htmlContent = templ.html
+        }
+      }
+
+      const messageBody: any = {}
+
+      // Add HTML content if available
+      if (htmlContent) {
+        messageBody.Html = {
+          Charset: config.email.charset || 'UTF-8',
+          Data: htmlContent,
+        }
+      }
+
+      // Add text content if available
+      if (message.text) {
+        messageBody.Text = {
+          Charset: config.email.charset || 'UTF-8',
+          Data: message.text,
+        }
+      }
+
+      // If no content was added, throw an error
+      if (Object.keys(messageBody).length === 0) {
+        throw new Error('Email must have either HTML or text content')
+      }
 
       const params = {
         Source: message.from?.address || config.email.from?.address,
@@ -37,12 +68,7 @@ export class SESDriver extends BaseEmailDriver {
         },
 
         Message: {
-          Body: {
-            Html: {
-              Charset: config.email.charset || 'UTF-8',
-              Data: templ.html,
-            },
-          },
+          Body: messageBody,
           Subject: {
             Charset: config.email.charset || 'UTF-8',
             Data: message.subject,
