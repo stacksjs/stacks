@@ -790,16 +790,16 @@ export class TeamModel {
       switch (condition.method) {
         case 'where':
           if (condition.type === 'and') {
-            this.where(condition.column, condition.operator!, condition.value)
+            this.where(condition.column, condition.operator!, condition.value || [])
           }
           break
 
         case 'whereIn':
           if (condition.operator === 'is not') {
-            this.whereNotIn(condition.column, condition.values)
+            this.whereNotIn(condition.column, condition.values || [])
           }
           else {
-            this.whereIn(condition.column, condition.values)
+            this.whereIn(condition.column, condition.values || [])
           }
 
           break
@@ -813,7 +813,7 @@ export class TeamModel {
           break
 
         case 'whereBetween':
-          this.whereBetween(condition.column, condition.values)
+          this.whereBetween(condition.column, condition.range || [0, 0])
           break
 
         case 'whereExists': {

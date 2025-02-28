@@ -6,7 +6,8 @@ interface WhereCondition<T, V = any> {
   column: keyof T
   operator?: Operator
   value?: V
-  values?: V[]
+  values?: V[] | [V, V]
+  range?: [V, V]
   callback?: (query: SubqueryBuilder<T>) => void
 }
 
@@ -69,7 +70,7 @@ export class SubqueryBuilder<T> {
       type: 'and',
       method: 'whereBetween',
       column,
-      values: range,
+      range,
     })
   }
 

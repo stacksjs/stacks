@@ -1,9 +1,9 @@
 import type Stripe from 'stripe'
 import type { PaymentMethodModel, PaymentMethodsTable } from '../../../../orm/src/models/PaymentMethod'
 import type { UserModel } from '../../../../orm/src/models/User'
+import { db } from '@stacksjs/database'
 import { stripe } from '..'
 import PaymentMethod from '../../../../orm/src/models/PaymentMethod'
-import { db } from '@stacksjs/database'
 
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>
@@ -168,7 +168,7 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where((eb) => eb.or([
+    const paymentMethods = await db.selectFrom('payment_methods').selectAll().where(eb => eb.or([
       eb('is_default', 'is', null),
       eb('is_default', '=', false),
     ])).where('user_id', '=', user.id).execute()
