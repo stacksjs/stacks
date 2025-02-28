@@ -41,7 +41,7 @@ export default {
   },
 
   hasOne: ['Subscriber'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'Transaction'],
+  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'PaymentTransaction'],
 
   belongsToMany: ['Team'],
 

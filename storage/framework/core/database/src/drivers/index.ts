@@ -128,72 +128,6 @@ export function findCharacterLength(rule: VineType): { min: number, max: number 
   return result
 }
 
-export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
-  if (hasFunction(rule, 'getChoices')) {
-    if (driver === 'sqlite') {
-      return `'text'`
-    }
-
-    // Condition checker if an attribute is enum, could not think any conditions atm
-    const enumChoices = rule.getChoices() as string[]
-
-    // Convert each string value to its corresponding string structure
-    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
-
-    // Construct the ENUM definition
-    const enumDefinition = `sql\`enum(${enumStructure})\``
-
-    return enumDefinition
-  }
-
-  // Use existing schema_name check to determine main type
-  const schemaName = rule[Symbol.for('schema_name')] || ''
-
-  if (schemaName.includes('string')) {
-    return prepareTextColumnType(rule)
-  }
-
-  if (schemaName.includes('number')) {
-    return prepareNumberColumnType(rule)
-  }
-
-  if (schemaName.includes('boolean')) {
-    return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
-  }
-
-  if (schemaName.includes('date')) {
-    return prepareDateTimeColumnType(rule, driver)
-  }
-
-  if (schemaName.includes('array') || schemaName.includes('object')) {
-    return driver === 'sqlite' ? `'text'` : `'json'`
-  }
-
-  // Fallback for other types
-  switch (rule) {
-    case 'integer':
-      return `'int'`
-    case 'boolean':
-      return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
-    case 'date':
-      return `'date'`
-    case 'datetime':
-      return driver === 'sqlite' ? `'text'` : `'datetime'`
-    case 'timestamp':
-      return `'timestamp'`
-    case 'float':
-      return `'float'`
-    case 'decimal':
-      return `'decimal(10,2)'`
-    case 'uuid':
-      return driver === 'sqlite' ? `'text'` : `'char(36)'`
-    case 'binary':
-      return driver === 'sqlite' ? `'blob'` : `'longblob'`
-    default:
-      return `'text'` // Fallback for unknown types
-  }
-}
-
 // Use existing prepareTextColumnType function
 export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string {
   // For SQLite, all text fields are just 'text'
@@ -242,74 +176,6 @@ export function prepareTextColumnType(rule: VineType, driver = 'mysql'): string 
   }
 
   return `'${columnType}'`
-}
-
-// Add new function for numeric column types
-export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): string {
-  if (driver === 'sqlite')
-    return `'numeric'`
-
-  // Check precision and scale
-  let precision = 10
-  let scale = 2
-  let isDecimal = false
-
-  // Check validations for precision/scale
-  for (const validation of rule.validations || []) {
-    if (validation.options?.precision) {
-      precision = validation.options.precision
-      isDecimal = true
-    }
-    if (validation.options?.scale) {
-      scale = validation.options.scale
-      isDecimal = true
-    }
-  }
-
-  // Check for integer-only constraint
-  const isInteger = rule.validations.some((v: any) => v.rule === 'integer')
-
-  if (isDecimal) {
-    return `'decimal(${precision},${scale})'`
-  }
-
-  if (isInteger) {
-    // Look for min/max values to determine appropriate integer type
-    let min: number | undefined
-    let max: number | undefined
-
-    for (const validation of rule.validations || []) {
-      if (validation.options?.min !== undefined)
-        min = validation.options.min
-      if (validation.options?.max !== undefined)
-        max = validation.options.max
-    }
-
-    // If we have both bounds, choose an appropriate type
-    if (min !== undefined && max !== undefined) {
-      if (min >= -128 && max <= 127) {
-        return `'tinyint'`
-      }
-      else if (min >= -32768 && max <= 32767) {
-        return `'smallint'`
-      }
-      else if (min >= -8388608 && max <= 8388607) {
-        return `'mediumint'`
-      }
-      else if (min >= -2147483648 && max <= 2147483647) {
-        return `'int'`
-      }
-      else {
-        return `'bigint'`
-      }
-    }
-
-    // Default int type
-    return `'int'`
-  }
-
-  // Default to decimal for floating point numbers
-  return `'decimal(10,2)'`
 }
 
 // Add new function for date/time column types
@@ -444,4 +310,141 @@ function getUpvoteTableName(model: Model, tableName: string): string | undefined
   return typeof traits?.likeable === 'object'
     ? traits.likeable.table || defaultTable
     : undefined
+}
+
+// Updated function for numeric column types compatible with Kysely
+export function prepareNumberColumnType(rule: VineType, driver = 'mysql'): string {
+  // SQLite uses a single numeric type for all numbers
+  if (driver === 'sqlite')
+    return `'numeric'`
+
+  // Check for decimal validation
+  let precision = 10
+  let scale = 2
+  let isDecimal = false
+
+  // Check validations for precision/scale
+  for (const validation of rule.validations || []) {
+    if (validation.options?.precision) {
+      precision = validation.options.precision
+      isDecimal = true
+    }
+    if (validation.options?.scale) {
+      scale = validation.options.scale
+      isDecimal = true
+    }
+  }
+
+  // Check for integer-only constraint
+  const isInteger = rule.validations.some((v: any) => v.rule === 'integer')
+
+  // Handle exact decimal values
+  if (isDecimal) {
+    return `'decimal(${precision},${scale})'`
+  }
+
+  // Handle integers with different storage requirements
+  if (isInteger) {
+    // Look for min/max values to determine appropriate integer type
+    let min: number | undefined
+    let max: number | undefined
+
+    for (const validation of rule.validations || []) {
+      if (validation.options?.min !== undefined)
+        min = validation.options.min
+      if (validation.options?.max !== undefined)
+        max = validation.options.max
+    }
+
+    // If we have both bounds, choose an appropriate type
+    if (min !== undefined && max !== undefined) {
+      if (min >= -128 && max <= 127) {
+        return `'tinyint'`
+      }
+      else if (min >= -32768 && max <= 32767) {
+        return `'smallint'`
+      }
+      else if (min >= -8388608 && max <= 8388607) {
+        return `'mediumint'`
+      }
+      else if (min >= -2147483648 && max <= 2147483647) {
+        return `'int'`
+      }
+      else {
+        return `'bigint'`
+      }
+    }
+
+    // Default int type
+    return `'int'`
+  }
+
+  // For floating point numbers, use double for better compatibility
+  return `'double'`
+}
+
+export function mapFieldTypeToColumnType(rule: VineType, driver = 'mysql'): string {
+  if (hasFunction(rule, 'getChoices')) {
+    if (driver === 'sqlite') {
+      return `'text'`
+    }
+
+    // Condition checker if an attribute is enum, could not think any conditions atm
+    const enumChoices = rule.getChoices() as string[]
+
+    // Convert each string value to its corresponding string structure
+    const enumStructure = enumChoices.map(value => `'${value}'`).join(', ')
+
+    // Construct the ENUM definition
+    const enumDefinition = `sql\`enum(${enumStructure})\``
+
+    return enumDefinition
+  }
+
+  // Use existing schema_name check to determine main type
+  const schemaName = rule[Symbol.for('schema_name')] || ''
+
+  if (schemaName.includes('string')) {
+    return prepareTextColumnType(rule, driver)
+  }
+
+  if (schemaName.includes('number')) {
+    return prepareNumberColumnType(rule, driver)
+  }
+
+  if (schemaName.includes('boolean')) {
+    return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
+  }
+
+  if (schemaName.includes('date')) {
+    return prepareDateTimeColumnType(rule, driver)
+  }
+
+  if (schemaName.includes('array') || schemaName.includes('object')) {
+    return driver === 'sqlite' ? `'text'` : `'json'`
+  }
+
+  // Fallback for other types - UPDATED to avoid using 'float'
+  switch (rule) {
+    case 'integer':
+      return `'int'`
+    case 'boolean':
+      return driver === 'sqlite' ? `'integer'` : `'tinyint(1)'`
+    case 'date':
+      return `'date'`
+    case 'datetime':
+      return driver === 'sqlite' ? `'text'` : `'datetime'`
+    case 'timestamp':
+      return `'timestamp'`
+    case 'float':
+      return `'double'`
+    case 'decimal':
+      return `'decimal(10,2)'`
+    case 'uuid':
+      return driver === 'sqlite' ? `'text'` : `'char(36)'`
+    case 'binary':
+      return driver === 'sqlite' ? `'blob'` : `'longblob'`
+    default:
+      return `'text'` // Fallback for unknown types
+  }
 }
