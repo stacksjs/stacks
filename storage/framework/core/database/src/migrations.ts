@@ -11,19 +11,21 @@ import { db } from './utils'
 
 const driver = database.default || ''
 
-export const migrator: Migrator = new Migrator({
-  db,
+export function migrator(): Migrator {
+  return new Migrator({
+    db,
 
-  provider: new FileMigrationProvider({
-    fs,
-    path,
-    // This needs to be an absolute path.
-    migrationFolder: path.userMigrationsPath(),
-  }),
+    provider: new FileMigrationProvider({
+      fs,
+      path,
+      // This needs to be an absolute path.
+      migrationFolder: path.userMigrationsPath(),
+    }),
 
-  migrationTableName: database.migrations,
-  migrationLockTableName: database.migrationLocks,
-})
+    migrationTableName: database.migrations,
+    migrationLockTableName: database.migrationLocks,
+  })
+}
 
 // const migratorForeign = new Migrator({
 //   db,
@@ -40,7 +42,7 @@ export async function runDatabaseMigration(): Promise<Result<MigrationResult[] |
   try {
     log.info('Migrating database...')
 
-    const { error, results } = await migrator.migrateToLatest()
+    const { error, results } = await migrator().migrateToLatest()
 
     if (error) {
       return err(handleError(error))
