@@ -39,11 +39,11 @@ export function getModelName(model: Model, modelPath: string): string {
   return baseName.replace(/\.ts$/, '')
 }
 
-export function getTableName(model: Model, modelPath: string): string {
+export function getTableName(model: Model, modelPath: string): TableNames {
   if (model.table)
-    return model.table
+    return model.table as TableNames
 
-  return snakeCase(plural(getModelName(model, modelPath)))
+  return snakeCase(plural(getModelName(model, modelPath))) as TableNames
 }
 
 export function getPivotTableName(formattedModelName: string, modelRelationTable: string): string {
