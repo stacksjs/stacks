@@ -1,6 +1,5 @@
 import { Action } from '@stacksjs/actions'
 import { mail } from '@stacksjs/email'
-import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'User Show',
@@ -14,7 +13,7 @@ export default new Action({
       },
       to: 'chrisbreuer93@gmail.com',
       subject: 'Test Email',
-      text: 'test',
+      template: 'WelcomeTest',
     })
 
     // async handle(request: UserRequestType) {

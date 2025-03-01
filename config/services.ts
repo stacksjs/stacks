@@ -35,6 +35,7 @@ export default {
   },
 
   mailtrap: {
+    host: env.MAILTRAP_HOST,
     token: env.MAILTRAP_TOKEN,
     inboxId: env.MAILTRAP_INBOX_ID,
     maxRetries: env.MAILTRAP_MAX_RETRIES ? Number.parseInt(env.MAILTRAP_MAX_RETRIES) : 3,
@@ -70,6 +71,13 @@ export default {
   //   apiKey: '',
   // },
 
+  slack: {
+    appId: env.SLACK_APP_ID,
+    clientId: env.SLACK_CLIENT_ID,
+    secretKey: env.SLACK_SECRET_KEY,
+    maxRetries: env.SLACK_MAX_RETRIES ? Number.parseInt(env.SLACK_MAX_RETRIES) : 3,
+    retryTimeout: env.SENDGRID_RETRY_TIMEOUT ? Number.parseInt(env.SENDGRID_RETRY_TIMEOUT) : 1000,
+  },
   stripe: {
     appId: '',
     apiKey: '',

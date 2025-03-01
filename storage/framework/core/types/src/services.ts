@@ -68,6 +68,14 @@ export interface ServicesOptions {
     retryTimeout?: number
   }
 
+  slack?: {
+    appId: string
+    clientId: string
+    secretKey: string
+    maxRetries?: number
+    retryTimeout?: number
+  }
+
   stripe?: {
     appId: string
     apiKey: string
