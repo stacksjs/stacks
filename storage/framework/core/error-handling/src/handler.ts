@@ -116,10 +116,24 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
   await appendFile(logFile, formattedMessage)
 }
 
-export function handleError(err: string | Error | object | unknown, options?: ErrorOptions): Error {
+export function handleError(
+  err: string | Error | object | unknown,
+  options?: ErrorOptions | Record<string, any>,
+): Error {
   let errorMessage: string
+  let contextData: Record<string, any> | undefined
 
-  if (options && options.message) {
+  // Check if options is a context object (not an ErrorOptions)
+  if (options
+    && typeof options === 'object'
+    && !('shouldExit' in options)
+    && !('silent' in options)
+    && !('message' in options)) {
+    contextData = options as Record<string, any>
+    options = undefined
+  }
+
+  if (options && 'message' in options) {
     // If options is provided with a message, use options.message as error message
     errorMessage = options.message
   }
@@ -138,7 +152,13 @@ export function handleError(err: string | Error | object | unknown, options?: Er
     }
   }
 
-  writeToLogFile(`ERROR: ${stripAnsi(errorMessage)}`)
+  // Build log message with context if available
+  let logMessage = `ERROR: ${stripAnsi(errorMessage)}`
+  if (contextData) {
+    logMessage += `\nContext: ${JSON.stringify(contextData, null, 2)}`
+  }
 
-  return ErrorHandler.handle(err, options)
+  writeToLogFile(logMessage)
+
+  return ErrorHandler.handle(err, options as ErrorOptions)
 }

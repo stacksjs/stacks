@@ -61,6 +61,7 @@ export abstract class BaseEmailDriver implements EmailDriver {
    */
   protected async handleError(error: unknown, message: EmailMessage): Promise<EmailResult> {
     const err = error instanceof Error ? error : new Error(String(error))
+
     log.error(`[${this.name}] Email sending failed`, {
       error: err.message,
       stack: err.stack,

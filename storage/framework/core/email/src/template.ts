@@ -9,6 +9,8 @@ interface HtmlResult {
 }
 
 export async function template(path: string, options?: RenderOptions): Promise<HtmlResult> {
+  const templatePath = path.endsWith('.vue') ? path : `${path}.vue`
+
   const email = config(resourcesPath('emails'), {
     verbose: !!process.env.DEBUG,
     // options: {
@@ -16,5 +18,5 @@ export async function template(path: string, options?: RenderOptions): Promise<H
     // },
   })
 
-  return await email.render(path, options)
+  return await email.render(templatePath, options)
 }

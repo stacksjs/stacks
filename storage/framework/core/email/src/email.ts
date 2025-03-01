@@ -41,4 +41,4 @@ class Mail {
 }
 
 // Export a singleton instance
-export const mail: Mail = new Mail()
+export const mail: Mail = new Mail({ defaultDriver: 'mailtrap' })

@@ -40,7 +40,8 @@ export interface ServicesOptions {
   }
 
   mailtrap?: {
-    token?: string
+    token: string
+    host: string
     inboxId?: string | number
     maxRetries?: number
     retryTimeout?: number

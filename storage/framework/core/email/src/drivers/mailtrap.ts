@@ -7,13 +7,17 @@ import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {
   public name = 'mailtrap'
+  private host: string
   private token: string
   private inboxId?: number
 
   constructor() {
     super()
-    this.token = config.services.mailtrap?.token ?? ''
-    this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
+    this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
+    this.token = 'c36253a573dea8edac2c549f349a3cb9'
+    // this.token = config.services.mailtrap?.token ?? ''
+    this.inboxId = 403353
+    // this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
@@ -96,7 +100,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       throw new Error('Mailtrap inbox ID is required but not provided. Please set MAILTRAP_INBOX_ID in your environment variables.')
     }
 
-    const endpoint = `https://sandbox.api.mailtrap.io/api/send/${this.inboxId}`
+    const endpoint = `${this.host}/${this.inboxId}`
 
     try {
       const response = await fetch(endpoint, {
