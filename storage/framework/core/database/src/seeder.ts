@@ -63,6 +63,8 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
     await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
   }
+
+  log.info(`Successfully seeded ${italic(tableName)}`)
 }
 
 async function seedPivotRelation(relation: RelationConfig): Promise<any> {

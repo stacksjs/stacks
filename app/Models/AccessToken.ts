@@ -79,7 +79,7 @@ export default {
           date: 'lastUsedAt must be a valid date',
         },
       },
-      factory: () => faker.date.recent(),
+      factory: () => faker.date.recent().toDateString(),
     },
 
     expiresAt: {
@@ -90,7 +90,7 @@ export default {
           date: 'expiresAt must be a valid date',
         },
       },
-      factory: () => faker.date.future(),
+      factory: () => faker.date.future().toDateString(),
     },
 
     revokedAt: {
@@ -101,7 +101,7 @@ export default {
           date: 'revokedAt must be a valid date',
         },
       },
-      factory: () => null,
+      factory: () => faker.date.future().toDateString(),
     },
 
     ipAddress: {
