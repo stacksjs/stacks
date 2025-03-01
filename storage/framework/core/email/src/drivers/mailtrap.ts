@@ -14,10 +14,8 @@ export class MailtrapDriver extends BaseEmailDriver {
   constructor() {
     super()
     this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
-    this.token = 'c36253a573dea8edac2c549f349a3cb9'
-    // this.token = config.services.mailtrap?.token ?? ''
-    this.inboxId = 403353
-    // this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
+    this.token = config.services.mailtrap?.token ?? ''
+    this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined
   }
 
   public async send(message: EmailMessage, options?: RenderOptions): Promise<EmailResult> {
