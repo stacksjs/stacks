@@ -66,6 +66,66 @@
       </div>
     </div>
 
+    <div class="mb-8 px-4 lg:px-8 sm:px-6">
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Team Model Relationships</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing Team model relationships. Click on any model to view details.</p>
+            </div>
+          </div>
+          <div class="flex">
+            <div ref="diagramContainer" class="h-[400px] relative flex-1">
+              <!-- D3 diagram will be rendered here -->
+            </div>
+
+            <div v-if="selectedModel" class="w-64 ml-6 p-4 bg-gray-50 dark:bg-blue-gray-600 rounded-lg">
+              <div class="flex items-center mb-4">
+                <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+              </div>
+
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
+              </div>
+
+              <div class="mb-4">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
+                <ul class="space-y-1">
+                  <li v-for="prop in selectedModel.properties" :key="prop" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                    {{ prop }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="mb-6">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
+                <ul class="space-y-1">
+                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                    <router-link
+                      :to="getModelRoute(rel.toLowerCase())"
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                    >
+                      {{ rel }}
+                    </router-link>
+                  </li>
+                </ul>
+              </div>
+
+              <router-link
+                v-if="selectedModel.id !== 'team'"
+                :to="getModelRoute(selectedModel.id)"
+                class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
+              >
+                View Details
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="px-4 pt-12 lg:px-8 sm:px-6">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -238,6 +298,8 @@ import {
   Scale,
   CoreScaleOptions,
 } from 'chart.js'
+import * as d3 from 'd3'
+import { useRouter } from 'vue-router'
 
 ChartJS.register(
   CategoryScale,
@@ -384,10 +446,236 @@ watch(timeRange, async () => {
   isLoading.value = false
 })
 
-// Initial load
+// Add selectedModel ref before the models definition
+const selectedModel = ref<ModelNode | null>(null)
+
+// Team model and its relationships
+const models: ModelNode[] = [
+  {
+    id: 'team',
+    name: 'Team',
+    description: 'Represents a collaborative group with shared resources and permissions. Teams can contain multiple users and are used for organizing access control.',
+    properties: ['id', 'name', 'owner_id'],
+    relationships: ['users', 'owner'],
+    emoji: '👥',
+    color: '#60A5FA'
+  },
+  {
+    id: 'user',
+    name: 'User',
+    description: 'Core user model representing team members and owners. Users can belong to multiple teams and can own teams.',
+    properties: ['id', 'name', 'email', 'password'],
+    relationships: ['teams'],
+    emoji: '👤',
+    color: '#2563EB'
+  }
+]
+
+// Define relationships
+const relationships: RelationshipLink[] = [
+  { source: 'team', target: 'user', type: 'belongsToMany' },
+  { source: 'user', target: 'team', type: 'belongsToMany' },
+  { source: 'team', target: 'user', type: 'belongsTo' } // owner relationship
+]
+
+// Visualization state
+const diagramContainer = ref<HTMLElement | null>(null)
+let simulation: d3.Simulation<ModelNode, undefined>
+
 onMounted(async () => {
-  isLoading.value = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
+  // Set Team model as active by default
+  const teamModel = models.find(model => model.id === 'team')
+  if (teamModel) {
+    selectedModel.value = teamModel
+  }
+
+  if (!diagramContainer.value) return
+
+  const width = 800
+  const height = 400
+  const svg = d3.select(diagramContainer.value)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('style', 'max-width: 100%; height: auto;')
+
+  // Create arrow marker
+  svg.append('defs').selectAll('marker')
+    .data(['arrow'])
+    .join('marker')
+    .attr('id', d => d)
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 25)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('fill', '#999')
+    .attr('d', 'M0,-5L10,0L0,5')
+
+  // Create the simulation
+  simulation = d3.forceSimulation<ModelNode>(models)
+    .force('link', d3.forceLink<ModelNode, RelationshipLink>(relationships)
+      .id(d => d.id)
+      .distance(150))
+    .force('charge', d3.forceManyBody().strength(-800))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+
+  // Draw the links
+  const link = svg.append('g')
+    .selectAll('line')
+    .data(relationships)
+    .join('line')
+    .attr('stroke', '#999')
+    .attr('stroke-opacity', 0.6)
+    .attr('stroke-width', 2)
+    .attr('marker-end', 'url(#arrow)')
+
+  // Draw the nodes
+  const node = svg.append('g')
+    .selectAll('g')
+    .data(models)
+    .join('g')
+    .call(d3.drag<SVGGElement, ModelNode>()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended))
+    .style('cursor', 'pointer') // Add pointer cursor
+    .on('click', (event, d) => {
+      selectedModel.value = d
+      if (event.detail === 2) {
+        router.push(getModelRoute(d.id))
+      }
+    })
+
+  // Add hover effect to nodes
+  node.on('mouseover', function() {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(200)
+      .attr('r', 22) // Slightly larger on hover
+  })
+  .on('mouseout', function() {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(200)
+      .attr('r', 20) // Back to normal size
+  })
+
+  // Add circles for nodes
+  node.append('circle')
+    .attr('r', 20)
+    .attr('fill', d => d.color)
+
+  // Add emojis
+  node.append('text')
+    .attr('dy', '0.35em')
+    .attr('text-anchor', 'middle')
+    .text(d => d.emoji)
+    .attr('font-size', '20px')
+
+  // Add labels
+  node.append('text')
+    .attr('dy', 35)
+    .attr('text-anchor', 'middle')
+    .text(d => d.name)
+    .attr('fill', '#374151')
+    .attr('font-size', '14px')
+    .attr('font-weight', 'bold')
+
+  // Update positions on each tick
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => (d.source as ModelNode).x!)
+      .attr('y1', d => (d.source as ModelNode).y!)
+      .attr('x2', d => (d.target as ModelNode).x!)
+      .attr('y2', d => (d.target as ModelNode).y!)
+
+    node
+      .attr('transform', d => `translate(${d.x},${d.y})`)
+  })
+
+  // Drag functions
+  function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    if (!event.active) simulation.alphaTarget(0.3).restart()
+    event.subject.fx = event.subject.x
+    event.subject.fy = event.subject.y
+  }
+
+  function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    event.subject.fx = event.x
+    event.subject.fy = event.y
+  }
+
+  function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    if (!event.active) simulation.alphaTarget(0)
+    event.subject.fx = null
+    event.subject.fy = null
+  }
 })
+
+// Get router instance
+const router = useRouter()
+
+// Function to get route path for a model
+const getModelRoute = (modelId: string) => {
+  const routes: Record<string, string> = {
+    user: '/models/users',
+    users: '/models/users',
+    team: '/models/teams',
+    teams: '/models/teams',
+    owner: '/models/users'
+  }
+  return routes[modelId] || '/models'
+}
+
+// Model node interface
+interface ModelNode extends d3.SimulationNodeDatum {
+  id: string
+  name: string
+  description: string
+  properties: string[]
+  relationships: string[]
+  emoji: string
+  color: string
+  x?: number
+  y?: number
+  fx?: number | null
+  fy?: number | null
+}
+
+// Relationship link interface
+interface RelationshipLink {
+  source: string | ModelNode
+  target: string | ModelNode
+  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
+}
 </script>
+
+<style scoped>
+/* Add these styles for the diagram */
+:deep(svg) {
+  background-color: transparent;
+  border-radius: 0.5rem;
+}
+
+:deep(line) {
+  stroke-linecap: round;
+}
+
+:deep(text) {
+  user-select: none;
+}
+
+:deep(circle) {
+  cursor: grab;
+}
+
+:deep(circle:active) {
+  cursor: grabbing;
+}
+
+/* ... existing styles ... */
+</style>

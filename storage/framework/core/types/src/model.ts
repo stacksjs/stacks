@@ -123,6 +123,7 @@ export interface ModelOptions extends Base {
    * @default string - The file name of the model.
    */
   name: string // defaults to the file name of the model
+  description?: string // defaults to the file name of the model
   table?: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true

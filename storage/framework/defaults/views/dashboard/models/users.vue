@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+    <!-- Stats section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
         <h3 class="text-base text-gray-900 font-semibold leading-6">
@@ -60,6 +61,7 @@
       </div>
     </div>
 
+    <!-- Growth Chart -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
         <div class="p-6">
@@ -90,6 +92,88 @@
       </div>
     </div>
 
+    <!-- Model Relationships Diagram -->
+    <div class="mb-8 px-4 lg:px-8 sm:px-6">
+      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">User Model Relationships</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing User model relationships. Click on any model to view details.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button
+                @click="downloadSVG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              >
+                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                SVG
+              </button>
+              <button
+                @click="downloadPNG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              >
+                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                PNG
+              </button>
+            </div>
+          </div>
+          <div class="flex">
+            <div ref="diagramContainer" class="h-[400px] relative flex-1">
+              <!-- D3 diagram will be rendered here -->
+            </div>
+
+            <div v-if="selectedModel" class="w-64 ml-6 p-4 bg-gray-50 dark:bg-blue-gray-600 rounded-lg">
+              <div class="flex items-center mb-4">
+                <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+              </div>
+
+              <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
+              </div>
+
+              <div class="mb-4">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
+                <ul class="space-y-1">
+                  <li v-for="prop in selectedModel.properties" :key="prop" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                    {{ prop }}
+                  </li>
+                </ul>
+              </div>
+
+              <div class="mb-6">
+                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
+                <ul class="space-y-1">
+                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                    <router-link
+                      :to="getModelRoute(rel.toLowerCase())"
+                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
+                    >
+                      {{ rel }}
+                    </router-link>
+                  </li>
+                </ul>
+              </div>
+
+              <router-link
+                v-if="selectedModel.id !== 'user'"
+                :to="getModelRoute(selectedModel.id)"
+                class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
+              >
+                View Details
+              </router-link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Users Table -->
     <div class="px-4 pt-12 lg:px-8 sm:px-6">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
@@ -203,6 +287,8 @@ import {
   Scale,
   CoreScaleOptions,
 } from 'chart.js'
+import * as d3 from 'd3'
+import { useRouter } from 'vue-router'
 
 ChartJS.register(
   CategoryScale,
@@ -359,7 +445,343 @@ watch(timeRange, async () => {
 // Initial load
 onMounted(async () => {
   isLoading.value = true
+  // Set User as the default selected model
+  selectedModel.value = models.find(model => model.id === 'user') || null
   await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
+
+  if (!diagramContainer.value) return
+
+  const width = 800
+  const height = 400
+  const svg = d3.select(diagramContainer.value)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('style', 'max-width: 100%; height: auto;')
+
+  // Create arrow marker
+  svg.append('defs').selectAll('marker')
+    .data(['arrow'])
+    .join('marker')
+    .attr('id', d => d)
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 25)
+    .attr('refY', 0)
+    .attr('markerWidth', 6)
+    .attr('markerHeight', 6)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('fill', '#999')
+    .attr('d', 'M0,-5L10,0L0,5')
+
+  // Create the simulation
+  simulation = d3.forceSimulation<ModelNode>(models)
+    .force('link', d3.forceLink<ModelNode, RelationshipLink>(relationships)
+      .id(d => d.id)
+      .distance(150))
+    .force('charge', d3.forceManyBody().strength(-800))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+
+  // Draw the links
+  const link = svg.append('g')
+    .selectAll('line')
+    .data(relationships)
+    .join('line')
+    .attr('stroke', '#999')
+    .attr('stroke-opacity', 0.6)
+    .attr('stroke-width', 2)
+    .attr('marker-end', 'url(#arrow)')
+
+  // Draw the nodes
+  const node = svg.append('g')
+    .selectAll('g')
+    .data(models)
+    .join('g')
+    .call(d3.drag<SVGGElement, ModelNode>()
+      .on('start', dragstarted)
+      .on('drag', dragged)
+      .on('end', dragended))
+    .style('cursor', 'pointer') // Add pointer cursor
+    .on('click', (event, d) => {
+      // Set the selected model
+      selectedModel.value = d
+      // Navigate to the model's page on double click
+      if (event.detail === 2) {
+        router.push(getModelRoute(d.id))
+      }
+    })
+
+  // Add hover effect to nodes
+  node.on('mouseover', function() {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(200)
+      .attr('r', 22) // Slightly larger on hover
+  })
+  .on('mouseout', function() {
+    d3.select(this).select('circle')
+      .transition()
+      .duration(200)
+      .attr('r', 20) // Back to normal size
+  })
+
+  // Add circles for nodes
+  node.append('circle')
+    .attr('r', 20)
+    .attr('fill', d => d.color)
+
+  // Add emojis
+  node.append('text')
+    .attr('dy', '0.35em')
+    .attr('text-anchor', 'middle')
+    .text(d => d.emoji)
+    .attr('font-size', '20px')
+
+  // Add labels
+  node.append('text')
+    .attr('dy', 35)
+    .attr('text-anchor', 'middle')
+    .text(d => d.name)
+    .attr('fill', '#374151')
+    .attr('font-size', '14px')
+    .attr('font-weight', 'bold')
+
+  // Update positions on each tick
+  simulation.on('tick', () => {
+    link
+      .attr('x1', d => (d.source as ModelNode).x!)
+      .attr('y1', d => (d.source as ModelNode).y!)
+      .attr('x2', d => (d.target as ModelNode).x!)
+      .attr('y2', d => (d.target as ModelNode).y!)
+
+    node
+      .attr('transform', d => `translate(${d.x},${d.y})`)
+  })
+
+  // Drag functions
+  function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    if (!event.active) simulation.alphaTarget(0.3).restart()
+    event.subject.fx = event.subject.x
+    event.subject.fy = event.subject.y
+  }
+
+  function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    event.subject.fx = event.x
+    event.subject.fy = event.y
+  }
+
+  function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+    if (!event.active) simulation.alphaTarget(0)
+    event.subject.fx = null
+    event.subject.fy = null
+  }
 })
+
+// Get router instance
+const router = useRouter()
+
+// Model node interface
+interface ModelNode extends d3.SimulationNodeDatum {
+  id: string
+  name: string
+  description: string
+  properties: string[]
+  relationships: string[]
+  emoji: string
+  color: string
+  x?: number
+  y?: number
+  fx?: number | null
+  fy?: number | null
+}
+
+// Relationship link interface
+interface RelationshipLink {
+  source: string | ModelNode
+  target: string | ModelNode
+  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
+}
+
+// Add selectedModel ref before the models definition
+const selectedModel = ref<ModelNode | null>(null)
+
+// User model and its relationships
+const models: ModelNode[] = [
+  {
+    id: 'user',
+    name: 'User',
+    description: 'Core user model representing application users with authentication and profile information.',
+    properties: ['id', 'name', 'email', 'password'],
+    relationships: ['teams', 'accessTokens', 'activities', 'posts'],
+    emoji: '👤',
+    color: '#2563EB'
+  },
+  {
+    id: 'team',
+    name: 'Team',
+    description: 'Represents a group of users who collaborate together. Teams can have multiple users and users can belong to multiple teams.',
+    properties: ['id', 'name', 'owner_id'],
+    relationships: ['users'],
+    emoji: '👥',
+    color: '#60A5FA'
+  },
+  {
+    id: 'accessToken',
+    name: 'AccessToken',
+    description: 'Manages API authentication tokens for users. Each token grants specific permissions for API access.',
+    properties: ['id', 'token', 'user_id'],
+    relationships: ['user'],
+    emoji: '🔑',
+    color: '#3B82F6'
+  },
+  {
+    id: 'activity',
+    name: 'Activity',
+    description: 'Tracks user actions and events within the application for analytics and audit purposes.',
+    properties: ['id', 'type', 'user_id'],
+    relationships: ['user'],
+    emoji: '📊',
+    color: '#93C5FD'
+  },
+  {
+    id: 'post',
+    name: 'Post',
+    description: 'User-generated content model for sharing updates, articles, or other text-based content.',
+    properties: ['id', 'title', 'content'],
+    relationships: ['user'],
+    emoji: '📝',
+    color: '#BFDBFE'
+  }
+]
+
+// Define relationships
+const relationships: RelationshipLink[] = [
+  { source: 'user', target: 'team', type: 'belongsToMany' },
+  { source: 'team', target: 'user', type: 'belongsToMany' },
+  { source: 'user', target: 'accessToken', type: 'hasMany' },
+  { source: 'user', target: 'activity', type: 'hasMany' },
+  { source: 'post', target: 'user', type: 'belongsTo' }
+]
+
+// Visualization state
+const diagramContainer = ref<HTMLElement | null>(null)
+let simulation: d3.Simulation<ModelNode, undefined>
+
+// Function to get route path for a model
+const getModelRoute = (modelId: string) => {
+  const routes: Record<string, string> = {
+    user: '/models/users',
+    team: '/models/teams',
+    teams: '/models/teams',
+    accessToken: '/models/access-tokens',
+    accessTokens: '/models/access-tokens',
+    activity: '/models/activities',
+    activities: '/models/activities',
+    post: '/models/posts',
+    posts: '/models/posts'
+  }
+  return routes[modelId] || '/models'
+}
+
+// Add these functions before the onMounted hook
+const downloadSVG = () => {
+  if (!diagramContainer.value) return
+
+  const svgElement = diagramContainer.value.querySelector('svg')
+  if (!svgElement) return
+
+  // Create a copy of the SVG to modify for download
+  const svgClone = svgElement.cloneNode(true) as SVGElement
+  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  const svgData = new XMLSerializer().serializeToString(svgClone)
+  const blob = new Blob([svgData], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'user-model-relationships.svg'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+const downloadPNG = () => {
+  if (!diagramContainer.value) return
+
+  const svgElement = diagramContainer.value.querySelector('svg')
+  if (!svgElement) return
+
+  // Create a copy of the SVG to modify for download
+  const svgClone = svgElement.cloneNode(true) as SVGElement
+  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+
+  const svgData = new XMLSerializer().serializeToString(svgClone)
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  // Create an image from the SVG
+  const img = new Image()
+  const blob = new Blob([svgData], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+
+  img.onload = () => {
+    // Set canvas size to match the SVG
+    canvas.width = img.width
+    canvas.height = img.height
+
+    // Draw white background and the image
+    ctx.fillStyle = 'white'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.drawImage(img, 0, 0)
+
+    // Convert to PNG and download
+    canvas.toBlob((pngBlob) => {
+      if (!pngBlob) return
+      const pngUrl = URL.createObjectURL(pngBlob)
+      const link = document.createElement('a')
+      link.href = pngUrl
+      link.download = 'user-model-relationships.png'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(pngUrl)
+    }, 'image/png')
+
+    URL.revokeObjectURL(url)
+  }
+
+  img.src = url
+}
 </script>
+
+<style scoped>
+/* Add these styles for the diagram */
+:deep(svg) {
+  background-color: transparent;
+  border-radius: 0.5rem;
+}
+
+:deep(line) {
+  stroke-linecap: round;
+}
+
+:deep(text) {
+  user-select: none;
+}
+
+:deep(circle) {
+  cursor: pointer;
+  transition: r 0.2s ease;
+}
+
+:deep(g:hover) text {
+  font-weight: bold;
+}
+
+/* ... existing styles ... */
+</style>
