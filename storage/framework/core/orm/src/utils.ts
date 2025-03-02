@@ -558,7 +558,7 @@ export async function writeModelEvents(): Promise<void> {
         observerString += `'${formattedModelName}:updated': ${modelName}Model\n`
         observerString += `'${formattedModelName}:deleted': ${modelName}Model\n`
 
-        observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'`
+        observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'\n`
       }
     }
   }
