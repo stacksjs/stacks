@@ -1,8 +1,16 @@
-// eslint-disable-next-line ts/no-unsafe-function-type
-export function retry(fn: Function, options: any): Promise<any> {
+// Define a more specific RetryOptions interface
+export interface RetryOptions {
+  retries?: number
+  initialDelay?: number
+  backoffFactor?: number
+  jitter?: boolean
+}
+
+// Replace the generic Function type with a more specific function type
+export function retry<T>(fn: () => Promise<T>, options: RetryOptions = {}): Promise<T> {
   const { retries = 3, initialDelay = 1000, backoffFactor = 2, jitter = true } = options
 
-  return new Promise((resolve, reject) => {
+  return new Promise<T>((resolve, reject) => {
     let attemptCount = 0
 
     const attempt = async () => {

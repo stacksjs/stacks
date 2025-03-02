@@ -24,8 +24,7 @@ export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
-  // eslint-disable-next-line ts/no-unsafe-function-type
-  handle: Function
+  handle: () => Promise<void>
 }
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500

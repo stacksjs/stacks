@@ -17,13 +17,12 @@
  * )
  * ```
  */
-// eslint-disable-next-line ts/no-unsafe-function-type
-export function throttle(fn: Function, wait = 300) {
+export function throttle<T extends (...args: any[]) => any>(fn: T, wait = 300): (...args: Parameters<T>) => void {
   let inThrottle: boolean
   let lastFn: ReturnType<typeof setTimeout>
   let lastTime: number
 
-  return function (this: unknown, ...args: any[]): void {
+  return function (this: unknown, ...args: Parameters<T>): void {
     if (!inThrottle) {
       fn.apply(this, args)
 
