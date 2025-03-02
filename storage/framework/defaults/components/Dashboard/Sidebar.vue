@@ -189,7 +189,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   data: {
     items: [
-      { to: '/models', icon: 'i-hugeicons-dashboard-speed-02', text: 'General' },
+      { to: '/models', icon: 'i-hugeicons-dashboard-browsing', text: 'Dashboard' },
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
@@ -411,11 +411,12 @@ const switchTeam = (team: Team) => {
                       <ul
                         v-if="item.children"
                         role="list"
-                        class="mt-1 space-y-1 overflow-y-auto"
+                        class="mt-1 space-y-1 overflow-hidden transition-all duration-300"
                         :class="{
-                          'h-0 overflow-hidden': !expandedItems[item.to],
-                          'h-auto max-h-40': expandedItems[item.to] && item.children.length <= 3,
-                          'h-auto max-h-[2000px]': expandedItems[item.to] && item.children.length > 3
+                          'max-h-0 opacity-0': !expandedItems[item.to],
+                          'max-h-40 opacity-100': expandedItems[item.to] && item.children.length <= 3 && item.to !== '#commerce',
+                          'commerce-dropdown': expandedItems[item.to] && item.to === '#commerce',
+                          'queue-dropdown': expandedItems[item.to] && item.to === '#queue'
                         }"
                       >
                         <li v-for="child in item.children" :key="child.to">
@@ -567,5 +568,13 @@ li[draggable="true"].dragging .drag-handle {
 
 .no-active div[class^="i-hugeicons"] {
   @apply !text-gray-400 dark:!text-gray-200;
+}
+
+.commerce-dropdown {
+  @apply max-h-[800px] opacity-100;
+}
+
+.queue-dropdown {
+  @apply max-h-40 opacity-100;
 }
 </style>
