@@ -134,7 +134,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
               <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$548,290</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-                <div class="i-hugeicons-arrow-up-right h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
                 <span>12.5% increase</span>
               </dd>
             </div>
@@ -143,7 +143,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
               <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Orders</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">2,456</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-                <div class="i-hugeicons-arrow-up-right h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
                 <span>8.2% increase</span>
               </dd>
             </div>
@@ -152,7 +152,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
               <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Average Order Value</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$223.25</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-                <div class="i-hugeicons-arrow-up-right h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
                 <span>3.7% increase</span>
               </dd>
             </div>
@@ -161,7 +161,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
               <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">3.6%</dd>
               <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
-                <div class="i-hugeicons-arrow-down-right h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
                 <span>0.8% decrease</span>
               </dd>
             </div>

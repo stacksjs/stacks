@@ -187,7 +187,7 @@ function toggleSort(column: string): void {
           </div>
           <div class="mt-4 sm:mt-0">
             <button type="button" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              <div class="i-hugeicons-plus h-5 w-5 mr-1"></div>
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
               Add product
             </button>
           </div>
@@ -197,7 +197,7 @@ function toggleSort(column: string): void {
         <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search h-5 w-5 text-gray-400"></div>
+              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
             </div>
             <input
               v-model="searchQuery"
@@ -345,7 +345,7 @@ function toggleSort(column: string): void {
                   : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
               ]"
             >
-              <div class="i-hugeicons-arrow-left h-5 w-5"></div>
+              <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
             </button>
             <button
               v-for="page in totalPages"
@@ -370,7 +370,7 @@ function toggleSort(column: string): void {
                   : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
               ]"
             >
-              <div class="i-hugeicons-arrow-right h-5 w-5"></div>
+              <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
             </button>
           </div>
         </div>

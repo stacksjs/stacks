@@ -32,6 +32,7 @@ declare module 'vue-router/auto-routes' {
     '/commerce/orders/': RouteRecordInfo<'/commerce/orders/', '/commerce/orders', Record<never, never>, Record<never, never>>,
     '/commerce/payments/': RouteRecordInfo<'/commerce/payments/', '/commerce/payments', Record<never, never>, Record<never, never>>,
     '/commerce/products/': RouteRecordInfo<'/commerce/products/', '/commerce/products', Record<never, never>, Record<never, never>>,
+    '/commerce/shipping/': RouteRecordInfo<'/commerce/shipping/', '/commerce/shipping', Record<never, never>, Record<never, never>>,
     '/components/': RouteRecordInfo<'/components/', '/components', Record<never, never>, Record<never, never>>,
     '/dependencies/': RouteRecordInfo<'/dependencies/', '/dependencies', Record<never, never>, Record<never, never>>,
     '/deployments/': RouteRecordInfo<'/deployments/', '/deployments', Record<never, never>, Record<never, never>>,

@@ -312,7 +312,7 @@ const totalAmount = computed(() => {
         <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search h-5 w-5 text-gray-400"></div>
+              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
             </div>
             <input
               v-model="searchQuery"

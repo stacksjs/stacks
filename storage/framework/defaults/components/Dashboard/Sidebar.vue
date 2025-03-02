@@ -47,6 +47,7 @@ const sections = useLocalStorage<Sections>('sidebar-sections', {
   library: true,
   app: true,
   data: true,
+  commerce: true,
   management: true
 })
 
@@ -58,7 +59,7 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'commerce', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -167,24 +168,21 @@ const sectionContent: Record<string, SectionContent> = {
           { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' }
         ]
       },
-      {
-        to: '#commerce',
-        icon: 'i-hugeicons-shopping-cart-02',
-        text: 'Commerce',
-        children: [
-          { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-          { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
-          { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
-          { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
-          { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
-          { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
-          { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
-          { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
-          { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Shipping' },
-          { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
-        ]
-      },
       { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
+    ]
+  },
+  commerce: {
+    items: [
+      { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
+      { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+      { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
+      { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
+      { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
+      { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
+      { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
+      { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Shipping' },
+      { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
     ]
   },
   data: {
@@ -408,22 +406,8 @@ const switchTeam = (team: Team) => {
                         </div>
                       </RouterLink>
 
-                      <div v-if="item.to === '#commerce'" class="relative">
-                        <div
-                          v-if="expandedItems[item.to]"
-                          class="commerce-dropdown-container"
-                        >
-                          <div v-for="child in item.children" :key="child.to" class="commerce-dropdown-item">
-                            <RouterLink :to="child.to" class="sidebar-child-link group pl-8">
-                              <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                              <span class="truncate">{{ child.text }}</span>
-                            </RouterLink>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Use transition for other dropdowns -->
-                      <transition name="dropdown" v-if="item.to !== '#commerce'">
+                      <!-- Use transition for all dropdowns -->
+                      <transition name="dropdown">
                         <ul
                           v-if="item.children && expandedItems[item.to]"
                           role="list"
@@ -582,14 +566,6 @@ li[draggable="true"].dragging .drag-handle {
   @apply !text-gray-400 dark:!text-gray-200;
 }
 
-.commerce-dropdown {
-  @apply max-h-[800px] opacity-100;
-}
-
-.queue-dropdown {
-  @apply max-h-40 opacity-100;
-}
-
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition: all 0.3s ease;
@@ -601,46 +577,11 @@ li[draggable="true"].dragging .drag-handle {
   max-height: 0 !important;
 }
 
-/* Commerce dropdown specific styling */
-.commerce-dropdown-container {
-  width: 100%;
-  background-color: white;
-  border-radius: 0.375rem;
-  margin-top: 0.25rem;
-  z-index: 10;
-  animation: fadeIn 0.3s ease;
-  padding: 0.25rem 0;
-}
-
-.commerce-dropdown-item {
-  margin-bottom: 0.25rem;
-  display: block;
-  width: 100%;
-}
-
-.commerce-dropdown-item .sidebar-child-link {
-  padding-left: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .dropdown-list {
   overflow-y: auto;
 }
 
 .dropdown-item {
   height: 40px;
-}
-
-@media (prefers-color-scheme: dark) {
-  .commerce-dropdown-container {
-    background-color: #1e293b; /* dark:bg-blue-gray-800 */
-  }
 }
 </style>
