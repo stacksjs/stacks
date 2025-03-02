@@ -387,6 +387,8 @@ const switchTeam = (team: Team) => {
                       <RouterLink
                         :to="item.to"
                         class="sidebar-links group relative"
+                        :class="{ 'no-active': item.to.startsWith('#') }"
+                        @click.prevent="item.children ? toggleItem(item.to) : $router.push(item.to)"
                       >
                         <template v-if="item.icon">
                           <div :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
@@ -398,28 +400,22 @@ const switchTeam = (team: Team) => {
                         </template>
                         <div class="flex items-center justify-between flex-1">
                           <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
-                          <button
+                          <div
                             v-if="item.children"
-                            type="button"
-                            class="p-1 -m-1"
-                            @click.stop.prevent="toggleItem(item.to)"
-                          >
-                            <div
-                              class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
-                              :class="{ 'transform rotate-90': expandedItems[item.to] }"
-                            />
-                          </button>
+                            class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
+                            :class="{ 'transform rotate-90': expandedItems[item.to] }"
+                          />
                         </div>
                       </RouterLink>
 
                       <ul
                         v-if="item.children"
                         role="list"
-                        class="mt-1 space-y-1 overflow-hidden transition-all duration-200"
+                        class="mt-1 space-y-1 overflow-y-auto"
                         :class="{
-                          'max-h-0': !expandedItems[item.to],
-                          'max-h-40': expandedItems[item.to] && item.children.length <= 3,
-                          'max-h-[500px]': expandedItems[item.to] && item.children.length > 3
+                          'h-0 overflow-hidden': !expandedItems[item.to],
+                          'h-auto max-h-40': expandedItems[item.to] && item.children.length <= 3,
+                          'h-auto max-h-[2000px]': expandedItems[item.to] && item.children.length > 3
                         }"
                       >
                         <li v-for="child in item.children" :key="child.to">
@@ -563,5 +559,13 @@ li[draggable="true"].dragging .drag-handle {
 
 .router-link-active.sidebar-child-link {
   @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
+}
+
+.no-active {
+  @apply !bg-transparent !text-blue-gray-600 dark:!text-blue-gray-200;
+}
+
+.no-active div[class^="i-hugeicons"] {
+  @apply !text-gray-400 dark:!text-gray-200;
 }
 </style>
