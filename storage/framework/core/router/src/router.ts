@@ -19,7 +19,7 @@ export class Router implements RouterInterface {
   private addRoute(
     method: Route['method'],
     uri: string,
-    callback: Route['callback'] | string | object,
+    callback: Route['callback'] | string,
     statusCode: StatusCode,
   ): this {
     const name = uri.replace(/\//g, '.').replace(/:/g, '') // we can improve this
@@ -96,8 +96,12 @@ export class Router implements RouterInterface {
   public async job(path: Route['url']): Promise<this> {
     path = pascalCase(path)
 
-    // removes the potential `JobJob` suffix in case the user does not choose to use the Job suffix in their file name
     const job = (await import(p.userJobsPath(`${path}.ts`))).default as Job
+
+    if (!job.handle) {
+      handleError(`Job at path ${path} does not have a handle method`)
+      return this
+    }
 
     return this.addRoute('GET', this.prepareUri(path), job.handle, 200)
   }
