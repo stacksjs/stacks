@@ -446,6 +446,7 @@
     "dateFormat": true,
     "format": true,
     "now": true,
-    "parse": true
+    "parse": true,
+    "RetryOptions": true
   }
 }

@@ -44,7 +44,8 @@ const sections = ref<Sections>({
 // Add separate state for nested items
 const expandedItems = ref<Record<string, boolean>>({
   '/cloud': false,
-  '/queue': false
+  '#queue': false,
+  '#commerce': false
 })
 
 // Create an ordered array of sections that we can reorder
@@ -149,11 +150,29 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
       { to: '/commands', icon: 'i-hugeicons-command-line', text: 'Commands' },
       {
-        to: '/queue',
+        to: '#queue',
         icon: 'i-hugeicons-queue-02',
         text: 'Queue',
         children: [
+          { to: '/queue', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
           { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' }
+        ]
+      },
+      {
+        to: '#commerce',
+        icon: 'i-hugeicons-shopping-cart-02',
+        text: 'Commerce',
+        children: [
+          { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+          { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
+          { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+          { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
+          { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
+          { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
+          { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
+          { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
+          { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Shipping' },
+          { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
         ]
       },
       { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
@@ -217,7 +236,7 @@ const sectionContent: Record<string, SectionContent> = {
                 draggable="true"
                 :style="{
                   transform: calculateTransform(sectionKey),
-                  transition: dragTarget?.value && dragTarget.value === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+                  transition: dragTarget && dragTarget === sectionKey ? 'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
                   position: 'relative',
                   zIndex: draggedItem === sectionKey ? 20 : 10
                 }"
@@ -260,7 +279,7 @@ const sectionContent: Record<string, SectionContent> = {
                   class="mt-2 -mx-2 space-y-1 section-content"
                   :class="sections[sectionKey] ? 'expanded' : 'collapsed'"
                 >
-                  <li v-for="item in sectionContent[sectionKey].items" :key="item.to">
+                  <li v-for="item in sectionContent[sectionKey]?.items || []" :key="item.to">
                     <div>
                       <RouterLink
                         :to="item.to"
@@ -287,7 +306,11 @@ const sectionContent: Record<string, SectionContent> = {
                         v-if="item.children"
                         role="list"
                         class="mt-1 space-y-1 overflow-hidden transition-all duration-200"
-                        :class="{ 'max-h-0': !expandedItems[item.to], 'max-h-40': expandedItems[item.to] }"
+                        :class="{
+                          'max-h-0': !expandedItems[item.to],
+                          'max-h-40': expandedItems[item.to] && item.children.length <= 3,
+                          'max-h-[500px]': expandedItems[item.to] && item.children.length > 3
+                        }"
                       >
                         <li v-for="child in item.children" :key="child.to">
                           <RouterLink :to="child.to" class="sidebar-child-link group">

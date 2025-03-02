@@ -442,6 +442,9 @@ declare global {
   export type { Flag, Input, MagicRegExp, MagicRegExpMatchArray, MapToStringCapturedBy, StringCapturedBy } from '../core/browser/src/utils/regex'
   import('../core/browser/src/utils/regex')
   // @ts-ignore
+  export type { RetryOptions } from '../core/browser/src/utils/retry'
+  import('../core/browser/src/utils/retry')
+  // @ts-ignore
   export type { NonNegativeInteger, WaitOptions } from '../core/browser/src/utils/sleep'
   import('../core/browser/src/utils/sleep')
   // @ts-ignore
