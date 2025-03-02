@@ -189,7 +189,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   data: {
     items: [
-      { to: '/models', icon: 'i-hugeicons-dashboard-browsing', text: 'Dashboard' },
+      { to: '/models', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
@@ -408,24 +408,36 @@ const switchTeam = (team: Team) => {
                         </div>
                       </RouterLink>
 
-                      <ul
-                        v-if="item.children"
-                        role="list"
-                        class="mt-1 space-y-1 overflow-hidden transition-all duration-300"
-                        :class="{
-                          'max-h-0 opacity-0': !expandedItems[item.to],
-                          'max-h-40 opacity-100': expandedItems[item.to] && item.children.length <= 3 && item.to !== '#commerce',
-                          'commerce-dropdown': expandedItems[item.to] && item.to === '#commerce',
-                          'queue-dropdown': expandedItems[item.to] && item.to === '#queue'
-                        }"
-                      >
-                        <li v-for="child in item.children" :key="child.to">
-                          <RouterLink :to="child.to" class="sidebar-child-link group">
-                            <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                            <span class="truncate">{{ child.text }}</span>
-                          </RouterLink>
-                        </li>
-                      </ul>
+                      <div v-if="item.to === '#commerce'" class="relative">
+                        <div
+                          v-if="expandedItems[item.to]"
+                          class="commerce-dropdown-container"
+                        >
+                          <div v-for="child in item.children" :key="child.to" class="commerce-dropdown-item">
+                            <RouterLink :to="child.to" class="sidebar-child-link group pl-8">
+                              <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                              <span class="truncate">{{ child.text }}</span>
+                            </RouterLink>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Use transition for other dropdowns -->
+                      <transition name="dropdown" v-if="item.to !== '#commerce'">
+                        <ul
+                          v-if="item.children && expandedItems[item.to]"
+                          role="list"
+                          class="mt-1 space-y-1 dropdown-list"
+                          :style="{ 'max-height': '100px' }"
+                        >
+                          <li v-for="child in item.children" :key="child.to" class="dropdown-item">
+                            <RouterLink :to="child.to" class="sidebar-child-link group">
+                              <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                              <span class="truncate">{{ child.text }}</span>
+                            </RouterLink>
+                          </li>
+                        </ul>
+                      </transition>
                     </div>
                   </li>
                 </ul>
@@ -576,5 +588,59 @@ li[draggable="true"].dragging .drag-handle {
 
 .queue-dropdown {
   @apply max-h-40 opacity-100;
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.3s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  max-height: 0 !important;
+}
+
+/* Commerce dropdown specific styling */
+.commerce-dropdown-container {
+  width: 100%;
+  background-color: white;
+  border-radius: 0.375rem;
+  margin-top: 0.25rem;
+  z-index: 10;
+  animation: fadeIn 0.3s ease;
+  padding: 0.25rem 0;
+}
+
+.commerce-dropdown-item {
+  margin-bottom: 0.25rem;
+  display: block;
+  width: 100%;
+}
+
+.commerce-dropdown-item .sidebar-child-link {
+  padding-left: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dropdown-list {
+  overflow-y: auto;
+}
+
+.dropdown-item {
+  height: 40px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .commerce-dropdown-container {
+    background-color: #1e293b; /* dark:bg-blue-gray-800 */
+  }
 }
 </style>
