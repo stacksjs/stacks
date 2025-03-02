@@ -1,6 +1,3 @@
-interface ChatOptions {}
-export type { ChatOptions }
-
 export type ChatConfig = ChatOptions
 
 // Chat Message Types
