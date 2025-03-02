@@ -1,0 +1,513 @@
+<script lang="ts" setup>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
+useHead({
+  title: 'Dashboard - Commerce Gift Cards',
+})
+
+// Define gift card type
+interface GiftCard {
+  id: number
+  code: string
+  initialValue: number
+  currentBalance: number
+  recipient: string
+  email: string
+  purchasedBy: string
+  purchaseDate: string
+  expiryDate: string
+  status: string
+}
+
+// Define new gift card type
+interface NewGiftCard {
+  code: string
+  initialValue: number
+  recipient: string
+  email: string
+  expiryDate: string
+}
+
+// Sample gift cards data
+const giftCards = ref<GiftCard[]>([
+  {
+    id: 1,
+    code: 'GFT-1234-5678-9ABC',
+    initialValue: 100,
+    currentBalance: 75.50,
+    recipient: 'John Smith',
+    email: 'john.smith@example.com',
+    purchasedBy: 'Sarah Johnson',
+    purchaseDate: '2023-11-15',
+    expiryDate: '2024-11-15',
+    status: 'Active'
+  },
+  {
+    id: 2,
+    code: 'GFT-2345-6789-ABCD',
+    initialValue: 50,
+    currentBalance: 50,
+    recipient: 'Emily Davis',
+    email: 'emily.davis@example.com',
+    purchasedBy: 'Michael Brown',
+    purchaseDate: '2023-11-20',
+    expiryDate: '2024-11-20',
+    status: 'Active'
+  },
+  {
+    id: 3,
+    code: 'GFT-3456-789A-BCDE',
+    initialValue: 200,
+    currentBalance: 0,
+    recipient: 'David Wilson',
+    email: 'dwilson@example.com',
+    purchasedBy: 'Jessica Taylor',
+    purchaseDate: '2023-10-05',
+    expiryDate: '2024-10-05',
+    status: 'Used'
+  },
+  {
+    id: 4,
+    code: 'GFT-4567-89AB-CDEF',
+    initialValue: 75,
+    currentBalance: 75,
+    recipient: 'Robert Martinez',
+    email: 'rmartinez@example.com',
+    purchasedBy: 'Jennifer Anderson',
+    purchaseDate: '2023-11-25',
+    expiryDate: '2024-11-25',
+    status: 'Active'
+  },
+  {
+    id: 5,
+    code: 'GFT-5678-9ABC-DEFG',
+    initialValue: 150,
+    currentBalance: 32.75,
+    recipient: 'Christopher Lee',
+    email: 'clee@example.com',
+    purchasedBy: 'Amanda White',
+    purchaseDate: '2023-09-10',
+    expiryDate: '2024-09-10',
+    status: 'Active'
+  }
+])
+
+// Filter and sort options
+const searchQuery = ref('')
+const sortBy = ref('purchaseDate')
+const sortOrder = ref('desc')
+const statusFilter = ref('all')
+
+// Available statuses
+const statuses = ['all', 'Active', 'Used', 'Expired']
+
+// Computed filtered and sorted gift cards
+const filteredGiftCards = computed(() => {
+  return giftCards.value
+    .filter(card => {
+      // Apply search filter
+      const matchesSearch =
+        card.code.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        card.recipient.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        card.email.toLowerCase().includes(searchQuery.value.toLowerCase())
+
+      // Apply status filter
+      const matchesStatus = statusFilter.value === 'all' || card.status === statusFilter.value
+
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy.value === 'purchaseDate') {
+        comparison = new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime()
+      } else if (sortBy.value === 'expiryDate') {
+        comparison = new Date(a.expiryDate).getTime() - new Date(b.expiryDate).getTime()
+      } else if (sortBy.value === 'initialValue') {
+        comparison = a.initialValue - b.initialValue
+      } else if (sortBy.value === 'currentBalance') {
+        comparison = a.currentBalance - b.currentBalance
+      }
+
+      return sortOrder.value === 'asc' ? comparison : -comparison
+    })
+})
+
+// Toggle sort order
+function toggleSort(column: string): void {
+  if (sortBy.value === column) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = column
+    sortOrder.value = 'desc'
+  }
+}
+
+// Get status badge class
+function getStatusClass(status: string): string {
+  switch (status) {
+    case 'Active':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Used':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+    case 'Expired':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+  }
+}
+
+// Modal state
+const showAddModal = ref(false)
+const newGiftCard = ref<NewGiftCard>({
+  code: '',
+  initialValue: 50,
+  recipient: '',
+  email: '',
+  expiryDate: ''
+})
+
+function openAddModal(): void {
+  // Set expiry date to one year from now
+  const oneYearFromNow = new Date()
+  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+
+  newGiftCard.value = {
+    code: generateGiftCardCode(),
+    initialValue: 50,
+    recipient: '',
+    email: '',
+    expiryDate: oneYearFromNow.toISOString().split('T')[0]
+  }
+  showAddModal.value = true
+}
+
+function closeAddModal(): void {
+  showAddModal.value = false
+}
+
+function generateGiftCardCode(): string {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let code = 'GFT-'
+
+  // Generate 4 characters
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+
+  code += '-'
+
+  // Generate 4 more characters
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+
+  code += '-'
+
+  // Generate 4 more characters
+  for (let i = 0; i < 4; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+
+  return code
+}
+
+function addGiftCard(): void {
+  // In a real app, this would send data to the server
+  const id = Math.max(...giftCards.value.map(c => c.id)) + 1
+  const today = new Date().toISOString().split('T')[0]
+
+  // Ensure we have non-null values with default values
+  const code = newGiftCard.value.code || generateGiftCardCode()
+  const recipient = newGiftCard.value.recipient || 'Anonymous'
+  const email = newGiftCard.value.email || ''
+  const expiryDate = newGiftCard.value.expiryDate || today
+
+  giftCards.value.push({
+    id,
+    code,
+    initialValue: newGiftCard.value.initialValue,
+    currentBalance: newGiftCard.value.initialValue,
+    recipient,
+    email,
+    purchasedBy: 'Current User', // In a real app, this would be the logged-in user
+    purchaseDate: today,
+    expiryDate,
+    status: 'Active'
+  })
+  closeAddModal()
+}
+</script>
+
+<template>
+  <main>
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Gift Cards</h1>
+            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+              Manage gift cards for your store
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button
+              type="button"
+              @click="openAddModal"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus h-5 w-5 mr-1"></div>
+              Create gift card
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div class="relative max-w-sm">
+            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+              <div class="i-hugeicons-search h-5 w-5 text-gray-400"></div>
+            </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              placeholder="Search gift cards"
+            />
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4">
+            <select
+              v-model="statusFilter"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option value="all">All Statuses</option>
+              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+                {{ status }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Gift Cards table -->
+        <div class="mt-6 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                    <tr>
+                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+                        Code
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Recipient</th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                        <button @click="toggleSort('initialValue')" class="group inline-flex items-center">
+                          Initial Value
+                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                            <div v-if="sortBy === 'initialValue'" :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                        <button @click="toggleSort('currentBalance')" class="group inline-flex items-center">
+                          Balance
+                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                            <div v-if="sortBy === 'currentBalance'" :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                        <button @click="toggleSort('purchaseDate')" class="group inline-flex items-center">
+                          Purchase Date
+                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                            <div v-if="sortBy === 'purchaseDate'" :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+                        <button @click="toggleSort('expiryDate')" class="group inline-flex items-center">
+                          Expiry Date
+                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
+                            <div v-if="sortBy === 'expiryDate'" :class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ]"></div>
+                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
+                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                        <span class="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                    <tr v-for="card in filteredGiftCards" :key="card.id">
+                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
+                        {{ card.code }}
+                      </td>
+                      <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        <div>{{ card.recipient }}</div>
+                        <div class="text-xs text-gray-400">{{ card.email }}</div>
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        ${{ card.initialValue.toFixed(2) }}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        ${{ card.currentBalance.toFixed(2) }}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        {{ card.purchaseDate }}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                        {{ card.expiryDate }}
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(card.status)">
+                          {{ card.status }}
+                        </span>
+                      </td>
+                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                        <div class="flex items-center justify-end space-x-2">
+                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="i-hugeicons-eye-01 h-5 w-5"></div>
+                          </button>
+                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="i-hugeicons-edit-03 h-5 w-5"></div>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr v-if="filteredGiftCards.length === 0">
+                      <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                        No gift cards found matching your criteria
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Gift Card Modal -->
+    <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Create New Gift Card</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="gift-card-code" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Gift Card Code</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="gift-card-code"
+                        v-model="newGiftCard.code"
+                        readonly
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 bg-gray-50 dark:bg-blue-gray-900"
+                      />
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left">Auto-generated code</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="gift-card-value" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Value</label>
+                    <div class="mt-2">
+                      <div class="relative rounded-md shadow-sm">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                          <span class="text-gray-500 sm:text-sm">$</span>
+                        </div>
+                        <input
+                          type="number"
+                          id="gift-card-value"
+                          v-model="newGiftCard.initialValue"
+                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="recipient-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Recipient Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="recipient-name"
+                        v-model="newGiftCard.recipient"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter recipient name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="recipient-email" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Recipient Email</label>
+                    <div class="mt-2">
+                      <input
+                        type="email"
+                        id="recipient-email"
+                        v-model="newGiftCard.email"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        placeholder="Enter recipient email"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="expiry-date" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Expiry Date</label>
+                    <div class="mt-2">
+                      <input
+                        type="date"
+                        id="expiry-date"
+                        v-model="newGiftCard.expiryDate"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <button
+              type="button"
+              @click="addGiftCard"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+            >
+              Create
+            </button>
+            <button
+              type="button"
+              @click="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</template>
