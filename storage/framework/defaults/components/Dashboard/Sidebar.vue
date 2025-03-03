@@ -381,7 +381,7 @@ const switchTeam = (team: Team) => {
                 <!-- Section content -->
                 <ul
                   role="list"
-                  class="mt-2 -mx-2 space-y-1 section-content"
+                  class="mt-2 -mx-2 space-y-1 section-content max-h-[60vh] overflow-y-auto pr-2"
                   :class="sections[sectionKey] ? 'expanded' : 'collapsed'"
                 >
                   <li v-for="item in sectionContent[sectionKey]?.items || []" :key="item.to">
@@ -482,6 +482,34 @@ const switchTeam = (team: Team) => {
          rounded-md p-2 text-sm leading-6 font-semibold;
 }
 
+/* Make sure section content is scrollable when it overflows */
+.section-content {
+  @apply overflow-hidden transition-all duration-300 ease-in-out;
+}
+
+.section-content.expanded {
+  @apply overflow-y-auto;
+  max-height: calc(100vh - 250px);
+  scrollbar-width: thin;
+}
+
+.section-content.collapsed {
+  max-height: 0;
+  overflow: hidden;
+}
+
+.section-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.section-content::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.section-content::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded;
+}
+
 .router-link-active {
   @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
 }
@@ -510,18 +538,6 @@ const switchTeam = (team: Team) => {
 
 .active-bottom-link div {
   @apply text-blue-600 dark:text-blue-400 !important;
-}
-
-.section-content {
-  @apply overflow-hidden transition-all duration-300 ease-in-out;
-}
-
-.collapsed {
-  @apply max-h-0;
-}
-
-.expanded {
-  @apply max-h-96;
 }
 
 li[draggable="true"] {
