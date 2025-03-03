@@ -542,7 +542,7 @@ onUnmounted(() => {
                     <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
                       <a href="/inbox/activity" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
                         <div class="flex items-center">
-                          <i class="i-hugeicons-chart-bar-01 text-lg mr-2"></i>
+                          <i class="i-hugeicons-analytics-up text-lg mr-2"></i>
                           Analytics
                         </div>
                       </a>
