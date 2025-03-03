@@ -1,6 +1,6 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -27,7 +27,7 @@ export default {
           required: 'name is required',
         },
       },
-      factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     token: {
@@ -41,7 +41,7 @@ export default {
           maxLength: 'token must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.string.uuid(),
+      factory: (faker: Faker) => faker.string.uuid(),
     },
 
     plainTextToken: {
@@ -54,7 +54,7 @@ export default {
           maxLength: 'plainTextToken must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.string.uuid(),
+      factory: (faker: Faker) => faker.string.uuid(),
     },
 
     abilities: {
@@ -67,7 +67,7 @@ export default {
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
-      factory: () =>
+      factory: (faker: Faker) =>
         collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().first(),
     },
 
@@ -80,7 +80,7 @@ export default {
           date: 'lastUsedAt must be a valid date',
         },
       },
-      factory: () => faker.date.recent().toDateString(),
+      factory: (faker: Faker) => faker.date.recent().toDateString(),
     },
 
     expiresAt: {
@@ -91,7 +91,7 @@ export default {
           date: 'expiresAt must be a valid date',
         },
       },
-      factory: () => faker.date.future().toDateString(),
+      factory: (faker: Faker) => faker.date.future().toDateString(),
     },
 
     revokedAt: {
@@ -102,7 +102,7 @@ export default {
           date: 'revokedAt must be a valid date',
         },
       },
-      factory: () => faker.date.future().toDateString(),
+      factory: (faker: Faker) => faker.date.future().toDateString(),
     },
 
     ipAddress: {
@@ -113,7 +113,7 @@ export default {
           string: 'ipAddress must be a string',
         },
       },
-      factory: () => faker.internet.ip(),
+      factory: (faker: Faker) => faker.internet.ip(),
     },
 
     deviceName: {
@@ -124,7 +124,7 @@ export default {
           string: 'deviceName must be a string',
         },
       },
-      factory: () => `${faker.company.name()} Browser on ${faker.system.networkInterface()}`,
+      factory: (faker: Faker) => `${faker.company.name()} Browser on ${faker.system.networkInterface()}`,
     },
 
     isSingleUse: {
@@ -135,7 +135,7 @@ export default {
           boolean: 'isSingleUse must be a boolean',
         },
       },
-      factory: () => false,
+      factory: (faker: Faker) => false,
     },
   },
 } satisfies Model
