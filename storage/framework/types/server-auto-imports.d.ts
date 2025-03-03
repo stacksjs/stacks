@@ -138,7 +138,6 @@ declare global {
   const UserUpdate: typeof import('./../orm/src/models')['UserUpdate']
   const UsersTable: typeof import('./../orm/src/models')['UsersTable']
   const accesstokenRequest: typeof import('./../requests')['accesstokenRequest']
-  const default: typeof import('./../orm/src/models')['default']
   const deploymentRequest: typeof import('./../requests')['deploymentRequest']
   const errorRequest: typeof import('./../requests')['errorRequest']
   const failedjobRequest: typeof import('./../requests')['failedjobRequest']

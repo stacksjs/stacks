@@ -137,7 +137,6 @@
     "UserUpdate": true,
     "UsersTable": true,
     "accesstokenRequest": true,
-    "default": true,
     "deploymentRequest": true,
     "errorRequest": true,
     "failedjobRequest": true,
