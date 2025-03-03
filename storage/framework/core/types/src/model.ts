@@ -1,3 +1,4 @@
+import type { Faker } from '@stacksjs/faker'
 import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { VineBoolean, VineNumber, VineString } from '@vinejs/vine'
 import type { DeepPartial, Nullable } from '.'
@@ -186,7 +187,7 @@ export interface Attribute {
   hidden?: boolean
   fillable?: boolean
   guarded?: boolean
-  factory?: () => any
+  factory?: (faker?: Faker) => any
   validation?: {
     rule: VineType
     message?: ValidatorMessage

@@ -17,17 +17,6 @@ export interface Attributes {
   billing_email: string
   path: string
   is_personal: boolean
-  method: string[]
-  status_code: number
-  duration_ms: number
-  memory_usage: number
-  user_agent: string
-  error_message: string
-  title: string
-  address: string
-  latlng: string
-  info_source: string[]
-  were_detained: boolean
   subscribed: boolean
   commit_sha: string
   commit_message: string
@@ -38,6 +27,7 @@ export interface Attributes {
   version: string
   job_title: string
   password: string
+  title: string
   body: string
   connection: string
   queue: string
@@ -52,6 +42,12 @@ export interface Attributes {
   is_default: boolean
   provider_id: string
   amount: number
+  method: string[]
+  status_code: number
+  duration_ms: number
+  memory_usage: number
+  user_agent: string
+  error_message: string
   attempts: number
   available_at: number
   reserved_at: Date | string

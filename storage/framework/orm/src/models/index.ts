@@ -1,7 +1,5 @@
 export { default as AccessToken } from './AccessToken'
 
-export { default as Activity } from './Activity'
-
 export { default as Deployment } from './Deployment'
 
 export { default as Error } from './Error'
@@ -21,8 +19,6 @@ export { default as Post } from './Post'
 export { default as Project } from './Project'
 
 export { default as Release } from './Release'
-
-export { default as Request } from './Request'
 
 export { default as Request } from './Request'
 

@@ -1,5 +1,4 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
-import type { ActivitiesTable } from '../src/models/Activity'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
@@ -54,8 +53,6 @@ export interface Database {
   personal_access_tokens: PersonalAccessTokensTable
   team_users: TeamUsersTable
   teams: TeamsTable
-  requests: RequestsTable
-  activities: ActivitiesTable
   subscribers: SubscribersTable
   deployments: DeploymentsTable
   releases: ReleasesTable

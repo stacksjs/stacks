@@ -120,68 +120,6 @@ export interface TeamRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataRequest {
-  id: number
-  method: string[]
-  path: string
-  status_code: number
-  duration_ms: number
-  ip_address: string
-  memory_usage: number
-  user_agent: string
-  error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface RequestRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'method') => string[]) & ((key: 'path' | 'ip_address' | 'user_agent' | 'error_message') => string) & ((key: 'status_code' | 'duration_ms' | 'memory_usage') => number)
-
-  all: () => RequestDataRequest
-  id: number
-  method: string[]
-  path: string
-  status_code: number
-  duration_ms: number
-  ip_address: string
-  memory_usage: number
-  user_agent: string
-  error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataActivity {
-  id: number
-  title: string
-  description: string
-  address: string
-  latlng: string
-  info_source: string[]
-  were_detained: boolean
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ActivityRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'title' | 'description' | 'address' | 'latlng') => string) & ((key: 'info_source') => string[]) & ((key: 'were_detained') => boolean)
-
-  all: () => RequestDataActivity
-  id: number
-  title: string
-  description: string
-  address: string
-  latlng: string
-  info_source: string[]
-  were_detained: boolean
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataSubscriber {
   id: number
   subscribed: boolean
@@ -527,4 +465,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | RequestRequestType | ActivityRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType
