@@ -205,7 +205,6 @@ const sectionContent: Record<string, SectionContent> = {
         ]
       },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
-      { to: '/inbox', icon: 'i-hugeicons-mail-01', text: 'Inbox' },
       { to: '/mailboxes', icon: 'i-hugeicons-mailbox-01', text: 'Mailboxes' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
     ]

@@ -89,6 +89,20 @@ watch(theme, (currentVal) => {
           type="button"
           class="header-icon-button"
         >
+          <span class="sr-only">View Inbox</span>
+          <RouterLink
+            to="/inbox"
+            class="header-link"
+            :class="{ 'active-header-link': $route.path.startsWith('/inbox') }"
+          >
+            <div class="i-hugeicons-mail-02 h-6 w-6 transition duration-150 ease-in-out" />
+          </RouterLink>
+        </button>
+
+        <button
+          type="button"
+          class="header-icon-button"
+        >
           <span class="sr-only">View notifications</span>
           <RouterLink
             to="/notifications"

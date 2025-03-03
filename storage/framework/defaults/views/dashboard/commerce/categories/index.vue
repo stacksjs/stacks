@@ -203,7 +203,7 @@ function addCategory(): void {
               v-model="searchQuery"
               type="text"
               class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search categories"
+              placeholder="Search categories..."
             />
           </div>
 
@@ -253,8 +253,8 @@ function addCategory(): void {
                         </button>
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Featured</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('createdAt')" class="group inline-flex items-center">
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
+                        <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
                           Created
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'createdAt'" :class="[
@@ -285,7 +285,7 @@ function addCategory(): void {
                         <div v-if="category.featured" class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500"></div>
                         <div v-else class="i-hugeicons-close-circle h-5 w-5 text-gray-400"></div>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 text-right">
                         {{ category.createdAt }}
                       </td>
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">

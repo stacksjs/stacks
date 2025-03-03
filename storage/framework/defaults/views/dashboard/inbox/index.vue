@@ -259,7 +259,6 @@ const emails = ref<Email[]>([
 
 // Folder structure
 const folders = [
-  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'send' },
   { id: 'drafts', name: 'Drafts', icon: 'drafts' },
@@ -481,6 +480,11 @@ const handleClickOutside = (event: MouseEvent) => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
+
+// Add this computed property
+const inboxUnreadCount = computed(() => {
+  return unreadCounts.inbox || 0
+})
 </script>
 
 <template>
@@ -497,9 +501,9 @@ onUnmounted(() => {
 
       <!-- Main Content -->
       <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header with search -->
+        <!-- Header with search and inbox nav -->
         <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-2 px-4">
-          <div class="flex items-center">
+          <div class="flex items-center justify-between">
             <!-- Search bar -->
             <div class="flex-1 max-w-2xl">
               <div class="relative">
@@ -509,10 +513,29 @@ onUnmounted(() => {
                 <input
                   v-model="searchQuery"
                   type="text"
-                  placeholder="Search emails"
+                  placeholder="Search emails..."
                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
+            </div>
+
+            <!-- Inbox navigation -->
+            <div class="flex items-center ml-4">
+              <button
+                @click="activeFolder = 'inbox'"
+                class="flex items-center px-3 py-2 rounded-md text-sm font-medium"
+                :class="[
+                  activeFolder === 'inbox'
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
+                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
+                ]"
+              >
+                <i class="i-hugeicons-inbox text-lg mr-2"></i>
+                Inbox
+                <span v-if="inboxUnreadCount > 0" class="ml-2 bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">
+                  {{ inboxUnreadCount }}
+                </span>
+              </button>
             </div>
           </div>
         </div>
