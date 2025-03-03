@@ -29,7 +29,7 @@ ChartJS.register(
   Filler,
 )
 
-import EmailSidebar from '@/components/Dashboard/Email/EmailSidebar.vue'
+import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
 
 useHead({
   title: 'Mail - Activity Dashboard',
