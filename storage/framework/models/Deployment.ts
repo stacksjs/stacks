@@ -1,6 +1,6 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -32,7 +32,7 @@ export default {
         },
       },
 
-      factory: () => faker.git.commitSha(),
+      factory: (faker: Faker) => faker.git.commitSha(),
     },
 
     commitMessage: {
@@ -45,7 +45,7 @@ export default {
         },
       },
 
-      factory: () => faker.git.commitMessage(),
+      factory: (faker: Faker) => faker.git.commitMessage(),
     },
 
     branch: {
@@ -58,7 +58,7 @@ export default {
         },
       },
 
-      factory: () => faker.git.branch(),
+      factory: (faker: Faker) => faker.git.branch(),
     },
 
     status: {
@@ -71,7 +71,7 @@ export default {
         },
       },
 
-      factory: () => collect(['pending', 'success', 'failure']).random().first(),
+      factory: (faker: Faker) => collect(['pending', 'success', 'failure']).random().first(),
     },
 
     executionTime: {
@@ -85,7 +85,7 @@ export default {
         },
       },
 
-      factory: () => faker.number.int({ max: 100 }),
+      factory: (faker: Faker) => faker.number.int({ max: 100 }),
     },
 
     deployScript: {
@@ -98,7 +98,7 @@ export default {
         },
       },
 
-      factory: () => faker.lorem.sentence(),
+      factory: (faker: Faker) => faker.lorem.sentence(),
     },
 
     terminalOutput: {
@@ -111,7 +111,7 @@ export default {
         },
       },
 
-      factory: () => faker.lorem.sentence(),
+      factory: (faker: Faker) => faker.lorem.sentence(),
     },
   },
 } satisfies Model

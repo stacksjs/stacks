@@ -1,6 +1,6 @@
-import type { Model } from '@stacksjs/types'
 // soon, these will be auto-imported
-import { faker } from '@stacksjs/faker'
+import type { Faker } from '@stacksjs/faker'
+import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -29,7 +29,7 @@ export default {
     //     },
     //   },
 
-    //   factory: () => faker.person.fullName(),
+    //   factory: (faker: Faker) => faker.person.fullName(),
     // },
 
     version: {
@@ -42,7 +42,7 @@ export default {
         },
       },
 
-      factory: () => faker.internet.email(),
+      factory: (faker: Faker) => faker.internet.email(),
     },
   },
 } satisfies Model

@@ -1,5 +1,5 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -23,7 +23,7 @@ export default {
           string: 'Connection must be a string',
         },
       },
-      factory: () => 'default',
+      factory: (faker: Faker) => 'default',
     },
 
     queue: {
@@ -35,7 +35,7 @@ export default {
           maxLength: 'Queue must have a maximum of 255 characters',
         },
       },
-      factory: () => 'default',
+      factory: (faker: Faker) => 'default',
     },
 
     payload: {
@@ -44,7 +44,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: (faker: Faker) => faker.lorem.sentence(),
     },
 
     exception: {
@@ -53,7 +53,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: (faker: Faker) => faker.lorem.sentence(),
     },
 
     failed_at: {
@@ -61,7 +61,7 @@ export default {
       validation: {
         rule: schema.date(),
       },
-      factory: () => '2024-12-23 13:32:19',
+      factory: (faker: Faker) => '2024-12-23 13:32:19',
     },
   },
 } satisfies Model

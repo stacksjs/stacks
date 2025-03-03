@@ -1,6 +1,6 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -32,7 +32,7 @@ export default {
         },
       },
 
-      factory: () => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     companyName: {
@@ -45,7 +45,7 @@ export default {
         },
       },
 
-      factory: () => faker.company.name(),
+      factory: (faker: Faker) => faker.company.name(),
     },
 
     email: {
@@ -58,7 +58,7 @@ export default {
         },
       },
 
-      factory: () => faker.internet.email(),
+      factory: (faker: Faker) => faker.internet.email(),
     },
 
     billingEmail: {
@@ -71,7 +71,7 @@ export default {
         },
       },
 
-      factory: () => faker.internet.email(),
+      factory: (faker: Faker) => faker.internet.email(),
     },
 
     status: {
@@ -84,7 +84,7 @@ export default {
         },
       },
 
-      factory: () => collect(['deployed', 'inactive']).random().first(),
+      factory: (faker: Faker) => collect(['deployed', 'inactive']).random().first(),
     },
 
     description: {
@@ -97,7 +97,7 @@ export default {
         },
       },
 
-      factory: () => faker.lorem.sentence({ min: 10, max: 30 }),
+      factory: (faker: Faker) => faker.lorem.sentence({ min: 10, max: 30 }),
     },
 
     path: {
@@ -110,7 +110,7 @@ export default {
         },
       },
 
-      factory: () => `/Users/chrisbreuer/Code/${faker.lorem.words().toLowerCase().replace(/\s+/g, '-')}`,
+      factory: (faker: Faker) => `/Users/chrisbreuer/Code/${faker.lorem.words().toLowerCase().replace(/\s+/g, '-')}`,
     },
 
     isPersonal: {
@@ -123,7 +123,7 @@ export default {
         },
       },
 
-      factory: () => faker.datatype.boolean(),
+      factory: (faker: Faker) => faker.datatype.boolean(),
     },
   },
 } satisfies Model

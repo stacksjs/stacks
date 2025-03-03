@@ -1,5 +1,5 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -25,7 +25,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: () => faker.food.dish(),
+      factory: (faker: Faker) => faker.food.dish(),
     },
 
     description: {
@@ -37,7 +37,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.lorem.lines(3),
+      factory: (faker: Faker) => faker.lorem.lines(3),
     },
     key: {
       required: true,
@@ -49,7 +49,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.string.alphanumeric(5),
+      factory: (faker: Faker) => faker.string.alphanumeric(5),
     },
 
     unitPrice: {
@@ -61,14 +61,14 @@ export default {
           required: 'expires is required',
         },
       },
-      factory: () => faker.number.int({ min: 1000, max: 10000 }),
+      factory: (faker: Faker) => faker.number.int({ min: 1000, max: 10000 }),
     },
     status: {
       fillable: true,
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.lines(1),
+      factory: (faker: Faker) => faker.lorem.lines(1),
     },
     image: {
       fillable: true,
@@ -78,7 +78,7 @@ export default {
           string: 'image must be a string',
         },
       },
-      factory: () => faker.image.url(),
+      factory: (faker: Faker) => faker.image.url(),
     },
     providerId: {
       fillable: true,
@@ -88,7 +88,7 @@ export default {
           string: 'provider_id must be a string',
         },
       },
-      factory: () => faker.string.alphanumeric(10),
+      factory: (faker: Faker) => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

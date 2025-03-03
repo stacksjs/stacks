@@ -1,6 +1,6 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Attributes, Model } from '@stacksjs/types'
 // soon, these will be auto-imported
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -58,7 +58,7 @@ export default {
         },
       },
 
-      factory: () => faker.person.fullName(),
+      factory: (faker: Faker) => faker.person.fullName(),
     },
 
     email: {
@@ -73,7 +73,7 @@ export default {
         },
       },
 
-      factory: () => faker.internet.email(),
+      factory: (faker: Faker) => faker.internet.email(),
     },
 
     jobTitle: {
@@ -88,7 +88,7 @@ export default {
         },
       },
 
-      factory: () => faker.person.jobTitle(),
+      factory: (faker: Faker) => faker.person.jobTitle(),
     },
     password: {
       required: true,
@@ -103,7 +103,7 @@ export default {
         },
       },
 
-      factory: () => faker.internet.password(),
+      factory: (faker: Faker) => faker.internet.password(),
     },
   },
   get: {

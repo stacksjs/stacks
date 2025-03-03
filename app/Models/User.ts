@@ -58,7 +58,7 @@ export default {
         },
       },
 
-      factory: factory: (faker: Faker) => faker.person.fullName(),
+      factory: (faker: Faker) => faker.person.fullName(),
     },
 
     email: {
@@ -73,7 +73,7 @@ export default {
         },
       },
 
-      factory: factory: (faker: Faker) => faker.internet.email(),
+      factory: (faker: Faker) => faker.internet.email(),
     },
 
     jobTitle: {
@@ -88,7 +88,7 @@ export default {
         },
       },
 
-      factory: factory: (faker: Faker) => faker.person.jobTitle(),
+      factory: (faker: Faker) => faker.person.jobTitle(),
     },
     password: {
       required: true,
@@ -103,7 +103,7 @@ export default {
         },
       },
 
-      factory: factory: (faker: Faker) => faker.internet.password(),
+      factory: (faker: Faker) => faker.internet.password(),
     },
   },
   get: {

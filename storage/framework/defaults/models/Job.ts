@@ -1,5 +1,5 @@
+import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -22,7 +22,7 @@ export default {
           maxLength: 'Queue must have a maximum of 255 characters',
         },
       },
-      factory: () => 'default',
+      factory: (faker: Faker) => 'default',
     },
 
     payload: {
@@ -31,7 +31,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: (faker: Faker) => faker.lorem.sentence(),
     },
 
     attempts: {
@@ -42,7 +42,7 @@ export default {
           number: 'attempts must be a number',
         },
       },
-      factory: () => faker.number.int({ min: 0, max: 10 }),
+      factory: (faker: Faker) => faker.number.int({ min: 0, max: 10 }),
     },
 
     available_at: {
@@ -50,14 +50,14 @@ export default {
       validation: {
         rule: schema.number(),
       },
-      factory: () => faker.number.int({ min: 1000000, max: 1999999 }),
+      factory: (faker: Faker) => faker.number.int({ min: 1000000, max: 1999999 }),
     },
     reserved_at: {
       fillable: true,
       validation: {
         rule: schema.date(),
       },
-      factory: () => '2024-12-23 13:32:19',
+      factory: (faker: Faker) => '2024-12-23 13:32:19',
     },
   },
 } satisfies Model
