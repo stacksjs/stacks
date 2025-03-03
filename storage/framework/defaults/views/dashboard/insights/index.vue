@@ -409,7 +409,7 @@ const statsCards = [
     value: '235ms',
     change: '-12ms',
     changeType: 'decrease',
-    icon: 'i-heroicons-clock',
+    icon: 'i-heroicons-clock-01',
   },
   {
     title: 'Success Rate',
@@ -724,7 +724,7 @@ const statsCards = [
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                        <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.latest }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
@@ -770,7 +770,7 @@ const statsCards = [
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                        <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.count }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
@@ -829,7 +829,7 @@ const statsCards = [
                     <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
                       <div class="flex items-center space-x-4">
                         <div class="flex items-center space-x-1">
-                          <div class="i-heroicons-clock h-4 w-4 text-gray-400" />
+                          <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
                           <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.count }} requests</span>
                         </div>
                         <div class="flex items-center space-x-1">

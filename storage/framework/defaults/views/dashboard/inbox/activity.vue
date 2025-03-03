@@ -272,9 +272,9 @@ const deviceUsageData = ref(getDeviceUsageData())
 
 // Stats data
 const stats = ref([
-  { name: 'Total Emails', value: '1,284', change: '+12.3%', icon: 'i-hugeicons-mail text-blue-500' },
-  { name: 'Average Response Time', value: '28 min', change: '-8.1%', icon: 'i-hugeicons-clock text-green-500' },
-  { name: 'Spam Detected', value: '124', change: '+3.2%', icon: 'i-hugeicons-alert-triangle text-red-500' },
+  { name: 'Total Emails', value: '1,284', change: '+12.3%', icon: 'i-hugeicons-mail-02 text-blue-500' },
+  { name: 'Average Response Time', value: '28 min', change: '-8.1%', icon: 'i-hugeicons-clock-01 text-green-500' },
+  { name: 'Spam Detected', value: '124', change: '+3.2%', icon: 'i-hugeicons-spam text-red-500' },
   { name: 'Attachments', value: '256', change: '+18.7%', icon: 'i-hugeicons-attachment-01 text-purple-500' },
 ])
 
@@ -470,7 +470,7 @@ onMounted(async () => {
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                          <i class="i-hugeicons-mail text-blue-600"></i>
+                          <i class="i-hugeicons-mail-receive-02 text-blue-600"></i>
                         </div>
                         <div class="ml-4">
                           <div class="text-sm font-medium text-gray-900 dark:text-white">Received Email</div>
@@ -518,7 +518,7 @@ onMounted(async () => {
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 h-8 w-8 rounded-full bg-red-100 flex items-center justify-center">
-                          <i class="i-hugeicons-alert-triangle text-red-600"></i>
+                          <i class="i-hugeicons-spam text-red-600"></i>
                         </div>
                         <div class="ml-4">
                           <div class="text-sm font-medium text-gray-900 dark:text-white">Spam Detected</div>
