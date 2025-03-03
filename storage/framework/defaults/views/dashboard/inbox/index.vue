@@ -653,7 +653,7 @@ const getFolderIcon = (folderId: string) => {
           <div class="flex items-center justify-between mb-2">
             <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
             <router-link
-              to="/dashboard/emails/activity"
+              to="/inbox/activity"
               class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 flex items-center"
             >
               View Details

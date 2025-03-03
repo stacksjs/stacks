@@ -494,7 +494,7 @@ onMounted(async () => {
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <div class="flex-shrink-0 h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                          <i class="i-hugeicons-send text-green-600"></i>
+                          <i class="i-hugeicons-mail-send-02 text-green-600"></i>
                         </div>
                         <div class="ml-4">
                           <div class="text-sm font-medium text-gray-900 dark:text-white">Sent Email</div>

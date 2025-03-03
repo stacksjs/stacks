@@ -83,10 +83,10 @@ const getUnreadCount = (folderId: string): number => {
               <!-- Icons based on folder type -->
               <i v-if="folder.icon === 'inbox'" class="i-hugeicons-inbox text-xl"></i>
               <i v-else-if="folder.icon === 'star'" class="i-hugeicons-star text-xl"></i>
-              <i v-else-if="folder.icon === 'mail-send-01'" class="i-hugeicons-send text-xl"></i>
-              <i v-else-if="folder.icon === 'license-draft'" class="i-hugeicons-edit-03 text-xl"></i>
+              <i v-else-if="folder.icon === 'mail-send-01'" class="i-hugeicons-mail-send-02 text-xl"></i>
+              <i v-else-if="folder.icon === 'license-draft'" class="i-hugeicons-license-draft text-xl"></i>
               <i v-else-if="folder.icon === 'archive'" class="i-hugeicons-archive text-xl"></i>
-              <i v-else-if="folder.icon === 'spam'" class="i-hugeicons-alert-triangle text-xl"></i>
+              <i v-else-if="folder.icon === 'spam'" class="i-hugeicons-spam text-xl"></i>
               <i v-else-if="folder.icon === 'waste'" class="i-hugeicons-waste text-xl"></i>
               <i v-else class="i-hugeicons-file-01 text-xl"></i>
             </span>
