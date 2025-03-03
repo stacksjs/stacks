@@ -38,6 +38,8 @@ declare module 'vue-router/auto-routes' {
     '/deployments/': RouteRecordInfo<'/deployments/', '/deployments', Record<never, never>, Record<never, never>>,
     '/deployments/[id]': RouteRecordInfo<'/deployments/[id]', '/deployments/:id', { id: ParamValue<true> }, { id: ParamValue<false> }>,
     '/dns/': RouteRecordInfo<'/dns/', '/dns', Record<never, never>, Record<never, never>>,
+    '/emails/': RouteRecordInfo<'/emails/', '/emails', Record<never, never>, Record<never, never>>,
+    '/emails/activity': RouteRecordInfo<'/emails/activity', '/emails/activity', Record<never, never>, Record<never, never>>,
     '/environment/': RouteRecordInfo<'/environment/', '/environment', Record<never, never>, Record<never, never>>,
     '/errors/': RouteRecordInfo<'/errors/', '/errors', Record<never, never>, Record<never, never>>,
     '/functions/': RouteRecordInfo<'/functions/', '/functions', Record<never, never>, Record<never, never>>,
