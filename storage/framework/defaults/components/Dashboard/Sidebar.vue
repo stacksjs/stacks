@@ -174,18 +174,18 @@ const sectionContent: Record<string, SectionContent> = {
   commerce: {
     items: [
       { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
+      { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
       { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
       { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
-      { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' },
       { to: '/commerce/variants', icon: 'i-hugeicons-paint-board', text: 'Variants' },
       { to: '/commerce/units', icon: 'i-hugeicons-ruler', text: 'Units' },
-      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' },
-      { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
-      { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
+      { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' },
       { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
       { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
       { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
       { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Delivery' },
+      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' },
       { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
     ]
   },
