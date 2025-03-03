@@ -1,6 +1,7 @@
 import type { Model, RelationConfig } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
+import { faker } from '@stacksjs/faker'
 import { fetchOtherModelRelations, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
@@ -40,10 +41,10 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       const formattedFieldName = snakeCase(fieldName)
       const field = model.attributes[fieldName]
 
-      // Use the factory function if available, otherwise leave the field undefined
+      // Pass faker to the factory function
       if (formattedFieldName === 'password')
         record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-      else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+      else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
     }
 
     if (otherRelations?.length) {
@@ -95,19 +96,19 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   for (const fieldName in relationModelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = relationModelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
       record[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   for (const fieldName in modelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
       record2[formattedFieldName] = field?.factory ? await makeHash('Test@123', { algorithm: 'bcrypt' }) : undefined
-    else record2[formattedFieldName] = field?.factory ? field.factory() : undefined
+    else record2[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   if (relationalModelUuid)
@@ -152,11 +153,10 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
   for (const fieldName in modelInstance.attributes) {
     const formattedFieldName = snakeCase(fieldName)
     const field = modelInstance.attributes[fieldName]
-    // Use the factory function if available, otherwise leave the field undefined
-
+    // Pass faker to the factory function
     if (formattedFieldName === 'password')
-      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(), { algorithm: 'bcrypt' }) : undefined
-    else record[formattedFieldName] = field?.factory ? field.factory() : undefined
+      record[formattedFieldName] = field?.factory ? await makeHash(field.factory(faker), { algorithm: 'bcrypt' }) : undefined
+    else record[formattedFieldName] = field?.factory ? field.factory(faker) : undefined
   }
 
   if (useUuid)
