@@ -1,13 +1,33 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+// @ts-ignore
+import { Dialog, DialogPanel } from '@stacksjs/dialog'
+import { toast } from '@stacksjs/notification'
 
 useHead({
   title: 'Dashboard - Products',
 })
 
+// Define product interface
+interface Product {
+  id: number
+  name: string
+  price: number
+  category: string
+  stock: number
+  status: string
+  images: string[]
+  videos: string[]
+  manufacturer: string
+  variants: string[]
+  unit: string
+  taxRate: number
+  similarProducts?: number[]
+}
+
 // Sample product data
-const products = ref([
+const products = ref<Product[]>([
   {
     id: 1,
     name: 'Margherita Pizza',
@@ -25,7 +45,8 @@ const products = ref([
     manufacturer: 'Pizza Palace',
     variants: ['Size', 'Crust Type'],
     unit: 'Whole',
-    taxRate: 7
+    taxRate: 7,
+    similarProducts: [2, 5]
   },
   {
     id: 2,
@@ -186,8 +207,74 @@ const sortBy = ref('name')
 const sortOrder = ref('asc')
 const categoryFilter = ref('All')
 
+// Edit dialog state
+const showEditDialog = ref(false)
+const editingProduct = ref<Product | null>(null)
+
+// Similar products dialog state
+const showSimilarProductsDialog = ref(false)
+
 // Available categories
-const categories = ['All', 'Electronics', 'Wearables', 'Audio', 'Accessories', 'Storage']
+const categories = ['All', 'Electronics', 'Wearables', 'Audio', 'Accessories', 'Storage', 'Pizza', 'Burgers', 'Sushi', 'Mexican', 'Pasta', 'Healthy', 'Desserts', 'Beverages', 'Appetizers']
+
+// Statuses for dropdown
+const statuses = ['Active', 'Low Stock', 'Out of Stock']
+
+// Function to open edit dialog
+function openEditDialog(product: Product): void {
+  editingProduct.value = JSON.parse(JSON.stringify(product)) as Product
+  showEditDialog.value = true
+}
+
+// Function to save edited product
+function saveProduct(): void {
+  if (!editingProduct.value) return
+
+  // Find the product index
+  const index = products.value.findIndex(p => p.id === editingProduct.value.id)
+
+  if (index !== -1) {
+    // Update the product
+    products.value[index] = editingProduct.value
+
+    // Show success message
+    toast({
+      message: 'Product updated successfully',
+      type: 'success',
+    })
+
+    // Close the dialog
+    showEditDialog.value = false
+  }
+}
+
+// Function to open similar products dialog
+function openSimilarProductsDialog(product: Product): void {
+  editingProduct.value = JSON.parse(JSON.stringify(product)) as Product
+  showSimilarProductsDialog.value = true
+}
+
+// Function to save similar products
+function saveSimilarProducts(): void {
+  if (!editingProduct.value) return
+
+  // Find the product index
+  const index = products.value.findIndex(p => p.id === editingProduct.value.id)
+
+  if (index !== -1 && editingProduct.value) {
+    // Update only the similarProducts field
+    products.value[index].similarProducts = editingProduct.value.similarProducts || []
+
+    // Show success message
+    toast({
+      message: 'Similar products updated successfully',
+      type: 'success',
+    })
+
+    // Close the dialog
+    showSimilarProductsDialog.value = false
+  }
+}
 
 // Computed filtered and sorted products
 const filteredProducts = computed(() => {
@@ -391,7 +478,11 @@ function toggleSort(column: string): void {
                           <router-link :to="`/dashboard/commerce/products/detail/${product.id}`" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                             <div class="i-hugeicons-eye h-5 w-5"></div>
                           </router-link>
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                          <button
+                            type="button"
+                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                            @click="openEditDialog(product)"
+                          >
                             <div class="i-hugeicons-license-draft h-5 w-5"></div>
                           </button>
                           <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
@@ -462,4 +553,197 @@ function toggleSort(column: string): void {
       </div>
     </div>
   </main>
+
+  <!-- Edit Product Dialog -->
+  <transition name="fade" appear>
+    <Dialog v-if="showEditDialog" @close="showEditDialog = false" class="relative z-50">
+      <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Product</h3>
+            <button
+              class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
+              @click="showEditDialog = false"
+            >
+              <div class="i-hugeicons-x-mark h-5 w-5"></div>
+            </button>
+          </div>
+
+          <div v-if="editingProduct" class="space-y-4">
+            <!-- Basic Information -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <input
+                  id="product-name"
+                  v-model="editingProduct.name"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label for="product-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price</label>
+                <input
+                  id="product-price"
+                  v-model.number="editingProduct.price"
+                  type="number"
+                  step="0.01"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                <select
+                  id="product-category"
+                  v-model="editingProduct.category"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option v-for="category in categories.filter(c => c !== 'All')" :key="category" :value="category">
+                    {{ category }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label for="product-stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock</label>
+                <input
+                  id="product-stock"
+                  v-model.number="editingProduct.stock"
+                  type="number"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                <select
+                  id="product-status"
+                  v-model="editingProduct.status"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option v-for="status in statuses" :key="status" :value="status">
+                    {{ status }}
+                  </option>
+                </select>
+              </div>
+              <div>
+                <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
+                <input
+                  id="product-manufacturer"
+                  v-model="editingProduct.manufacturer"
+                  type="text"
+                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+            </div>
+
+            <!-- Similar Products Button -->
+            <div>
+              <button
+                @click="openSimilarProductsDialog(editingProduct)"
+                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                <div class="i-hugeicons-link-02 h-5 w-5 mr-2"></div>
+                Manage Similar Products
+              </button>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+              <button
+                @click="showEditDialog = false"
+                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                @click="saveProduct"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </DialogPanel>
+      </div>
+    </Dialog>
+  </transition>
+
+  <!-- Similar Products Dialog -->
+  <transition name="fade" appear>
+    <Dialog v-if="showSimilarProductsDialog" @close="showSimilarProductsDialog = false" class="relative z-50">
+      <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Manage Similar Products</h3>
+            <button
+              class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
+              @click="showSimilarProductsDialog = false"
+            >
+              <div class="i-hugeicons-x-mark h-5 w-5"></div>
+            </button>
+          </div>
+
+          <div v-if="editingProduct" class="space-y-4">
+            <p class="text-sm text-gray-500 dark:text-gray-400">
+              Select products that are similar to <strong>{{ editingProduct.name }}</strong>. These will be shown as recommendations.
+            </p>
+
+            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-md dark:border-gray-700">
+              <ul class="divide-y divide-gray-200 dark:divide-gray-700">
+                <li
+                  v-for="product in products.filter(p => p.id !== editingProduct.id)"
+                  :key="product.id"
+                  class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <input
+                    :id="`similar-product-${product.id}`"
+                    type="checkbox"
+                    :value="product.id"
+                    v-model="editingProduct.similarProducts"
+                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600"
+                  />
+                  <label :for="`similar-product-${product.id}`" class="ml-3 flex items-center cursor-pointer">
+                    <img :src="product.images[0]" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</p>
+                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ product.category }} - ${{ product.price.toFixed(2) }}</p>
+                    </div>
+                  </label>
+                </li>
+              </ul>
+            </div>
+
+            <div class="flex justify-end space-x-3 mt-6">
+              <button
+                @click="showSimilarProductsDialog = false"
+                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+              <button
+                @click="saveSimilarProducts"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </DialogPanel>
+      </div>
+    </Dialog>
+  </transition>
 </template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
