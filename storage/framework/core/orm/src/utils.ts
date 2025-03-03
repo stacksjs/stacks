@@ -1077,6 +1077,12 @@ export async function deleteModelEvents(): Promise<void> {
   await fs.writeFile(eventFile, '')
 }
 
+export async function deleteOrmImports(): Promise<void> {
+  const ormImportFile = path.frameworkPath(`orm/src/index.ts`)
+
+  await fs.writeFile(ormImportFile, '')
+}
+
 export async function deleteExistingModelRequest(modelStringFile?: string): Promise<void> {
   const requestD = path.frameworkPath('types/requests.d.ts')
   await fs.writeFile(requestD, '')
@@ -1218,6 +1224,10 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     log.info('Deleting old model events...')
     await deleteModelEvents()
     log.success('Deleted old model events')
+
+    log.info('Deleting old orm imports...')
+    await deleteOrmImports()
+    log.success('Deleted old orm imports')
 
     log.info('Deleting old Model Requests...')
     await deleteExistingModelRequest(modelStringFile)

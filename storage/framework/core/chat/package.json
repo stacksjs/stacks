@@ -39,5 +39,8 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
+  },
+  "dependencies": {
+    "@novu/slack": "^0.24.1"
   }
 }

@@ -187,12 +187,11 @@ export interface Attribute {
   hidden?: boolean
   fillable?: boolean
   guarded?: boolean
-  factory?: (faker?: Faker) => any
+  factory?: (faker: Faker) => any
   validation?: {
     rule: VineType
     message?: ValidatorMessage
   }
-  // validation?: String | Number | Boolean | Date
 }
 
 export interface AttributesElements {
