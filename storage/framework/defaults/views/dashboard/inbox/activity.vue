@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useRouter } from 'vue-router'
 import { Line, Bar, Doughnut } from 'vue-chartjs'
 import {
   Chart as ChartJS,
@@ -34,6 +35,8 @@ import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
 useHead({
   title: 'Mail - Activity Dashboard',
 })
+
+const router = useRouter()
 
 // Time range state
 const timeRange = ref<'day' | 'week' | 'month' | 'year'>('week')
@@ -294,6 +297,17 @@ const changeTimeRange = async (newRange: 'day' | 'week' | 'month' | 'year') => {
   await updateChartData()
 }
 
+// Function to handle folder change
+const handleFolderChange = (folder: string) => {
+  // Navigate to the inbox page with the selected folder
+  router.push(`/inbox`)
+}
+
+// Function to handle compose
+const handleCompose = () => {
+  router.push('/inbox?compose=true')
+}
+
 // Initial load
 onMounted(async () => {
   isLoading.value = true
@@ -310,7 +324,8 @@ onMounted(async () => {
         :active-folder="activeFolder"
         :folders="folders"
         :unread-counts="unreadCounts"
-        @update:active-folder="activeFolder = $event"
+        @update:active-folder="(folder) => { activeFolder = folder; handleFolderChange(folder); }"
+        @compose="handleCompose"
       />
 
       <!-- Main Content -->

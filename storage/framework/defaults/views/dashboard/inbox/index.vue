@@ -1,29 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
-import { Line } from 'vue-chartjs'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
+import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
 
 useHead({
   title: 'Mail - Your Inbox',
@@ -48,7 +26,7 @@ const sidebarOpen = ref(true)
 const activeFolder = ref('inbox')
 const selectedEmail = ref<Email | null>(null)
 const searchQuery = ref('')
-const timeRange = ref<'day' | 'week' | 'month' | 'year'>('day')
+const isComposing = ref(false)
 const isLoading = ref(false)
 
 // Email data
@@ -278,89 +256,6 @@ const emails = ref<Email[]>([
   },
 ])
 
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top' as const,
-      align: 'end' as const,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-  },
-}
-
-// Generate mock email activity data
-const getEmailActivityData = () => {
-  const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Received',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 50) + 20),
-        borderColor: 'rgb(59, 130, 246)', // Blue
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Sent',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 30) + 10),
-        borderColor: 'rgb(16, 185, 129)', // Green
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Spam',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)),
-        borderColor: 'rgb(239, 68, 68)', // Red
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
-      },
-    ],
-  }
-}
-
-const emailActivityData = ref(getEmailActivityData())
-
 // Folder structure
 const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
@@ -369,7 +264,7 @@ const folders = [
   { id: 'drafts', name: 'Drafts', icon: 'drafts' },
   { id: 'archive', name: 'Archive', icon: 'archive' },
   { id: 'spam', name: 'Spam', icon: 'spam' },
-  { id: 'trash', name: 'Trash', icon: 'trash' },
+  { id: 'trash', name: 'Trash', icon: 'waste' },
 ]
 
 // Filtered emails based on active folder and search
@@ -444,6 +339,15 @@ const getUnreadCount = (folder: string) => {
   return emails.value.filter(e => e.folder === folder && !e.read).length
 }
 
+// Unread counts for the sidebar
+const unreadCounts = computed(() => {
+  const counts: Record<string, number> = {}
+  folders.forEach(folder => {
+    counts[folder.id] = getUnreadCount(folder.id)
+  })
+  return counts
+})
+
 // Open email detail
 const openEmail = (email: Email) => {
   selectedEmail.value = email
@@ -464,7 +368,6 @@ interface NewEmail {
   body: string
 }
 
-const isComposing = ref(false)
 const newEmail = ref<NewEmail>({
   to: '',
   subject: '',
@@ -506,15 +409,6 @@ const sendEmail = () => {
   // Show a success toast message or notification here
 }
 
-// Watch for time range changes
-watch(timeRange, async () => {
-  isLoading.value = true
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 500))
-  emailActivityData.value = getEmailActivityData()
-  isLoading.value = false
-})
-
 // Initial load
 onMounted(async () => {
   isLoading.value = true
@@ -527,91 +421,29 @@ const getFolderIcon = (folderId: string) => {
   const folder = folders.find(f => f.id === folderId)
   return folder ? folder.icon : 'document'
 }
+
+// Function to handle folder change
+const handleFolderChange = (folder: string) => {
+  activeFolder.value = folder
+}
+
+// Function to handle compose
+const handleCompose = () => {
+  isComposing.value = true
+}
 </script>
 
 <template>
   <div class="min-h-screen dark:bg-blue-gray-800">
     <div class="flex h-screen">
       <!-- Sidebar -->
-      <div
-        :class="[
-          'bg-gray-100 dark:bg-blue-gray-700 flex flex-col transition-all duration-300 ease-in-out',
-          sidebarOpen ? 'w-64' : 'w-16'
-        ]"
-      >
-        <div class="p-4 flex items-center justify-between border-b border-gray-200 dark:border-blue-gray-600">
-          <h1
-            :class="[
-              'font-bold text-xl text-gray-900 dark:text-white',
-              !sidebarOpen && 'sr-only'
-            ]"
-          >
-            Mail
-          </h1>
-          <button
-            @click="sidebarOpen = !sidebarOpen"
-            class="p-1 rounded-md text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-white"
-          >
-            <i class="i-hugeicons-menu-01 text-xl"></i>
-          </button>
-        </div>
-
-        <div class="p-4">
-          <button
-            @click="startCompose"
-            class="w-full flex items-center justify-center rounded-md bg-blue-600 px-3 py-3 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500"
-          >
-            <i class="i-hugeicons-plus-sign text-lg mr-2" :class="{ 'mr-0': !sidebarOpen }"></i>
-            <span v-if="sidebarOpen">Compose</span>
-          </button>
-        </div>
-
-        <nav class="mt-2 flex-1 overflow-y-auto">
-          <ul class="space-y-1 px-2">
-            <li v-for="folder in folders" :key="folder.id">
-              <button
-                @click="activeFolder = folder.id"
-                :class="[
-                  'w-full flex items-center px-3 py-3 text-sm rounded-md',
-                  activeFolder === folder.id
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                <span class="flex-shrink-0">
-                  <!-- Replace SVG icons with Hugeicons -->
-                  <i v-if="folder.icon === 'inbox'" class="i-hugeicons-inbox text-xl"></i>
-                  <i v-else-if="folder.icon === 'star'" class="i-hugeicons-star text-xl"></i>
-                  <i v-else-if="folder.icon === 'send'" class="i-hugeicons-mail-send-02 text-xl"></i>
-                  <i v-else-if="folder.icon === 'drafts'" class="i-hugeicons-license-draft text-xl"></i>
-                  <i v-else-if="folder.icon === 'archive'" class="i-hugeicons-archive text-xl"></i>
-                  <i v-else-if="folder.icon === 'spam'" class="i-hugeicons-spam text-xl"></i>
-                  <i v-else-if="folder.icon === 'trash'" class="i-hugeicons-waste text-xl"></i>
-                  <i v-else class="i-hugeicons-file-01 text-xl"></i>
-                </span>
-                <span v-if="sidebarOpen" class="flex-1 ml-3">{{ folder.name }}</span>
-                <span v-if="sidebarOpen && getUnreadCount(folder.id) > 0"
-                  class="inline-flex items-center justify-center ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                  {{ getUnreadCount(folder.id) }}
-                </span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-
-        <!-- Account Section -->
-        <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
-          <div class="flex items-center">
-            <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-              M
-            </div>
-            <div v-if="sidebarOpen" class="ml-3">
-              <p class="text-sm font-medium text-gray-700 dark:text-gray-200">me@stacksjs.org</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">5.2 GB of 15 GB used</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <EmailSidebar
+        :active-folder="activeFolder"
+        :folders="folders"
+        :unread-counts="unreadCounts"
+        @update:active-folder="handleFolderChange"
+        @compose="handleCompose"
+      />
 
       <!-- Main Content -->
       <div class="flex-1 flex flex-col overflow-hidden">
@@ -632,39 +464,6 @@ const getFolderIcon = (folderId: string) => {
                 />
               </div>
             </div>
-
-            <!-- Activity chart toggle -->
-            <div class="ml-4">
-              <select
-                v-model="timeRange"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="day">Last 24 Hours</option>
-                <option value="week">Last 7 Days</option>
-                <option value="month">Last 30 Days</option>
-                <option value="year">Last Year</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Email Activity Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
-          <div class="flex items-center justify-between mb-2">
-            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
-            <router-link
-              to="/inbox/activity"
-              class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300 flex items-center"
-            >
-              View Details
-              <i class="i-hugeicons-arrow-right-02 ml-1 text-sm"></i>
-            </router-link>
-          </div>
-          <div class="h-[120px] relative">
-            <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            </div>
-            <Line :data="emailActivityData" :options="chartOptions" />
           </div>
         </div>
 
@@ -732,6 +531,26 @@ const getFolderIcon = (folderId: string) => {
                   </div>
                 </li>
               </ul>
+            </div>
+          </div>
+
+          <!-- Empty state when no email is selected -->
+          <div v-if="!selectedEmail && !isComposing" class="hidden md:flex md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex-col items-center justify-center p-8">
+            <div class="text-center">
+              <div class="mx-auto h-24 w-24 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mb-6">
+                <i class="i-hugeicons-mail-02 text-blue-600 dark:text-blue-400 text-5xl"></i>
+              </div>
+              <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No message selected</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+                Select an email from your inbox to view its contents here, or start a new conversation by clicking the compose button.
+              </p>
+              <button
+                @click="handleCompose"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm"
+              >
+                <i class="i-hugeicons-plus-sign text-lg mr-2"></i>
+                Compose New Email
+              </button>
             </div>
           </div>
 
@@ -834,6 +653,7 @@ const getFolderIcon = (folderId: string) => {
                     id="to"
                     v-model="newEmail.to"
                     type="text"
+                    placeholder="recipient@example.com"
                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
                 </div>
@@ -843,6 +663,7 @@ const getFolderIcon = (folderId: string) => {
                     id="subject"
                     v-model="newEmail.subject"
                     type="text"
+                    placeholder="Enter email subject"
                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
                 </div>
@@ -852,6 +673,7 @@ const getFolderIcon = (folderId: string) => {
                     id="body"
                     v-model="newEmail.body"
                     rows="15"
+                    placeholder="Write your message here..."
                     class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   ></textarea>
                 </div>
