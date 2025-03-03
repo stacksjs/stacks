@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useRoute } from 'vue-router'
 import EmailSidebar from '../../../components/Dashboard/Email/EmailSidebar.vue'
 
 useHead({
@@ -412,6 +413,18 @@ const sendEmail = () => {
 // Initial load
 onMounted(async () => {
   isLoading.value = true
+
+  // Check for folder in query params
+  const route = useRoute()
+  if (route.query.folder && typeof route.query.folder === 'string') {
+    activeFolder.value = route.query.folder
+  }
+
+  // Check for compose in query params
+  if (route.query.compose === 'true') {
+    isComposing.value = true
+  }
+
   await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
 })
@@ -431,6 +444,43 @@ const handleFolderChange = (folder: string) => {
 const handleCompose = () => {
   isComposing.value = true
 }
+
+// Add refresh functionality
+const isRefreshing = ref(false)
+const refreshEmails = async () => {
+  isRefreshing.value = true
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  isRefreshing.value = false
+}
+
+// Add dropdown menu state
+const showMoreMenu = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+const toggleMoreMenu = (event: MouseEvent) => {
+  event.stopPropagation()
+  showMoreMenu.value = !showMoreMenu.value
+
+  if (showMoreMenu.value) {
+    // Add event listener when dropdown is opened
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+  }
+}
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+    showMoreMenu.value = false
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <template>
@@ -472,17 +522,38 @@ const handleCompose = () => {
           <!-- Email list -->
           <div v-if="!selectedEmail || !isComposing" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 dark:border-blue-gray-600 flex flex-col">
             <div class="bg-white dark:bg-blue-gray-700 py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {{ folders.find(f => f.id === activeFolder)?.name || 'All Mail' }}
-                </h2>
-                <div class="flex space-x-2">
-                  <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                    <i class="i-hugeicons-refresh text-gray-500 dark:text-gray-400 text-lg"></i>
-                  </button>
-                  <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {{ folders.find(f => f.id === activeFolder)?.name || 'All Mail' }}
+              </h2>
+              <div class="flex space-x-2">
+                <button @click="refreshEmails" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
+                  <i class="i-hugeicons-refresh text-gray-500 dark:text-gray-400 text-lg" :class="{ 'animate-spin': isRefreshing }"></i>
+                </button>
+                <div class="relative">
+                  <button @click="toggleMoreMenu" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
                     <i class="i-hugeicons-more-vertical-circle-01 text-gray-500 dark:text-gray-400 text-lg"></i>
                   </button>
+                  <!-- Dropdown menu -->
+                  <div
+                    v-if="showMoreMenu"
+                    ref="dropdownRef"
+                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-blue-gray-600 ring-1 ring-black ring-opacity-5 z-10"
+                  >
+                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                      <a href="/inbox/activity" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
+                        <div class="flex items-center">
+                          <i class="i-hugeicons-chart-bar-01 text-lg mr-2"></i>
+                          Analytics
+                        </div>
+                      </a>
+                      <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
+                        <div class="flex items-center">
+                          <i class="i-hugeicons-settings-01 text-lg mr-2"></i>
+                          Settings
+                        </div>
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

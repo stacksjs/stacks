@@ -25,7 +25,7 @@ declare module 'vue' {
     CLIForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/CLIForm.vue')['default']
     CloudForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/CloudForm.vue')['default']
     CodeEditor: typeof import('./../defaults/components/Dashboard/CodeEditor.vue')['default']
-    ComboboxDemo: typeof import('./../defaults/components/Docs/ComboboxDemo.vue')['default']
+    ComboboxDemo: typeof import('./../defaults/components/Docs/demo/ComboboxDemo.vue')['default']
     ComingSoon: typeof import('./../defaults/components/Marketing/ComingSoon.vue')['default']
     Container: typeof import('./../../../resources/components/Container.vue')['default']
     Counter: typeof import('./../defaults/components/Buttons/Counter.vue')['default']
@@ -52,7 +52,7 @@ declare module 'vue' {
     HashingForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/HashingForm.vue')['default']
     Header: typeof import('./../defaults/components/Marketing/Header.vue')['default']
     HelloWorld: typeof import('./../../../resources/components/HelloWorld.vue')['default']
-    Hero: typeof import('./../defaults/components/Marketing/Hero.vue')['default']
+    Hero: typeof import('./../defaults/components/Docs/demo/Hero.vue')['default']
     Home: typeof import('./../defaults/components/Docs/Home.vue')['default']
     HomeContributors: typeof import('./../defaults/components/Docs/HomeContributors.vue')['default']
     HomeSponsors: typeof import('./../defaults/components/Docs/HomeSponsors.vue')['default']
@@ -105,5 +105,6 @@ declare module 'vue' {
     ToastWrapper: typeof import('./../defaults/components/Dashboard/Modals/ToastWrapper.vue')['default']
     ToggleDark: typeof import('./../defaults/components/Buttons/ToggleDark.vue')['default']
     Transaction: typeof import('./../defaults/components/Dashboard/Transaction/index.vue')['default']
+    Usage: typeof import('./../defaults/components/Docs/demo/Usage.vue')['default']
   }
 }

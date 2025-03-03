@@ -299,8 +299,13 @@ const changeTimeRange = async (newRange: 'day' | 'week' | 'month' | 'year') => {
 
 // Function to handle folder change
 const handleFolderChange = (folder: string) => {
+  // Update the active folder
+  activeFolder.value = folder
   // Navigate to the inbox page with the selected folder
-  router.push(`/inbox`)
+  router.push({
+    path: '/inbox',
+    query: { folder }
+  })
 }
 
 // Function to handle compose
