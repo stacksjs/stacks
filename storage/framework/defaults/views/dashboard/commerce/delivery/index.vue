@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Dashboard - Commerce Shipping',
+  title: 'Dashboard - Commerce Deliver',
 })
 
 // Sample shipping methods data
@@ -321,8 +321,8 @@ const formatCurrency = (value: number | null) => {
                 <input
                   v-model="searchQuery"
                   type="text"
-                  class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                  placeholder="Search shipping methods"
+                  class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 w-full"
+                  placeholder="Search shipping methods..."
                 />
               </div>
 
