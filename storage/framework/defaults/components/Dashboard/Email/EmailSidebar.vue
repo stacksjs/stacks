@@ -62,7 +62,7 @@ const getUnreadCount = (folderId: string): number => {
         @click="startCompose"
         class="w-full flex items-center justify-center rounded-md bg-blue-600 px-3 py-3 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500"
       >
-        <i class="i-hugeicons-plus-sign text-lg mr-2" :class="{ 'mr-0': !sidebarOpen }"></i>
+        <i class="i-hugeicons-plus-sign text-lg" :class="{ 'mr-2': sidebarOpen, 'mr-0': !sidebarOpen }"></i>
         <span v-if="sidebarOpen">Compose</span>
       </button>
     </div>
