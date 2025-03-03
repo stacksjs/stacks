@@ -16,7 +16,7 @@ import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import { plural, singular, snakeCase } from '@stacksjs/strings'
+import { kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 import { generateModelString } from './generate'
 
@@ -554,9 +554,9 @@ export async function writeModelEvents(): Promise<void> {
 
     if (typeof observer === 'boolean') {
       if (observer) {
-        observerString += `'${formattedModelName}:created': ${modelName}Model\n`
-        observerString += `'${formattedModelName}:updated': ${modelName}Model\n`
-        observerString += `'${formattedModelName}:deleted': ${modelName}Model\n`
+        observerString += `'${kebabCase(formattedModelName)}:created': ${modelName}Model\n`
+        observerString += `'${kebabCase(formattedModelName)}:updated': ${modelName}Model\n`
+        observerString += `'${kebabCase(formattedModelName)}:deleted': ${modelName}Model\n`
 
         observerImports += `import type { ${modelName}Model } from '../orm/src/models/${modelName}'\n`
       }
