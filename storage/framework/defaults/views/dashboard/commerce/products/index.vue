@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Dashboard - FoodMarket.org Menu Items',
+  title: 'Dashboard - Products',
 })
 
 // Sample product data
