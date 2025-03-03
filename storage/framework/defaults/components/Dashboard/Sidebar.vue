@@ -174,14 +174,18 @@ const sectionContent: Record<string, SectionContent> = {
   commerce: {
     items: [
       { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-      { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
+      { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Menu Items' },
       { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+      { to: '/commerce/manufacturers', icon: 'i-hugeicons-building-factory', text: 'Restaurants' },
+      { to: '/commerce/variants', icon: 'i-hugeicons-color-palette', text: 'Variants' },
+      { to: '/commerce/units', icon: 'i-hugeicons-ruler', text: 'Units' },
+      { to: '/commerce/taxes', icon: 'i-hugeicons-receipt-tax', text: 'Taxes' },
       { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
       { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
       { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
       { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
       { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
-      { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Shipping' },
+      { to: '/commerce/shipping', icon: 'i-hugeicons-shipping-truck-01', text: 'Delivery' },
       { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
     ]
   },

@@ -270,6 +270,7 @@ _Develop serverless (or server) functions with countless helpers to build scalab
 - 🤖 **APIs** _scalability & maintainability built-in_
 - 🏎️ **Cache** _unified caching for DynamoDB, Redis and more_
 - ⚙️ **CLIs** _create beautiful CLIs for Linux, Windows, and Mac (dependency-free binaries)_
+- 🛍️ **Commerce** _own & grow your own online business with ease (SaaS-optimized)_
 - 📀 **Database** _DynamoDB, SQLite, MySQL, Postgres, and more_
 - 👾 **Errors** _native type-safe error handling_
 - 🗓️ **Events** _functional event (front & backend) communication_

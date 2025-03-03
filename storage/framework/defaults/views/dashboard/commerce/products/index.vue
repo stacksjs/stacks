@@ -3,100 +3,180 @@ import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
 
 useHead({
-  title: 'Dashboard - Commerce Products',
+  title: 'Dashboard - FoodMarket.org Menu Items',
 })
 
 // Sample product data
 const products = ref([
   {
     id: 1,
-    name: 'Premium Headphones',
-    price: 199.99,
-    category: 'Electronics',
+    name: 'Margherita Pizza',
+    price: 12.99,
+    category: 'Pizza',
     stock: 78,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [
+      'https://example.com/videos/margherita-pizza.mp4'
+    ],
+    manufacturer: 'Pizza Palace',
+    variants: ['Size', 'Crust Type'],
+    unit: 'Whole',
+    taxRate: 7
   },
   {
     id: 2,
-    name: 'Wireless Keyboard',
-    price: 89.99,
-    category: 'Electronics',
+    name: 'Classic Cheeseburger',
+    price: 9.99,
+    category: 'Burgers',
     stock: 124,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1550317138-10000687a72b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Burger Bistro',
+    variants: ['Size', 'Protein', 'Toppings'],
+    unit: 'Piece',
+    taxRate: 7
   },
   {
     id: 3,
-    name: 'Smart Watch',
-    price: 249.99,
-    category: 'Wearables',
+    name: 'California Roll',
+    price: 14.99,
+    category: 'Sushi',
     stock: 45,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1617196034183-421b4917c92d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [
+      'https://example.com/videos/california-roll.mp4'
+    ],
+    manufacturer: 'Sushi Supreme',
+    variants: ['Size'],
+    unit: 'Piece',
+    taxRate: 7
   },
   {
     id: 4,
-    name: 'Bluetooth Speaker',
-    price: 129.99,
-    category: 'Audio',
+    name: 'Street Tacos',
+    price: 8.99,
+    category: 'Mexican',
     stock: 92,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Taco Tiempo',
+    variants: ['Protein', 'Spice Level', 'Toppings'],
+    unit: 'Piece',
+    taxRate: 7
   },
   {
     id: 5,
-    name: 'USB-C Hub',
-    price: 59.99,
-    category: 'Accessories',
+    name: 'Fettuccine Alfredo',
+    price: 13.99,
+    category: 'Pasta',
     stock: 210,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1588599376442-3cbf9c67449e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1645112411341-6c4fd023882c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Pasta Paradise',
+    variants: ['Size', 'Protein'],
+    unit: 'Serving',
+    taxRate: 7
   },
   {
     id: 6,
-    name: 'Mechanical Keyboard',
-    price: 149.99,
-    category: 'Electronics',
+    name: 'Quinoa Bowl',
+    price: 11.99,
+    category: 'Healthy',
     stock: 35,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1595225476474-63038da0e238?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Healthy Harvest',
+    variants: ['Size', 'Protein', 'Dietary'],
+    unit: 'Serving',
+    taxRate: 7
   },
   {
     id: 7,
-    name: 'Ergonomic Mouse',
-    price: 79.99,
-    category: 'Accessories',
+    name: 'Chocolate Lava Cake',
+    price: 7.99,
+    category: 'Desserts',
     stock: 68,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Sweet Sensations',
+    variants: ['Size', 'Sweetness'],
+    unit: 'Piece',
+    taxRate: 7
   },
   {
     id: 8,
-    name: 'Laptop Stand',
-    price: 39.99,
-    category: 'Accessories',
+    name: 'Iced Caramel Latte',
+    price: 4.99,
+    category: 'Beverages',
     stock: 112,
     status: 'Active',
-    image: 'https://images.unsplash.com/photo-1619953942547-233eab5a70d6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Beverage Boutique',
+    variants: ['Size', 'Sweetness'],
+    unit: 'Milliliter',
+    taxRate: 7
   },
   {
     id: 9,
-    name: 'Wireless Earbuds',
-    price: 129.99,
-    category: 'Audio',
+    name: 'Veggie Spring Rolls',
+    price: 6.99,
+    category: 'Appetizers',
     stock: 54,
     status: 'Low Stock',
-    image: 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1606333259737-6a88c0a0b8a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
+      'https://images.unsplash.com/photo-1625938145744-e380515399b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [
+      'https://example.com/videos/spring-rolls.mp4'
+    ],
+    manufacturer: 'Healthy Harvest',
+    variants: ['Size', 'Sauce', 'Dietary'],
+    unit: 'Piece',
+    taxRate: 7
   },
   {
     id: 10,
-    name: 'External SSD',
-    price: 179.99,
-    category: 'Storage',
+    name: 'Buffalo Wings',
+    price: 10.99,
+    category: 'Appetizers',
     stock: 0,
     status: 'Out of Stock',
-    image: 'https://images.unsplash.com/photo-1597740985671-2a8a3b80502e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    images: [
+      'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
+    ],
+    videos: [],
+    manufacturer: 'Burger Bistro',
+    variants: ['Size', 'Spice Level', 'Sauce'],
+    unit: 'Piece',
+    taxRate: 7
   }
 ])
 
@@ -237,7 +317,7 @@ function toggleSort(column: string): void {
                 <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                   <thead class="bg-gray-50 dark:bg-blue-gray-700">
                     <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                         <button @click="toggleSort('name')" class="group inline-flex items-center">
                           Product
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
@@ -284,10 +364,12 @@ function toggleSort(column: string): void {
                     <tr v-for="product in paginatedProducts" :key="product.id">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
                         <div class="flex items-center">
-                          <img :src="product.image" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
+                          <img :src="product.images[0]" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
                           <div class="ml-4">
-                            <div>{{ product.name }}</div>
-                            <div class="text-gray-500 dark:text-gray-400 text-xs">#{{ product.id }}</div>
+                            <router-link :to="`/dashboard/commerce/products/detail/${product.id}`" class="hover:text-primary">
+                              <div>{{ product.name }}</div>
+                              <div class="text-gray-500 dark:text-gray-400 text-xs">#{{ product.id }}</div>
+                            </router-link>
                           </div>
                         </div>
                       </td>
@@ -306,6 +388,9 @@ function toggleSort(column: string): void {
                       </td>
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <div class="flex items-center justify-end space-x-2">
+                          <router-link :to="`/dashboard/commerce/products/detail/${product.id}`" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="i-hugeicons-eye h-5 w-5"></div>
+                          </router-link>
                           <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                             <div class="i-hugeicons-license-draft h-5 w-5"></div>
                           </button>
