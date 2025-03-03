@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
@@ -32,7 +31,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     companyName: {
@@ -45,7 +44,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.company.name(),
+      factory: faker => faker.company.name(),
     },
 
     email: {
@@ -58,7 +57,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.email(),
+      factory: faker => faker.internet.email(),
     },
 
     billingEmail: {
@@ -71,7 +70,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.email(),
+      factory: faker => faker.internet.email(),
     },
 
     status: {
@@ -84,7 +83,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => collect(['deployed', 'inactive']).random().first(),
+      factory: faker => collect(['deployed', 'inactive']).random().first(),
     },
 
     description: {
@@ -97,7 +96,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 10, max: 30 }),
+      factory: faker => faker.lorem.sentence({ min: 10, max: 30 }),
     },
 
     path: {
@@ -110,7 +109,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => `/Users/chrisbreuer/Code/${faker.lorem.words().toLowerCase().replace(/\s+/g, '-')}`,
+      factory: faker => `/Users/chrisbreuer/Code/${faker.lorem.words().toLowerCase().replace(/\s+/g, '-')}`,
     },
 
     isPersonal: {
@@ -123,7 +122,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.datatype.boolean(),
+      factory: faker => faker.datatype.boolean(),
     },
   },
 } satisfies Model

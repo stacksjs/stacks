@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 
@@ -28,7 +27,7 @@ export default {
           maxLength: 'name must have a maximum of 255 characters',
         },
       },
-      factory: (faker: Faker) => 'Dashboard Subscription',
+      factory: faker => 'Dashboard Subscription',
     },
 
     description: {
@@ -39,7 +38,7 @@ export default {
           string: 'description must be a string',
         },
       },
-      factory: (faker: Faker) => faker.lorem.lines(2),
+      factory: faker => faker.lorem.lines(2),
     },
 
     amount: {
@@ -52,7 +51,7 @@ export default {
           required: 'amount is required',
         },
       },
-      factory: (faker: Faker) => faker.number.int({ min: 1000, max: 10000 }),
+      factory: faker => faker.number.int({ min: 1000, max: 10000 }),
     },
 
     type: {
@@ -65,7 +64,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: (faker: Faker) => collect(['one-time', 'subscription']).random().first(),
+      factory: faker => collect(['one-time', 'subscription']).random().first(),
     },
     providerId: {
       fillable: true,
@@ -76,7 +75,7 @@ export default {
           required: 'provider_id is required',
         },
       },
-      factory: (faker: Faker) => faker.string.alphanumeric(10),
+      factory: faker => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

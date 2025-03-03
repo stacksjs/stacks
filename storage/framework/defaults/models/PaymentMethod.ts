@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 
@@ -29,7 +28,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: (faker: Faker) => 'card',
+      factory: faker => 'card',
     },
 
     lastFour: {
@@ -42,7 +41,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: (faker: Faker) => faker.string.numeric(4),
+      factory: faker => faker.string.numeric(4),
     },
 
     brand: {
@@ -55,7 +54,7 @@ export default {
           required: 'brand is required',
         },
       },
-      factory: (faker: Faker) => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
+      factory: faker => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
     expMonth: {
@@ -68,7 +67,7 @@ export default {
           required: 'exp_month is required',
         },
       },
-      factory: (faker: Faker) => faker.number.int({ min: 1, max: 12 }),
+      factory: faker => faker.number.int({ min: 1, max: 12 }),
     },
 
     expYear: {
@@ -81,7 +80,7 @@ export default {
           required: 'exp_year is required',
         },
       },
-      factory: (faker: Faker) => faker.number.int({ min: 2024, max: 2050 }),
+      factory: faker => faker.number.int({ min: 2024, max: 2050 }),
     },
     isDefault: {
       fillable: true,
@@ -98,7 +97,7 @@ export default {
           required: 'provider_id is required',
         },
       },
-      factory: (faker: Faker) => faker.string.alphanumeric(10),
+      factory: faker => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

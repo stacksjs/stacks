@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -23,7 +22,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: (faker: Faker) => faker.lorem.lines(1),
+      factory: faker => faker.lorem.lines(1),
     },
 
     providerId: {
@@ -38,7 +37,7 @@ export default {
           maxLength: 'provider_id must have a maximum of 512 characters',
         },
       },
-      factory: (faker: Faker) => faker.string.alphanumeric(10),
+      factory: faker => faker.string.alphanumeric(10),
     },
 
     providerStatus: {
@@ -51,7 +50,7 @@ export default {
           required: 'provider_status is required',
         },
       },
-      factory: (faker: Faker) => faker.string.alpha(10),
+      factory: faker => faker.string.alpha(10),
     },
     unitPrice: {
       fillable: true,
@@ -62,7 +61,7 @@ export default {
           required: 'unit_price is required',
         },
       },
-      factory: (faker: Faker) => faker.number.int({ min: 1000, max: 10000 }),
+      factory: faker => faker.number.int({ min: 1000, max: 10000 }),
     },
 
     providerType: {
@@ -75,7 +74,7 @@ export default {
           required: 'provider_type is required',
         },
       },
-      factory: (faker: Faker) => faker.string.alpha(10),
+      factory: faker => faker.string.alpha(10),
     },
 
     providerPriceId: {
@@ -86,7 +85,7 @@ export default {
           string: 'provider_price_id must be a string',
         },
       },
-      factory: (faker: Faker) => faker.commerce.price(),
+      factory: faker => faker.commerce.price(),
     },
 
     quantity: {
@@ -97,7 +96,7 @@ export default {
           number: 'quantity must be a number',
         },
       },
-      factory: (faker: Faker) => faker.number.int(100),
+      factory: faker => faker.number.int(100),
     },
 
     trialEndsAt: {
@@ -108,7 +107,7 @@ export default {
           string: 'trial_ends_at must be a string',
         },
       },
-      factory: (faker: Faker) => faker.date.future().toString(),
+      factory: faker => faker.date.future().toString(),
     },
 
     endsAt: {
@@ -119,7 +118,7 @@ export default {
           string: 'ends_at must be a string',
         },
       },
-      factory: (faker: Faker) => faker.date.future().toString(),
+      factory: faker => faker.date.future().toString(),
     },
 
     lastUsedAt: {
@@ -130,7 +129,7 @@ export default {
         },
       },
       fillable: true,
-      factory: (faker: Faker) => faker.date.recent().toString(),
+      factory: faker => faker.date.recent().toString(),
     },
   },
 } satisfies Model

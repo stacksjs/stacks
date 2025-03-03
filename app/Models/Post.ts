@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -33,7 +32,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     body: {
@@ -45,7 +44,7 @@ export default {
           required: 'body is required',
         },
       },
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 10, max: 10 }),
+      factory: faker => faker.lorem.sentence({ min: 10, max: 10 }),
     },
   },
 } satisfies Model

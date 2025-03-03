@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
@@ -28,7 +27,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     description: {
@@ -41,7 +40,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 10, max: 25 }),
+      factory: faker => faker.lorem.sentence({ min: 10, max: 25 }),
     },
 
     url: {
@@ -54,7 +53,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.url(),
+      factory: faker => faker.internet.url(),
     },
 
     status: {
@@ -67,7 +66,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => collect(['active', 'inactive']).random().first(),
+      factory: faker => collect(['active', 'inactive']).random().first(),
     },
   },
 } satisfies Model

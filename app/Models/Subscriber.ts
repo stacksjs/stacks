@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -27,7 +26,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.datatype.boolean(),
+      factory: faker => faker.datatype.boolean(),
     },
   },
 

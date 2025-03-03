@@ -1,5 +1,4 @@
 // soon, these will be auto-imported
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -33,7 +32,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.email(),
+      factory: faker => faker.internet.email(),
     },
   },
 } satisfies Model
