@@ -32,10 +32,10 @@
     "@types/markdown-it-link-attributes": "^3.0.5",
     "@types/nprogress": "^0.2.3",
     "@vitejs/plugin-vue": "^5.2.1",
-    "@vue-macros/volar": "^0.30.14",
+    "@vue-macros/volar": "^0.30.15",
     "@vue/test-utils": "^2.4.6",
     "markdown-it-link-attributes": "^4.0.1",
-    "rollup": "^4.34.8",
+    "rollup": "^4.34.9",
     "shiki": "^3.1.0",
     "unocss": "66.0.0",
     "unplugin-auto-import": "^19.1.1",
@@ -51,6 +51,6 @@
     "vite-plugin-webfont-dl": "^3.10.4",
     "vite-ssg": "^25.2.0",
     "vite-ssg-sitemap": "^0.8.1",
-    "vue-tsc": "^2.2.4"
+    "vue-tsc": "^2.2.8"
   }
 }
