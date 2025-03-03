@@ -10,75 +10,93 @@ useHead({
 const categories = ref([
   {
     id: 1,
-    name: 'Electronics',
-    slug: 'electronics',
-    description: 'Electronic devices and gadgets',
-    productCount: 42,
+    name: 'Pizza',
+    slug: 'pizza',
+    description: 'Traditional and specialty pizzas',
+    productCount: 24,
     featured: true,
-    createdAt: '2023-01-15'
+    createdAt: '2023-05-10'
   },
   {
     id: 2,
-    name: 'Wearables',
-    slug: 'wearables',
-    description: 'Wearable technology and accessories',
+    name: 'Burgers',
+    slug: 'burgers',
+    description: 'Gourmet and classic burgers',
     productCount: 18,
     featured: true,
-    createdAt: '2023-02-10'
+    createdAt: '2023-05-15'
   },
   {
     id: 3,
-    name: 'Audio',
-    slug: 'audio',
-    description: 'Headphones, speakers, and audio equipment',
-    productCount: 24,
+    name: 'Sushi',
+    slug: 'sushi',
+    description: 'Fresh sushi, rolls, and Japanese cuisine',
+    productCount: 32,
     featured: true,
-    createdAt: '2023-01-20'
+    createdAt: '2023-06-01'
   },
   {
     id: 4,
-    name: 'Accessories',
-    slug: 'accessories',
-    description: 'Various accessories for devices',
-    productCount: 56,
+    name: 'Mexican',
+    slug: 'mexican',
+    description: 'Authentic Mexican dishes and street food',
+    productCount: 22,
     featured: false,
-    createdAt: '2023-03-05'
+    createdAt: '2023-06-10'
   },
   {
     id: 5,
-    name: 'Storage',
-    slug: 'storage',
-    description: 'Storage solutions and devices',
-    productCount: 15,
+    name: 'Pasta',
+    slug: 'pasta',
+    description: 'Italian pasta dishes and specialties',
+    productCount: 16,
     featured: false,
-    createdAt: '2023-04-12'
+    createdAt: '2023-06-20'
   },
   {
     id: 6,
-    name: 'Gaming',
-    slug: 'gaming',
-    description: 'Gaming devices and accessories',
-    productCount: 32,
+    name: 'Healthy',
+    slug: 'healthy',
+    description: 'Nutritious, plant-based, and health-conscious options',
+    productCount: 28,
     featured: true,
-    createdAt: '2023-02-28'
+    createdAt: '2023-07-05'
   },
   {
     id: 7,
-    name: 'Smart Home',
-    slug: 'smart-home',
-    description: 'Smart home devices and solutions',
-    productCount: 27,
-    featured: true,
-    createdAt: '2023-03-15'
+    name: 'Desserts',
+    slug: 'desserts',
+    description: 'Sweet treats, cakes, and pastries',
+    productCount: 35,
+    featured: false,
+    createdAt: '2023-07-15'
   },
   {
     id: 8,
-    name: 'Cameras',
-    slug: 'cameras',
-    description: 'Cameras and photography equipment',
+    name: 'Beverages',
+    slug: 'beverages',
+    description: 'Coffee, tea, smoothies, and specialty drinks',
     productCount: 19,
     featured: false,
-    createdAt: '2023-05-10'
+    createdAt: '2023-08-01'
+  },
+  {
+    id: 9,
+    name: 'Appetizers',
+    slug: 'appetizers',
+    description: 'Starters, small plates, and shareable items',
+    productCount: 26,
+    featured: true,
+    createdAt: '2023-08-10'
+  },
+  {
+    id: 10,
+    name: 'Asian Fusion',
+    slug: 'asian-fusion',
+    description: 'Creative dishes combining Asian culinary traditions',
+    productCount: 21,
+    featured: false,
+    createdAt: '2023-08-20'
   }
 ])
 
@@ -156,15 +174,16 @@ function closeAddModal(): void {
 function addCategory(): void {
   // In a real app, this would send data to the server
   const id = Math.max(...categories.value.map(c => c.id)) + 1
-  const name = newCategory.value.name || '';
+  const currentDate = new Date().toISOString().split('T')[0] as string;
+
   categories.value.push({
     id,
-    name,
-    slug: name.toLowerCase().replace(/\s+/g, '-'),
-    description: newCategory.value.description,
+    name: newCategory.value.name || '',
+    slug: (newCategory.value.name || '').toLowerCase().replace(/\s+/g, '-'),
+    description: newCategory.value.description || '',
     productCount: 0,
     featured: newCategory.value.featured,
-    createdAt: new Date().toISOString().split('T')[0]
+    createdAt: currentDate
   })
   closeAddModal()
 }

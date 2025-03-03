@@ -6,87 +6,117 @@ useHead({
   title: 'Dashboard - Commerce Taxes',
 })
 
-// Sample tax data
+// Sample taxes data
 const taxes = ref([
   {
     id: 1,
-    name: 'Standard Food Tax',
-    rate: 8.5,
+    name: 'US Digital Services',
+    rate: 0.0,
     type: 'Sales Tax',
     country: 'United States',
-    region: 'California',
+    region: 'All',
     active: true,
-    createdAt: '2023-05-10'
+    createdAt: '2023-05-10',
+    isDefault: true
   },
   {
     id: 2,
-    name: 'Reduced Food Tax',
-    rate: 5.0,
-    type: 'Sales Tax',
-    country: 'United States',
-    region: 'California',
+    name: 'EU Digital VAT',
+    rate: 20.0,
+    type: 'VAT',
+    country: 'European Union',
+    region: 'All',
     active: true,
-    createdAt: '2023-05-10'
+    createdAt: '2023-05-15',
+    isDefault: false
   },
   {
     id: 3,
-    name: 'Restaurant Tax',
-    rate: 10.25,
-    type: 'Sales Tax',
-    country: 'United States',
-    region: 'New York',
+    name: 'UK Digital Services',
+    rate: 20.0,
+    type: 'VAT',
+    country: 'United Kingdom',
+    region: 'All',
     active: true,
-    createdAt: '2023-05-15'
+    createdAt: '2023-05-20',
+    isDefault: false
   },
   {
     id: 4,
-    name: 'Beverage Tax',
-    rate: 7.5,
-    type: 'Sales Tax',
-    country: 'United States',
-    region: 'Illinois',
-    active: true,
-    createdAt: '2023-06-01'
-  },
-  {
-    id: 5,
-    name: 'Food Delivery Tax',
-    rate: 9.0,
-    type: 'Service Tax',
-    country: 'United States',
-    region: 'All',
-    active: true,
-    createdAt: '2023-06-15'
-  },
-  {
-    id: 6,
-    name: 'Standard VAT',
-    rate: 19.0,
-    type: 'VAT',
-    country: 'Germany',
-    region: 'All',
-    active: true,
-    createdAt: '2023-07-01'
-  },
-  {
-    id: 7,
-    name: 'Reduced VAT (Food)',
-    rate: 7.0,
-    type: 'VAT',
-    country: 'Germany',
-    region: 'All',
-    active: true,
-    createdAt: '2023-07-01'
-  },
-  {
-    id: 8,
-    name: 'GST',
+    name: 'Canada GST/HST',
     rate: 5.0,
     type: 'GST',
     country: 'Canada',
     region: 'All',
     active: true,
-    createdAt: '2023-07-15'
+    createdAt: '2023-06-01',
+    isDefault: false
+  },
+  {
+    id: 5,
+    name: 'Australia GST',
+    rate: 10.0,
+    type: 'GST',
+    country: 'Australia',
+    region: 'All',
+    active: true,
+    createdAt: '2023-06-15',
+    isDefault: false
+  },
+  {
+    id: 6,
+    name: 'Japan Consumption Tax',
+    rate: 10.0,
+    type: 'Consumption Tax',
+    country: 'Japan',
+    region: 'All',
+    active: true,
+    createdAt: '2023-07-01',
+    isDefault: false
+  },
+  {
+    id: 7,
+    name: 'Norway VAT',
+    rate: 25.0,
+    type: 'VAT',
+    country: 'Norway',
+    region: 'All',
+    active: true,
+    createdAt: '2023-07-15',
+    isDefault: false
+  },
+  {
+    id: 8,
+    name: 'New Zealand GST',
+    rate: 15.0,
+    type: 'GST',
+    country: 'New Zealand',
+    region: 'All',
+    active: true,
+    createdAt: '2023-08-01',
+    isDefault: false
+  },
+  {
+    id: 9,
+    name: 'Singapore GST',
+    rate: 8.0,
+    type: 'GST',
+    country: 'Singapore',
+    region: 'All',
+    active: true,
+    createdAt: '2023-08-15',
+    isDefault: false
+  },
+  {
+    id: 10,
+    name: 'South Africa VAT',
+    rate: 15.0,
+    type: 'VAT',
+    country: 'South Africa',
+    region: 'All',
+    active: true,
+    createdAt: '2023-09-01',
+    isDefault: false
   }
 ])
 
@@ -170,13 +200,15 @@ const newTax = ref<{
   country: string;
   region: string;
   active: boolean;
+  isDefault: boolean;
 }>({
   name: '',
   rate: 0,
   type: 'Percentage',
   country: '',
   region: '',
-  active: true
+  active: true,
+  isDefault: false
 })
 
 function openAddModal(): void {
@@ -186,7 +218,8 @@ function openAddModal(): void {
     type: 'Percentage',
     country: '',
     region: '',
-    active: true
+    active: true,
+    isDefault: false
   }
   showAddModal.value = true
 }
@@ -200,6 +233,13 @@ function addTax(): void {
   const id = Math.max(...taxes.value.map(t => t.id)) + 1
   const currentDate = new Date().toISOString().split('T')[0] as string;
 
+  // If this is set as default, update other taxes
+  if (newTax.value.isDefault) {
+    taxes.value.forEach(tax => {
+      tax.isDefault = false
+    })
+  }
+
   taxes.value.push({
     id,
     name: newTax.value.name || '',
@@ -208,7 +248,8 @@ function addTax(): void {
     country: newTax.value.country || '',
     region: newTax.value.region || 'All',
     active: newTax.value.active,
-    createdAt: currentDate
+    createdAt: currentDate,
+    isDefault: newTax.value.isDefault || false
   })
   closeAddModal()
 }
@@ -220,9 +261,9 @@ function addTax(): void {
       <div class="mx-auto max-w-7xl">
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Taxes</h1>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Tax Rates</h1>
             <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage your tax rates and rules
+              Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location.
             </p>
           </div>
           <div class="mt-4 sm:mt-0">
@@ -289,7 +330,7 @@ function addTax(): void {
                     <tr>
                       <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
                         <button @click="toggleSort('name')" class="group inline-flex items-center">
-                          Tax Name
+                          Name
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'name'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
@@ -301,7 +342,7 @@ function addTax(): void {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
                         <button @click="toggleSort('rate')" class="group inline-flex items-center">
-                          Rate
+                          Rate (%)
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'rate'" :class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
@@ -326,6 +367,7 @@ function addTax(): void {
                       </th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Region</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
+                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Default</th>
                       <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
                         <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
                           Created
@@ -348,9 +390,7 @@ function addTax(): void {
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
                         {{ tax.name }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                        {{ tax.type === 'Percentage' ? `${tax.rate}%` : `$${tax.rate.toFixed(2)}` }}
-                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">{{ tax.rate }}%</td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                         {{ tax.type }}
                       </td>
@@ -361,9 +401,17 @@ function addTax(): void {
                         {{ tax.region }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                              :class="tax.active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'">
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
+                              :class="{
+                                'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400': tax.active,
+                                'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400': !tax.active
+                              }">
                           {{ tax.active ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                        <span v-if="tax.isDefault" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400">
+                          Default
                         </span>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 text-right">
@@ -397,100 +445,124 @@ function addTax(): void {
     <!-- Add Tax Modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
-
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Tax</h3>
-              <div class="mt-4">
-                <div class="space-y-4">
-                  <div>
-                    <label for="tax-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Name</label>
-                    <div class="mt-2">
-                      <input
-                        type="text"
-                        id="tax-name"
-                        v-model="newTax.name"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                      />
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label for="tax-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Rate</label>
-                      <div class="mt-2">
-                        <input
-                          type="number"
-                          id="tax-rate"
-                          v-model="newTax.rate"
-                          step="0.01"
-                          min="0"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label for="tax-type" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Type</label>
-                      <div class="mt-2">
-                        <select
-                          id="tax-type"
-                          v-model="newTax.type"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                        >
-                          <option value="Percentage">Percentage</option>
-                          <option value="Fixed">Fixed</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label for="tax-country" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Country</label>
-                    <div class="mt-2">
-                      <input
-                        type="text"
-                        id="tax-country"
-                        v-model="newTax.country"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label for="tax-region" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Region (leave empty for 'All')</label>
-                    <div class="mt-2">
-                      <input
-                        type="text"
-                        id="tax-region"
-                        v-model="newTax.region"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
-                      />
-                    </div>
-                  </div>
-                  <div class="flex items-center">
-                    <input
-                      id="tax-active"
-                      type="checkbox"
-                      v-model="newTax.active"
-                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700"
-                    />
-                    <label for="tax-active" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">Active</label>
-                  </div>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Tax Rate</h3>
+              <div class="mt-2">
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                  <p>Set up tax rates for different countries and regions where your SaaS products are sold.</p>
+                  <p class="mt-2">For digital services, tax is typically based on the customer's location rather than your business location.</p>
                 </div>
               </div>
             </div>
+
+            <div class="mt-4">
+              <div class="space-y-4">
+                <div>
+                  <label for="tax-name" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Name</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-name"
+                      type="text"
+                      v-model="newTax.name"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-rate" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Rate (%)</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-rate"
+                      type="number"
+                      step="0.01"
+                      v-model="newTax.rate"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                    />
+                  </div>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Enter the percentage rate (e.g., 20 for 20%)</p>
+                </div>
+
+                <div>
+                  <label for="tax-type" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Type</label>
+                  <div class="mt-1">
+                    <select
+                      id="tax-type"
+                      v-model="newTax.type"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                    >
+                      <option value="VAT">VAT</option>
+                      <option value="GST">GST</option>
+                      <option value="Sales Tax">Sales Tax</option>
+                      <option value="Digital Services Tax">Digital Services Tax</option>
+                      <option value="Consumption Tax">Consumption Tax</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-country" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Country</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-country"
+                      type="text"
+                      v-model="newTax.country"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-region" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Region</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-region"
+                      type="text"
+                      v-model="newTax.region"
+                      placeholder="All"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                    id="active"
+                    v-model="newTax.active"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700 dark:focus:ring-offset-blue-gray-800"
+                  >
+                  <label for="active" class="ml-2 block text-sm text-gray-900 dark:text-white">Active</label>
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                    id="isDefault"
+                    v-model="newTax.isDefault"
+                    type="checkbox"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700 dark:focus:ring-offset-blue-gray-800"
+                  >
+                  <label for="isDefault" class="ml-2 block text-sm text-gray-900 dark:text-white">Set as default tax rate</label>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">This tax rate will be applied to new SaaS subscriptions by default</p>
+              </div>
+            </div>
           </div>
+
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
-              @click="addTax"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              @click="addTax"
             >
               Add
             </button>
             <button
               type="button"
-              @click="closeAddModal"
               class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              @click="closeAddModal"
             >
               Cancel
             </button>
