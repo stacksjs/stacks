@@ -205,7 +205,8 @@ const sectionContent: Record<string, SectionContent> = {
         ]
       },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
-      { to: '/emails', icon: 'i-hugeicons-mailbox-01', text: 'Emails' },
+      { to: '/emails', icon: 'i-hugeicons-mail-01', text: 'Emails' },
+      { to: '/mailboxes', icon: 'i-hugeicons-mailbox-01', text: 'Mailboxes' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
     ]
   }
@@ -355,7 +356,7 @@ const switchTeam = (team: Team) => {
                   class="flex items-center justify-between cursor-pointer"
                   @click="toggleSection(sectionKey)"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 -ml-3">
                     <div
                       class="i-hugeicons-drag-drop-horizontal h-4 w-4 text-gray-400 cursor-move drag-handle"
                       @mousedown.stop

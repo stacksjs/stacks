@@ -26,7 +26,7 @@ ChartJS.register(
 )
 
 useHead({
-  title: 'Dashboard - Your Inbox',
+  title: 'Dashboard - Emails',
 })
 
 const timeRange = ref<'day' | 'week' | 'month' | 'year'>('day')
