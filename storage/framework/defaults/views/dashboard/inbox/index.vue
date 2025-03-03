@@ -546,7 +546,7 @@ onUnmounted(() => {
                           Analytics
                         </div>
                       </a>
-                      <a href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
+                      <a href="/inbox/settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
                         <div class="flex items-center">
                           <i class="i-hugeicons-settings-01 text-lg mr-2"></i>
                           Settings
