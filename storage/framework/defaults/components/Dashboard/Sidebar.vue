@@ -209,6 +209,7 @@ const sectionContent: Record<string, SectionContent> = {
     items: [
       { to: '/social', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/social/posts', icon: 'i-hugeicons-time-schedule', text: 'Posts' },
+      { to: '/social/reviews', icon: 'i-hugeicons-star', text: 'Reviews' },
       { to: '/social/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' },
       { to: '/social/settings', icon: 'i-hugeicons-settings-02', text: 'Settings' }
     ]
