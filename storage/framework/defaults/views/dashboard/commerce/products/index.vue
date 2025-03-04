@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { useLocalStorage } from '@vueuse/core'
 
 useHead({
   title: 'Dashboard - Commerce Products',
@@ -14,6 +15,7 @@ interface Product {
   price: number
   salePrice: number | null
   category: string
+  manufacturer: string
   tags: string[]
   imageUrl: string
   inventory: number
@@ -41,6 +43,7 @@ const products = ref<Product[]>([
     price: 12.99,
     salePrice: null,
     category: 'Burgers',
+    manufacturer: 'Burger Joint',
     tags: ['beef', 'cheese', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 100,
@@ -57,6 +60,7 @@ const products = ref<Product[]>([
     price: 14.99,
     salePrice: 12.99,
     category: 'Pizza',
+    manufacturer: 'Pizza Palace',
     tags: ['vegetarian', 'italian', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 80,
@@ -73,6 +77,7 @@ const products = ref<Product[]>([
     price: 11.99,
     salePrice: null,
     category: 'Salads',
+    manufacturer: 'Fresh Greens',
     tags: ['chicken', 'healthy'],
     imageUrl: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 50,
@@ -89,6 +94,7 @@ const products = ref<Product[]>([
     price: 15.99,
     salePrice: null,
     category: 'Asian',
+    manufacturer: 'Noodle House',
     tags: ['spicy', 'japanese', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 60,
@@ -105,6 +111,7 @@ const products = ref<Product[]>([
     price: 9.99,
     salePrice: 8.49,
     category: 'Wraps',
+    manufacturer: 'Wrap Masters',
     tags: ['vegetarian', 'healthy'],
     imageUrl: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 40,
@@ -121,6 +128,7 @@ const products = ref<Product[]>([
     price: 13.99,
     salePrice: null,
     category: 'Sandwiches',
+    manufacturer: 'Smokey BBQ',
     tags: ['pork', 'bbq'],
     imageUrl: 'https://images.unsplash.com/photo-1513185041617-8ab03f83d6c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 35,
@@ -137,6 +145,7 @@ const products = ref<Product[]>([
     price: 8.99,
     salePrice: null,
     category: 'Desserts',
+    manufacturer: 'Sweet Treats',
     tags: ['chocolate', 'sweet', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 45,
@@ -153,6 +162,7 @@ const products = ref<Product[]>([
     price: 5.99,
     salePrice: null,
     category: 'Beverages',
+    manufacturer: 'Coffee Co.',
     tags: ['coffee', 'cold'],
     imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 120,
@@ -169,6 +179,7 @@ const products = ref<Product[]>([
     price: 16.99,
     salePrice: 14.99,
     category: 'Appetizers',
+    manufacturer: 'Wing World',
     tags: ['chicken', 'spicy', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 70,
@@ -185,6 +196,7 @@ const products = ref<Product[]>([
     price: 13.49,
     salePrice: null,
     category: 'Asian',
+    manufacturer: 'Wok & Roll',
     tags: ['vegetarian', 'healthy'],
     imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 30,
@@ -201,6 +213,7 @@ const products = ref<Product[]>([
     price: 10.99,
     salePrice: null,
     category: 'Mexican',
+    manufacturer: 'Taco Time',
     tags: ['beef', 'spicy'],
     imageUrl: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 55,
@@ -217,6 +230,7 @@ const products = ref<Product[]>([
     price: 7.99,
     salePrice: null,
     category: 'Desserts',
+    manufacturer: 'Sweet Treats',
     tags: ['sweet', 'popular'],
     imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
     inventory: 25,
@@ -251,7 +265,7 @@ const sortBy = ref('dateAdded')
 const sortOrder = ref('desc')
 const categoryFilter = ref('all')
 const statusFilter = ref('all')
-const viewMode = ref('grid') // 'grid' or 'list'
+const viewMode = useLocalStorage('products-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available statuses
 const statuses = ['all', 'Active', 'Low Stock', 'Out of Stock', 'Discontinued']
@@ -360,6 +374,7 @@ function openAddProductModal(): void {
     price: 0,
     salePrice: null,
     category: '',
+    manufacturer: '',
     tags: [],
     imageUrl: '',
     inventory: 0,
@@ -403,6 +418,16 @@ function saveProduct(): void {
 const totalProducts = computed(() => products.value.length)
 const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
 const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
+
+// Function to delete a product
+function deleteProduct(productId: number): void {
+  if (confirm('Are you sure you want to delete this product?')) {
+    const index = products.value.findIndex(p => p.id === productId)
+    if (index !== -1) {
+      products.value.splice(index, 1)
+    }
+  }
+}
 </script>
 
 <template>
@@ -695,10 +720,12 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
             <thead class="bg-gray-50 dark:bg-blue-gray-700">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Product</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Manufacturer</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Category</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Price</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Inventory</th>
+                <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">Inventory</th>
+                <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-white">Created At</th>
                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span class="sr-only">Actions</span>
                 </th>
@@ -706,7 +733,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
               <tr v-if="paginatedProducts.length === 0">
-                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   No products found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -728,6 +755,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     </div>
                   </div>
                 </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.manufacturer }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.category }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
                   <div v-if="product.salePrice !== null">
@@ -741,14 +769,25 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     {{ product.status }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.inventory }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ product.inventory }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">{{ product.dateAdded }}</td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <button
-                    @click="openEditProductModal(product)"
-                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    Edit<span class="sr-only">, {{ product.name }}</span>
-                  </button>
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      @click="openEditProductModal(product)"
+                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <div class="i-hugeicons-pencil-01 h-5 w-5"></div>
+                      <span class="sr-only">Edit {{ product.name }}</span>
+                    </button>
+                    <button
+                      @click="deleteProduct(product.id)"
+                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <div class="i-hugeicons-trash-01 h-5 w-5"></div>
+                      <span class="sr-only">Delete {{ product.name }}</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -900,7 +939,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     </div>
                   </div>
 
-                  <!-- Category and inventory -->
+                  <!-- Category and manufacturer -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
                       <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
@@ -913,6 +952,20 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                       />
                     </div>
                     <div>
+                      <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
+                      <input
+                        type="text"
+                        id="product-manufacturer"
+                        v-model="currentProduct.manufacturer"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Inventory and status -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
                       <label for="product-inventory" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Inventory</label>
                       <input
                         type="number"
@@ -922,6 +975,16 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
                       />
+                    </div>
+                    <div>
+                      <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                      <select
+                        id="product-status"
+                        v-model="currentProduct.status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      >
+                        <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
+                      </select>
                     </div>
                   </div>
 
