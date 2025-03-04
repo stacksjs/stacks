@@ -170,7 +170,7 @@ onMounted(async () => {
                 class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm flex items-center"
                 :disabled="isLoading"
               >
-                <i class="i-hugeicons-check text-lg mr-2" v-if="!isLoading"></i>
+                <i class="i-hugeicons-checkmark-circle-02 text-lg mr-2" v-if="!isLoading"></i>
                 <i class="i-hugeicons-refresh animate-spin text-lg mr-2" v-else></i>
                 Save Changes
               </button>

@@ -480,7 +480,7 @@ function deleteReview(reviewId: number): void {
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-chat-bubble-text h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+                    <div class="i-hugeicons-bubble-chat h-6 w-6 text-blue-600 dark:text-blue-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -501,7 +501,7 @@ function deleteReview(reviewId: number): void {
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-green-100 p-2 dark:bg-green-900">
-                    <div class="i-hugeicons-check-circle h-6 w-6 text-green-600 dark:text-green-300"></div>
+                    <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-green-600 dark:text-green-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -543,7 +543,7 @@ function deleteReview(reviewId: number): void {
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-orange-100 p-2 dark:bg-orange-900">
-                    <div class="i-hugeicons-clock h-6 w-6 text-orange-600 dark:text-orange-300"></div>
+                    <div class="i-hugeicons-clock-01 h-6 w-6 text-orange-600 dark:text-orange-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -619,7 +619,7 @@ function deleteReview(reviewId: number): void {
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
                 ]"
               >
-                <div class="i-hugeicons-list-details h-5 w-5"></div>
+                <div class="i-hugeicons-grid h-5 w-5"></div>
               </button>
               <button
                 type="button"
@@ -631,7 +631,7 @@ function deleteReview(reviewId: number): void {
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
                 ]"
               >
-                <div class="i-hugeicons-list h-5 w-5"></div>
+                <div class="i-hugeicons-list-view h-5 w-5"></div>
               </button>
             </div>
           </div>
@@ -689,7 +689,7 @@ function deleteReview(reviewId: number): void {
         <!-- Detailed view -->
         <div v-if="viewMode === 'detailed'" class="mt-6">
           <div v-if="paginatedReviews.length === 0" class="py-12 text-center">
-            <div class="i-hugeicons-chat-bubble-text mx-auto h-12 w-12 text-gray-400"></div>
+            <div class="i-hugeicons-bubble-chat mx-auto h-12 w-12 text-gray-400"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No reviews found</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
@@ -772,7 +772,7 @@ function deleteReview(reviewId: number): void {
                     @click="toggleFeature(review)"
                     class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
                   >
-                    <div v-if="review.featured" class="i-hugeicons-star-slash h-4 w-4 mr-1"></div>
+                    <div v-if="review.featured" class="i-hugeicons-star-off h-4 w-4 mr-1"></div>
                     <div v-else class="i-hugeicons-star h-4 w-4 mr-1"></div>
                     {{ review.featured ? 'Unfeature' : 'Feature' }}
                   </button>
@@ -781,7 +781,7 @@ function deleteReview(reviewId: number): void {
                     @click="updateReviewStatus(review, 'Published')"
                     class="inline-flex items-center rounded-md bg-green-50 px-2.5 py-1.5 text-sm font-semibold text-green-700 shadow-sm ring-1 ring-inset ring-green-600/20 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
                   >
-                    <div class="i-hugeicons-check h-4 w-4 mr-1"></div>
+                    <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                     Approve
                   </button>
                   <button
@@ -789,21 +789,21 @@ function deleteReview(reviewId: number): void {
                     @click="updateReviewStatus(review, 'Rejected')"
                     class="inline-flex items-center rounded-md bg-red-50 px-2.5 py-1.5 text-sm font-semibold text-red-700 shadow-sm ring-1 ring-inset ring-red-600/20 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
                   >
-                    <div class="i-hugeicons-x-mark h-4 w-4 mr-1"></div>
+                    <div class="i-hugeicons-cancel-circle h-4 w-4 mr-1"></div>
                     Reject
                   </button>
                   <button
                     @click="openEditReviewModal(review)"
                     class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
                   >
-                    <div class="i-hugeicons-pencil-01 h-4 w-4 mr-1"></div>
+                    <div class="i-hugeicons-edit-01 h-4 w-4 mr-1"></div>
                     Edit
                   </button>
                   <button
                     @click="deleteReview(review.id)"
                     class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
                   >
-                    <div class="i-hugeicons-trash-01 h-4 w-4 mr-1"></div>
+                    <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                     Delete
                   </button>
                 </div>
@@ -979,7 +979,7 @@ function deleteReview(reviewId: number): void {
               class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">

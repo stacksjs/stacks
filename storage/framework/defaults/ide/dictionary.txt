@@ -345,6 +345,7 @@ typesense
 unconfig
 undeployed
 undeploys
+Unfeature
 unhead
 unimport
 universalify
