@@ -406,143 +406,138 @@ function updateChartType(type: string): void {
   chartType.value = type
 }
 
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  elements: {
-    line: {
-      tension: 0.4,
-    },
-  },
-}
-
 // Chart data computed properties
-const revenueChartData = computed(() => {
+const combinedChartData = computed(() => {
   const labels = filteredSalesData.value.map(day => {
     const date = new Date(day.date)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   })
 
+  // Define datasets with proper typing
   const datasets = [
     {
       label: 'Revenue',
       data: filteredSalesData.value.map(day => day.revenue),
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       borderColor: 'rgb(59, 130, 246)',
-      fill: true,
-    }
-  ]
-
-  // Add comparison data if available
-  if (showComparison.value && comparisonData.value) {
-    datasets.push({
-      label: 'Previous Period',
-      data: comparisonData.value.map(day => day.revenue),
-      borderColor: 'rgb(147, 197, 253)',
-      backgroundColor: 'rgba(147, 197, 253, 0.1)',
       fill: false,
-    })
-  }
-
-  return { labels, datasets }
-})
-
-const ordersChartData = computed(() => {
-  const labels = filteredSalesData.value.map(day => {
-    const date = new Date(day.date)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  })
-
-  const datasets = [
+      yAxisID: 'y-revenue',
+    },
     {
       label: 'Orders',
       data: filteredSalesData.value.map(day => day.orders),
       backgroundColor: 'rgba(16, 185, 129, 0.1)',
       borderColor: 'rgb(16, 185, 129)',
-      fill: true,
-    }
-  ]
-
-  // Add comparison data if available
-  if (showComparison.value && comparisonData.value) {
-    datasets.push({
-      label: 'Previous Period',
-      data: comparisonData.value.map(day => day.orders),
-      borderColor: 'rgb(167, 243, 208)',
-      backgroundColor: 'rgba(167, 243, 208, 0.1)',
       fill: false,
-    })
-  }
-
-  return { labels, datasets }
-})
-
-const aovChartData = computed(() => {
-  const labels = filteredSalesData.value.map(day => {
-    const date = new Date(day.date)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  })
-
-  const datasets = [
+      yAxisID: 'y-orders',
+    },
     {
       label: 'Average Order Value',
       data: filteredSalesData.value.map(day => day.averageOrderValue),
       backgroundColor: 'rgba(139, 92, 246, 0.1)',
       borderColor: 'rgb(139, 92, 246)',
-      fill: true,
+      fill: false,
+      yAxisID: 'y-aov',
     }
   ]
 
   // Add comparison data if available
   if (showComparison.value && comparisonData.value) {
     datasets.push({
-      label: 'Previous Period',
-      data: comparisonData.value.map(day => day.averageOrderValue),
-      borderColor: 'rgb(196, 181, 253)',
-      backgroundColor: 'rgba(196, 181, 253, 0.1)',
+      label: 'Revenue (Previous)',
+      data: comparisonData.value.map(day => day.revenue),
+      backgroundColor: 'rgba(147, 197, 253, 0.1)',
+      borderColor: 'rgb(147, 197, 253)',
       fill: false,
+      yAxisID: 'y-revenue',
+    })
+
+    datasets.push({
+      label: 'Orders (Previous)',
+      data: comparisonData.value.map(day => day.orders),
+      backgroundColor: 'rgba(167, 243, 208, 0.1)',
+      borderColor: 'rgb(167, 243, 208)',
+      fill: false,
+      yAxisID: 'y-orders',
+    })
+
+    datasets.push({
+      label: 'AOV (Previous)',
+      data: comparisonData.value.map(day => day.averageOrderValue),
+      backgroundColor: 'rgba(196, 181, 253, 0.1)',
+      borderColor: 'rgb(196, 181, 253)',
+      fill: false,
+      yAxisID: 'y-aov',
     })
   }
 
   return { labels, datasets }
 })
+
+// Simplified chart options to avoid type issues
+const combinedChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    'y-revenue': {
+      type: 'linear',
+      position: 'left',
+      title: {
+        display: true,
+        text: 'Revenue ($)',
+        color: 'rgb(59, 130, 246)',
+      },
+      ticks: {
+        color: 'rgb(59, 130, 246)',
+      },
+    },
+    'y-orders': {
+      type: 'linear',
+      position: 'right',
+      title: {
+        display: true,
+        text: 'Orders',
+        color: 'rgb(16, 185, 129)',
+      },
+      ticks: {
+        color: 'rgb(16, 185, 129)',
+      },
+      grid: {
+        drawOnChartArea: false,
+      },
+    },
+    'y-aov': {
+      type: 'linear',
+      position: 'right',
+      title: {
+        display: true,
+        text: 'AOV ($)',
+        color: 'rgb(139, 92, 246)',
+      },
+      ticks: {
+        color: 'rgb(139, 92, 246)',
+      },
+      grid: {
+        drawOnChartArea: false,
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+    },
+    tooltip: {
+      mode: 'index',
+      intersect: false,
+    },
+  },
+} as any // Using type assertion to bypass complex Chart.js typing issues
 
 const categoryChartData = computed(() => {
   return {
@@ -564,6 +559,16 @@ const categoryChartData = computed(() => {
     ]
   }
 })
+
+const categoryChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+} as any
 </script>
 
 <template>
@@ -731,64 +736,14 @@ const categoryChartData = computed(() => {
                     {{ selectedDateRange }} overview
                   </p>
                 </div>
-                <div class="mt-3 sm:mt-0">
-                  <div class="flex rounded-md shadow-sm">
-                    <button
-                      type="button"
-                      @click="updateChartType('revenue')"
-                      :class="[
-                        'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                        chartType === 'revenue'
-                          ? 'bg-blue-600 text-white ring-blue-600'
-                          : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                      ]"
-                    >
-                      Revenue
-                    </button>
-                    <button
-                      type="button"
-                      @click="updateChartType('orders')"
-                      :class="[
-                        'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                        chartType === 'orders'
-                          ? 'bg-blue-600 text-white ring-blue-600'
-                          : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                      ]"
-                    >
-                      Orders
-                    </button>
-                    <button
-                      type="button"
-                      @click="updateChartType('average_order_value')"
-                      :class="[
-                        'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                        chartType === 'average_order_value'
-                          ? 'bg-blue-600 text-white ring-blue-600'
-                          : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                      ]"
-                    >
-                      AOV
-                    </button>
-                  </div>
-                </div>
               </div>
 
               <!-- Chart visualization with Chart.js -->
               <div class="mt-6 h-80">
                 <Line
-                  v-if="chartType === 'revenue' && filteredSalesData.length > 0"
-                  :data="revenueChartData"
-                  :options="chartOptions"
-                />
-                <Line
-                  v-else-if="chartType === 'orders' && filteredSalesData.length > 0"
-                  :data="ordersChartData"
-                  :options="chartOptions"
-                />
-                <Line
-                  v-else-if="chartType === 'average_order_value' && filteredSalesData.length > 0"
-                  :data="aovChartData"
-                  :options="chartOptions"
+                  v-if="filteredSalesData.length > 0"
+                  :data="combinedChartData"
+                  :options="combinedChartOptions"
                 />
                 <div v-else class="h-full w-full rounded-lg bg-gray-100 dark:bg-blue-gray-700 flex items-center justify-center">
                   <div class="text-center">
@@ -861,7 +816,7 @@ const categoryChartData = computed(() => {
               <div class="mt-4 h-60">
                 <Bar
                   :data="categoryChartData"
-                  :options="chartOptions"
+                  :options="categoryChartOptions"
                 />
               </div>
 
