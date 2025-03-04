@@ -408,7 +408,7 @@ const licenseKeySearchQuery = ref('')
 const selectedLicenseStatus = ref('All')
 
 // Active tab state
-const activeTab = ref('methods') // 'methods', 'zones', 'rates', or 'digital'
+const activeTab = ref('methods') // 'methods', 'zones', 'rates', 'digital', 'license', or 'routes'
 
 // Status options
 const statusOptions = ['All', 'Active', 'Inactive']
@@ -532,14 +532,174 @@ const formatExpiry = (days: number | null) => {
 }
 
 // Format date display
-const formatDate = (dateString: string | null) => {
-  if (!dateString) return 'Not set'
-  return new Date(dateString).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  })
+const formatDate = (date: string | null | undefined): string => {
+  if (!date) return 'N/A';
+  return new Date(date).toLocaleDateString();
 }
+
+// Define route type
+interface DeliveryRoute {
+  id: number;
+  name: string;
+  driver: string;
+  vehicle: string;
+  startLocation: string;
+  stops: number;
+  avgDeliveryTime: number;
+  totalDistance: number;
+  status: string;
+  lastActive?: string;
+  startCoords: { lat: number; lng: number };
+  endCoords: { lat: number; lng: number };
+  waypoints: Array<{ lat: number; lng: number }>;
+}
+
+// Sample routes data
+const deliveryRoutes = ref<DeliveryRoute[]>([
+  {
+    id: 1,
+    name: 'San Francisco Downtown Route',
+    driver: 'John Smith',
+    vehicle: 'Van #103',
+    startLocation: 'SF Warehouse',
+    stops: 12,
+    avgDeliveryTime: 1.5,
+    totalDistance: 28.4,
+    status: 'Active',
+    startCoords: { lat: 37.7749, lng: -122.4194 },
+    endCoords: { lat: 37.7749, lng: -122.4194 },
+    waypoints: [
+      { lat: 37.7833, lng: -122.4167 },
+      { lat: 37.7694, lng: -122.4862 },
+      { lat: 37.7831, lng: -122.4039 }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Oakland Metro Route',
+    driver: 'Sarah Johnson',
+    vehicle: 'Truck #87',
+    startLocation: 'Oakland Depot',
+    stops: 18,
+    avgDeliveryTime: 1.2,
+    totalDistance: 32.7,
+    status: 'Active',
+    startCoords: { lat: 37.8044, lng: -122.2711 },
+    endCoords: { lat: 37.8044, lng: -122.2711 },
+    waypoints: [
+      { lat: 37.8115, lng: -122.2730 },
+      { lat: 37.7903, lng: -122.2165 },
+      { lat: 37.8270, lng: -122.2881 }
+    ]
+  },
+  {
+    id: 3,
+    name: 'San Jose Route',
+    driver: 'Michael Chen',
+    vehicle: 'Van #56',
+    startLocation: 'SJ Distribution Center',
+    stops: 15,
+    avgDeliveryTime: 1.8,
+    totalDistance: 41.2,
+    status: 'Inactive',
+    startCoords: { lat: 37.3382, lng: -121.8863 },
+    endCoords: { lat: 37.3382, lng: -121.8863 },
+    waypoints: [
+      { lat: 37.3541, lng: -121.9552 },
+      { lat: 37.3688, lng: -121.9129 },
+      { lat: 37.2971, lng: -121.8193 }
+    ]
+  },
+  {
+    id: 4,
+    name: 'Berkeley Campus Route',
+    driver: 'David Wilson',
+    vehicle: 'Car #22',
+    startLocation: 'Berkeley Hub',
+    stops: 8,
+    avgDeliveryTime: 0.9,
+    totalDistance: 12.5,
+    status: 'Active',
+    startCoords: { lat: 37.8719, lng: -122.2585 },
+    endCoords: { lat: 37.8719, lng: -122.2585 },
+    waypoints: [
+      { lat: 37.8715, lng: -122.2730 },
+      { lat: 37.8677, lng: -122.2597 },
+      { lat: 37.8742, lng: -122.2661 }
+    ]
+  },
+  {
+    id: 5,
+    name: 'Palo Alto Tech Route',
+    driver: 'Lisa Garcia',
+    vehicle: 'Van #78',
+    startLocation: 'PA Warehouse',
+    stops: 10,
+    avgDeliveryTime: 1.1,
+    totalDistance: 18.9,
+    status: 'Active',
+    startCoords: { lat: 37.4419, lng: -122.1430 },
+    endCoords: { lat: 37.4419, lng: -122.1430 },
+    waypoints: [
+      { lat: 37.4292, lng: -122.1381 },
+      { lat: 37.4419, lng: -122.1419 },
+      { lat: 37.4519, lng: -122.1519 }
+    ]
+  }
+])
+
+// Routes search and filter
+const routesSearchQuery = ref('')
+const selectedRouteStatus = ref('All')
+
+// Filtered routes
+const filteredRoutes = computed(() => {
+  return deliveryRoutes.value.filter(route => {
+    // Filter by search query
+    const matchesSearch =
+      route.name.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
+      route.driver.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
+      route.vehicle.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
+      route.startLocation.toLowerCase().includes(routesSearchQuery.value.toLowerCase())
+
+    // Filter by status
+    const matchesStatus = selectedRouteStatus.value === 'All' || route.status === selectedRouteStatus.value
+
+    return matchesSearch && matchesStatus
+  })
+})
+
+// Modal state for route map
+const showRouteMapModal = ref(false)
+const selectedRoute = ref<DeliveryRoute | null>(null)
+
+// Toggle route map modal
+const viewRouteOnMap = (routeItem: DeliveryRoute) => {
+  selectedRoute.value = routeItem
+  showRouteMapModal.value = true
+}
+
+const closeRouteMapModal = () => {
+  showRouteMapModal.value = false
+  selectedRoute.value = null
+}
+
+// Generate Google Maps URL for the selected route
+const getGoogleMapsEmbedUrl = computed(() => {
+  if (!selectedRoute.value) return ''
+
+  const origin = `${selectedRoute.value.startCoords.lat},${selectedRoute.value.startCoords.lng}`
+  const destination = `${selectedRoute.value.endCoords.lat},${selectedRoute.value.endCoords.lng}`
+
+  let waypointsParam = ''
+  if (selectedRoute.value.waypoints && selectedRoute.value.waypoints.length > 0) {
+    waypointsParam = selectedRoute.value.waypoints
+      .map(wp => `${wp.lat},${wp.lng}`)
+      .join('|')
+  }
+
+  return `https://www.google.com/maps/embed/v1/directions?key=YOUR_API_KEY&origin=${origin}&destination=${destination}${waypointsParam ? '&waypoints=' + waypointsParam : ''}&mode=driving`
+})
 </script>
 
 <template>
@@ -599,6 +759,30 @@ const formatDate = (dateString: string | null) => {
                 ]"
               >
                 Digital Delivery
+              </a>
+              <a
+                href="#"
+                @click.prevent="activeTab = 'license'"
+                :class="[
+                  activeTab === 'license'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+                ]"
+              >
+                License Keys
+              </a>
+              <a
+                href="#"
+                @click.prevent="activeTab = 'routes'"
+                :class="[
+                  activeTab === 'routes'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
+                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+                ]"
+              >
+                Delivery Routes
               </a>
             </nav>
           </div>
@@ -736,6 +920,9 @@ const formatDate = (dateString: string | null) => {
                           </span>
                         </td>
                         <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" @click="viewRouteOnMap(route as DeliveryRoute)">
+                            View Map
+                          </button>
                           <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                             Edit
                           </button>
@@ -940,50 +1127,45 @@ const formatDate = (dateString: string | null) => {
             </div>
           </div>
 
-          <!-- Digital Delivery Content -->
+          <!-- Digital Delivery Section -->
           <div v-if="activeTab === 'digital'" class="mt-4">
-            <div class="pb-5 border-b border-gray-200 dark:border-gray-700 sm:flex sm:items-center sm:justify-between">
-              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Digital Delivery Methods</h3>
-            </div>
-
-            <!-- Digital Delivery filters -->
-            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
                 <!-- Search -->
-                <div class="relative rounded-md shadow-sm w-full sm:w-80">
+                <div class="relative rounded-md shadow-sm">
                   <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                     <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     v-model="digitalSearchQuery"
                     type="text"
-                    class="block w-full rounded-md border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
                     placeholder="Search digital delivery methods..."
                   />
                 </div>
 
                 <!-- Status filter -->
-                <div class="relative w-full sm:w-52">
+                <div class="relative">
                   <select
                     v-model="selectedDigitalStatus"
-                    class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
                   >
-                    <option v-for="status in ['All', 'Active', 'Inactive']" :key="status" :value="status">
+                    <option v-for="status in statusOptions" :key="status" :value="status">
                       {{ status }} Status
                     </option>
                   </select>
                 </div>
               </div>
 
-              <!-- Add Digital Delivery button -->
+              <!-- Add Digital Method button -->
               <div class="mt-4 sm:mt-0">
                 <button
                   @click="toggleAddDigitalMethodModal"
                   type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                 >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-                  Add Digital Delivery Method
+                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
+                  Add Digital Method
                 </button>
               </div>
             </div>
@@ -996,7 +1178,7 @@ const formatDate = (dateString: string | null) => {
                     <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
                       <thead class="bg-gray-50 dark:bg-blue-gray-700">
                         <tr>
-                          <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
+                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
                           <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Description</th>
                           <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Download Limit</th>
                           <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Expiry Days</th>
@@ -1047,6 +1229,150 @@ const formatDate = (dateString: string | null) => {
                             <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
                               Delete
                             </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination for Digital Delivery -->
+          <div v-if="activeTab === 'digital'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+            <div class="flex flex-1 justify-between sm:hidden">
+              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
+              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredDigitalMethods.length }}</span> of <span class="font-medium">{{ filteredDigitalMethods.length }}</span> results
+                </p>
+              </div>
+              <div>
+                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                  </a>
+                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
+                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
+                    <span class="sr-only">Next</span>
+                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                  </a>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          <!-- License Keys Section -->
+          <div v-if="activeTab === 'license'" class="mt-4">
+            <div class="pb-5 sm:flex sm:items-center sm:justify-between">
+              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">License Keys</h3>
+
+              <div class="mt-3 sm:mt-0 sm:ml-4">
+                <button
+                  @click="toggleAddLicenseKeyModal"
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+                  Add License Key
+                </button>
+              </div>
+            </div>
+
+            <!-- License Keys filters -->
+            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
+                <!-- Search -->
+                <div class="relative rounded-md shadow-sm w-full sm:w-80">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    v-model="licenseKeySearchQuery"
+                    type="text"
+                    class="block w-full rounded-md border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+                    placeholder="Search license keys..."
+                  />
+                </div>
+
+                <!-- Status filter -->
+                <div class="relative w-full sm:w-52">
+                  <select
+                    v-model="selectedLicenseStatus"
+                    class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+                  >
+                    <option v-for="status in ['All', 'Active', 'Inactive', 'Revoked', 'Unassigned']" :key="status" :value="status">
+                      {{ status }} Status
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- License Keys Table -->
+            <div class="mt-6 flow-root">
+              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                        <tr>
+                          <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Key</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Template</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Customer</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Product</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Order ID</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date Created</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Expiry Date</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+                        <tr v-for="licenseKey in filteredLicenseKeys" :key="licenseKey.id">
+                          <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                            {{ licenseKey.key }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ licenseKeyTemplates.find(t => t.id === licenseKey.templateId)?.name || 'Unknown' }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ licenseKey.customerName }}
+                            <div class="text-xs text-gray-400 dark:text-gray-500">{{ licenseKey.customerEmail }}</div>
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ licenseKey.productName }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ licenseKey.orderId }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ formatDate(licenseKey.dateCreated) }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
+                            {{ formatDate(licenseKey.expiryDate) }}
+                          </td>
+                          <td class="whitespace-nowrap px-4 py-4.5 text-sm">
+                            <span
+                              class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
+                              :class="{
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': licenseKey.status === 'Active',
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': licenseKey.status === 'Inactive',
+                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': licenseKey.status === 'Revoked',
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': licenseKey.status === 'Unassigned'
+                              }"
+                            >
+                              {{ licenseKey.status }}
+                            </span>
+                          </td>
+                          <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800" @click="viewLicenseKey(licenseKey)">View</button>
+                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 ml-2">Edit</button>
                           </td>
                         </tr>
                       </tbody>
@@ -1138,111 +1464,6 @@ const formatDate = (dateString: string | null) => {
             </div>
           </div>
 
-          <!-- License Keys Section -->
-          <div v-if="activeTab === 'digital'" class="mt-4">
-            <div class="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <div class="pb-5 sm:flex sm:items-center sm:justify-between">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">License Keys</h3>
-              </div>
-            </div>
-
-            <!-- License Keys filters -->
-            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                <!-- Search -->
-                <div class="relative rounded-md shadow-sm w-full sm:w-80">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    v-model="licenseKeySearchQuery"
-                    type="text"
-                    class="block w-full rounded-md border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                    placeholder="Search license keys..."
-                  />
-                </div>
-
-                <!-- Status filter -->
-                <div class="relative w-full sm:w-52">
-                  <select
-                    v-model="selectedLicenseStatus"
-                    class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option v-for="status in ['All', 'Active', 'Inactive', 'Revoked', 'Unassigned']" :key="status" :value="status">
-                      {{ status }} Status
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Add License Key button -->
-              <div class="mt-4 sm:mt-0">
-                <button
-                  @click="toggleAddLicenseKeyModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-                  Add License Key
-                </button>
-              </div>
-            </div>
-
-            <!-- License Keys Table -->
-            <div class="mt-6 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Key</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Template</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Customer</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Product</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="licenseKey in filteredLicenseKeys" :key="licenseKey.id">
-                          <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ licenseKey.key }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKeyTemplates.find(t => t.id === licenseKey.templateId)?.name || 'Unknown' }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKey.customerName }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKey.productName }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm">
-                            <span
-                              class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': licenseKey.status === 'Active',
-                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': licenseKey.status === 'Inactive',
-                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': licenseKey.status === 'Revoked',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': licenseKey.status === 'Unassigned'
-                              }"
-                            >
-                              {{ licenseKey.status }}
-                            </span>
-                          </td>
-                          <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800" @click="viewLicenseKey(licenseKey)">View</button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
           <!-- Pagination for Methods -->
           <div v-if="activeTab === 'methods'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
             <div class="flex flex-1 justify-between sm:hidden">
@@ -1272,7 +1493,7 @@ const formatDate = (dateString: string | null) => {
           </div>
 
           <!-- Pagination for License Keys -->
-          <div v-if="activeTab === 'digital'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+          <div v-if="activeTab === 'license'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
             <div class="flex flex-1 justify-between sm:hidden">
               <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
               <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
@@ -1291,6 +1512,157 @@ const formatDate = (dateString: string | null) => {
                   </a>
                   <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
                   <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
+                    <span class="sr-only">Next</span>
+                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                  </a>
+                </nav>
+              </div>
+            </div>
+          </div>
+
+          <!-- Routes search and filter -->
+          <div v-if="activeTab === 'routes'" class="mt-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+                <!-- Search -->
+                <div class="relative rounded-md shadow-sm">
+                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    v-model="routesSearchQuery"
+                    type="text"
+                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+                    placeholder="Search delivery routes..."
+                  />
+                </div>
+
+                <!-- Status filter -->
+                <div class="relative">
+                  <select
+                    v-model="selectedRouteStatus"
+                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+                  >
+                    <option v-for="status in ['All', 'Active', 'Inactive']" :key="status" :value="status">
+                      {{ status }} Status
+                    </option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Add Route button -->
+              <div class="mt-4 sm:mt-0">
+                <button
+                  @click="toggleAddZoneModal"
+                  type="button"
+                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                >
+                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
+                  Add Route
+                </button>
+              </div>
+            </div>
+
+            <!-- Routes Table -->
+            <div class="mt-8 flow-root">
+              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                        <tr>
+                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Driver</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Vehicle</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Start Location</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Stops</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Average Delivery Time</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Total Distance</th>
+                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Last Active</th>
+                          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                            <span class="sr-only">Actions</span>
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+                        <tr v-for="route in filteredRoutes" :key="route.id">
+                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
+                            {{ route.name }}
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.driver }}
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.vehicle }}
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm">
+                            <span
+                              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+                              :class="{
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': route.status === 'Active',
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': route.status === 'Inactive'
+                              }"
+                            >
+                              {{ route.status }}
+                            </span>
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.startLocation }}
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.stops }}
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.avgDeliveryTime }} hours
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ route.totalDistance }} km
+                          </td>
+                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                            {{ formatDate(route.lastActive) }}
+                          </td>
+                          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" @click="viewRouteOnMap(route)">
+                              View Map
+                            </button>
+                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                              Edit
+                            </button>
+                            <span class="mx-2 text-gray-300 dark:text-gray-600">|</span>
+                            <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination for Routes -->
+          <div v-if="activeTab === 'routes'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
+            <div class="flex flex-1 justify-between sm:hidden">
+              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
+              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
+            </div>
+            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredRoutes.length }}</span> of <span class="font-medium">{{ filteredRoutes.length }}</span> results
+                </p>
+              </div>
+              <div>
+                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                  </a>
+                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
+                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Next</span>
                     <div class="i-hugeicons-chevron-right h-5 w-5" />
                   </a>
@@ -1648,6 +2020,69 @@ const formatDate = (dateString: string | null) => {
         <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
           <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="toggleAddLicenseKeyModal">Generate License Key</button>
           <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-600" @click="toggleAddLicenseKeyModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for viewing route on map -->
+  <div v-if="showRouteMapModal" class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+        <div>
+          <div class="mt-3 text-center sm:mt-5">
+            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">{{ selectedRoute?.name }} - Route Map</h3>
+            <div class="mt-6">
+              <div class="aspect-w-16 aspect-h-9 w-full">
+                <iframe
+                  :src="getGoogleMapsEmbedUrl"
+                  class="w-full h-96 border-0"
+                  allowfullscreen="true"
+                  loading="lazy"
+                  referrerpolicy="no-referrer-when-downgrade"
+                ></iframe>
+              </div>
+              <div class="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Route Details</h4>
+                  <dl class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="mt-1 flex justify-between">
+                      <dt>Driver:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.driver }}</dd>
+                    </div>
+                    <div class="mt-1 flex justify-between">
+                      <dt>Vehicle:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.vehicle }}</dd>
+                    </div>
+                    <div class="mt-1 flex justify-between">
+                      <dt>Start Location:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.startLocation }}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <div>
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Delivery Metrics</h4>
+                  <dl class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    <div class="mt-1 flex justify-between">
+                      <dt>Total Stops:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.stops }}</dd>
+                    </div>
+                    <div class="mt-1 flex justify-between">
+                      <dt>Average Delivery Time:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.avgDeliveryTime }} hours</dd>
+                    </div>
+                    <div class="mt-1 flex justify-between">
+                      <dt>Total Distance:</dt>
+                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.totalDistance }} km</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 sm:mt-8 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="closeRouteMapModal">Close</button>
         </div>
       </div>
     </div>
