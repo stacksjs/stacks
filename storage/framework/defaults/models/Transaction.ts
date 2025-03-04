@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -6,7 +5,7 @@ export default {
   name: 'Transaction',
   table: 'transactions',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: false,
 
   traits: {
     useUuid: true,
@@ -33,16 +32,6 @@ export default {
   belongsTo: ['Order'],
 
   attributes: {
-    order_id: {
-      required: true,
-      order: 1,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker: Faker) => faker.string.uuid(),
-    },
-
     amount: {
       required: true,
       order: 2,
@@ -50,7 +39,7 @@ export default {
       validation: {
         rule: schema.number().min(0.01),
       },
-      factory: (faker: Faker) => Number.parseFloat(faker.commerce.price({ min: 5, max: 500, dec: 2 })),
+      factory: faker => Number.parseFloat(faker.commerce.price({ min: 5, max: 500, dec: 2 })),
     },
 
     status: {
@@ -60,7 +49,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED']),
+      factory: faker => faker.helpers.arrayElement(['PENDING', 'COMPLETED', 'FAILED', 'REFUNDED']),
     },
 
     payment_method: {
@@ -70,19 +59,18 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement(['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET']),
+      factory: faker => faker.helpers.arrayElement(['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET']),
     },
 
     payment_details: {
       required: false,
       order: 5,
       fillable: true,
-      hidden: true, // Since this contains sensitive information
+      hidden: true,
       validation: {
-        rule: schema.string(), // Store as JSON string
+        rule: schema.string(),
       },
-      factory: (faker: Faker) => {
-        // Generate mock payment details based on payment method
+      factory: (faker) => {
         const paymentMethod = faker.helpers.arrayElement(['CREDIT_CARD', 'DEBIT_CARD', 'CASH', 'WALLET'])
 
         let details
@@ -116,7 +104,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.string.alphanumeric(16).toUpperCase(),
+      factory: faker => faker.string.alphanumeric(16).toUpperCase(),
     },
 
     loyalty_points_earned: {
@@ -126,7 +114,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => faker.number.int({ min: 0, max: 100 }),
+      factory: faker => faker.number.int({ min: 0, max: 100 }),
     },
 
     loyalty_points_redeemed: {
@@ -136,7 +124,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => faker.number.int({ min: 0, max: 50 }),
+      factory: faker => faker.number.int({ min: 0, max: 50 }),
     },
   },
 

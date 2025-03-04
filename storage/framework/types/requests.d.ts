@@ -233,8 +233,6 @@ export interface PostRequestType extends Request {
 
 interface RequestDataOrderItem {
   id: number
-  order_id: string
-  product_id: number
   quantity: number
   price: number
   special_instructions: string
@@ -243,12 +241,10 @@ interface RequestDataOrderItem {
 }
 export interface OrderItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'order_id' | 'special_instructions') => string) & ((key: 'product_id' | 'quantity' | 'price') => number)
+  get: ((key: 'id') => number) & ((key: 'quantity' | 'price') => number) & ((key: 'special_instructions') => string)
 
   all: () => RequestDataOrderItem
   id: number
-  order_id: string
-  product_id: number
   quantity: number
   price: number
   special_instructions: string
@@ -320,15 +316,15 @@ interface RequestDataProduct {
   inventory_count: number
   category_id: string
   preparation_time: number
-  allergens: string // Store as JSON string
-  nutritional_info: string // Store as JSON string
+  allergens: string
+  nutritional_info: string
   product_category_id: number
   created_at?: Date
   updated_at?: Date
 }
 export interface ProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'image_url' | 'category_id') => string) & ((key: 'price' | 'inventory_count' | 'preparation_time') => number) & ((key: 'is_available') => boolean) & ((key: 'allergens' | 'nutritional_info') => string) & ((key: 'product_category_id') => string)
+  get: ((key: 'id') => number) & ((key: 'name' | 'description' | 'image_url' | 'category_id' | 'allergens' | 'nutritional_info') => string) & ((key: 'price' | 'inventory_count' | 'preparation_time') => number) & ((key: 'is_available') => boolean) & ((key: 'product_category_id') => string)
 
   all: () => RequestDataProduct
   id: number
@@ -340,8 +336,8 @@ export interface ProductRequestType extends Request {
   inventory_count: number
   category_id: string
   preparation_time: number
-  allergens: string // Store as JSON string
-  nutritional_info: string // Store as JSON string
+  allergens: string
+  nutritional_info: string
   product_category_id: number
   created_at?: Date
   updated_at?: Date
@@ -497,9 +493,9 @@ interface RequestDataOrder {
   order_type: string
   delivery_address: string
   special_instructions: string
-  estimated_delivery_time: string // Store as ISO date string
+  estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string // Store as JSON string
+  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number
@@ -508,7 +504,7 @@ interface RequestDataOrder {
 }
 export interface OrderRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'customer_id' | 'status' | 'order_type' | 'delivery_address' | 'special_instructions' | 'applied_coupon_id') => string) & ((key: 'total_amount' | 'tax_amount' | 'discount_amount' | 'delivery_fee' | 'tip_amount') => number) & ((key: 'estimated_delivery_time') => string) & ((key: 'order_items') => string) & ((key: 'customer_id') => string) & ((key: 'gift_card_id') => string) & ((key: 'coupon_id') => string)
+  get: ((key: 'id') => number) & ((key: 'customer_id' | 'status' | 'order_type' | 'delivery_address' | 'special_instructions' | 'estimated_delivery_time' | 'applied_coupon_id' | 'order_items') => string) & ((key: 'total_amount' | 'tax_amount' | 'discount_amount' | 'delivery_fee' | 'tip_amount') => number) & ((key: 'customer_id') => string) & ((key: 'gift_card_id') => string) & ((key: 'coupon_id') => string)
 
   all: () => RequestDataOrder
   id: number
@@ -522,9 +518,9 @@ export interface OrderRequestType extends Request {
   order_type: string
   delivery_address: string
   special_instructions: string
-  estimated_delivery_time: string // Store as ISO date string
+  estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string // Store as JSON string
+  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number
@@ -577,11 +573,10 @@ export interface CouponRequestType extends Request {
 
 interface RequestDataTransaction {
   id: number
-  order_id: string
   amount: number
   status: string
   payment_method: string
-  payment_details: string // Store as JSON string
+  payment_details: string
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number
@@ -590,15 +585,14 @@ interface RequestDataTransaction {
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'order_id' | 'status' | 'payment_method' | 'transaction_reference') => string) & ((key: 'amount' | 'loyalty_points_earned' | 'loyalty_points_redeemed') => number) & ((key: 'payment_details') => string) // Store as JSON string
+  get: ((key: 'id') => number) & ((key: 'amount' | 'loyalty_points_earned' | 'loyalty_points_redeemed') => number) & ((key: 'status' | 'payment_method' | 'payment_details' | 'transaction_reference') => string)
 
   all: () => RequestDataTransaction
   id: number
-  order_id: string
   amount: number
   status: string
   payment_method: string
-  payment_details: string // Store as JSON string
+  payment_details: string
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number

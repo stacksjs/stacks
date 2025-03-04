@@ -29,8 +29,6 @@ export interface Attributes {
   password: string
   title: string
   body: string
-  order_id: string
-  product_id: number
   quantity: number
   price: number
   special_instructions: string
@@ -48,8 +46,8 @@ export interface Attributes {
   inventory_count: number
   category_id: string
   preparation_time: number
-  allergens: string // Store as JSON string
-  nutritional_info: string // Store as JSON string
+  allergens: string
+  nutritional_info: string
   type: string
   last_four: number
   brand: string
@@ -86,9 +84,9 @@ export interface Attributes {
   tip_amount: number
   order_type: string
   delivery_address: string
-  estimated_delivery_time: string // Store as ISO date string
+  estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string // Store as JSON string
+  order_items: string
   discount_type: string
   discount_value: number
   min_order_amount: number
@@ -101,7 +99,7 @@ export interface Attributes {
   applicable_products: string
   applicable_categories: string
   payment_method: string
-  payment_details: string // Store as JSON string
+  payment_details: string
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number

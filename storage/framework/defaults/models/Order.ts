@@ -6,7 +6,7 @@ export default {
   name: 'Order',
   table: 'orders',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: false,
 
   traits: {
     useUuid: true,
@@ -115,7 +115,7 @@ export default {
     },
 
     delivery_address: {
-      required: false, // Will be validated conditionally based on order_type
+      required: false,
       order: 9,
       fillable: true,
       validation: {
@@ -139,7 +139,7 @@ export default {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.string(), // Store as ISO date string
+        rule: schema.string(),
       },
       factory: (faker: Faker) => {
         const now = new Date()
@@ -163,7 +163,7 @@ export default {
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.string(), // Store as JSON string
+        rule: schema.string(),
       },
       factory: (faker: Faker) => {
         const itemCount = faker.number.int({ min: 1, max: 5 })

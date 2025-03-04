@@ -14,26 +14,6 @@ export default {
   belongsTo: ['Order', 'Product'],
 
   attributes: {
-    order_id: {
-      required: true,
-      order: 1,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: () => '', // This will be filled by the Order factory
-    },
-
-    product_id: {
-      required: true,
-      order: 2,
-      fillable: true,
-      validation: {
-        rule: schema.number(),
-      },
-      factory: faker => faker.number.int({ min: 1, max: 50 }), // Assuming 50 products
-    },
-
     quantity: {
       required: true,
       default: 1,

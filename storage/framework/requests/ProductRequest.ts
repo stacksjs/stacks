@@ -21,8 +21,8 @@ interface RequestDataProduct {
   inventory_count: number
   category_id: string
   preparation_time: number
-  allergens: string // Store as JSON string
-  nutritional_info: string // Store as JSON string
+  allergens: string
+  nutritional_info: string
   product_category_id: number
   created_at?: Date
   updated_at?: Date

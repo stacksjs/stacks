@@ -13,8 +13,6 @@ interface CustomAttributes {
 }
 interface RequestDataOrderItem {
   id: number
-  order_id: string
-  product_id: number
   quantity: number
   price: number
   special_instructions: string
@@ -23,8 +21,6 @@ interface RequestDataOrderItem {
 }
 export class OrderItemRequest extends Request<RequestDataOrderItem> implements OrderItemRequestType {
   public id = 1
-  public order_id = ''
-  public product_id = 0
   public quantity = 0
   public price = 0
   public special_instructions = ''

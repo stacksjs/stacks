@@ -13,11 +13,10 @@ interface CustomAttributes {
 }
 interface RequestDataTransaction {
   id: number
-  order_id: string
   amount: number
   status: string
   payment_method: string
-  payment_details: string // Store as JSON string
+  payment_details: string
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number
@@ -26,7 +25,6 @@ interface RequestDataTransaction {
 }
 export class TransactionRequest extends Request<RequestDataTransaction> implements TransactionRequestType {
   public id = 1
-  public order_id = ''
   public amount = 0
   public status = ''
   public payment_method = ''

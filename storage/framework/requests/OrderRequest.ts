@@ -23,9 +23,9 @@ interface RequestDataOrder {
   order_type: string
   delivery_address: string
   special_instructions: string
-  estimated_delivery_time: string // Store as ISO date string
+  estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string // Store as JSON string
+  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number

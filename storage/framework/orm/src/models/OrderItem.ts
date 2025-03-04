@@ -18,8 +18,6 @@ export interface OrderItemsTable {
   order?: OrderModel
   product_id?: number
   product?: ProductModel
-  order_id?: string
-  product_id?: number
   quantity?: number
   price?: number
   special_instructions?: string
@@ -60,7 +58,7 @@ interface QueryOptions {
 
 export class OrderItemModel {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
-  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['order_id', 'product_id', 'quantity', 'price', 'special_instructions', 'uuid']
+  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes: Partial<OrderItemJsonResponse> = {}
   protected originalAttributes: Partial<OrderItemJsonResponse> = {}
@@ -158,14 +156,6 @@ export class OrderItemModel {
     return this.attributes.id
   }
 
-  get order_id(): string | undefined {
-    return this.attributes.order_id
-  }
-
-  get product_id(): number | undefined {
-    return this.attributes.product_id
-  }
-
   get quantity(): number | undefined {
     return this.attributes.quantity
   }
@@ -184,14 +174,6 @@ export class OrderItemModel {
 
   get updated_at(): Date | undefined {
     return this.attributes.updated_at
-  }
-
-  set order_id(value: string) {
-    this.attributes.order_id = value
-  }
-
-  set product_id(value: number) {
-    this.attributes.product_id = value
   }
 
   set quantity(value: number) {
@@ -1129,22 +1111,6 @@ export class OrderItemModel {
     return instance
   }
 
-  static whereOrderId(value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('order_id', '=', value)
-
-    return instance
-  }
-
-  static whereProductId(value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('product_id', '=', value)
-
-    return instance
-  }
-
   static whereQuantity(value: string): OrderItemModel {
     const instance = new OrderItemModel(null)
 
@@ -1706,8 +1672,6 @@ export class OrderItemModel {
     const output: Partial<OrderItemJsonResponse> = {
 
       id: this.id,
-      order_id: this.order_id,
-      product_id: this.product_id,
       quantity: this.quantity,
       price: this.price,
       special_instructions: this.special_instructions,
@@ -1768,20 +1732,6 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('order_items')
     .where('id', '=', id)
     .execute()
-}
-
-export async function whereOrderId(value: string): Promise<OrderItemModel[]> {
-  const query = DB.instance.selectFrom('order_items').where('order_id', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: OrderItemModel) => new OrderItemModel(modelItem))
-}
-
-export async function whereProductId(value: number): Promise<OrderItemModel[]> {
-  const query = DB.instance.selectFrom('order_items').where('product_id', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: OrderItemModel) => new OrderItemModel(modelItem))
 }
 
 export async function whereQuantity(value: number): Promise<OrderItemModel[]> {
