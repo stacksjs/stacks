@@ -144,8 +144,8 @@ export async function fetchStats(): Promise<CustomerStats> {
 
   const topSpenders = await db
     .selectFrom('customers')
-    .select(['id', 'name', 'email', 'totalSpent'])
-    .orderBy('totalSpent', 'desc')
+    .select(['id', 'name', 'email', 'total_spent'])
+    .orderBy('total_spent', 'desc')
     .limit(5)
     .execute()
 
