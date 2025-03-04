@@ -34,6 +34,20 @@ export interface Attributes {
   payload: string
   exception: string
   failed_at: Date | string
+  phone: string
+  orders: number
+  total_spent: number
+  last_order: string
+  avatar: string
+  user_id: undefined
+  price: number
+  image_url: string
+  is_available: boolean
+  inventory_count: number
+  category_id: string
+  preparation_time: number
+  allergens: string // Store as JSON string
+  nutritional_info: string // Store as JSON string
   type: string
   last_four: number
   brand: string
@@ -48,6 +62,54 @@ export interface Attributes {
   memory_usage: number
   user_agent: string
   error_message: string
+  code: string
+  initial_balance: number
+  current_balance: number
+  currency: string
+  purchaser_id: string
+  recipient_email: string
+  recipient_name: string
+  personal_message: string
+  is_digital: boolean
+  is_reloadable: boolean
+  is_active: boolean
+  expiry_date: string
+  last_used_date: string
+  template_id: string
+  customer_id: string
+  total_amount: number
+  tax_amount: number
+  discount_amount: number
+  delivery_fee: number
+  tip_amount: number
+  order_type: string
+  delivery_address: string
+  special_instructions: string
+  estimated_delivery_time: string // Store as ISO date string
+  applied_coupon_id: string
+  order_items: string // Store as JSON string
+  discount_type: string
+  discount_value: number
+  min_order_amount: number
+  max_discount_amount: number
+  free_product_id: string
+  usage_limit: number
+  usage_count: number
+  start_date: string
+  end_date: string
+  applicable_products: string
+  applicable_categories: string
+  order_id: string
+  payment_method: string
+  payment_details: string // Store as JSON string
+  transaction_reference: string
+  loyalty_points_earned: number
+  loyalty_points_redeemed: number
+  wallet_id: string
+  points: number
+  source: string
+  source_reference_id: string
+  is_used: boolean
   attempts: number
   available_at: number
   reserved_at: Date | string
@@ -60,7 +122,13 @@ export interface Attributes {
   ends_at: string
   key: number
   image: string
+  points_required: number
+  reward_type: string
+  discount_percentage: number
+  expiry_days: number
   message: string
   stack: string
   additional_info: string
+  parent_category_id: string
+  display_order: number
 }

@@ -1,0 +1,1943 @@
+import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
+import type { OrderModel } from './Order'
+import type { UserModel } from './User'
+import { randomUUIDv7 } from 'bun'
+import { cache } from '@stacksjs/cache'
+import { sql } from '@stacksjs/database'
+import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { dispatch } from '@stacksjs/events'
+
+import { DB, SubqueryBuilder } from '@stacksjs/orm'
+
+import User from './User'
+
+export interface CustomersTable {
+  id?: number
+  orders?: OrderModel[] | undefined
+  user_id?: number
+  user?: UserModel
+  name?: string
+  email?: string
+  phone?: string
+  orders?: number
+  total_spent?: number
+  last_order?: string
+  status?: string[]
+  avatar?: string
+  user_id?: undefined
+  uuid?: string
+
+  created_at?: Date
+
+  updated_at?: Date
+
+}
+
+interface CustomerResponse {
+  data: CustomerJsonResponse[]
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export interface CustomerJsonResponse extends Omit<CustomersTable, 'password'> {
+  [key: string]: any
+}
+
+export type CustomerType = Selectable<CustomersTable>
+export type NewCustomer = Partial<Insertable<CustomersTable>>
+export type CustomerUpdate = Updateable<CustomersTable>
+
+      type SortDirection = 'asc' | 'desc'
+interface SortOptions { column: CustomerType, order: SortDirection }
+// Define a type for the options parameter
+interface QueryOptions {
+  sort?: SortOptions
+  limit?: number
+  offset?: number
+  page?: number
+}
+
+export class CustomerModel {
+  private readonly hidden: Array<keyof CustomerJsonResponse> = []
+  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'orders', 'total_spent', 'last_order', 'status', 'avatar', 'user_id', 'uuid']
+  private readonly guarded: Array<keyof CustomerJsonResponse> = []
+  protected attributes: Partial<CustomerJsonResponse> = {}
+  protected originalAttributes: Partial<CustomerJsonResponse> = {}
+
+  protected selectFromQuery: any
+  protected withRelations: string[]
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
+  protected hasSelect: boolean
+  private hasSaved: boolean
+  private customColumns: Record<string, unknown> = {}
+
+  constructor(customer: Partial<CustomerType> | null) {
+    if (customer) {
+      this.attributes = { ...customer }
+      this.originalAttributes = { ...customer }
+
+      Object.keys(customer).forEach((key) => {
+        if (!(key in this)) {
+          this.customColumns[key] = (customer as CustomerJsonResponse)[key]
+        }
+      })
+    }
+
+    this.withRelations = []
+    this.selectFromQuery = DB.instance.selectFrom('customers')
+    this.updateFromQuery = DB.instance.updateTable('customers')
+    this.deleteFromQuery = DB.instance.deleteFrom('customers')
+    this.hasSelect = false
+    this.hasSaved = false
+  }
+
+  mapCustomGetters(models: CustomerJsonResponse | CustomerJsonResponse[]): void {
+    const data = models
+
+    if (Array.isArray(data)) {
+      data.map((model: CustomerJsonResponse) => {
+        const customGetter = {
+          default: () => {
+          },
+
+          fullContactInfo: () => {
+            return `${model.name} (${attributes.email}, ${attributes.phone})`
+          },
+
+        }
+
+        for (const [key, fn] of Object.entries(customGetter)) {
+          model[key] = fn()
+        }
+
+        return model
+      })
+    }
+    else {
+      const model = data
+
+      const customGetter = {
+        default: () => {
+        },
+
+        fullContactInfo: () => {
+          return `${model.name} (${attributes.email}, ${attributes.phone})`
+        },
+
+      }
+
+      for (const [key, fn] of Object.entries(customGetter)) {
+        model[key] = fn()
+      }
+    }
+  }
+
+  async mapCustomSetters(model: CustomerJsonResponse): Promise<void> {
+    const customSetter = {
+      default: () => {
+      },
+
+    }
+
+    for (const [key, fn] of Object.entries(customSetter)) {
+      model[key] = await fn()
+    }
+  }
+
+  get orders(): OrderModel[] | undefined {
+    return this.attributes.orders
+  }
+
+  get user_id(): number | undefined {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
+  }
+
+  get id(): number | undefined {
+    return this.attributes.id
+  }
+
+  get uuid(): string | undefined {
+    return this.attributes.uuid
+  }
+
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
+  get email(): string | undefined {
+    return this.attributes.email
+  }
+
+  get phone(): string | undefined {
+    return this.attributes.phone
+  }
+
+  get orders(): number | undefined {
+    return this.attributes.orders
+  }
+
+  get total_spent(): number | undefined {
+    return this.attributes.total_spent
+  }
+
+  get last_order(): string | undefined {
+    return this.attributes.last_order
+  }
+
+  get status(): string[] | undefined {
+    return this.attributes.status
+  }
+
+  get avatar(): string | undefined {
+    return this.attributes.avatar
+  }
+
+  get user_id(): undefined | undefined {
+    return this.attributes.user_id
+  }
+
+  get created_at(): Date | undefined {
+    return this.attributes.created_at
+  }
+
+  get updated_at(): Date | undefined {
+    return this.attributes.updated_at
+  }
+
+  set uuid(value: string) {
+    this.attributes.uuid = value
+  }
+
+  set name(value: string) {
+    this.attributes.name = value
+  }
+
+  set email(value: string) {
+    this.attributes.email = value
+  }
+
+  set phone(value: string) {
+    this.attributes.phone = value
+  }
+
+  set orders(value: number) {
+    this.attributes.orders = value
+  }
+
+  set total_spent(value: number) {
+    this.attributes.total_spent = value
+  }
+
+  set last_order(value: string) {
+    this.attributes.last_order = value
+  }
+
+  set status(value: string[]) {
+    this.attributes.status = value
+  }
+
+  set avatar(value: string) {
+    this.attributes.avatar = value
+  }
+
+  set user_id(value: undefined) {
+    this.attributes.user_id = value
+  }
+
+  set updated_at(value: Date) {
+    this.attributes.updated_at = value
+  }
+
+  getOriginal(column?: keyof CustomerJsonResponse): Partial<CustomerJsonResponse> {
+    if (column) {
+      return this.originalAttributes[column]
+    }
+
+    return this.originalAttributes
+  }
+
+  getChanges(): Partial<CustomerJsonResponse> {
+    return this.fillable.reduce<Partial<CustomerJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof CustomersTable]
+      const originalValue = this.originalAttributes[key as keyof CustomersTable]
+
+      if (currentValue !== originalValue) {
+        changes[key] = currentValue
+      }
+
+      return changes
+    }, {})
+  }
+
+  isDirty(column?: keyof CustomerType): boolean {
+    if (column) {
+      return this.attributes[column] !== this.originalAttributes[column]
+    }
+
+    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this.attributes as any)[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof CustomerType): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof CustomerType): boolean {
+    return this.hasSaved && this.isDirty(column)
+  }
+
+  select(params: (keyof CustomerType)[] | RawBuilder<string> | string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static select(params: (keyof CustomerType)[] | RawBuilder<string> | string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    // Initialize a query with the table name and selected fields
+    instance.selectFromQuery = instance.selectFromQuery.select(params)
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
+  async applyFind(id: number): Promise<CustomerModel | undefined> {
+    const model = await DB.instance.selectFrom('customers').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+    await this.loadRelations(model)
+
+    const data = new CustomerModel(model as CustomerType)
+
+    cache.getOrSet(`customer:${id}`, JSON.stringify(model))
+
+    return data
+  }
+
+  async find(id: number): Promise<CustomerModel | undefined> {
+    return await this.applyFind(id)
+  }
+
+  // Method to find a Customer by ID
+  static async find(id: number): Promise<CustomerModel | undefined> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyFind(id)
+  }
+
+  async first(): Promise<CustomerModel | undefined> {
+    let model: CustomerModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  static async first(): Promise<CustomerModel | undefined> {
+    const instance = new CustomerModel(null)
+
+    const model = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .executeTakeFirst()
+
+    instance.mapCustomGetters(model)
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  async applyFirstOrFail(): Promise<CustomerModel | undefined> {
+    const model = await this.selectFromQuery.executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, 'No CustomerModel results found for query')
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  async firstOrFail(): Promise<CustomerModel | undefined> {
+    return await this.applyFirstOrFail()
+  }
+
+  static async firstOrFail(): Promise<CustomerModel | undefined> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyFirstOrFail()
+  }
+
+  static async all(): Promise<CustomerModel[]> {
+    const instance = new CustomerModel(null)
+
+    const models = await DB.instance.selectFrom('customers').selectAll().execute()
+
+    instance.mapCustomGetters(models)
+
+    const data = await Promise.all(models.map(async (model: CustomerType) => {
+      return new CustomerModel(model)
+    }))
+
+    return data
+  }
+
+  async applyFindOrFail(id: number): Promise<CustomerModel> {
+    const model = await DB.instance.selectFrom('customers').where('id', '=', id).selectAll().executeTakeFirst()
+
+    if (model === undefined)
+      throw new ModelNotFoundException(404, `No CustomerModel results for ${id}`)
+
+    cache.getOrSet(`customer:${id}`, JSON.stringify(model))
+
+    this.mapCustomGetters(model)
+    await this.loadRelations(model)
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  async findOrFail(id: number): Promise<CustomerModel> {
+    return await this.applyFindOrFail(id)
+  }
+
+  static async findOrFail(id: number): Promise<CustomerModel> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyFindOrFail(id)
+  }
+
+  async applyFindMany(ids: number[]): Promise<CustomerModel[]> {
+    let query = DB.instance.selectFrom('customers').where('id', 'in', ids)
+
+    const instance = new CustomerModel(null)
+
+    query = query.selectAll()
+
+    const models = await query.execute()
+
+    instance.mapCustomGetters(models)
+    await instance.loadRelations(models)
+
+    return models.map((modelItem: CustomerModel) => instance.parseResult(new CustomerModel(modelItem)))
+  }
+
+  static async findMany(ids: number[]): Promise<CustomerModel[]> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyFindMany(ids)
+  }
+
+  async findMany(ids: number[]): Promise<CustomerModel[]> {
+    return await this.applyFindMany(ids)
+  }
+
+  skip(count: number): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  static skip(count: number): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.offset(count)
+
+    return instance
+  }
+
+  async applyChunk(size: number, callback: (models: CustomerModel[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      // Get one batch
+      const models = await this.selectFromQuery
+        .selectAll()
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
+      }
+
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
+
+      page++
+    }
+  }
+
+  async chunk(size: number, callback: (models: CustomerModel[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
+  }
+
+  static async chunk(size: number, callback: (models: CustomerModel[]) => Promise<void>): Promise<void> {
+    const instance = new CustomerModel(null)
+
+    await instance.applyChunk(size, callback)
+  }
+
+  take(count: number): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
+  static take(count: number): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.limit(count)
+
+    return instance
+  }
+
+  static async pluck<K extends keyof CustomerModel>(field: K): Promise<CustomerModel[K][]> {
+    const instance = new CustomerModel(null)
+
+    if (instance.hasSelect) {
+      const model = await instance.selectFromQuery.execute()
+      return model.map((modelItem: CustomerModel) => modelItem[field])
+    }
+
+    const model = await instance.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: CustomerModel) => modelItem[field])
+  }
+
+  async pluck<K extends keyof CustomerModel>(field: K): Promise<CustomerModel[K][]> {
+    return CustomerModel.pluck(field)
+  }
+
+  static async count(): Promise<number> {
+    const instance = new CustomerModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  async count(): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
+  static async max(field: keyof CustomerModel): Promise<number> {
+    const instance = new CustomerModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max `)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  async max(field: keyof CustomerModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
+      .executeTakeFirst()
+
+    return result.max
+  }
+
+  static async min(field: keyof CustomerModel): Promise<number> {
+    const instance = new CustomerModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  async min(field: keyof CustomerModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min `)
+      .executeTakeFirst()
+
+    return result.min
+  }
+
+  static async avg(field: keyof CustomerModel): Promise<number> {
+    const instance = new CustomerModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  async avg(field: keyof CustomerModel): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg `)
+      .executeTakeFirst()
+
+    return result.avg
+  }
+
+  static async sum(field: keyof CustomerModel): Promise<number> {
+    const instance = new CustomerModel(null)
+
+    const result = await instance.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async sum(field: keyof CustomerModel): Promise<number> {
+    const result = this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum `)
+      .executeTakeFirst()
+
+    return result.sum
+  }
+
+  async applyGet(): Promise<CustomerModel[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    this.mapCustomGetters(models)
+    await this.loadRelations(models)
+
+    const data = await Promise.all(models.map(async (model: CustomerModel) => {
+      return new CustomerModel(model)
+    }))
+
+    return data
+  }
+
+  async get(): Promise<CustomerModel[]> {
+    return await this.applyGet()
+  }
+
+  static async get(): Promise<CustomerModel[]> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyGet()
+  }
+
+  has(relation: string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.customer_id`, '=', 'customers.id'),
+      ),
+    )
+
+    return this
+  }
+
+  static has(relation: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.customer_id`, '=', 'customers.id'),
+      ),
+    )
+
+    return instance
+  }
+
+  static whereExists(callback: (qb: any) => any): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return instance
+  }
+
+  applyWhereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder<keyof CustomerModel>) => void,
+  ): CustomerModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        let subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.customer_id`, '=', 'customers.id')
+
+        conditions.forEach((condition) => {
+          switch (condition.method) {
+            case 'where':
+              if (condition.type === 'and') {
+                subquery = subquery.where(condition.column, condition.operator!, condition.value)
+              }
+              else {
+                subquery = subquery.orWhere(condition.column, condition.operator!, condition.value)
+              }
+              break
+
+            case 'whereIn':
+              if (condition.operator === 'is not') {
+                subquery = subquery.whereNotIn(condition.column, condition.values)
+              }
+              else {
+                subquery = subquery.whereIn(condition.column, condition.values)
+              }
+
+              break
+
+            case 'whereNull':
+              subquery = subquery.whereNull(condition.column)
+              break
+
+            case 'whereNotNull':
+              subquery = subquery.whereNotNull(condition.column)
+              break
+
+            case 'whereBetween':
+              subquery = subquery.whereBetween(condition.column, condition.values)
+              break
+
+            case 'whereExists': {
+              const nestedBuilder = new SubqueryBuilder()
+              condition.callback!(nestedBuilder)
+              break
+            }
+          }
+        })
+
+        return exists(subquery)
+      })
+
+    return this
+  }
+
+  whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder<keyof CustomerModel>) => void,
+  ): CustomerModel {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  static whereHas(
+    relation: string,
+    callback: (query: SubqueryBuilder<keyof CustomerModel>) => void,
+  ): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereHas(relation, callback)
+  }
+
+  applyDoesntHave(relation: string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.customer_id`, '=', 'customers.id'),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): CustomerModel {
+    return this.applyDoesntHave(relation)
+  }
+
+  static doesntHave(relation: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyDoesntHave(relation)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<CustomersTable>) => void): CustomerModel {
+    const subqueryBuilder = new SubqueryBuilder()
+
+    callback(subqueryBuilder)
+    const conditions = subqueryBuilder.getConditions()
+
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        const subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.customer_id`, '=', 'customers.id')
+
+        return not(exists(subquery))
+      })
+
+    conditions.forEach((condition) => {
+      switch (condition.method) {
+        case 'where':
+          if (condition.type === 'and') {
+            this.where(condition.column, condition.operator!, condition.value || [])
+          }
+          break
+
+        case 'whereIn':
+          if (condition.operator === 'is not') {
+            this.whereNotIn(condition.column, condition.values || [])
+          }
+          else {
+            this.whereIn(condition.column, condition.values || [])
+          }
+
+          break
+
+        case 'whereNull':
+          this.whereNull(condition.column)
+          break
+
+        case 'whereNotNull':
+          this.whereNotNull(condition.column)
+          break
+
+        case 'whereBetween':
+          this.whereBetween(condition.column, condition.range || [0, 0])
+          break
+
+        case 'whereExists': {
+          const nestedBuilder = new SubqueryBuilder()
+          condition.callback!(nestedBuilder)
+          break
+        }
+      }
+    })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<CustomersTable>) => void): CustomerModel {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  static whereDoesntHave(
+    relation: string,
+    callback: (query: SubqueryBuilder<CustomersTable>) => void,
+  ): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<CustomerResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('customers')
+      .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const customersWithExtra = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
+      .limit((options.limit ?? 10) + 1) // Fetch one extra record
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10)) // Ensure options.page is not undefined
+      .execute()
+
+    let nextCursor = null
+    if (customersWithExtra.length > (options.limit ?? 10))
+      nextCursor = customersWithExtra.pop()?.id ?? null
+
+    return {
+      data: customersWithExtra,
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<CustomerResponse> {
+    return await this.applyPaginate(options)
+  }
+
+  // Method to get all customers
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<CustomerResponse> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyPaginate(options)
+  }
+
+  async applyCreate(newCustomer: NewCustomer): Promise<CustomerModel> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newCustomer).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewCustomer
+
+    await this.mapCustomSetters(filteredValues)
+
+    filteredValues.uuid = randomUUIDv7()
+
+    const result = await DB.instance.insertInto('customers')
+      .values(filteredValues)
+      .executeTakeFirst()
+
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as CustomerModel
+
+    if (model)
+      dispatch('customer:created', model)
+
+    return model
+  }
+
+  async create(newCustomer: NewCustomer): Promise<CustomerModel> {
+    return await this.applyCreate(newCustomer)
+  }
+
+  static async create(newCustomer: NewCustomer): Promise<CustomerModel> {
+    const instance = new CustomerModel(null)
+
+    return await instance.applyCreate(newCustomer)
+  }
+
+  static async createMany(newCustomer: NewCustomer[]): Promise<void> {
+    const instance = new CustomerModel(null)
+
+    const valuesFiltered = newCustomer.map((newCustomer: NewCustomer) => {
+      const filteredValues = Object.fromEntries(
+        Object.entries(newCustomer).filter(([key]) =>
+          !instance.guarded.includes(key) && instance.fillable.includes(key),
+        ),
+      ) as NewCustomer
+
+      filteredValues.uuid = randomUUIDv7()
+
+      return filteredValues
+    })
+
+    await DB.instance.insertInto('customers')
+      .values(valuesFiltered)
+      .executeTakeFirst()
+  }
+
+  static async forceCreate(newCustomer: NewCustomer): Promise<CustomerModel> {
+    const result = await DB.instance.insertInto('customers')
+      .values(newCustomer)
+      .executeTakeFirst()
+
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as CustomerModel
+
+    if (model)
+      dispatch('customer:created', model)
+
+    return model
+  }
+
+  // Method to remove a Customer
+  static async remove(id: number): Promise<any> {
+    const instance = new CustomerModel(null)
+
+    const model = await instance.find(Number(id))
+
+    if (model)
+      dispatch('customer:deleted', model)
+
+    return await DB.instance.deleteFrom('customers')
+      .where('id', '=', id)
+      .execute()
+  }
+
+  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
+
+    return this
+  }
+
+  where<V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]): CustomerModel {
+    return this.applyWhere<V>(column, ...args)
+  }
+
+  static where<V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
+  whereColumn(first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
+  }
+
+  static whereColumn(first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+
+    return instance
+  }
+
+  applyWhereRef(column: keyof CustomersTable, ...args: string[]): CustomerModel {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    const instance = new CustomerModel(null)
+    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return instance
+  }
+
+  whereRef(column: keyof CustomersTable, ...args: string[]): CustomerModel {
+    return this.applyWhereRef(column, ...args)
+  }
+
+  static whereRef(column: keyof CustomersTable, ...args: string[]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  whereRaw(sqlStatement: string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  static whereRaw(sqlStatement: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return instance
+  }
+
+  applyOrWhere(...conditions: [string, any][]): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  orWhere(...conditions: [string, any][]): CustomerModel {
+    return this.applyOrWhere(...conditions)
+  }
+
+  static orWhere(...conditions: [string, any][]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  when(
+    condition: boolean,
+    callback: (query: CustomerModel) => CustomerModel,
+  ): CustomerModel {
+    return CustomerModel.when(condition, callback)
+  }
+
+  static when(
+    condition: boolean,
+    callback: (query: CustomerModel) => CustomerModel,
+  ): CustomerModel {
+    let instance = new CustomerModel(null)
+
+    if (condition)
+      instance = callback(instance)
+
+    return instance
+  }
+
+  whereNotNull(column: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
+  }
+
+  static whereNotNull(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return instance
+  }
+
+  whereNull(column: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  static whereNull(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return instance
+  }
+
+  static whereName(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+
+    return instance
+  }
+
+  static wherePhone(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
+
+    return instance
+  }
+
+  static whereOrders(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('orders', '=', value)
+
+    return instance
+  }
+
+  static whereTotalSpent(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('totalSpent', '=', value)
+
+    return instance
+  }
+
+  static whereLastOrder(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('lastOrder', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereAvatar(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
+
+    return instance
+  }
+
+  static whereUserId(value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('user_id', '=', value)
+
+    return instance
+  }
+
+  applyWhereIn<V>(column: keyof CustomersTable, values: V[]) {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
+
+    return this
+  }
+
+  whereIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    return this.applyWhereIn<V>(column, values)
+  }
+
+  static whereIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
+  applyWhereBetween<V>(column: keyof CustomersTable, range: [V, V]): CustomerModel {
+    if (range.length !== 2) {
+      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
+    }
+
+    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
+
+    this.selectFromQuery = this.selectFromQuery.where(query)
+    this.updateFromQuery = this.updateFromQuery.where(query)
+    this.deleteFromQuery = this.deleteFromQuery.where(query)
+
+    return this
+  }
+
+  whereBetween<V = number>(column: keyof CustomersTable, range: [V, V]): CustomerModel {
+    return this.applyWhereBetween<V>(column, range)
+  }
+
+  static whereBetween<V = number>(column: keyof CustomersTable, range: [V, V]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  applyWhereLike(column: keyof CustomersTable, value: string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
+
+    return this
+  }
+
+  whereLike(column: keyof CustomersTable, value: string): CustomerModel {
+    return this.applyWhereLike(column, value)
+  }
+
+  static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  applyWhereNotIn<V>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
+
+    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
+
+    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
+
+    return this
+  }
+
+  whereNotIn<V>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    return this.applyWhereNotIn<V>(column, values)
+  }
+
+  static whereNotIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
+  async exists(): Promise<boolean> {
+    let model
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
+  }
+
+  static async latest(): Promise<CustomerType | undefined> {
+    const instance = new CustomerModel(null)
+
+    const model = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .orderBy('id', 'desc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    instance.mapCustomGetters(model)
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  static async oldest(): Promise<CustomerType | undefined> {
+    const instance = new CustomerModel(null)
+
+    const model = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .orderBy('id', 'asc')
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    instance.mapCustomGetters(model)
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  static async firstOrCreate(
+    condition: Partial<CustomerType>,
+    newCustomer: NewCustomer,
+  ): Promise<CustomerModel> {
+    const instance = new CustomerModel(null)
+
+    const key = Object.keys(condition)[0] as keyof CustomerType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingCustomer = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingCustomer) {
+      instance.mapCustomGetters(existingCustomer)
+      await instance.loadRelations(existingCustomer)
+
+      return new CustomerModel(existingCustomer as CustomerType)
+    }
+    else {
+      return await instance.create(newCustomer)
+    }
+  }
+
+  static async updateOrCreate(
+    condition: Partial<CustomerType>,
+    newCustomer: NewCustomer,
+  ): Promise<CustomerModel> {
+    const instance = new CustomerModel(null)
+
+    const key = Object.keys(condition)[0] as keyof CustomerType
+
+    if (!key) {
+      throw new HttpError(500, 'Condition must contain at least one key-value pair')
+    }
+
+    const value = condition[key]
+
+    // Attempt to find the first record matching the condition
+    const existingCustomer = await DB.instance.selectFrom('customers')
+      .selectAll()
+      .where(key, '=', value)
+      .executeTakeFirst()
+
+    if (existingCustomer) {
+      // If found, update the existing record
+      await DB.instance.updateTable('customers')
+        .set(newCustomer)
+        .where(key, '=', value)
+        .executeTakeFirstOrThrow()
+
+      // Fetch and return the updated record
+      const updatedCustomer = await DB.instance.selectFrom('customers')
+        .selectAll()
+        .where(key, '=', value)
+        .executeTakeFirst()
+
+      if (!updatedCustomer) {
+        throw new HttpError(500, 'Failed to fetch updated record')
+      }
+
+      instance.hasSaved = true
+
+      return new CustomerModel(updatedCustomer as CustomerType)
+    }
+    else {
+      // If not found, create a new record
+      return await instance.create(newCustomer)
+    }
+  }
+
+  async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('customer_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: CustomerJsonResponse) => {
+          const records = relatedRecords.filter((record: { customer_id: number }) => {
+            return record.customer_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { customer_id: number }) => {
+          return record.customer_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  with(relations: string[]): CustomerModel {
+    this.withRelations = relations
+
+    return this
+  }
+
+  static with(relations: string[]): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.withRelations = relations
+
+    return instance
+  }
+
+  async last(): Promise<CustomerType | undefined> {
+    let model: CustomerModel | undefined
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  static async last(): Promise<CustomerType | undefined> {
+    const model = await DB.instance.selectFrom('customers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const data = new CustomerModel(model as CustomerType)
+
+    return data
+  }
+
+  orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  static orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
+
+    return instance
+  }
+
+  groupBy(column: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
+  }
+
+  static groupBy(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
+
+    return instance
+  }
+
+  having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
+  }
+
+  static having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
+
+    return instance
+  }
+
+  inRandomOrder(): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
+  static inRandomOrder(): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return instance
+  }
+
+  orderByDesc(column: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
+  }
+
+  static orderByDesc(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
+
+    return instance
+  }
+
+  orderByAsc(column: keyof CustomersTable): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
+  }
+
+  static orderByAsc(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
+
+    return instance
+  }
+
+  async update(newCustomer: CustomerUpdate): Promise<CustomerModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newCustomer).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewCustomer
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('customers')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('customer:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(customer: CustomerUpdate): Promise<CustomerModel | undefined> {
+    if (this.id === undefined) {
+      this.updateFromQuery.set(customer).execute()
+    }
+
+    await this.mapCustomSetters(customer)
+
+    await DB.instance.updateTable('customers')
+      .set(customer)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('customer:updated', model)
+
+      this.hasSaved = true
+
+      return model
+    }
+
+    return undefined
+  }
+
+  async save(): Promise<void> {
+    if (!this)
+      throw new HttpError(500, 'Customer data is undefined')
+
+    await this.mapCustomSetters(this.attributes)
+
+    if (this.id === undefined) {
+      await this.create(this.attributes)
+    }
+    else {
+      await this.update(this.attributes)
+    }
+
+    this.hasSaved = true
+  }
+
+  fill(data: Partial<CustomerType>): CustomerModel {
+    const filteredValues = Object.fromEntries(
+      Object.entries(data).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as NewCustomer
+
+    this.attributes = {
+      ...this.attributes,
+      ...filteredValues,
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<CustomerType>): CustomerModel {
+    this.attributes = {
+      ...this.attributes,
+      ...data,
+    }
+
+    return this
+  }
+
+  // Method to delete (soft delete) the customer instance
+  async delete(): Promise<CustomersTable> {
+    if (this.id === undefined)
+      this.deleteFromQuery.execute()
+    const model = await this.find(Number(this.id))
+    if (model)
+      dispatch('customer:deleted', model)
+
+    return await DB.instance.deleteFrom('customers')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
+  toSearchableObject(): Partial<CustomersTable> {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      phone: this.phone,
+      status: this.status,
+    }
+  }
+
+  distinct(column: keyof CustomerType): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  static distinct(column: keyof CustomerType): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
+
+    instance.hasSelect = true
+
+    return instance
+  }
+
+  join(table: string, firstCol: string, secondCol: string): CustomerModel {
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  static join(table: string, firstCol: string, secondCol: string): CustomerModel {
+    const instance = new CustomerModel(null)
+
+    instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return instance
+  }
+
+  toJSON(): Partial<CustomerJsonResponse> {
+    const output: Partial<CustomerJsonResponse> = {
+
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      phone: this.phone,
+      orders: this.orders,
+      total_spent: this.total_spent,
+      last_order: this.last_order,
+      status: this.status,
+      avatar: this.avatar,
+      user_id: this.user_id,
+
+      created_at: this.created_at,
+
+      updated_at: this.updated_at,
+
+      orders: this.orders,
+      user_id: this.user_id,
+      user: this.user,
+      ...this.customColumns,
+    }
+
+    return output
+  }
+
+  parseResult(model: CustomerModel): CustomerModel {
+    for (const hiddenAttribute of this.hidden) {
+      delete model[hiddenAttribute as keyof CustomerModel]
+    }
+
+    return model
+  }
+}
+
+async function find(id: number): Promise<CustomerModel | undefined> {
+  const query = DB.instance.selectFrom('customers').where('id', '=', id).selectAll()
+
+  const model = await query.executeTakeFirst()
+
+  if (!model)
+    return undefined
+
+  return new CustomerModel(model)
+}
+
+export async function count(): Promise<number> {
+  const results = await CustomerModel.count()
+
+  return results
+}
+
+export async function create(newCustomer: NewCustomer): Promise<CustomerModel> {
+  const result = await DB.instance.insertInto('customers')
+    .values(newCustomer)
+    .executeTakeFirstOrThrow()
+
+  return await find(Number(result.numInsertedOrUpdatedRows)) as CustomerModel
+}
+
+export async function rawQuery(rawQuery: string): Promise<any> {
+  return await sql`${rawQuery}`.execute(DB.instance)
+}
+
+export async function remove(id: number): Promise<void> {
+  await DB.instance.deleteFrom('customers')
+    .where('id', '=', id)
+    .execute()
+}
+
+export async function whereName(value: string): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('name', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereEmail(value: string): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('email', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function wherePhone(value: string): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('phone', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereOrders(value: number): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('orders', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereTotalSpent(value: number): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('total_spent', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereLastOrder(value: string): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('last_order', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereStatus(value: string[]): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('status', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereAvatar(value: string): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('avatar', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export async function whereUserId(value: undefined): Promise<CustomerModel[]> {
+  const query = DB.instance.selectFrom('customers').where('user_id', '=', value)
+  const results = await query.execute()
+
+  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+}
+
+export const Customer = CustomerModel
+
+export default Customer
