@@ -782,7 +782,7 @@ const getGoogleMapsEmbedUrl = computed(() => {
                   'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
                 ]"
               >
-                Delivery Routes
+                Routes
               </a>
             </nav>
           </div>

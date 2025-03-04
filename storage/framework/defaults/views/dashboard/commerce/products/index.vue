@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
-// @ts-ignore
+// @ts-expect-error bun and vue issue with vue-tsc
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 import { toast } from '@stacksjs/notification'
 

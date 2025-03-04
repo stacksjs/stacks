@@ -45,6 +45,7 @@ const sections = useLocalStorage<Sections>('sidebar-sections', {
   app: true,
   data: true,
   commerce: true,
+  social: true,
   management: true
 })
 
@@ -52,11 +53,13 @@ const sections = useLocalStorage<Sections>('sidebar-sections', {
 const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded-items', {
   '/cloud': false,
   '#queue': false,
-  '#commerce': false
+  '#commerce': false,
+  '#commerce-products': false,
+  '#social-posts': false
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'commerce', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'commerce', 'social', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -173,11 +176,18 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
       { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
-      { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Products' },
-      { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
-      { to: '/commerce/variants', icon: 'i-hugeicons-paint-board', text: 'Variants' },
-      { to: '/commerce/units', icon: 'i-hugeicons-ruler', text: 'Units' },
-      { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' },
+      {
+        to: '#commerce-products',
+        icon: 'i-hugeicons-package',
+        text: 'Products',
+        children: [
+          { to: '/commerce/products', icon: 'i-hugeicons-package', text: 'Items' },
+          { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+          { to: '/commerce/variants', icon: 'i-hugeicons-paint-board', text: 'Variants' },
+          { to: '/commerce/units', icon: 'i-hugeicons-ruler', text: 'Units' },
+          { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' }
+        ]
+      },
       { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
       { to: '/commerce/gift-cards', icon: 'i-hugeicons-gift-card', text: 'Gift Cards' },
       { to: '/commerce/payments', icon: 'i-hugeicons-invoice-01', text: 'Payments' },
@@ -192,6 +202,14 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
+    ]
+  },
+  social: {
+    items: [
+      { to: '/social', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/social/posts', icon: 'i-hugeicons-time-schedule', text: 'Posts' },
+      { to: '/social/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' },
+      { to: '/social/settings', icon: 'i-hugeicons-settings-02', text: 'Settings' }
     ]
   },
   management: {
@@ -245,10 +263,10 @@ const switchTeam = (team: Team) => {
   <div>
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:w-64 lg:flex lg:flex-col">
-      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 dark:border-gray-600 dark:bg-blue-gray-900">
-        <div class="pt-4 h-12 flex shrink-0 items-center justify-between rounded-lg">
+      <div class="flex grow flex-col gap-y-4 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-2 dark:border-gray-600 dark:bg-blue-gray-900">
+        <div class="pt-3 h-10 flex shrink-0 items-center justify-between rounded-lg">
           <RouterLink to="/">
-            <img class="h-12 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
+            <img class="h-10 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
           </RouterLink>
 
           <!-- Team Switcher -->
@@ -319,10 +337,10 @@ const switchTeam = (team: Team) => {
         </div>
 
         <nav class="flex flex-1 flex-col">
-          <ul role="list" class="flex flex-1 flex-col gap-y-8">
+          <ul role="list" class="flex flex-1 flex-col gap-y-4">
             <!-- Dashboard section -->
             <li>
-              <ul role="list" class="mt-2 -mx-2 space-y-1">
+              <ul role="list" class="mt-1 -mx-2 space-y-0.5">
                 <li>
                   <RouterLink to="/" class="group sidebar-links">
                     <div class="i-hugeicons-home-05 h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
@@ -353,7 +371,7 @@ const switchTeam = (team: Team) => {
               >
                 <!-- Section header -->
                 <div
-                  class="flex items-center justify-between cursor-pointer"
+                  class="flex items-center justify-between cursor-pointer py-0.5"
                   @click="toggleSection(sectionKey)"
                 >
                   <div class="flex items-center gap-2 -ml-3">
@@ -378,7 +396,7 @@ const switchTeam = (team: Team) => {
                 <!-- Section content -->
                 <ul
                   role="list"
-                  class="mt-2 -mx-2 space-y-1 section-content max-h-[60vh] overflow-y-auto pr-2"
+                  class="mt-0.5 -mx-2 space-y-0.5 section-content max-h-[60vh] overflow-y-auto pr-2"
                   :class="sections[sectionKey] ? 'expanded' : 'collapsed'"
                 >
                   <li v-for="item in sectionContent[sectionKey]?.items || []" :key="item.to">
@@ -412,13 +430,18 @@ const switchTeam = (team: Team) => {
                         <ul
                           v-if="item.children && expandedItems[item.to]"
                           role="list"
-                          class="mt-1 space-y-1 dropdown-list"
-                          :style="{ 'max-height': '100px' }"
+                          class="mt-0.5 space-y-0.5 dropdown-list"
+                          :data-dropdown-id="item.to"
+                          :style="{ 'max-height': item.to === '#commerce-products' ? '150px' : '200px' }"
                         >
                           <li v-for="child in item.children" :key="child.to" class="dropdown-item">
                             <RouterLink :to="child.to" class="sidebar-child-link group">
-                              <div :class="[child.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                              <span class="truncate">{{ child.text }}</span>
+                              <div :class="[
+                                child.icon,
+                                'transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 text-gray-400',
+                                item.to === '#commerce-products' ? 'h-4 w-4 flex-shrink-0' : 'h-5 w-5 mt-0.5'
+                              ]" />
+                              <span class="truncate" :class="{ 'my-auto': item.to === '#commerce-products' }">{{ child.text }}</span>
                             </RouterLink>
                           </li>
                         </ul>
@@ -476,7 +499,7 @@ const switchTeam = (team: Team) => {
 .sidebar-links {
   @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800
          duration-150 ease-in-out transition flex items-center gap-x-3
-         rounded-md p-2 text-sm leading-6 font-semibold;
+         rounded-md p-1 text-sm leading-6 font-semibold;
 }
 
 /* Make sure section content is scrollable when it overflows */
@@ -486,7 +509,7 @@ const switchTeam = (team: Team) => {
 
 .section-content.expanded {
   @apply overflow-y-auto;
-  max-height: calc(100vh - 250px);
+  max-height: calc(100vh - 220px);
   scrollbar-width: thin;
 }
 
@@ -520,7 +543,7 @@ const switchTeam = (team: Team) => {
 }
 
 .sidebar-bottom-link {
-  @apply flex items-center justify-center px-3 py-3 text-sm font-semibold leading-6
+  @apply flex items-center justify-center px-2 py-2 text-sm font-semibold leading-6
          transition-all duration-150 ease-in-out rounded-lg
          hover:bg-blue-gray-50 dark:hover:bg-gray-700;
 }
@@ -568,7 +591,7 @@ li[draggable="true"].dragging .drag-handle {
 .sidebar-child-link {
   @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800
          duration-150 ease-in-out transition flex items-center gap-x-3
-         rounded-md p-2 text-sm leading-6 font-semibold pl-8;
+         rounded-md p-1 text-sm leading-6 font-semibold pl-8;
 }
 
 .router-link-active.sidebar-child-link {
@@ -594,11 +617,43 @@ li[draggable="true"].dragging .drag-handle {
   max-height: 0 !important;
 }
 
-.dropdown-list {
-  overflow-y: auto;
+.dropdown-item {
+  height: 24px;
 }
 
-.dropdown-item {
-  height: 40px;
+/* Make Products dropdown items even more compact */
+.dropdown-list {
+  overflow-y: visible;
+}
+
+/* Specific styling for the commerce-products dropdown */
+[data-dropdown-id="#commerce-products"],
+[data-dropdown-id="#social-posts"] {
+  @apply space-y-1;
+}
+
+[data-dropdown-id="#commerce-products"] .dropdown-item,
+[data-dropdown-id="#social-posts"] .dropdown-item {
+  height: 24px;
+}
+
+[data-dropdown-id="#commerce-products"] .sidebar-child-link,
+[data-dropdown-id="#social-posts"] .sidebar-child-link {
+  @apply p-1 pl-7 text-xs flex items-center gap-x-2;
+}
+
+[data-dropdown-id="#commerce-products"] .sidebar-child-link div,
+[data-dropdown-id="#social-posts"] .sidebar-child-link div {
+  @apply flex-shrink-0;
+}
+
+[data-dropdown-id="#commerce-products"] .sidebar-child-link span,
+[data-dropdown-id="#social-posts"] .sidebar-child-link span {
+  @apply my-auto;
+}
+
+/* Adjust spacing between sections */
+ul[role="list"].flex.flex-1.flex-col.gap-y-4 {
+  @apply gap-y-3;
 }
 </style>
