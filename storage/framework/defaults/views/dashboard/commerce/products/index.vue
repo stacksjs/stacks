@@ -423,7 +423,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
               @click="openAddProductModal"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              <div class="i-hugeicons-plus h-5 w-5 mr-1"></div>
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
               Add product
             </button>
           </div>
@@ -437,7 +437,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-box-01 h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+                    <div class="i-hugeicons-package h-6 w-6 text-blue-600 dark:text-blue-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -458,7 +458,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
-                    <div class="i-hugeicons-star-01 h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
+                    <div class="i-hugeicons-star h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -479,7 +479,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-red-100 p-2 dark:bg-red-900">
-                    <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-300"></div>
+                    <div class="i-hugeicons-alert-01 h-6 w-6 text-red-600 dark:text-red-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
@@ -544,7 +544,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
                 ]"
               >
-                <div class="i-hugeicons-grid-01 h-5 w-5"></div>
+                <div class="i-hugeicons-grid h-5 w-5"></div>
               </button>
               <button
                 type="button"
@@ -556,7 +556,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
                 ]"
               >
-                <div class="i-hugeicons-list h-5 w-5"></div>
+                <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
               </button>
             </div>
           </div>
