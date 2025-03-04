@@ -185,7 +185,8 @@ const sectionContent: Record<string, SectionContent> = {
           { to: '/commerce/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
           { to: '/commerce/variants', icon: 'i-hugeicons-paint-board', text: 'Variants' },
           { to: '/commerce/units', icon: 'i-hugeicons-ruler', text: 'Units' },
-          { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' }
+          { to: '/commerce/manufacturers', icon: 'i-hugeicons-factory', text: 'Manufacturers' },
+          { to: '/commerce/reviews', icon: 'i-hugeicons-star', text: 'Reviews' }
         ]
       },
       { to: '/commerce/coupons', icon: 'i-hugeicons-coupon-01', text: 'Coupons' },
