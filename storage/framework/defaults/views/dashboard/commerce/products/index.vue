@@ -1,302 +1,292 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
-// @ts-expect-error bun and vue issue with vue-tsc
-import { Dialog, DialogPanel } from '@stacksjs/dialog'
-import { toast } from '@stacksjs/notification'
 
 useHead({
-  title: 'Dashboard - Products',
+  title: 'Dashboard - Commerce Products',
 })
 
-// Define product interface
+// Define product type
 interface Product {
   id: number
   name: string
+  description: string
   price: number
+  salePrice: number | null
   category: string
-  stock: number
+  tags: string[]
+  imageUrl: string
+  inventory: number
   status: string
-  images: string[]
-  videos: string[]
-  manufacturer: string
-  variants: string[]
-  unit: string
-  taxRate: number
-  similarProducts?: number[]
+  featured: boolean
+  rating: number
+  reviewCount: number
+  dateAdded: string
 }
 
-// Sample product data
+// Define category type
+interface Category {
+  id: number
+  name: string
+  slug: string
+  count: number
+}
+
+// Sample products data (DoorDash-like food products)
 const products = ref<Product[]>([
   {
     id: 1,
-    name: 'Margherita Pizza',
+    name: 'Classic Cheeseburger',
+    description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce on a brioche bun',
     price: 12.99,
-    category: 'Pizza',
-    stock: 78,
+    salePrice: null,
+    category: 'Burgers',
+    tags: ['beef', 'cheese', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 100,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [
-      'https://example.com/videos/margherita-pizza.mp4'
-    ],
-    manufacturer: 'Pizza Palace',
-    variants: ['Size', 'Crust Type'],
-    unit: 'Whole',
-    taxRate: 7,
-    similarProducts: [2, 5]
+    featured: true,
+    rating: 4.8,
+    reviewCount: 243,
+    dateAdded: '2023-10-15'
   },
   {
     id: 2,
-    name: 'Classic Cheeseburger',
-    price: 9.99,
-    category: 'Burgers',
-    stock: 124,
+    name: 'Margherita Pizza',
+    description: 'Classic pizza with tomato sauce, fresh mozzarella, basil, and olive oil on a thin crust',
+    price: 14.99,
+    salePrice: 12.99,
+    category: 'Pizza',
+    tags: ['vegetarian', 'italian', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 80,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1550317138-10000687a72b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Burger Bistro',
-    variants: ['Size', 'Protein', 'Toppings'],
-    unit: 'Piece',
-    taxRate: 7
+    featured: true,
+    rating: 4.7,
+    reviewCount: 189,
+    dateAdded: '2023-10-20'
   },
   {
     id: 3,
-    name: 'California Roll',
-    price: 14.99,
-    category: 'Sushi',
-    stock: 45,
+    name: 'Chicken Caesar Salad',
+    description: 'Crisp romaine lettuce with grilled chicken, parmesan cheese, croutons, and Caesar dressing',
+    price: 11.99,
+    salePrice: null,
+    category: 'Salads',
+    tags: ['chicken', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 50,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1617196034183-421b4917c92d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [
-      'https://example.com/videos/california-roll.mp4'
-    ],
-    manufacturer: 'Sushi Supreme',
-    variants: ['Size'],
-    unit: 'Piece',
-    taxRate: 7
+    featured: false,
+    rating: 4.5,
+    reviewCount: 124,
+    dateAdded: '2023-11-05'
   },
   {
     id: 4,
-    name: 'Street Tacos',
-    price: 8.99,
-    category: 'Mexican',
-    stock: 92,
+    name: 'Spicy Ramen Bowl',
+    description: 'Authentic Japanese ramen with spicy broth, sliced pork, soft-boiled egg, and fresh vegetables',
+    price: 15.99,
+    salePrice: null,
+    category: 'Asian',
+    tags: ['spicy', 'japanese', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 60,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Taco Tiempo',
-    variants: ['Protein', 'Spice Level', 'Toppings'],
-    unit: 'Piece',
-    taxRate: 7
+    featured: true,
+    rating: 4.9,
+    reviewCount: 201,
+    dateAdded: '2023-11-10'
   },
   {
     id: 5,
-    name: 'Fettuccine Alfredo',
-    price: 13.99,
-    category: 'Pasta',
-    stock: 210,
+    name: 'Veggie Wrap',
+    description: 'Fresh vegetables, hummus, and feta cheese wrapped in a spinach tortilla',
+    price: 9.99,
+    salePrice: 8.49,
+    category: 'Wraps',
+    tags: ['vegetarian', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 40,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1645112411341-6c4fd023882c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Pasta Paradise',
-    variants: ['Size', 'Protein'],
-    unit: 'Serving',
-    taxRate: 7
+    featured: false,
+    rating: 4.4,
+    reviewCount: 98,
+    dateAdded: '2023-11-15'
   },
   {
     id: 6,
-    name: 'Quinoa Bowl',
-    price: 11.99,
-    category: 'Healthy',
-    stock: 35,
+    name: 'BBQ Pulled Pork Sandwich',
+    description: 'Slow-cooked pulled pork with BBQ sauce, coleslaw, and pickles on a brioche bun',
+    price: 13.99,
+    salePrice: null,
+    category: 'Sandwiches',
+    tags: ['pork', 'bbq'],
+    imageUrl: 'https://images.unsplash.com/photo-1513185041617-8ab03f83d6c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 35,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Healthy Harvest',
-    variants: ['Size', 'Protein', 'Dietary'],
-    unit: 'Serving',
-    taxRate: 7
+    featured: false,
+    rating: 4.6,
+    reviewCount: 156,
+    dateAdded: '2023-11-20'
   },
   {
     id: 7,
-    name: 'Chocolate Lava Cake',
-    price: 7.99,
+    name: 'Chocolate Brownie Sundae',
+    description: 'Warm chocolate brownie topped with vanilla ice cream, chocolate sauce, and whipped cream',
+    price: 8.99,
+    salePrice: null,
     category: 'Desserts',
-    stock: 68,
+    tags: ['chocolate', 'sweet', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 45,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Sweet Sensations',
-    variants: ['Size', 'Sweetness'],
-    unit: 'Piece',
-    taxRate: 7
+    featured: true,
+    rating: 4.9,
+    reviewCount: 178,
+    dateAdded: '2023-11-25'
   },
   {
     id: 8,
-    name: 'Iced Caramel Latte',
-    price: 4.99,
+    name: 'Iced Caramel Macchiato',
+    description: 'Espresso with vanilla syrup, milk, and caramel drizzle over ice',
+    price: 5.99,
+    salePrice: null,
     category: 'Beverages',
-    stock: 112,
+    tags: ['coffee', 'cold'],
+    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 120,
     status: 'Active',
-    images: [
-      'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Beverage Boutique',
-    variants: ['Size', 'Sweetness'],
-    unit: 'Milliliter',
-    taxRate: 7
+    featured: false,
+    rating: 4.7,
+    reviewCount: 143,
+    dateAdded: '2023-12-01'
   },
   {
     id: 9,
-    name: 'Veggie Spring Rolls',
-    price: 6.99,
+    name: 'Chicken Wings (12 pc)',
+    description: 'Crispy chicken wings with your choice of sauce: Buffalo, BBQ, or Honey Garlic',
+    price: 16.99,
+    salePrice: 14.99,
     category: 'Appetizers',
-    stock: 54,
-    status: 'Low Stock',
-    images: [
-      'https://images.unsplash.com/photo-1606333259737-6a88c0a0b8a3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80',
-      'https://images.unsplash.com/photo-1625938145744-e380515399b7?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [
-      'https://example.com/videos/spring-rolls.mp4'
-    ],
-    manufacturer: 'Healthy Harvest',
-    variants: ['Size', 'Sauce', 'Dietary'],
-    unit: 'Piece',
-    taxRate: 7
+    tags: ['chicken', 'spicy', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 70,
+    status: 'Active',
+    featured: true,
+    rating: 4.8,
+    reviewCount: 215,
+    dateAdded: '2023-12-05'
   },
   {
     id: 10,
-    name: 'Buffalo Wings',
+    name: 'Vegetable Stir Fry',
+    description: 'Fresh vegetables stir-fried with tofu in a savory sauce, served with steamed rice',
+    price: 13.49,
+    salePrice: null,
+    category: 'Asian',
+    tags: ['vegetarian', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 30,
+    status: 'Active',
+    featured: false,
+    rating: 4.5,
+    reviewCount: 87,
+    dateAdded: '2023-12-10'
+  },
+  {
+    id: 11,
+    name: 'Beef Tacos (3 pc)',
+    description: 'Soft corn tortillas filled with seasoned beef, lettuce, cheese, and pico de gallo',
     price: 10.99,
-    category: 'Appetizers',
-    stock: 0,
-    status: 'Out of Stock',
-    images: [
-      'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100&q=80'
-    ],
-    videos: [],
-    manufacturer: 'Burger Bistro',
-    variants: ['Size', 'Spice Level', 'Sauce'],
-    unit: 'Piece',
-    taxRate: 7
+    salePrice: null,
+    category: 'Mexican',
+    tags: ['beef', 'spicy'],
+    imageUrl: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 55,
+    status: 'Active',
+    featured: false,
+    rating: 4.6,
+    reviewCount: 132,
+    dateAdded: '2023-12-15'
+  },
+  {
+    id: 12,
+    name: 'Strawberry Cheesecake',
+    description: 'Creamy New York-style cheesecake topped with fresh strawberry sauce',
+    price: 7.99,
+    salePrice: null,
+    category: 'Desserts',
+    tags: ['sweet', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 25,
+    status: 'Low Stock',
+    featured: true,
+    rating: 4.9,
+    reviewCount: 167,
+    dateAdded: '2023-12-20'
   }
 ])
 
+// Categories derived from products
+const categories = computed<Category[]>(() => {
+  const categoryMap = new Map<string, number>()
+
+  products.value.forEach(product => {
+    const count = categoryMap.get(product.category) || 0
+    categoryMap.set(product.category, count + 1)
+  })
+
+  return Array.from(categoryMap.entries()).map(([name, count], index) => ({
+    id: index + 1,
+    name,
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+    count
+  }))
+})
+
 // Filter and sort options
 const searchQuery = ref('')
-const sortBy = ref('name')
-const sortOrder = ref('asc')
-const categoryFilter = ref('All')
+const sortBy = ref('dateAdded')
+const sortOrder = ref('desc')
+const categoryFilter = ref('all')
+const statusFilter = ref('all')
+const viewMode = ref('grid') // 'grid' or 'list'
 
-// Edit dialog state
-const showEditDialog = ref(false)
-const editingProduct = ref<Product | null>(null)
-
-// Similar products dialog state
-const showSimilarProductsDialog = ref(false)
-
-// Available categories
-const categories = ['All', 'Electronics', 'Wearables', 'Audio', 'Accessories', 'Storage', 'Pizza', 'Burgers', 'Sushi', 'Mexican', 'Pasta', 'Healthy', 'Desserts', 'Beverages', 'Appetizers']
-
-// Statuses for dropdown
-const statuses = ['Active', 'Low Stock', 'Out of Stock']
-
-// Function to open edit dialog
-function openEditDialog(product: Product): void {
-  editingProduct.value = JSON.parse(JSON.stringify(product)) as Product
-  showEditDialog.value = true
-}
-
-// Function to save edited product
-function saveProduct(): void {
-  if (!editingProduct.value) return
-
-  // Find the product index
-  const index = products.value.findIndex(p => p.id === editingProduct.value?.id)
-
-  if (index !== -1) {
-    // Update the product
-    products.value[index] = editingProduct.value
-
-    // Show success message
-    toast({
-      message: 'Product updated successfully',
-      type: 'success',
-    })
-
-    // Close the dialog
-    showEditDialog.value = false
-  }
-}
-
-// Function to open similar products dialog
-function openSimilarProductsDialog(product: Product): void {
-  editingProduct.value = JSON.parse(JSON.stringify(product)) as Product
-  showSimilarProductsDialog.value = true
-}
-
-// Function to save similar products
-function saveSimilarProducts(): void {
-  if (!editingProduct.value) return
-
-  // Find the product index
-  const index = products.value.findIndex(p => p.id === editingProduct.value?.id)
-
-  if (index !== -1) {
-    // Update only the similarProducts field
-    products.value[index]!.similarProducts = editingProduct.value.similarProducts || []
-
-    // Show success message
-    toast({
-      message: 'Similar products updated successfully',
-      type: 'success',
-    })
-
-    // Close the dialog
-    showSimilarProductsDialog.value = false
-  }
-}
+// Available statuses
+const statuses = ['all', 'Active', 'Low Stock', 'Out of Stock', 'Discontinued']
 
 // Computed filtered and sorted products
 const filteredProducts = computed(() => {
   return products.value
     .filter(product => {
       // Apply search filter
-      const matchesSearch = product.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchQuery.value.toLowerCase()))
 
       // Apply category filter
-      const matchesCategory = categoryFilter.value === 'All' || product.category === categoryFilter.value
+      const matchesCategory = categoryFilter.value === 'all' || product.category === categoryFilter.value
 
-      return matchesSearch && matchesCategory
+      // Apply status filter
+      const matchesStatus = statusFilter.value === 'all' || product.status === statusFilter.value
+
+      return matchesSearch && matchesCategory && matchesStatus
     })
     .sort((a, b) => {
       // Apply sorting
       let comparison = 0
-      if (sortBy.value === 'name') {
-        comparison = a.name.localeCompare(b.name)
+      if (sortBy.value === 'dateAdded') {
+        comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
       } else if (sortBy.value === 'price') {
-        comparison = a.price - b.price
-      } else if (sortBy.value === 'stock') {
-        comparison = a.stock - b.stock
+        const aPrice = a.salePrice !== null ? a.salePrice : a.price
+        const bPrice = b.salePrice !== null ? b.salePrice : b.price
+        comparison = aPrice - bPrice
+      } else if (sortBy.value === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy.value === 'rating') {
+        comparison = a.rating - b.rating
       }
 
       return sortOrder.value === 'asc' ? comparison : -comparison
@@ -305,7 +295,7 @@ const filteredProducts = computed(() => {
 
 // Pagination
 const currentPage = ref(1)
-const itemsPerPage = ref(5)
+const itemsPerPage = ref(8)
 const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage.value))
 
 const paginatedProducts = computed(() => {
@@ -336,31 +326,176 @@ function toggleSort(column: string): void {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
   } else {
     sortBy.value = column
-    sortOrder.value = 'asc'
+    sortOrder.value = 'desc'
   }
 }
+
+// Get status badge class
+function getStatusClass(status: string): string {
+  switch (status) {
+    case 'Active':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Low Stock':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    case 'Out of Stock':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    case 'Discontinued':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+  }
+}
+
+// Modal state for adding/editing product
+const showProductModal = ref(false)
+const isEditMode = ref(false)
+const currentProduct = ref<Product | null>(null)
+
+function openAddProductModal(): void {
+  isEditMode.value = false
+  currentProduct.value = {
+    id: Math.max(...products.value.map(p => p.id)) + 1,
+    name: '',
+    description: '',
+    price: 0,
+    salePrice: null,
+    category: '',
+    tags: [],
+    imageUrl: '',
+    inventory: 0,
+    status: 'Active',
+    featured: false,
+    rating: 0,
+    reviewCount: 0,
+    dateAdded: new Date().toISOString().split('T')[0] || ''
+  }
+  showProductModal.value = true
+}
+
+function openEditProductModal(product: Product): void {
+  isEditMode.value = true
+  currentProduct.value = { ...product }
+  showProductModal.value = true
+}
+
+function closeProductModal(): void {
+  showProductModal.value = false
+}
+
+function saveProduct(): void {
+  if (!currentProduct.value) return
+
+  if (isEditMode.value) {
+    // Update existing product
+    const index = products.value.findIndex(p => p.id === currentProduct.value!.id)
+    if (index !== -1) {
+      products.value[index] = { ...currentProduct.value }
+    }
+  } else {
+    // Add new product
+    products.value.push({ ...currentProduct.value })
+  }
+
+  closeProductModal()
+}
+
+// Calculate total products and featured products
+const totalProducts = computed(() => products.value.length)
+const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
+const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
 </script>
 
 <template>
   <main>
     <div class="px-6 py-6 sm:px-6 lg:px-8">
       <div class="mx-auto max-w-7xl">
+        <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Products</h1>
             <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              A list of all the products in your store
+              Manage your product catalog
             </p>
           </div>
           <div class="mt-4 sm:mt-0">
-            <button type="button" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-              <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
+            <button
+              type="button"
+              @click="openAddProductModal"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus h-5 w-5 mr-1"></div>
               Add product
             </button>
           </div>
         </div>
 
-        <!-- Filters -->
+        <!-- Summary cards -->
+        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Total products card -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
+                    <div class="i-hugeicons-box-01 h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+                  </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Products</dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalProducts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Featured products card -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
+                    <div class="i-hugeicons-star-01 h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
+                  </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Featured Products</dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ featuredProducts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low stock products card -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-md bg-red-100 p-2 dark:bg-red-900">
+                    <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-300"></div>
+                  </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Low Stock Products</dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ lowStockProducts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters and view options -->
         <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -375,375 +510,476 @@ function toggleSort(column: string): void {
           </div>
 
           <div class="flex flex-col sm:flex-row gap-4">
+            <!-- Category filter -->
             <select
               v-model="categoryFilter"
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <option v-for="category in categories" :key="category" :value="category">
-                {{ category }}
+              <option value="all">All Categories</option>
+              <option v-for="category in categories" :key="category.id" :value="category.name">
+                {{ category.name }} ({{ category.count }})
               </option>
             </select>
 
+            <!-- Status filter -->
             <select
-              v-model="itemsPerPage"
+              v-model="statusFilter"
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
+              <option value="all">All Statuses</option>
+              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+                {{ status }}
+              </option>
             </select>
+
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                @click="viewMode = 'grid'"
+                :class="[
+                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'grid'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                ]"
+              >
+                <div class="i-hugeicons-grid-01 h-5 w-5"></div>
+              </button>
+              <button
+                type="button"
+                @click="viewMode = 'list'"
+                :class="[
+                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                ]"
+              >
+                <div class="i-hugeicons-list h-5 w-5"></div>
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Products table -->
-        <div class="mt-6 flow-root">
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                  <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('name')" class="group inline-flex items-center">
-                          Product
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'name'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('price')" class="group inline-flex items-center">
-                          Price
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'price'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Category</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                        <button @click="toggleSort('stock')" class="group inline-flex items-center">
-                          Stock
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'stock'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
-                          </span>
-                        </button>
-                      </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Actions</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-                    <tr v-for="product in paginatedProducts" :key="product.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
-                        <div class="flex items-center">
-                          <img :src="product.images[0]" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
-                          <div class="ml-4">
-                            <router-link :to="`/dashboard/commerce/products/detail/${product.id}`" class="hover:text-primary">
-                              <div>{{ product.name }}</div>
-                              <div class="text-gray-500 dark:text-gray-400 text-xs">#{{ product.id }}</div>
-                            </router-link>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">${{ product.price.toFixed(2) }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">{{ product.category }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">{{ product.stock }}</td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                              :class="{
-                                'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400': product.status === 'Active',
-                                'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400': product.status === 'Low Stock',
-                                'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400': product.status === 'Out of Stock'
-                              }">
-                          {{ product.status }}
-                        </span>
-                      </td>
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <div class="flex items-center justify-end space-x-2">
-                          <router-link :to="`/dashboard/commerce/products/detail/${product.id}`" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-eye h-5 w-5"></div>
-                          </router-link>
-                          <button
-                            type="button"
-                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                            @click="openEditDialog(product)"
-                          >
-                            <div class="i-hugeicons-license-draft h-5 w-5"></div>
-                          </button>
-                          <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                            <div class="i-hugeicons-waste h-5 w-5"></div>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="paginatedProducts.length === 0">
-                      <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                        No products found matching your criteria
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+        <!-- Sort options -->
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <span class="mr-2">Sort by:</span>
+          <button
+            @click="toggleSort('name')"
+            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
+          >
+            Name
+            <span v-if="sortBy === 'name'" class="ml-1">
+              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+            </span>
+          </button>
+          <button
+            @click="toggleSort('price')"
+            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'price' }"
+          >
+            Price
+            <span v-if="sortBy === 'price'" class="ml-1">
+              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+            </span>
+          </button>
+          <button
+            @click="toggleSort('rating')"
+            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'rating' }"
+          >
+            Rating
+            <span v-if="sortBy === 'rating'" class="ml-1">
+              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+            </span>
+          </button>
+          <button
+            @click="toggleSort('dateAdded')"
+            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
+          >
+            Date Added
+            <span v-if="sortBy === 'dateAdded'" class="ml-1">
+              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+            </span>
+          </button>
+        </div>
+
+        <!-- Grid view -->
+        <div v-if="viewMode === 'grid'" class="mt-6">
+          <div v-if="paginatedProducts.length === 0" class="py-12 text-center">
+            <div class="i-hugeicons-box-01 mx-auto h-12 w-12 text-gray-400"></div>
+            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No products found</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
+          </div>
+
+          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <!-- Product card -->
+            <div
+              v-for="product in paginatedProducts"
+              :key="product.id"
+              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
+            >
+              <!-- Product image with status badge -->
+              <div class="relative aspect-square overflow-hidden bg-gray-200 dark:bg-gray-700">
+                <img
+                  :src="product.imageUrl"
+                  :alt="product.name"
+                  class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                <span
+                  v-if="product.status !== 'Active'"
+                  :class="[getStatusClass(product.status), 'absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-medium']"
+                >
+                  {{ product.status }}
+                </span>
+                <span
+                  v-if="product.featured"
+                  class="absolute top-2 left-2 rounded-full bg-yellow-50 px-2 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400"
+                >
+                  Featured
+                </span>
+              </div>
+
+              <!-- Product info -->
+              <div class="p-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</h3>
+                  <div class="flex items-center">
+                    <div class="i-hugeicons-star-01-filled h-4 w-4 text-yellow-400"></div>
+                    <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">{{ product.rating }}</span>
+                    <span class="ml-1 text-xs text-gray-500 dark:text-gray-500">({{ product.reviewCount }})</span>
+                  </div>
+                </div>
+
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ product.description }}</p>
+
+                <div class="mt-2">
+                  <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ product.category }}</span>
+                </div>
+
+                <div class="mt-2 flex items-center">
+                  <span v-if="product.salePrice !== null" class="text-sm font-medium text-gray-900 dark:text-white">${{ product.salePrice.toFixed(2) }}</span>
+                  <span
+                    :class="[product.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-gray-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
+                  >
+                    ${{ product.price.toFixed(2) }}
+                  </span>
+                </div>
+
+                <div class="mt-3 flex items-center justify-between">
+                  <span class="text-xs text-gray-500 dark:text-gray-400">
+                    {{ product.inventory }} in stock
+                  </span>
+                  <button
+                    @click="openEditProductModal(product)"
+                    class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        <!-- List view -->
+        <div v-if="viewMode === 'list'" class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-blue-gray-700">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Product</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Category</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Price</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Inventory</th>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+              <tr v-if="paginatedProducts.length === 0">
+                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No products found. Try adjusting your search or filter.
+                </td>
+              </tr>
+              <tr v-for="product in paginatedProducts" :key="product.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                  <div class="flex items-center">
+                    <div class="h-10 w-10 flex-shrink-0">
+                      <img :src="product.imageUrl" :alt="product.name" class="h-10 w-10 rounded-md object-cover" />
+                    </div>
+                    <div class="ml-4">
+                      <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
+                      <div class="flex items-center mt-1">
+                        <div class="i-hugeicons-star-01-filled h-3 w-3 text-yellow-400"></div>
+                        <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">{{ product.rating }} ({{ product.reviewCount }})</span>
+                        <span v-if="product.featured" class="ml-2 inline-flex items-center rounded-full bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          Featured
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.category }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                  <div v-if="product.salePrice !== null">
+                    <div class="font-medium text-gray-900 dark:text-white">${{ product.salePrice.toFixed(2) }}</div>
+                    <div class="line-through text-xs text-gray-500 dark:text-gray-400">${{ product.price.toFixed(2) }}</div>
+                  </div>
+                  <div v-else class="font-medium text-gray-900 dark:text-white">${{ product.price.toFixed(2) }}</div>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                  <span :class="[getStatusClass(product.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                    {{ product.status }}
+                  </span>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ product.inventory }}</td>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <button
+                    @click="openEditProductModal(product)"
+                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                  >
+                    Edit<span class="sr-only">, {{ product.name }}</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <!-- Pagination -->
-        <div class="mt-6 flex items-center justify-between">
-          <div class="text-sm text-gray-700 dark:text-gray-300">
-            Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-            <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredProducts.length) }}</span> of
-            <span class="font-medium">{{ filteredProducts.length }}</span> results
-          </div>
-          <div class="flex space-x-2">
+        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
+          <div class="flex flex-1 justify-between sm:hidden">
             <button
               @click="previousPage"
               :disabled="currentPage === 1"
               :class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === 1
-                  ? 'text-gray-400 ring-gray-300 dark:text-gray-500 dark:ring-gray-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
               ]"
             >
-              <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
-            </button>
-            <button
-              v-for="page in totalPages"
-              :key="page"
-              @click="changePage(page)"
-              :class="[
-                'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset',
-                page === currentPage
-                  ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 focus:z-20 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              {{ page }}
+              Previous
             </button>
             <button
               @click="nextPage"
               :disabled="currentPage === totalPages"
               :class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === totalPages
-                  ? 'text-gray-400 ring-gray-300 dark:text-gray-500 dark:ring-gray-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
+                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
               ]"
             >
-              <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+              Next
             </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-sm text-gray-700 dark:text-gray-300">
+                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredProducts.length) }}</span> of
+                <span class="font-medium">{{ filteredProducts.length }}</span> results
+              </p>
+            </div>
+            <div>
+              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                <button
+                  @click="previousPage"
+                  :disabled="currentPage === 1"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
+                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
+                >
+                  <span class="sr-only">Previous</span>
+                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                </button>
+                <button
+                  v-for="page in totalPages"
+                  :key="page"
+                  @click="changePage(page)"
+                  :class="[
+                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
+                    page === currentPage
+                      ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
+                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-blue-gray-700'
+                  ]"
+                >
+                  {{ page }}
+                </button>
+                <button
+                  @click="nextPage"
+                  :disabled="currentPage === totalPages"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
+                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
+                >
+                  <span class="sr-only">Next</span>
+                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add/Edit Product Modal -->
+    <div v-if="showProductModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              @click="closeProductModal"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
+            >
+              <span class="sr-only">Close</span>
+              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                {{ isEditMode ? 'Edit Product' : 'Add New Product' }}
+              </h3>
+              <div class="mt-4">
+                <form @submit.prevent="saveProduct" class="space-y-4">
+                  <!-- Product name -->
+                  <div>
+                    <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                    <input
+                      type="text"
+                      id="product-name"
+                      v-model="currentProduct.name"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      required
+                    />
+                  </div>
+
+                  <!-- Product description -->
+                  <div>
+                    <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <textarea
+                      id="product-description"
+                      v-model="currentProduct.description"
+                      rows="3"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                    ></textarea>
+                  </div>
+
+                  <!-- Price and sale price -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="product-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price ($)</label>
+                      <input
+                        type="number"
+                        id="product-price"
+                        v-model="currentProduct.price"
+                        min="0"
+                        step="0.01"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label for="product-sale-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sale Price ($)</label>
+                      <input
+                        type="number"
+                        id="product-sale-price"
+                        v-model="currentProduct.salePrice"
+                        min="0"
+                        step="0.01"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Category and inventory -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                      <input
+                        type="text"
+                        id="product-category"
+                        v-model="currentProduct.category"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label for="product-inventory" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Inventory</label>
+                      <input
+                        type="number"
+                        id="product-inventory"
+                        v-model="currentProduct.inventory"
+                        min="0"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Status and featured -->
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                      <select
+                        id="product-status"
+                        v-model="currentProduct.status"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      >
+                        <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
+                      </select>
+                    </div>
+                    <div class="flex items-center h-full pt-6">
+                      <input
+                        id="product-featured"
+                        type="checkbox"
+                        v-model="currentProduct.featured"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                      />
+                      <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Featured product</label>
+                    </div>
+                  </div>
+
+                  <!-- Image URL -->
+                  <div>
+                    <label for="product-image" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
+                    <input
+                      type="text"
+                      id="product-image"
+                      v-model="currentProduct.imageUrl"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+
+                  <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                    <button
+                      type="submit"
+                      class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+                    >
+                      {{ isEditMode ? 'Save Changes' : 'Add Product' }}
+                    </button>
+                    <button
+                      type="button"
+                      @click="closeProductModal"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </main>
-
-  <!-- Edit Product Dialog -->
-  <transition name="fade" appear>
-    <Dialog v-if="showEditDialog" @close="showEditDialog = false" class="relative z-50">
-      <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Product</h3>
-            <button
-              class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
-              @click="showEditDialog = false"
-            >
-              <div class="i-hugeicons-x-mark h-5 w-5"></div>
-            </button>
-          </div>
-
-          <div v-if="editingProduct" class="space-y-4">
-            <!-- Basic Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                <input
-                  id="product-name"
-                  v-model="editingProduct.name"
-                  type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div>
-                <label for="product-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price</label>
-                <input
-                  id="product-price"
-                  v-model.number="editingProduct.price"
-                  type="number"
-                  step="0.01"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div>
-                <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                <select
-                  id="product-category"
-                  v-model="editingProduct.category"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option v-for="category in categories.filter(c => c !== 'All')" :key="category" :value="category">
-                    {{ category }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label for="product-stock" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Stock</label>
-                <input
-                  id="product-stock"
-                  v-model.number="editingProduct.stock"
-                  type="number"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div>
-                <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <select
-                  id="product-status"
-                  v-model="editingProduct.status"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                >
-                  <option v-for="status in statuses" :key="status" :value="status">
-                    {{ status }}
-                  </option>
-                </select>
-              </div>
-              <div>
-                <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
-                <input
-                  id="product-manufacturer"
-                  v-model="editingProduct.manufacturer"
-                  type="text"
-                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-            </div>
-
-            <!-- Similar Products Button -->
-            <div>
-              <button
-                @click="openSimilarProductsDialog(editingProduct)"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-              >
-                <div class="i-hugeicons-link-02 h-5 w-5 mr-2"></div>
-                Manage Similar Products
-              </button>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                @click="showEditDialog = false"
-                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                @click="saveProduct"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
-  </transition>
-
-  <!-- Similar Products Dialog -->
-  <transition name="fade" appear>
-    <Dialog v-if="showSimilarProductsDialog" @close="showSimilarProductsDialog = false" class="relative z-50">
-      <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
-
-      <div class="fixed inset-0 flex items-center justify-center p-4">
-        <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-gray-800">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-white">Manage Similar Products</h3>
-            <button
-              class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
-              @click="showSimilarProductsDialog = false"
-            >
-              <div class="i-hugeicons-x-mark h-5 w-5"></div>
-            </button>
-          </div>
-
-          <div v-if="editingProduct" class="space-y-4">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Select products that are similar to <strong>{{ editingProduct.name }}</strong>. These will be shown as recommendations.
-            </p>
-
-            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-md dark:border-gray-700">
-              <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-                <li
-                  v-for="product in products.filter(p => editingProduct ? p.id !== editingProduct.id : false)"
-                  :key="product.id"
-                  class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
-                >
-                  <input
-                    :id="`similar-product-${product.id}`"
-                    type="checkbox"
-                    :value="product.id"
-                    v-model="editingProduct.similarProducts"
-                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600"
-                  />
-                  <label :for="`similar-product-${product.id}`" class="ml-3 flex items-center cursor-pointer">
-                    <img :src="product.images[0]" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
-                    <div class="ml-3">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</p>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">{{ product.category }} - ${{ product.price.toFixed(2) }}</p>
-                    </div>
-                  </label>
-                </li>
-              </ul>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                @click="showSimilarProductsDialog = false"
-                class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-              >
-                Cancel
-              </button>
-              <button
-                @click="saveSimilarProducts"
-                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </DialogPanel>
-      </div>
-    </Dialog>
-  </transition>
 </template>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-</style>
