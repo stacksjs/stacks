@@ -1,13 +1,103 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.vue'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.vue'
+import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.vue'
+import ShippingZonesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingZonesTable.vue'
+import ShippingRatesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingRatesTable.vue'
+import DeliveryRoutesTable from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.vue'
+import DigitalDeliveryTable from '../../../../components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.vue'
+import LicenseKeysTable from '../../../../components/Dashboard/Commerce/Delivery/LicenseKeysTable.vue'
+import LicenseTemplatesTable from '../../../../components/Dashboard/Commerce/Delivery/LicenseTemplatesTable.vue'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.vue'
+import { DeliveryRoute as BaseDeliveryRoute } from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.vue'
 
 useHead({
   title: 'Dashboard - Commerce Delivery',
 })
 
+// Extend the DeliveryRoute interface to include additional properties
+interface DeliveryRoute extends BaseDeliveryRoute {
+  name: string
+  status: string
+  startCoords: { lat: number; lng: number }
+  endCoords: { lat: number; lng: number }
+  waypoints: { lat: number; lng: number }[]
+}
+
+interface ShippingMethod {
+  id: number
+  name: string
+  description: string
+  baseRate: number
+  status: string
+  handlingFee: number
+  freeShippingThreshold: number | null
+  zones: string[]
+}
+
+interface ShippingZone {
+  id: number
+  name: string
+  countries: string[]
+  regions: string[]
+  postalCodes: string[]
+  status: string
+}
+
+interface ShippingRate {
+  id: number
+  methodId: number
+  zoneId: number
+  weightFrom: number
+  weightTo: number
+  rate: number
+}
+
+interface DigitalDeliveryMethod {
+  id: number
+  name: string
+  description: string
+  status: string
+  downloadLimit: number | null
+  expiryDays: number | null
+  requiresLogin: boolean
+  automaticDelivery: boolean
+}
+
+interface LicenseKeyTemplate {
+  id: number
+  name: string
+  format: string
+  prefix: string
+  suffix: string
+  separator: string
+  charSet: string
+  segmentLength: number
+  segmentCount: number
+  active: boolean
+}
+
+interface LicenseKey {
+  id: number
+  key: string
+  templateId: number
+  customerId: number
+  customerName: string
+  customerEmail: string
+  productId: number
+  productName: string
+  orderId: number
+  dateCreated: string
+  dateAssigned: string | null
+  expiryDate: string | null
+  status: string
+  notes: string | null
+}
+
 // Sample shipping methods data
-const shippingMethods = ref([
+const shippingMethods = ref<ShippingMethod[]>([
   {
     id: 1,
     name: 'Standard Shipping',
@@ -81,7 +171,7 @@ const shippingMethods = ref([
 ])
 
 // Sample digital delivery methods data
-const digitalDeliveryMethods = ref([
+const digitalDeliveryMethods = ref<DigitalDeliveryMethod[]>([
   {
     id: 1,
     name: 'Direct Download',
@@ -135,7 +225,7 @@ const digitalDeliveryMethods = ref([
 ])
 
 // Sample license key templates
-const licenseKeyTemplates = ref([
+const licenseKeyTemplates = ref<LicenseKeyTemplate[]>([
   {
     id: 1,
     name: 'Standard Software License',
@@ -173,24 +263,6 @@ const licenseKeyTemplates = ref([
     active: false
   }
 ])
-
-// Add license key interface
-interface LicenseKey {
-  id: number
-  key: string
-  templateId: number
-  customerId: number
-  customerName: string
-  customerEmail: string
-  productId: number
-  productName: string
-  orderId: number
-  dateCreated: string
-  dateAssigned: string | null
-  expiryDate: string | null
-  status: string
-  notes: string | null
-}
 
 // Sample license keys data
 const licenseKeys = ref<LicenseKey[]>([
@@ -277,59 +349,59 @@ const licenseKeys = ref<LicenseKey[]>([
 ])
 
 // Sample shipping zones data
-const shippingZones = ref([
+const shippingZones = ref<ShippingZone[]>([
   {
     id: 1,
     name: 'Domestic',
     countries: ['United States'],
     regions: ['All states'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   },
   {
     id: 2,
     name: 'North America',
     countries: ['Canada', 'Mexico'],
     regions: ['All provinces/states'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   },
   {
     id: 3,
     name: 'Europe',
     countries: ['United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands', 'Belgium'],
     regions: ['All regions'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   },
   {
     id: 4,
     name: 'Asia Pacific',
     countries: ['Japan', 'Australia', 'New Zealand', 'Singapore', 'Hong Kong'],
     regions: ['All regions'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   },
   {
     id: 5,
     name: 'International',
     countries: ['Rest of World'],
     regions: ['All regions'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   },
   {
     id: 6,
     name: 'Local',
     countries: ['United States'],
     regions: ['Store locations only'],
-    taxRate: 0.00,
-    active: true
+    postalCodes: [],
+    status: 'Active'
   }
 ])
 
 // Sample shipping rates data
-const shippingRates = ref([
+const shippingRates = ref<ShippingRate[]>([
   {
     id: 1,
     methodId: 1,
@@ -396,164 +468,6 @@ const shippingRates = ref([
   }
 ])
 
-// Filter states
-const searchQuery = ref('')
-const selectedStatus = ref('All')
-const selectedZone = ref('All')
-
-// Filter states for digital delivery
-const digitalSearchQuery = ref('')
-const selectedDigitalStatus = ref('All')
-const licenseKeySearchQuery = ref('')
-const selectedLicenseStatus = ref('All')
-
-// Active tab state
-const activeTab = ref('methods') // 'methods', 'zones', 'rates', 'digital', 'license', or 'routes'
-
-// Status options
-const statusOptions = ['All', 'Active', 'Inactive']
-
-// Zone options computed from shipping zones
-const zoneOptions = computed(() => {
-  const zones = ['All']
-  shippingZones.value.forEach(zone => {
-    zones.push(zone.name)
-  })
-  return zones
-})
-
-// Filtered shipping methods
-const filteredShippingMethods = computed(() => {
-  return shippingMethods.value.filter(method => {
-    // Filter by search query
-    const matchesSearch = method.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-                          method.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-
-    // Filter by status
-    const matchesStatus = selectedStatus.value === 'All' || method.status === selectedStatus.value
-
-    // Filter by zone
-    const matchesZone = selectedZone.value === 'All' || method.zones.includes(selectedZone.value)
-
-    return matchesSearch && matchesStatus && matchesZone
-  })
-})
-
-// Filtered digital delivery methods
-const filteredDigitalMethods = computed(() => {
-  return digitalDeliveryMethods.value.filter(method => {
-    // Filter by search query
-    const matchesSearch = method.name.toLowerCase().includes(digitalSearchQuery.value.toLowerCase()) ||
-                          method.description.toLowerCase().includes(digitalSearchQuery.value.toLowerCase())
-
-    // Filter by status
-    const matchesStatus = selectedDigitalStatus.value === 'All' || method.status === selectedDigitalStatus.value
-
-    return matchesSearch && matchesStatus
-  })
-})
-
-// Filtered license keys
-const filteredLicenseKeys = computed(() => {
-  return licenseKeys.value.filter(licenseKey => {
-    // Filter by search query
-    const matchesSearch =
-      licenseKey.key.toLowerCase().includes(licenseKeySearchQuery.value.toLowerCase()) ||
-      licenseKey.customerName.toLowerCase().includes(licenseKeySearchQuery.value.toLowerCase()) ||
-      licenseKey.customerEmail.toLowerCase().includes(licenseKeySearchQuery.value.toLowerCase()) ||
-      licenseKey.productName.toLowerCase().includes(licenseKeySearchQuery.value.toLowerCase()) ||
-      (licenseKey.notes && licenseKey.notes.toLowerCase().includes(licenseKeySearchQuery.value.toLowerCase()))
-
-    // Filter by status
-    const matchesStatus = selectedLicenseStatus.value === 'All' || licenseKey.status === selectedLicenseStatus.value
-
-    return matchesSearch && matchesStatus
-  })
-})
-
-// Modal state
-const showAddMethodModal = ref(false)
-const showAddZoneModal = ref(false)
-const showAddRateModal = ref(false)
-const showAddDigitalMethodModal = ref(false)
-const showAddLicenseTemplateModal = ref(false)
-const showAddLicenseKeyModal = ref(false)
-const showViewLicenseKeyModal = ref(false)
-const selectedLicenseKey = ref<LicenseKey | null>(null)
-
-// Toggle modals
-const toggleAddMethodModal = () => {
-  showAddMethodModal.value = !showAddMethodModal.value
-}
-
-const toggleAddZoneModal = () => {
-  showAddZoneModal.value = !showAddZoneModal.value
-}
-
-const toggleAddRateModal = () => {
-  showAddRateModal.value = !showAddRateModal.value
-}
-
-const toggleAddDigitalMethodModal = () => {
-  showAddDigitalMethodModal.value = !showAddDigitalMethodModal.value
-}
-
-const toggleAddLicenseTemplateModal = () => {
-  showAddLicenseTemplateModal.value = !showAddLicenseTemplateModal.value
-}
-
-const toggleAddLicenseKeyModal = () => {
-  showAddLicenseKeyModal.value = !showAddLicenseKeyModal.value
-}
-
-const viewLicenseKey = (licenseKey: LicenseKey) => {
-  selectedLicenseKey.value = licenseKey
-  showViewLicenseKeyModal.value = true
-}
-
-const closeLicenseKeyModal = () => {
-  showViewLicenseKeyModal.value = false
-  selectedLicenseKey.value = null
-}
-
-// Format currency
-const formatCurrency = (value: number | null) => {
-  return value !== null ? `$${value.toFixed(2)}` : 'N/A'
-}
-
-// Format display for unlimited/null values
-const formatLimit = (value: number | null) => {
-  return value !== null ? value.toString() : 'Unlimited'
-}
-
-// Format display for expiry days
-const formatExpiry = (days: number | null) => {
-  return days !== null ? `${days} days` : 'Never expires'
-}
-
-// Format date display
-const formatDate = (date: string | null | undefined): string => {
-  if (!date) return 'N/A';
-  return new Date(date).toLocaleDateString();
-}
-
-// Define route type
-interface DeliveryRoute {
-  id: number;
-  name: string;
-  driver: string;
-  vehicle: string;
-  startLocation: string;
-  stops: number;
-  avgDeliveryTime: number;
-  totalDistance: number;
-  status: string;
-  lastActive?: string;
-  startCoords: { lat: number; lng: number };
-  endCoords: { lat: number; lng: number };
-  waypoints: Array<{ lat: number; lng: number }>;
-}
-
 // Sample routes data
 const deliveryRoutes = ref<DeliveryRoute[]>([
   {
@@ -566,6 +480,7 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
     avgDeliveryTime: 1.5,
     totalDistance: 28.4,
     status: 'Active',
+    lastActive: new Date('2023-05-15'),
     startCoords: { lat: 37.7749, lng: -122.4194 },
     endCoords: { lat: 37.7749, lng: -122.4194 },
     waypoints: [
@@ -584,6 +499,7 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
     avgDeliveryTime: 1.2,
     totalDistance: 32.7,
     status: 'Active',
+    lastActive: new Date('2023-05-18'),
     startCoords: { lat: 37.8044, lng: -122.2711 },
     endCoords: { lat: 37.8044, lng: -122.2711 },
     waypoints: [
@@ -602,6 +518,7 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
     avgDeliveryTime: 1.8,
     totalDistance: 41.2,
     status: 'Inactive',
+    lastActive: new Date('2023-05-10'),
     startCoords: { lat: 37.3382, lng: -121.8863 },
     endCoords: { lat: 37.3382, lng: -121.8863 },
     waypoints: [
@@ -620,6 +537,7 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
     avgDeliveryTime: 0.9,
     totalDistance: 12.5,
     status: 'Active',
+    lastActive: new Date('2023-05-19'),
     startCoords: { lat: 37.8719, lng: -122.2585 },
     endCoords: { lat: 37.8719, lng: -122.2585 },
     waypoints: [
@@ -638,6 +556,7 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
     avgDeliveryTime: 1.1,
     totalDistance: 18.9,
     status: 'Active',
+    lastActive: new Date('2023-05-17'),
     startCoords: { lat: 37.4419, lng: -122.1430 },
     endCoords: { lat: 37.4419, lng: -122.1430 },
     waypoints: [
@@ -648,1452 +567,450 @@ const deliveryRoutes = ref<DeliveryRoute[]>([
   }
 ])
 
-// Routes search and filter
-const routesSearchQuery = ref('')
-const selectedRouteStatus = ref('All')
+// Tab navigation
+const activeTab = ref('methods') // 'methods', 'zones', 'rates', 'digital', 'license', or 'routes'
 
-// Filtered routes
-const filteredRoutes = computed(() => {
-  return deliveryRoutes.value.filter(route => {
-    // Filter by search query
-    const matchesSearch =
-      route.name.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
-      route.driver.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
-      route.vehicle.toLowerCase().includes(routesSearchQuery.value.toLowerCase()) ||
-      route.startLocation.toLowerCase().includes(routesSearchQuery.value.toLowerCase())
+// Pagination state
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
 
-    // Filter by status
-    const matchesStatus = selectedRouteStatus.value === 'All' || route.status === selectedRouteStatus.value
+// Search state
+const searchQuery = ref('')
 
-    return matchesSearch && matchesStatus
+// Filtered data
+const filteredShippingMethods = computed(() => {
+  if (!searchQuery.value) return shippingMethods.value
+
+  const query = searchQuery.value.toLowerCase()
+  return shippingMethods.value.filter(method =>
+    method.name.toLowerCase().includes(query) ||
+    method.description.toLowerCase().includes(query)
+  )
+})
+
+const filteredShippingZones = computed(() => {
+  if (!searchQuery.value) return shippingZones.value
+
+  const query = searchQuery.value.toLowerCase()
+  return shippingZones.value.filter(zone =>
+    zone.name.toLowerCase().includes(query) ||
+    zone.countries.some(country => country.toLowerCase().includes(query)) ||
+    zone.regions.some(region => region.toLowerCase().includes(query))
+  )
+})
+
+const filteredShippingRates = computed(() => {
+  if (!searchQuery.value) return shippingRates.value
+
+  const query = searchQuery.value.toLowerCase()
+  return shippingRates.value.filter(rate => {
+    const method = shippingMethods.value.find(m => m.id === rate.methodId)
+    const zone = shippingZones.value.find(z => z.id === rate.zoneId)
+
+    return (method && method.name.toLowerCase().includes(query)) ||
+           (zone && zone.name.toLowerCase().includes(query))
   })
 })
 
-// Modal state for route map
-const showRouteMapModal = ref(false)
-const selectedRoute = ref<DeliveryRoute | null>(null)
+const filteredDigitalMethods = computed(() => {
+  if (!searchQuery.value) return digitalDeliveryMethods.value
 
-// Toggle route map modal
-const viewRouteOnMap = (routeItem: DeliveryRoute) => {
-  selectedRoute.value = routeItem
-  showRouteMapModal.value = true
-}
-
-const closeRouteMapModal = () => {
-  showRouteMapModal.value = false
-  selectedRoute.value = null
-}
-
-// Generate Google Maps URL for the selected route
-const getGoogleMapsEmbedUrl = computed(() => {
-  if (!selectedRoute.value) return ''
-
-  const origin = `${selectedRoute.value.startCoords.lat},${selectedRoute.value.startCoords.lng}`
-  const destination = `${selectedRoute.value.endCoords.lat},${selectedRoute.value.endCoords.lng}`
-
-  let waypointsParam = ''
-  if (selectedRoute.value.waypoints && selectedRoute.value.waypoints.length > 0) {
-    waypointsParam = selectedRoute.value.waypoints
-      .map(wp => `${wp.lat},${wp.lng}`)
-      .join('|')
-  }
-
-  return `https://www.google.com/maps/embed/v1/directions?key=YOUR_API_KEY&origin=${origin}&destination=${destination}${waypointsParam ? '&waypoints=' + waypointsParam : ''}&mode=driving`
+  const query = searchQuery.value.toLowerCase()
+  return digitalDeliveryMethods.value.filter(method =>
+    method.name.toLowerCase().includes(query) ||
+    method.description.toLowerCase().includes(query)
+  )
 })
+
+const filteredLicenseTemplates = computed(() => {
+  if (!searchQuery.value) return licenseKeyTemplates.value
+
+  const query = searchQuery.value.toLowerCase()
+  return licenseKeyTemplates.value.filter(template =>
+    template.name.toLowerCase().includes(query) ||
+    template.format.toLowerCase().includes(query)
+  )
+})
+
+const filteredLicenseKeys = computed(() => {
+  if (!searchQuery.value) return licenseKeys.value
+
+  const query = searchQuery.value.toLowerCase()
+  return licenseKeys.value.filter(key =>
+    key.key.toLowerCase().includes(query) ||
+    key.customerName.toLowerCase().includes(query) ||
+    key.customerEmail.toLowerCase().includes(query) ||
+    key.productName.toLowerCase().includes(query)
+  )
+})
+
+const filteredRoutes = computed(() => {
+  if (!searchQuery.value) return deliveryRoutes.value
+
+  const query = searchQuery.value.toLowerCase()
+  return deliveryRoutes.value.filter(route =>
+    route.driver.toLowerCase().includes(query) ||
+    route.vehicle.toLowerCase().includes(query) ||
+    route.startLocation.toLowerCase().includes(query)
+  )
+})
+
+// Methods
+const handleSearch = (query: string) => {
+  searchQuery.value = query
+  currentPage.value = 1
+}
+
+const handleAddMethod = () => {
+  // Implementation for adding a new shipping method
+  console.log('Add new shipping method')
+}
+
+const handleAddZone = () => {
+  // Implementation for adding a new shipping zone
+  console.log('Add new shipping zone')
+}
+
+const handleAddRate = () => {
+  // Implementation for adding a new shipping rate
+  console.log('Add new shipping rate')
+}
+
+const handleAddDigitalMethod = () => {
+  // Implementation for adding a new digital delivery method
+  console.log('Add new digital delivery method')
+}
+
+const handleAddLicenseTemplate = () => {
+  // Implementation for adding a new license key template
+  console.log('Add new license key template')
+}
+
+const handleAddLicenseKey = () => {
+  // Implementation for adding a new license key
+  console.log('Add new license key')
+}
+
+const handleAddRoute = () => {
+  // Implementation for adding a new delivery route
+  console.log('Add new delivery route')
+}
+
+const viewRouteOnMap = (route: DeliveryRoute) => {
+  // Implementation for viewing a route on the map
+  console.log('View route on map', route)
+}
+
+const handleEditMethod = (method: ShippingMethod) => {
+  // Implementation for editing a shipping method
+  console.log('Edit shipping method', method)
+}
+
+const handleDeleteMethod = (method: ShippingMethod) => {
+  // Implementation for deleting a shipping method
+  console.log('Delete shipping method', method)
+}
+
+const handleEditZone = (zone: ShippingZone) => {
+  // Implementation for editing a shipping zone
+  console.log('Edit shipping zone', zone)
+}
+
+const handleDeleteZone = (zone: ShippingZone) => {
+  // Implementation for deleting a shipping zone
+  console.log('Delete shipping zone', zone)
+}
+
+const handleEditRate = (rate: ShippingRate) => {
+  // Implementation for editing a shipping rate
+  console.log('Edit shipping rate', rate)
+}
+
+const handleDeleteRate = (rate: ShippingRate) => {
+  // Implementation for deleting a shipping rate
+  console.log('Delete shipping rate', rate)
+}
+
+const handleEditDigitalMethod = (method: DigitalDeliveryMethod) => {
+  // Implementation for editing a digital delivery method
+  console.log('Edit digital delivery method', method)
+}
+
+const handleDeleteDigitalMethod = (method: DigitalDeliveryMethod) => {
+  // Implementation for deleting a digital delivery method
+  console.log('Delete digital delivery method', method)
+}
+
+const handleEditLicenseTemplate = (template: LicenseKeyTemplate) => {
+  // Implementation for editing a license key template
+  console.log('Edit license key template', template)
+}
+
+const handleDeleteLicenseTemplate = (template: LicenseKeyTemplate) => {
+  // Implementation for deleting a license key template
+  console.log('Delete license key template', template)
+}
+
+const handleViewLicenseKey = (key: LicenseKey) => {
+  // Implementation for viewing a license key
+  console.log('View license key', key)
+}
+
+const handleEditLicenseKey = (key: LicenseKey) => {
+  // Implementation for editing a license key
+  console.log('Edit license key', key)
+}
+
+const handleEditRoute = (route: DeliveryRoute) => {
+  // Implementation for editing a delivery route
+  console.log('Edit delivery route', route)
+}
+
+const handleDeleteRoute = (route: DeliveryRoute) => {
+  // Implementation for deleting a delivery route
+  console.log('Delete delivery route', route)
+}
+
+// Pagination methods
+const handlePrevPage = () => {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+const handleNextPage = () => {
+  const totalItems = getTotalItems()
+  const totalPages = Math.ceil(totalItems / itemsPerPage.value)
+
+  if (currentPage.value < totalPages) {
+    currentPage.value++
+  }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage.value = page
+}
+
+const getTotalItems = () => {
+  switch (activeTab.value) {
+    case 'methods':
+      return filteredShippingMethods.value.length
+    case 'zones':
+      return filteredShippingZones.value.length
+    case 'rates':
+      return filteredShippingRates.value.length
+    case 'digital':
+      return filteredDigitalMethods.value.length
+    case 'license':
+      return filteredLicenseKeys.value.length
+    case 'routes':
+      return filteredRoutes.value.length
+    default:
+      return 0
+  }
+}
+
+// Tab configuration
+const tabs = [
+  { name: 'Shipping Methods', value: 'methods', href: '#methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '#zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '#rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '#digital' },
+  { name: 'License Keys', value: 'license', href: '#license' },
+  { name: 'Delivery Routes', value: 'routes', href: '#routes' },
+]
 </script>
 
 <template>
-  <main>
-    <div class="relative isolate overflow-hidden">
-      <div class="px-6 py-6 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-7xl">
-          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Delivery</h1>
-
-          <!-- Tabs -->
-          <div class="mt-4 border-b border-gray-200 dark:border-gray-700">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-              <a
-                href="#"
-                @click.prevent="activeTab = 'methods'"
-                :class="[
-                  activeTab === 'methods'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                Shipping Methods
-              </a>
-              <a
-                href="#"
-                @click.prevent="activeTab = 'zones'"
-                :class="[
-                  activeTab === 'zones'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                Shipping Zones
-              </a>
-              <a
-                href="#"
-                @click.prevent="activeTab = 'rates'"
-                :class="[
-                  activeTab === 'rates'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                Shipping Rates
-              </a>
-              <a
-                href="#"
-                @click.prevent="activeTab = 'digital'"
-                :class="[
-                  activeTab === 'digital'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                Digital Delivery
-              </a>
-              <a
-                href="#"
-                @click.prevent="activeTab = 'license'"
-                :class="[
-                  activeTab === 'license'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                License Keys
-              </a>
-              <a
-                href="#"
-                @click.prevent="activeTab = 'routes'"
-                :class="[
-                  activeTab === 'routes'
-                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300',
-                  'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-                ]"
-              >
-                Routes
-              </a>
-            </nav>
-          </div>
-
-          <!-- Filters -->
-          <div v-if="activeTab === 'methods'" class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              <!-- Search -->
-              <div class="relative rounded-md shadow-sm">
-                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  v-model="searchQuery"
-                  type="text"
-                  class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500 w-full"
-                  placeholder="Search shipping methods..."
-                />
-              </div>
-
-              <!-- Status filter -->
-              <div class="relative">
-                <select
-                  v-model="selectedStatus"
-                  class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                >
-                  <option v-for="status in statusOptions" :key="status" :value="status">
-                    {{ status }} Status
-                  </option>
-                </select>
-              </div>
-
-              <!-- Zone filter -->
-              <div class="relative">
-                <select
-                  v-model="selectedZone"
-                  class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                >
-                  <option v-for="zone in zoneOptions" :key="zone" :value="zone">
-                    {{ zone }} Zone
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Add buttons -->
-            <div class="mt-4 sm:mt-0 flex space-x-3">
-              <button
-                @click="toggleAddMethodModal"
-                type="button"
-                class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-              >
-                <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                Add Method
-              </button>
-              <button
-                @click="toggleAddZoneModal"
-                type="button"
-                class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700"
-              >
-                <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                Add Zone
-              </button>
-              <button
-                @click="toggleAddRateModal"
-                type="button"
-                class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700"
-              >
-                <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                Add Rate
-              </button>
-            </div>
-          </div>
-
-          <!-- Shipping Methods Table -->
-          <div v-if="activeTab === 'methods'" class="mt-8 flow-root">
-            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-              <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                  <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                    <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                      <tr>
-                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Description</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Base Rate</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Handling Fee</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Free Shipping</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Zones</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                          <span class="sr-only">Actions</span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                      <tr v-for="method in filteredShippingMethods" :key="method.id">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                          {{ method.name }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                          {{ method.description }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                          {{ formatCurrency(method.baseRate) }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                          {{ formatCurrency(method.handlingFee) }}
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                          <span v-if="method.freeShippingThreshold !== null">
-                            Over {{ formatCurrency(method.freeShippingThreshold) }}
-                          </span>
-                          <span v-else>Not available</span>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                          <div class="flex flex-wrap gap-1">
-                            <span
-                              v-for="zone in method.zones"
-                              :key="zone"
-                              class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                            >
-                              {{ zone }}
-                            </span>
-                          </div>
-                        </td>
-                        <td class="whitespace-nowrap px-3 py-4 text-sm">
-                          <span
-                            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                            :class="{
-                              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': method.status === 'Active',
-                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': method.status === 'Inactive'
-                            }"
-                          >
-                            {{ method.status }}
-                          </span>
-                        </td>
-                        <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" title="Edit">
-                            <div class="i-hugeicons-edit-01 h-5 w-5" />
-                          </button>
-                          <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md border border-transparent hover:border-red-200 dark:hover:border-red-800" title="Delete">
-                            <div class="i-hugeicons-waste h-5 w-5" />
-                          </button>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shipping Zones Content -->
-          <div v-if="activeTab === 'zones'" class="mt-4">
-            <!-- Zones filters -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <!-- Search -->
-                <div class="relative rounded-md shadow-sm">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                    placeholder="Search shipping zones..."
-                  />
-                </div>
-              </div>
-
-              <!-- Add Zone button -->
-              <div class="mt-4 sm:mt-0">
-                <button
-                  @click="toggleAddZoneModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                  Add Zone
-                </button>
-              </div>
-            </div>
-
-            <!-- Shipping Zones Table -->
-            <div class="mt-8 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Countries</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Regions</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Tax Rate</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="zone in shippingZones" :key="zone.id">
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ zone.name }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ zone.countries.join(', ') }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ zone.regions.join(', ') }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ zone.taxRate }}%
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm">
-                            <span
-                              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': zone.active,
-                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': !zone.active
-                              }"
-                            >
-                              {{ zone.active ? 'Active' : 'Inactive' }}
-                            </span>
-                          </td>
-                          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                              Edit
-                            </button>
-                            <span class="mx-2 text-gray-300 dark:text-gray-600">|</span>
-                            <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shipping Rates Content -->
-          <div v-if="activeTab === 'rates'" class="mt-4">
-            <!-- Rates filters -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <!-- Method filter -->
-                <div class="relative">
-                  <select
-                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option value="all">All Methods</option>
-                    <option v-for="method in shippingMethods" :key="method.id" :value="method.id">
-                      {{ method.name }}
-                    </option>
-                  </select>
-                </div>
-
-                <!-- Zone filter -->
-                <div class="relative">
-                  <select
-                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option value="all">All Zones</option>
-                    <option v-for="zone in shippingZones" :key="zone.id" :value="zone.id">
-                      {{ zone.name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Add Rate button -->
-              <div class="mt-4 sm:mt-0">
-                <button
-                  @click="toggleAddRateModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                  Add Rate
-                </button>
-              </div>
-            </div>
-
-            <!-- Shipping Rates Table -->
-            <div class="mt-8 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Method</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Zone</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Weight From</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Weight To</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Rate</th>
-                          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="rate in shippingRates" :key="rate.id">
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ shippingMethods.find(m => m.id === rate.methodId)?.name || 'Unknown' }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ shippingZones.find(z => z.id === rate.zoneId)?.name || 'Unknown' }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ rate.weightFrom }} kg
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ rate.weightTo }} kg
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatCurrency(rate.rate) }}
-                          </td>
-                          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                              Edit
-                            </button>
-                            <span class="mx-2 text-gray-300 dark:text-gray-600">|</span>
-                            <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Digital Delivery Section -->
-          <div v-if="activeTab === 'digital'" class="mt-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <!-- Search -->
-                <div class="relative rounded-md shadow-sm">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    v-model="digitalSearchQuery"
-                    type="text"
-                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                    placeholder="Search digital delivery methods..."
-                  />
-                </div>
-
-                <!-- Status filter -->
-                <div class="relative">
-                  <select
-                    v-model="selectedDigitalStatus"
-                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option v-for="status in statusOptions" :key="status" :value="status">
-                      {{ status }} Status
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Add Digital Method button -->
-              <div class="mt-4 sm:mt-0">
-                <button
-                  @click="toggleAddDigitalMethodModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                  Add Digital Method
-                </button>
-              </div>
-            </div>
-
-            <!-- Digital Delivery Methods Table -->
-            <div class="mt-8 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Description</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Download Limit</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Expiry Days</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Requires Login</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Automatic Delivery</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                          <th scope="col" class="relative py-4 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="method in filteredDigitalMethods" :key="method.id">
-                          <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ method.name }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ method.description }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatLimit(method.downloadLimit) }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatExpiry(method.expiryDays) }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ method.requiresLogin ? 'Yes' : 'No' }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ method.automaticDelivery ? 'Yes' : 'No' }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm">
-                            <span
-                              class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': method.status === 'Active',
-                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': method.status === 'Inactive'
-                              }"
-                            >
-                              {{ method.status }}
-                            </span>
-                          </td>
-                          <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                              Edit
-                            </button>
-                            <span class="mx-2 text-gray-300 dark:text-gray-600">|</span>
-                            <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                              Delete
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pagination for Digital Delivery -->
-          <div v-if="activeTab === 'digital'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
-            <div class="flex flex-1 justify-between sm:hidden">
-              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
-              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
-            </div>
-            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredDigitalMethods.length }}</span> of <span class="font-medium">{{ filteredDigitalMethods.length }}</span> results
-                </p>
-              </div>
-              <div>
-                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
-                  </a>
-                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
-                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
-                  </a>
-                </nav>
-              </div>
-            </div>
-          </div>
-
-          <!-- License Keys Section -->
-          <div v-if="activeTab === 'license'" class="mt-4">
-            <div class="pb-5 sm:flex sm:items-center sm:justify-between">
-              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">License Keys</h3>
-
-              <div class="mt-3 sm:mt-0 sm:ml-4">
-                <button
-                  @click="toggleAddLicenseKeyModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-                  Add License Key
-                </button>
-              </div>
-            </div>
-
-            <!-- License Keys filters -->
-            <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-6">
-                <!-- Search -->
-                <div class="relative rounded-md shadow-sm w-full sm:w-80">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    v-model="licenseKeySearchQuery"
-                    type="text"
-                    class="block w-full rounded-md border-0 py-2.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                    placeholder="Search license keys..."
-                  />
-                </div>
-
-                <!-- Status filter -->
-                <div class="relative w-full sm:w-52">
-                  <select
-                    v-model="selectedLicenseStatus"
-                    class="block w-full rounded-md border-0 py-2.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option v-for="status in ['All', 'Active', 'Inactive', 'Revoked', 'Unassigned']" :key="status" :value="status">
-                      {{ status }} Status
-                    </option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- License Keys Table -->
-            <div class="mt-6 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Key</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Template</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Customer</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Product</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Order ID</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Date Created</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Expiry Date</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                          <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="licenseKey in filteredLicenseKeys" :key="licenseKey.id">
-                          <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ licenseKey.key }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKeyTemplates.find(t => t.id === licenseKey.templateId)?.name || 'Unknown' }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKey.customerName }}
-                            <div class="text-xs text-gray-400 dark:text-gray-500">{{ licenseKey.customerEmail }}</div>
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKey.productName }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ licenseKey.orderId }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatDate(licenseKey.dateCreated) }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatDate(licenseKey.expiryDate) }}
-                          </td>
-                          <td class="whitespace-nowrap px-4 py-4.5 text-sm">
-                            <span
-                              class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': licenseKey.status === 'Active',
-                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': licenseKey.status === 'Inactive',
-                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': licenseKey.status === 'Revoked',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': licenseKey.status === 'Unassigned'
-                              }"
-                            >
-                              {{ licenseKey.status }}
-                            </span>
-                          </td>
-                          <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800" @click="viewLicenseKey(licenseKey)">View</button>
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-1.5 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 ml-2">Edit</button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- License Key Templates Section -->
-            <div class="mt-12 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <div class="pb-5 sm:flex sm:items-center sm:justify-between">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">License Key Templates</h3>
-                <div class="mt-3 sm:mt-0 sm:ml-4">
-                  <button
-                    @click="toggleAddLicenseTemplateModal"
-                    type="button"
-                    class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                  >
-                    <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-                    Add License Template
-                  </button>
-                </div>
-              </div>
-
-              <!-- License Key Templates Table -->
-              <div class="mt-6 flow-root">
-                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                      <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                        <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                          <tr>
-                            <th scope="col" class="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
-                            <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Format</th>
-                            <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Prefix</th>
-                            <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Segments</th>
-                            <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Character Set</th>
-                            <th scope="col" class="px-4 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                            <th scope="col" class="relative py-4 pl-3 pr-4 sm:pr-6">
-                              <span class="sr-only">Actions</span>
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                          <tr v-for="template in licenseKeyTemplates" :key="template.id">
-                            <td class="whitespace-nowrap py-4.5 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                              {{ template.name }}
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                              {{ template.format }}
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                              {{ template.prefix || 'None' }}
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                              {{ template.segmentCount }} × {{ template.segmentLength }}
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4.5 text-sm text-gray-500 dark:text-gray-300">
-                              {{ template.charSet.length }} chars
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-4.5 text-sm">
-                              <span
-                                class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium"
-                                :class="{
-                                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': template.active,
-                                  'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': !template.active
-                                }"
-                              >
-                                {{ template.active ? 'Active' : 'Inactive' }}
-                              </span>
-                            </td>
-                            <td class="relative whitespace-nowrap py-4.5 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                              <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                                Edit
-                              </button>
-                              <span class="mx-2 text-gray-300 dark:text-gray-600">|</span>
-                              <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                                Delete
-                              </button>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pagination for Methods -->
-          <div v-if="activeTab === 'methods'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
-            <div class="flex flex-1 justify-between sm:hidden">
-              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
-              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
-            </div>
-            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredShippingMethods.length }}</span> of <span class="font-medium">{{ filteredShippingMethods.length }}</span> results
-                </p>
-              </div>
-              <div>
-                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
-                  </a>
-                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
-                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
-                  </a>
-                </nav>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pagination for License Keys -->
-          <div v-if="activeTab === 'license'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
-            <div class="flex flex-1 justify-between sm:hidden">
-              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
-              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
-            </div>
-            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredLicenseKeys.length }}</span> of <span class="font-medium">{{ filteredLicenseKeys.length }}</span> results
-                </p>
-              </div>
-              <div>
-                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
-                  </a>
-                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
-                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
-                  </a>
-                </nav>
-              </div>
-            </div>
-          </div>
-
-          <!-- Routes search and filter -->
-          <div v-if="activeTab === 'routes'" class="mt-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-                <!-- Search -->
-                <div class="relative rounded-md shadow-sm">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    v-model="routesSearchQuery"
-                    type="text"
-                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-                    placeholder="Search delivery routes..."
-                  />
-                </div>
-
-                <!-- Status filter -->
-                <div class="relative">
-                  <select
-                    v-model="selectedRouteStatus"
-                    class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-                  >
-                    <option v-for="status in ['All', 'Active', 'Inactive']" :key="status" :value="status">
-                      {{ status }} Status
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Add Route button -->
-              <div class="mt-4 sm:mt-0">
-                <button
-                  @click="toggleAddZoneModal"
-                  type="button"
-                  class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                >
-                  <div class="i-hugeicons-plus-sign h-5 w-5 mr-1" />
-                  Add Route
-                </button>
-              </div>
-            </div>
-
-            <!-- Routes Table -->
-            <div class="mt-8 flow-root">
-              <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                      <thead class="bg-gray-50 dark:bg-blue-gray-700">
-                        <tr>
-                          <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Name</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Driver</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Vehicle</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Start Location</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Stops</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Average Delivery Time</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Total Distance</th>
-                          <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Last Active</th>
-                          <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                            <span class="sr-only">Actions</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                        <tr v-for="route in filteredRoutes" :key="route.id">
-                          <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white sm:pl-6">
-                            {{ route.name }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.driver }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.vehicle }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm">
-                            <span
-                              class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': route.status === 'Active',
-                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': route.status === 'Inactive'
-                              }"
-                            >
-                              {{ route.status }}
-                            </span>
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.startLocation }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.stops }}
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.avgDeliveryTime }} hours
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ route.totalDistance }} km
-                          </td>
-                          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
-                            {{ formatDate(route.lastActive) }}
-                          </td>
-                          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" @click="viewRouteOnMap(route)" title="View Map">
-                              <div class="i-hugeicons-map-01 h-5 w-5" />
-                            </button>
-                            <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-2 rounded-md border border-transparent hover:border-blue-200 dark:hover:border-blue-800 mr-2" title="Edit">
-                              <div class="i-hugeicons-edit-01 h-5 w-5" />
-                            </button>
-                            <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-2 rounded-md border border-transparent hover:border-red-200 dark:hover:border-red-800" title="Delete">
-                              <div class="i-hugeicons-waste h-5 w-5" />
-                            </button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pagination for Routes -->
-          <div v-if="activeTab === 'routes'" class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 px-4 py-3 sm:px-6">
-            <div class="flex flex-1 justify-between sm:hidden">
-              <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Previous</a>
-              <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700">Next</a>
-            </div>
-            <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-              <div>
-                <p class="text-sm text-gray-700 dark:text-gray-300">
-                  Showing <span class="font-medium">1</span> to <span class="font-medium">{{ filteredRoutes.length }}</span> of <span class="font-medium">{{ filteredRoutes.length }}</span> results
-                </p>
-              </div>
-              <div>
-                <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                  <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
-                  </a>
-                  <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
-                  <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
-                    <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
-                  </a>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="py-6">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+      <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Delivery</h1>
     </div>
-  </main>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+      <div class="py-4">
+        <!-- Tab Navigation -->
+        <TabNavigation
+          v-model="activeTab"
+          :tabs="tabs"
+        />
 
-  <!-- Modal for adding digital delivery method -->
-  <div v-if="showAddDigitalMethodModal" class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-        <div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Add Digital Delivery Method</h3>
-            <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div class="sm:col-span-6">
-                <label for="digital-method-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                <div class="mt-1">
-                  <input type="text" id="digital-method-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Method name" />
-                </div>
-              </div>
+        <!-- Shipping Methods Tab -->
+        <div v-if="activeTab === 'methods'">
+          <SearchFilter
+            placeholder="Search shipping methods..."
+            add-button-text="Add Method"
+            @search="handleSearch"
+            @add="handleAddMethod"
+          />
 
-              <div class="sm:col-span-6">
-                <label for="digital-method-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
-                <div class="mt-1">
-                  <textarea id="digital-method-description" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Describe this delivery method"></textarea>
-                </div>
-              </div>
+          <ShippingMethodsTable
+            :methods="filteredShippingMethods"
+            @edit="handleEditMethod"
+            @delete="handleDeleteMethod"
+          />
 
-              <div class="sm:col-span-3">
-                <label for="digital-method-download-limit" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Download Limit</label>
-                <div class="mt-1">
-                  <input type="number" id="digital-method-download-limit" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Leave blank for unlimited" />
-                </div>
-              </div>
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredShippingMethods.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
+        </div>
 
-              <div class="sm:col-span-3">
-                <label for="digital-method-expiry-days" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Days</label>
-                <div class="mt-1">
-                  <input type="number" id="digital-method-expiry-days" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Leave blank for no expiry" />
-                </div>
-              </div>
+        <!-- Shipping Zones Tab -->
+        <div v-if="activeTab === 'zones'">
+          <SearchFilter
+            placeholder="Search shipping zones..."
+            add-button-text="Add Zone"
+            @search="handleSearch"
+            @add="handleAddZone"
+          />
 
-              <div class="sm:col-span-3">
-                <div class="flex items-center">
-                  <input id="requires-login" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700" />
-                  <label for="requires-login" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Requires Login</label>
-                </div>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Customer must be logged in to access digital products</p>
-              </div>
+          <ShippingZonesTable
+            :zones="filteredShippingZones"
+            @edit="handleEditZone"
+            @delete="handleDeleteZone"
+          />
 
-              <div class="sm:col-span-3">
-                <div class="flex items-center">
-                  <input id="automatic-delivery" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700" checked />
-                  <label for="automatic-delivery" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Automatic Delivery</label>
-                </div>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Products are delivered automatically when order is completed</p>
-              </div>
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredShippingZones.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
+        </div>
 
-              <div class="sm:col-span-3">
-                <label for="digital-method-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <div class="mt-1">
-                  <select id="digital-method-status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+        <!-- Shipping Rates Tab -->
+        <div v-if="activeTab === 'rates'">
+          <SearchFilter
+            placeholder="Search shipping rates..."
+            add-button-text="Add Rate"
+            @search="handleSearch"
+            @add="handleAddRate"
+          />
+
+          <ShippingRatesTable
+            :rates="filteredShippingRates"
+            :methods="shippingMethods"
+            :zones="shippingZones"
+            @edit="handleEditRate"
+            @delete="handleDeleteRate"
+          />
+
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredShippingRates.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
+        </div>
+
+        <!-- Digital Delivery Tab -->
+        <div v-if="activeTab === 'digital'">
+          <SearchFilter
+            placeholder="Search digital delivery methods..."
+            add-button-text="Add Digital Method"
+            @search="handleSearch"
+            @add="handleAddDigitalMethod"
+          />
+
+          <DigitalDeliveryTable
+            :methods="filteredDigitalMethods"
+            @edit="handleEditDigitalMethod"
+            @delete="handleDeleteDigitalMethod"
+          />
+
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredDigitalMethods.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
+        </div>
+
+        <!-- License Keys Tab -->
+        <div v-if="activeTab === 'license'">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">License Key Templates</h2>
+            <button
+              @click="handleAddLicenseTemplate"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Template
+            </button>
           </div>
-        </div>
-        <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="toggleAddDigitalMethodModal">Save</button>
-          <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-600" @click="toggleAddDigitalMethodModal">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Modal for adding license key template -->
-  <div v-if="showAddLicenseTemplateModal" class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-        <div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Add License Key Template</h3>
-            <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div class="sm:col-span-6">
-                <label for="license-template-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                <div class="mt-1">
-                  <input type="text" id="license-template-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Template name" />
-                </div>
-              </div>
+          <LicenseTemplatesTable
+            :templates="filteredLicenseTemplates"
+            @edit="handleEditLicenseTemplate"
+            @delete="handleDeleteLicenseTemplate"
+          />
 
-              <div class="sm:col-span-3">
-                <label for="license-template-prefix" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Prefix</label>
-                <div class="mt-1">
-                  <input type="text" id="license-template-prefix" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional prefix" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="license-template-suffix" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Suffix</label>
-                <div class="mt-1">
-                  <input type="text" id="license-template-suffix" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional suffix" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="license-template-segments" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Segment Count</label>
-                <div class="mt-1">
-                  <input type="number" id="license-template-segments" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" min="1" max="10" value="4" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="license-template-length" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Segment Length</label>
-                <div class="mt-1">
-                  <input type="number" id="license-template-length" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" min="2" max="12" value="4" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="license-template-separator" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Separator</label>
-                <div class="mt-1">
-                  <select id="license-template-separator" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="-">Hyphen (-)</option>
-                    <option value="_">Underscore (_)</option>
-                    <option value=".">Period (.)</option>
-                    <option value=" ">Space</option>
-                    <option value="">None</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="license-template-charset" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Character Set</label>
-                <div class="mt-1">
-                  <select id="license-template-charset" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="alphanumeric">Alphanumeric (A-Z, 0-9)</option>
-                    <option value="uppercase">Uppercase Letters (A-Z)</option>
-                    <option value="numeric">Numbers Only (0-9)</option>
-                    <option value="hexadecimal">Hexadecimal (0-9, A-F)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="sm:col-span-6">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Preview</label>
-                <div class="mt-1 p-2 border rounded bg-gray-50 dark:bg-blue-gray-900 dark:border-gray-600">
-                  <code class="text-sm text-gray-900 dark:text-gray-100 font-mono">XXXX-XXXX-XXXX-XXXX</code>
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <div class="flex items-center">
-                  <input id="active-template" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700" checked />
-                  <label for="active-template" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Active</label>
-                </div>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Enable this template for use</p>
-              </div>
-            </div>
+          <div class="flex justify-between mt-10 mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">License Keys</h2>
+            <button
+              @click="handleAddLicenseKey"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add License Key
+            </button>
           </div>
+
+          <LicenseKeysTable
+            :license-keys="filteredLicenseKeys"
+            :templates="licenseKeyTemplates"
+            @view="handleViewLicenseKey"
+            @edit="handleEditLicenseKey"
+          />
+
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredLicenseKeys.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
         </div>
-        <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="toggleAddLicenseTemplateModal">Save</button>
-          <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-600" @click="toggleAddLicenseTemplateModal">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Modal for viewing license key -->
-  <div v-if="showViewLicenseKeyModal && selectedLicenseKey" class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-        <div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">License Key Details</h3>
-            <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-6 sm:grid-cols-6">
-              <div class="sm:col-span-6">
-                <label for="license-key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">License Key</label>
-                <div class="mt-1.5">
-                  <input type="text" id="license-key" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.key" readonly />
-                </div>
-              </div>
+        <!-- Delivery Routes Tab -->
+        <div v-if="activeTab === 'routes'">
+          <SearchFilter
+            placeholder="Search delivery routes..."
+            add-button-text="Add Route"
+            @search="handleSearch"
+            @add="handleAddRoute"
+          />
 
-              <div class="sm:col-span-3">
-                <label for="license-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">License Template</label>
-                <div class="mt-1.5">
-                  <input type="text" id="license-template" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="licenseKeyTemplates.find(t => t.id === selectedLicenseKey?.templateId)?.name || 'Unknown'" readonly />
-                </div>
-              </div>
+          <DeliveryRoutesTable
+            :routes="filteredRoutes"
+            @view-map="viewRouteOnMap"
+            @edit="handleEditRoute"
+            @delete="handleDeleteRoute"
+          />
 
-              <div class="sm:col-span-3">
-                <label for="customer-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Name</label>
-                <div class="mt-1.5">
-                  <input type="text" id="customer-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.customerName" readonly />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="customer-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Email</label>
-                <div class="mt-1.5">
-                  <input type="text" id="customer-email" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.customerEmail" readonly />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label>
-                <div class="mt-1.5">
-                  <input type="text" id="product-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.productName" readonly />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="expiry-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
-                <div class="mt-1.5">
-                  <input type="text" id="expiry-date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="formatDate(selectedLicenseKey.expiryDate)" readonly />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <div class="mt-1.5">
-                  <input type="text" id="status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.status" readonly />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
-                <div class="mt-1.5">
-                  <textarea id="notes" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white py-2.5" :value="selectedLicenseKey.notes" readonly></textarea>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="mt-6 sm:mt-8 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="closeLicenseKeyModal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal for adding license key -->
-  <div v-if="showAddLicenseKeyModal" class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-        <div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Add New License Key</h3>
-            <div class="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
-              <div class="sm:col-span-3">
-                <label for="new-license-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">License Template</label>
-                <div class="mt-1">
-                  <select id="new-license-template" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white">
-                    <option v-for="template in licenseKeyTemplates.filter(t => t.active)" :key="template.id" :value="template.id">
-                      {{ template.name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-license-key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">License Key</label>
-                <div class="mt-1">
-                  <input type="text" id="new-license-key" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Leave blank to generate automatically" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-customer-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer ID</label>
-                <div class="mt-1">
-                  <input type="text" id="new-customer-id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-customer-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Name</label>
-                <div class="mt-1">
-                  <input type="text" id="new-customer-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-customer-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Customer Email</label>
-                <div class="mt-1">
-                  <input type="email" id="new-customer-email" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-product-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Product ID</label>
-                <div class="mt-1">
-                  <input type="text" id="new-product-id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Required" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Product Name</label>
-                <div class="mt-1">
-                  <input type="text" id="new-product-name" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Required" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-order-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Order ID</label>
-                <div class="mt-1">
-                  <input type="text" id="new-order-id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-expiry-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Expiry Date</label>
-                <div class="mt-1">
-                  <input type="date" id="new-expiry-date" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" />
-                </div>
-              </div>
-
-              <div class="sm:col-span-3">
-                <label for="new-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                <div class="mt-1">
-                  <select id="new-status" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white">
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                    <option value="Unassigned">Unassigned</option>
-                    <option value="Revoked">Revoked</option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="sm:col-span-6">
-                <label for="new-notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Notes</label>
-                <div class="mt-1">
-                  <textarea id="new-notes" rows="3" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white" placeholder="Optional notes about this license key"></textarea>
-                </div>
-              </div>
-
-              <div class="sm:col-span-6">
-                <div class="mt-1 flex items-center">
-                  <input id="auto-generate" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700" checked />
-                  <label for="auto-generate" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">Auto-generate license key based on template</label>
-                </div>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Uncheck if you want to manually enter a specific license key</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="toggleAddLicenseKeyModal">Generate License Key</button>
-          <button type="button" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-600" @click="toggleAddLicenseKeyModal">Cancel</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal for viewing route on map -->
-  <div v-if="showRouteMapModal" class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
-        <div>
-          <div class="mt-3 text-center sm:mt-5">
-            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">{{ selectedRoute?.name }} - Route Map</h3>
-            <div class="mt-6">
-              <div class="aspect-w-16 aspect-h-9 w-full">
-                <iframe
-                  :src="getGoogleMapsEmbedUrl"
-                  class="w-full h-96 border-0"
-                  allowfullscreen="true"
-                  loading="lazy"
-                  referrerpolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </div>
-              <div class="mt-4 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6">
-                <div>
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Route Details</h4>
-                  <dl class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div class="mt-1 flex justify-between">
-                      <dt>Driver:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.driver }}</dd>
-                    </div>
-                    <div class="mt-1 flex justify-between">
-                      <dt>Vehicle:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.vehicle }}</dd>
-                    </div>
-                    <div class="mt-1 flex justify-between">
-                      <dt>Start Location:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.startLocation }}</dd>
-                    </div>
-                  </dl>
-                </div>
-                <div>
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white">Delivery Metrics</h4>
-                  <dl class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div class="mt-1 flex justify-between">
-                      <dt>Total Stops:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.stops }}</dd>
-                    </div>
-                    <div class="mt-1 flex justify-between">
-                      <dt>Average Delivery Time:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.avgDeliveryTime }} hours</dd>
-                    </div>
-                    <div class="mt-1 flex justify-between">
-                      <dt>Total Distance:</dt>
-                      <dd class="text-gray-900 dark:text-white">{{ selectedRoute?.totalDistance }} km</dd>
-                    </div>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="mt-6 sm:mt-8 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
-          <button type="button" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2" @click="closeRouteMapModal">Close</button>
+          <Pagination
+            :current-page="currentPage"
+            :total-items="filteredRoutes.length"
+            :items-per-page="itemsPerPage"
+            @prev="handlePrevPage"
+            @next="handleNextPage"
+            @page="handlePageChange"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.section-content {
-  @apply overflow-hidden transition-all duration-300 ease-in-out;
-}
-
-.collapsed {
-  @apply max-h-0;
-}
-
-.expanded {
-  @apply max-h-96;
-}
-</style>
