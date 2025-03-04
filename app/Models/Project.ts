@@ -66,7 +66,7 @@ export default {
         },
       },
 
-      factory: faker => collect(['active', 'inactive']).random().first(),
+      factory: () => collect(['active', 'inactive']).random().first(),
     },
   },
 } satisfies Model

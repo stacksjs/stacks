@@ -70,7 +70,7 @@ export default {
         },
       },
 
-      factory: faker => collect(['pending', 'success', 'failure']).random().first(),
+      factory: () => collect(['pending', 'success', 'failure']).random().first(),
     },
 
     executionTime: {

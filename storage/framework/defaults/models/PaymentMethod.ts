@@ -28,7 +28,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: faker => 'card',
+      factory: () => 'card',
     },
 
     lastFour: {
@@ -54,7 +54,7 @@ export default {
           required: 'brand is required',
         },
       },
-      factory: faker => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
+      factory: () => collect(['visa', 'mastercard', 'amex', 'jcb']).random().first(),
     },
 
     expMonth: {

@@ -27,7 +27,7 @@ export default {
           maxLength: 'name must have a maximum of 255 characters',
         },
       },
-      factory: faker => 'Dashboard Subscription',
+      factory: () => 'Dashboard Subscription',
     },
 
     description: {
@@ -64,7 +64,7 @@ export default {
           maxLength: 'type must have a maximum of 512 characters',
         },
       },
-      factory: faker => collect(['one-time', 'subscription']).random().first(),
+      factory: () => collect(['one-time', 'subscription']).random().first(),
     },
     providerId: {
       fillable: true,

@@ -103,4 +103,4 @@ const plugin: Plugin & { component: typeof component } = {
 }
 
 export default plugin
-export { component  as Highlight }
+export { component as Highlight }

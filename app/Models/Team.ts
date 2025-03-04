@@ -83,7 +83,7 @@ export default {
         },
       },
 
-      factory: faker => collect(['deployed', 'inactive']).random().first(),
+      factory: () => collect(['deployed', 'inactive']).random().first(),
     },
 
     description: {

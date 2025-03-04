@@ -22,7 +22,7 @@ export default {
           string: 'Connection must be a string',
         },
       },
-      factory: faker => 'default',
+      factory: () => 'default',
     },
 
     queue: {
@@ -34,7 +34,7 @@ export default {
           maxLength: 'Queue must have a maximum of 255 characters',
         },
       },
-      factory: faker => 'default',
+      factory: () => 'default',
     },
 
     payload: {
@@ -60,7 +60,7 @@ export default {
       validation: {
         rule: schema.date(),
       },
-      factory: faker => '2024-12-23 13:32:19',
+      factory: () => '2024-12-23 13:32:19',
     },
   },
 } satisfies Model

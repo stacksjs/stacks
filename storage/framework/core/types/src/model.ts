@@ -17,9 +17,13 @@ export interface Relation<T = string> extends BaseRelation {
 
 export interface HasOne<T = string> extends Array<Relation<T>> {}
 
-export interface MorphTo<T = string> {
+export interface MorphTo {
+  name: string
+}
+
+export interface MorphOne<T = string> extends BaseRelation {
   model: T
-  name?: string
+  morphName?: string
   type?: string
   id?: string
 }
@@ -174,7 +178,9 @@ export interface ModelOptions extends Base {
 
   hasOneThrough?: HasOneThrough<ModelNames> | ModelNames[]
 
-  morphTo?: MorphTo<ModelNames> | ModelNames[]
+  morphOne?: MorphOne<ModelNames> | ModelNames
+
+  morphTo?: MorphTo
 
   scopes?: {
     [key: string]: (value: any) => any

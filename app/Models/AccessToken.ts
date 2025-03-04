@@ -66,7 +66,7 @@ export default {
           string: '`abilities` must be string of either `read`, `write`, `admin`, `read|write`, `read|admin`, `write|admin`, or `read|write|admin`',
         },
       },
-      factory: faker =>
+      factory: () =>
         collect(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']).random().first(),
     },
 
@@ -134,7 +134,7 @@ export default {
           boolean: 'isSingleUse must be a boolean',
         },
       },
-      factory: faker => false,
+      factory: () => false,
     },
   },
 } satisfies Model
