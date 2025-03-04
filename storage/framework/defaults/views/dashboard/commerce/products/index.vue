@@ -365,6 +365,57 @@ const showProductModal = ref(false)
 const isEditMode = ref(false)
 const currentProduct = ref<Product | null>(null)
 
+// Computed properties for form fields to handle null currentProduct
+const productName = computed({
+  get: () => currentProduct.value?.name || '',
+  set: (value) => { if (currentProduct.value) currentProduct.value.name = value }
+})
+
+const productDescription = computed({
+  get: () => currentProduct.value?.description || '',
+  set: (value) => { if (currentProduct.value) currentProduct.value.description = value }
+})
+
+const productPrice = computed({
+  get: () => currentProduct.value?.price || 0,
+  set: (value) => { if (currentProduct.value) currentProduct.value.price = value }
+})
+
+const productSalePrice = computed({
+  get: () => currentProduct.value?.salePrice || null,
+  set: (value) => { if (currentProduct.value) currentProduct.value.salePrice = value }
+})
+
+const productCategory = computed({
+  get: () => currentProduct.value?.category || '',
+  set: (value) => { if (currentProduct.value) currentProduct.value.category = value }
+})
+
+const productManufacturer = computed({
+  get: () => currentProduct.value?.manufacturer || '',
+  set: (value) => { if (currentProduct.value) currentProduct.value.manufacturer = value }
+})
+
+const productInventory = computed({
+  get: () => currentProduct.value?.inventory || 0,
+  set: (value) => { if (currentProduct.value) currentProduct.value.inventory = value }
+})
+
+const productStatus = computed({
+  get: () => currentProduct.value?.status || 'Active',
+  set: (value) => { if (currentProduct.value) currentProduct.value.status = value }
+})
+
+const productFeatured = computed({
+  get: () => currentProduct.value?.featured || false,
+  set: (value) => { if (currentProduct.value) currentProduct.value.featured = value }
+})
+
+const productImageUrl = computed({
+  get: () => currentProduct.value?.imageUrl || '',
+  set: (value) => { if (currentProduct.value) currentProduct.value.imageUrl = value }
+})
+
 function openAddProductModal(): void {
   isEditMode.value = false
   currentProduct.value = {
@@ -702,12 +753,22 @@ function deleteProduct(productId: number): void {
                   <span class="text-xs text-gray-500 dark:text-gray-400">
                     {{ product.inventory }} in stock
                   </span>
-                  <button
-                    @click="openEditProductModal(product)"
-                    class="rounded-md bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
-                  >
-                    Edit
-                  </button>
+                  <div class="flex space-x-2">
+                    <button
+                      @click="openEditProductModal(product)"
+                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <div class="i-hugeicons-edit-01 h-4 w-4"></div>
+                      <span class="sr-only">Edit {{ product.name }}</span>
+                    </button>
+                    <button
+                      @click="deleteProduct(product.id)"
+                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <div class="i-hugeicons-waste h-4 w-4"></div>
+                      <span class="sr-only">Delete {{ product.name }}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -777,14 +838,14 @@ function deleteProduct(productId: number): void {
                       @click="openEditProductModal(product)"
                       class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                     >
-                      <div class="i-hugeicons-pencil-01 h-5 w-5"></div>
+                      <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       <span class="sr-only">Edit {{ product.name }}</span>
                     </button>
                     <button
                       @click="deleteProduct(product.id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                     >
-                      <div class="i-hugeicons-trash-01 h-5 w-5"></div>
+                      <div class="i-hugeicons-waste h-5 w-5"></div>
                       <span class="sr-only">Delete {{ product.name }}</span>
                     </button>
                   </div>
@@ -835,7 +896,7 @@ function deleteProduct(productId: number): void {
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
                 <button
                   v-for="page in totalPages"
@@ -857,7 +918,7 @@ function deleteProduct(productId: number): void {
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
                 </button>
               </nav>
             </div>
@@ -879,7 +940,7 @@ function deleteProduct(productId: number): void {
               class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-can h-6 w-6"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
@@ -895,7 +956,7 @@ function deleteProduct(productId: number): void {
                     <input
                       type="text"
                       id="product-name"
-                      v-model="currentProduct.name"
+                      v-model="productName"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                       required
                     />
@@ -906,7 +967,7 @@ function deleteProduct(productId: number): void {
                     <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                     <textarea
                       id="product-description"
-                      v-model="currentProduct.description"
+                      v-model="productDescription"
                       rows="3"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                     ></textarea>
@@ -919,7 +980,7 @@ function deleteProduct(productId: number): void {
                       <input
                         type="number"
                         id="product-price"
-                        v-model="currentProduct.price"
+                        v-model="productPrice"
                         min="0"
                         step="0.01"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
@@ -931,7 +992,7 @@ function deleteProduct(productId: number): void {
                       <input
                         type="number"
                         id="product-sale-price"
-                        v-model="currentProduct.salePrice"
+                        v-model="productSalePrice"
                         min="0"
                         step="0.01"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
@@ -946,7 +1007,7 @@ function deleteProduct(productId: number): void {
                       <input
                         type="text"
                         id="product-category"
-                        v-model="currentProduct.category"
+                        v-model="productCategory"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
                       />
@@ -956,7 +1017,7 @@ function deleteProduct(productId: number): void {
                       <input
                         type="text"
                         id="product-manufacturer"
-                        v-model="currentProduct.manufacturer"
+                        v-model="productManufacturer"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
                       />
@@ -970,7 +1031,7 @@ function deleteProduct(productId: number): void {
                       <input
                         type="number"
                         id="product-inventory"
-                        v-model="currentProduct.inventory"
+                        v-model="productInventory"
                         min="0"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                         required
@@ -980,7 +1041,7 @@ function deleteProduct(productId: number): void {
                       <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                       <select
                         id="product-status"
-                        v-model="currentProduct.status"
+                        v-model="productStatus"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
@@ -988,23 +1049,13 @@ function deleteProduct(productId: number): void {
                     </div>
                   </div>
 
-                  <!-- Status and featured -->
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-                      <select
-                        id="product-status"
-                        v-model="currentProduct.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
-                      >
-                        <option v-for="status in statuses.slice(1)" :key="status" :value="status">{{ status }}</option>
-                      </select>
-                    </div>
-                    <div class="flex items-center h-full pt-6">
+                  <!-- Featured checkbox -->
+                  <div class="mt-4">
+                    <div class="flex items-center">
                       <input
                         id="product-featured"
                         type="checkbox"
-                        v-model="currentProduct.featured"
+                        v-model="productFeatured"
                         class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
                       />
                       <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Featured product</label>
@@ -1017,7 +1068,7 @@ function deleteProduct(productId: number): void {
                     <input
                       type="text"
                       id="product-image"
-                      v-model="currentProduct.imageUrl"
+                      v-model="productImageUrl"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>

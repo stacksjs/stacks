@@ -935,7 +935,7 @@ function deleteReview(reviewId: number): void {
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
                 <button
                   v-for="page in totalPages"
@@ -957,7 +957,7 @@ function deleteReview(reviewId: number): void {
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
                 </button>
               </nav>
             </div>

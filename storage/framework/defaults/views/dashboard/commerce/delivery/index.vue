@@ -1255,12 +1255,12 @@ const getGoogleMapsEmbedUrl = computed(() => {
                 <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                   <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
                   </a>
                   <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
                   <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
                   </a>
                 </nav>
               </div>
@@ -1480,12 +1480,12 @@ const getGoogleMapsEmbedUrl = computed(() => {
                 <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                   <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
                   </a>
                   <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
                   <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
                   </a>
                 </nav>
               </div>
@@ -1508,12 +1508,12 @@ const getGoogleMapsEmbedUrl = computed(() => {
                 <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                   <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
                   </a>
                   <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
                   <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
                   </a>
                 </nav>
               </div>
@@ -1659,12 +1659,12 @@ const getGoogleMapsEmbedUrl = computed(() => {
                 <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                   <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Previous</span>
-                    <div class="i-hugeicons-chevron-left h-5 w-5" />
+                    <div class="i-hugeicons-arrow-left-01 h-5 w-5" />
                   </a>
                   <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
                   <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-700 dark:hover:bg-blue-gray-700">
                     <span class="sr-only">Next</span>
-                    <div class="i-hugeicons-chevron-right h-5 w-5" />
+                    <div class="i-hugeicons-arrow-right-01 h-5 w-5" />
                   </a>
                 </nav>
               </div>
