@@ -652,7 +652,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                 <div class="flex items-center justify-between">
                   <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</h3>
                   <div class="flex items-center">
-                    <div class="i-hugeicons-star-01-filled h-4 w-4 text-yellow-400"></div>
+                    <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
                     <span class="ml-1 text-sm text-gray-600 dark:text-gray-400">{{ product.rating }}</span>
                     <span class="ml-1 text-xs text-gray-500 dark:text-gray-500">({{ product.reviewCount }})</span>
                   </div>
@@ -719,7 +719,7 @@ const lowStockProducts = computed(() => products.value.filter(p => p.status === 
                     <div class="ml-4">
                       <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
                       <div class="flex items-center mt-1">
-                        <div class="i-hugeicons-star-01-filled h-3 w-3 text-yellow-400"></div>
+                        <div class="i-hugeicons-star h-3 w-3 text-yellow-400"></div>
                         <span class="ml-1 text-xs text-gray-500 dark:text-gray-400">{{ product.rating }} ({{ product.reviewCount }})</span>
                         <span v-if="product.featured" class="ml-2 inline-flex items-center rounded-full bg-yellow-50 px-1.5 py-0.5 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400">
                           Featured
