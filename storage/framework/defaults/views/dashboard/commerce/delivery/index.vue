@@ -835,13 +835,26 @@ const tabs = [
         />
 
         <!-- Shipping Methods Tab -->
-        <div v-if="activeTab === 'methods'">
-          <SearchFilter
-            placeholder="Search shipping methods..."
-            add-button-text="Add Method"
-            @search="handleSearch"
-            @add="handleAddMethod"
-          />
+        <div v-if="activeTab === 'methods'" class="mt-6">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Methods</h2>
+            <button
+              @click="handleAddMethod"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Method
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search shipping methods..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
 
           <ShippingMethodsTable
             :methods="filteredShippingMethods"
@@ -856,17 +869,31 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
 
         <!-- Shipping Zones Tab -->
-        <div v-if="activeTab === 'zones'">
-          <SearchFilter
-            placeholder="Search shipping zones..."
-            add-button-text="Add Zone"
-            @search="handleSearch"
-            @add="handleAddZone"
-          />
+        <div v-if="activeTab === 'zones'" class="mt-6">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Zones</h2>
+            <button
+              @click="handleAddZone"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Zone
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search shipping zones..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
 
           <ShippingZonesTable
             :zones="filteredShippingZones"
@@ -881,17 +908,31 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
 
         <!-- Shipping Rates Tab -->
-        <div v-if="activeTab === 'rates'">
-          <SearchFilter
-            placeholder="Search shipping rates..."
-            add-button-text="Add Rate"
-            @search="handleSearch"
-            @add="handleAddRate"
-          />
+        <div v-if="activeTab === 'rates'" class="mt-6">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Rates</h2>
+            <button
+              @click="handleAddRate"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Rate
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search shipping rates..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
 
           <ShippingRatesTable
             :rates="filteredShippingRates"
@@ -908,17 +949,31 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
 
         <!-- Digital Delivery Tab -->
-        <div v-if="activeTab === 'digital'">
-          <SearchFilter
-            placeholder="Search digital delivery methods..."
-            add-button-text="Add Digital Method"
-            @search="handleSearch"
-            @add="handleAddDigitalMethod"
-          />
+        <div v-if="activeTab === 'digital'" class="mt-6">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Digital Delivery Methods</h2>
+            <button
+              @click="handleAddDigitalMethod"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Digital Method
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search digital delivery methods..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
 
           <DigitalDeliveryTable
             :methods="filteredDigitalMethods"
@@ -933,11 +988,12 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
 
         <!-- License Keys Tab -->
-        <div v-if="activeTab === 'license'">
+        <div v-if="activeTab === 'license'" class="mt-6">
           <div class="flex justify-between mb-6">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">License Key Templates</h2>
             <button
@@ -968,6 +1024,14 @@ const tabs = [
             </button>
           </div>
 
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search license keys..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
+
           <LicenseKeysTable
             :license-keys="filteredLicenseKeys"
             :templates="licenseKeyTemplates"
@@ -982,17 +1046,31 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
 
         <!-- Delivery Routes Tab -->
-        <div v-if="activeTab === 'routes'">
-          <SearchFilter
-            placeholder="Search delivery routes..."
-            add-button-text="Add Route"
-            @search="handleSearch"
-            @add="handleAddRoute"
-          />
+        <div v-if="activeTab === 'routes'" class="mt-6">
+          <div class="flex justify-between mb-6">
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Delivery Routes</h2>
+            <button
+              @click="handleAddRoute"
+              type="button"
+              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+              Add Route
+            </button>
+          </div>
+
+          <div class="mb-6">
+            <SearchFilter
+              placeholder="Search delivery routes..."
+              @search="handleSearch"
+              class="w-full md:w-96"
+            />
+          </div>
 
           <DeliveryRoutesTable
             :routes="filteredRoutes"
@@ -1008,6 +1086,7 @@ const tabs = [
             @prev="handlePrevPage"
             @next="handleNextPage"
             @page="handlePageChange"
+            class="mt-6"
           />
         </div>
       </div>
