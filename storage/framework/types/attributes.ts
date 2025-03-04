@@ -76,7 +76,6 @@ export interface Attributes {
   expiry_date: string
   last_used_date: string
   template_id: string
-  customer_id: string
   total_amount: number
   tax_amount: number
   discount_amount: number

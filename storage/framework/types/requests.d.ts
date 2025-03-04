@@ -483,7 +483,6 @@ export interface GiftCardRequestType extends Request {
 
 interface RequestDataOrder {
   id: number
-  customer_id: string
   status: string
   total_amount: number
   tax_amount: number
@@ -504,11 +503,10 @@ interface RequestDataOrder {
 }
 export interface OrderRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'customer_id' | 'status' | 'order_type' | 'delivery_address' | 'special_instructions' | 'estimated_delivery_time' | 'applied_coupon_id' | 'order_items') => string) & ((key: 'total_amount' | 'tax_amount' | 'discount_amount' | 'delivery_fee' | 'tip_amount') => number) & ((key: 'customer_id') => string) & ((key: 'gift_card_id') => string) & ((key: 'coupon_id') => string)
+  get: ((key: 'id') => number) & ((key: 'status' | 'order_type' | 'delivery_address' | 'special_instructions' | 'estimated_delivery_time' | 'applied_coupon_id' | 'order_items') => string) & ((key: 'total_amount' | 'tax_amount' | 'discount_amount' | 'delivery_fee' | 'tip_amount') => number) & ((key: 'customer_id') => string) & ((key: 'gift_card_id') => string) & ((key: 'coupon_id') => string)
 
   all: () => RequestDataOrder
   id: number
-  customer_id: string
   status: string
   total_amount: number
   tax_amount: number

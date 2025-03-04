@@ -25,7 +25,6 @@ export interface OrdersTable {
   user?: UserModel
   coupon_id?: number
   coupon?: CouponModel
-  customer_id?: string
   status?: string
   total_amount?: number
   tax_amount?: number
@@ -76,7 +75,7 @@ interface QueryOptions {
 
 export class OrderModel {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
-  private readonly fillable: Array<keyof OrderJsonResponse> = ['customer_id', 'status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'order_items', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
+  private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'order_items', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
   private readonly guarded: Array<keyof OrderJsonResponse> = []
   protected attributes: Partial<OrderJsonResponse> = {}
   protected originalAttributes: Partial<OrderJsonResponse> = {}
@@ -182,10 +181,6 @@ export class OrderModel {
     return this.attributes.uuid
   }
 
-  get customer_id(): string | undefined {
-    return this.attributes.customer_id
-  }
-
   get status(): string | undefined {
     return this.attributes.status
   }
@@ -244,10 +239,6 @@ export class OrderModel {
 
   set uuid(value: string) {
     this.attributes.uuid = value
-  }
-
-  set customer_id(value: string) {
-    this.attributes.customer_id = value
   }
 
   set status(value: string) {
@@ -1238,14 +1229,6 @@ export class OrderModel {
     return instance
   }
 
-  static whereCustomerId(value: string): OrderModel {
-    const instance = new OrderModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('customer_id', '=', value)
-
-    return instance
-  }
-
   static whereStatus(value: string): OrderModel {
     const instance = new OrderModel(null)
 
@@ -1899,7 +1882,6 @@ export class OrderModel {
     const output: Partial<OrderJsonResponse> = {
 
       id: this.id,
-      customer_id: this.customer_id,
       status: this.status,
       total_amount: this.total_amount,
       tax_amount: this.tax_amount,
@@ -1970,13 +1952,6 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('orders')
     .where('id', '=', id)
     .execute()
-}
-
-export async function whereCustomerId(value: string): Promise<OrderModel[]> {
-  const query = DB.instance.selectFrom('orders').where('customer_id', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<OrderModel[]> {

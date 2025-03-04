@@ -13,7 +13,6 @@ interface CustomAttributes {
 }
 interface RequestDataOrder {
   id: number
-  customer_id: string
   status: string
   total_amount: number
   tax_amount: number
@@ -34,7 +33,6 @@ interface RequestDataOrder {
 }
 export class OrderRequest extends Request<RequestDataOrder> implements OrderRequestType {
   public id = 1
-  public customer_id = ''
   public status = ''
   public total_amount = 0
   public tax_amount = 0

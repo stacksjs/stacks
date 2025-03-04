@@ -34,16 +34,6 @@ export default {
   hasMany: ['Order'],
 
   attributes: {
-    customer_id: {
-      required: true,
-      order: 1,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker: Faker) => faker.string.uuid(),
-    },
-
     status: {
       required: true,
       order: 2,
