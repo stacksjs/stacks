@@ -948,7 +948,7 @@ export class PaymentTransactionModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]): PaymentTransactionModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

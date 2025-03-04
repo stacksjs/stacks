@@ -952,7 +952,7 @@ export class DeploymentModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof DeploymentsTable, ...args: [V] | [Operator, V]): DeploymentModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

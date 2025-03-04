@@ -953,7 +953,7 @@ export class LoyaltyPointModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof LoyaltyPointsTable, ...args: [V] | [Operator, V]): LoyaltyPointModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

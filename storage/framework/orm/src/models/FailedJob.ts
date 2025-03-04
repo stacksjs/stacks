@@ -907,7 +907,7 @@ export class FailedJobModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof FailedJobsTable, ...args: [V] | [Operator, V]): FailedJobModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

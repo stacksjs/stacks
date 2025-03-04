@@ -963,7 +963,7 @@ export class RequestModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof RequestsTable, ...args: [V] | [Operator, V]): RequestModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

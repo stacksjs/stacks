@@ -939,7 +939,7 @@ export class PaymentProductModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]): PaymentProductModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

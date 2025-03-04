@@ -1060,7 +1060,7 @@ set updated_at(value: Date) {
             .execute()
         }
   
-        applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+        applyWhere<V>(column: keyof OrdersTable, ...args: [V] | [Operator, V]): OrderModel {
           if (args.length === 1) {
             const [value] = args
             this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

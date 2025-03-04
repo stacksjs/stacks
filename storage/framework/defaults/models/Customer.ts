@@ -75,20 +75,6 @@ export default {
       factory: faker => faker.phone.number(),
     },
 
-    orders: {
-      required: false,
-      default: 0,
-      order: 4,
-      fillable: true,
-      validation: {
-        rule: schema.number().min(0),
-        message: {
-          min: 'Orders count cannot be negative',
-        },
-      },
-      factory: faker => faker.number.int({ min: 0, max: 20 }),
-    },
-
     totalSpent: {
       required: false,
       default: 0,
@@ -138,12 +124,6 @@ export default {
         },
       },
       factory: faker => faker.image.avatar(),
-    },
-
-    user_id: {
-      required: false,
-      order: 9,
-      fillable: true,
     },
   },
 

@@ -40,11 +40,9 @@ export interface Attributes {
   exception: string
   failed_at: Date | string
   phone: string
-  orders: number
   total_spent: number
   last_order: string
   avatar: string
-  user_id: undefined
   image_url: string
   is_available: boolean
   inventory_count: number

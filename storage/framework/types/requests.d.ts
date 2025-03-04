@@ -286,7 +286,6 @@ interface RequestDataCustomer {
   name: string
   email: string
   phone: string
-  orders: number
   total_spent: number
   last_order: string
   status: string[]
@@ -296,14 +295,13 @@ interface RequestDataCustomer {
 }
 export interface CustomerRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
-  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'phone' | 'last_order' | 'avatar') => string) & ((key: 'orders' | 'total_spent') => number) & ((key: 'status') => string[])
+  get: ((key: 'id') => number) & ((key: 'name' | 'email' | 'phone' | 'last_order' | 'avatar') => string) & ((key: 'total_spent') => number) & ((key: 'status') => string[])
 
   all: () => RequestDataCustomer
   id: number
   name: string
   email: string
   phone: string
-  orders: number
   total_spent: number
   last_order: string
   status: string[]

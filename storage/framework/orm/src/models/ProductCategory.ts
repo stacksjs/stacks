@@ -950,7 +950,7 @@ export class ProductCategoryModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof ProductCategoriesTable, ...args: [V] | [Operator, V]): ProductCategoryModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)

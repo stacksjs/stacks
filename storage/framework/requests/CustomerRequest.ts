@@ -16,7 +16,6 @@ interface RequestDataCustomer {
   name: string
   email: string
   phone: string
-  orders: number
   total_spent: number
   last_order: string
   status: string[]
@@ -29,7 +28,6 @@ export class CustomerRequest extends Request<RequestDataCustomer> implements Cus
   public name = ''
   public email = ''
   public phone = ''
-  public orders = 0
   public total_spent = 0
   public last_order = ''
   public status = ''

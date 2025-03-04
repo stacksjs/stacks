@@ -20,12 +20,10 @@ export interface CustomersTable {
   name?: string
   email?: string
   phone?: string
-  orders?: number
   total_spent?: number
   last_order?: string
   status?: string[]
   avatar?: string
-  user_id?: undefined
   uuid?: string
 
   created_at?: Date
@@ -64,7 +62,7 @@ interface QueryOptions {
 
 export class CustomerModel {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
-  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'orders', 'total_spent', 'last_order', 'status', 'avatar', 'user_id', 'uuid']
+  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
   protected attributes: Partial<CustomerJsonResponse> = {}
   protected originalAttributes: Partial<CustomerJsonResponse> = {}
@@ -182,10 +180,6 @@ export class CustomerModel {
     return this.attributes.phone
   }
 
-  get orders(): number | undefined {
-    return this.attributes.orders
-  }
-
   get total_spent(): number | undefined {
     return this.attributes.total_spent
   }
@@ -200,10 +194,6 @@ export class CustomerModel {
 
   get avatar(): string | undefined {
     return this.attributes.avatar
-  }
-
-  get user_id(): undefined | undefined {
-    return this.attributes.user_id
   }
 
   get created_at(): Date | undefined {
@@ -230,10 +220,6 @@ export class CustomerModel {
     this.attributes.phone = value
   }
 
-  set orders(value: number) {
-    this.attributes.orders = value
-  }
-
   set total_spent(value: number) {
     this.attributes.total_spent = value
   }
@@ -248,10 +234,6 @@ export class CustomerModel {
 
   set avatar(value: string) {
     this.attributes.avatar = value
-  }
-
-  set user_id(value: undefined) {
-    this.attributes.user_id = value
   }
 
   set updated_at(value: Date) {
@@ -999,7 +981,7 @@ export class CustomerModel {
       .execute()
   }
 
-  applyWhere<V>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+  applyWhere<V>(column: keyof CustomersTable, ...args: [V] | [Operator, V]): CustomerModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
@@ -1218,14 +1200,6 @@ export class CustomerModel {
     return instance
   }
 
-  static whereOrders(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('orders', '=', value)
-
-    return instance
-  }
-
   static whereTotalSpent(value: string): CustomerModel {
     const instance = new CustomerModel(null)
 
@@ -1254,14 +1228,6 @@ export class CustomerModel {
     const instance = new CustomerModel(null)
 
     instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
-
-    return instance
-  }
-
-  static whereUserId(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('user_id', '=', value)
 
     return instance
   }
@@ -1811,12 +1777,10 @@ export class CustomerModel {
       name: this.name,
       email: this.email,
       phone: this.phone,
-      orders: this.orders,
       total_spent: this.total_spent,
       last_order: this.last_order,
       status: this.status,
       avatar: this.avatar,
-      user_id: this.user_id,
 
       created_at: this.created_at,
 
@@ -1896,13 +1860,6 @@ export async function wherePhone(value: string): Promise<CustomerModel[]> {
   return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
 }
 
-export async function whereOrders(value: number): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('orders', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
-}
-
 export async function whereTotalSpent(value: number): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('total_spent', '=', value)
   const results = await query.execute()
@@ -1926,13 +1883,6 @@ export async function whereStatus(value: string[]): Promise<CustomerModel[]> {
 
 export async function whereAvatar(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('avatar', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
-}
-
-export async function whereUserId(value: undefined): Promise<CustomerModel[]> {
-  const query = DB.instance.selectFrom('customers').where('user_id', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
