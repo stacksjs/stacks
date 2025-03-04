@@ -29,6 +29,11 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  order_id: string
+  product_id: number
+  quantity: number
+  price: number
+  special_instructions: string
   connection: string
   queue: string
   payload: string
@@ -40,7 +45,6 @@ export interface Attributes {
   last_order: string
   avatar: string
   user_id: undefined
-  price: number
   image_url: string
   is_available: boolean
   inventory_count: number
@@ -84,7 +88,6 @@ export interface Attributes {
   tip_amount: number
   order_type: string
   delivery_address: string
-  special_instructions: string
   estimated_delivery_time: string // Store as ISO date string
   applied_coupon_id: string
   order_items: string // Store as JSON string
@@ -99,7 +102,6 @@ export interface Attributes {
   end_date: string
   applicable_products: string
   applicable_categories: string
-  order_id: string
   payment_method: string
   payment_details: string // Store as JSON string
   transaction_reference: string
@@ -117,7 +119,6 @@ export interface Attributes {
   unit_price: number
   provider_type: string
   provider_price_id: string
-  quantity: number
   trial_ends_at: string
   ends_at: string
   key: number

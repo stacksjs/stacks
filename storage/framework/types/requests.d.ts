@@ -231,6 +231,31 @@ export interface PostRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataOrderItem {
+  id: number
+  order_id: string
+  product_id: number
+  quantity: number
+  price: number
+  special_instructions: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface OrderItemRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: ((key: 'id') => number) & ((key: 'order_id' | 'special_instructions') => string) & ((key: 'product_id' | 'quantity' | 'price') => number)
+
+  all: () => RequestDataOrderItem
+  id: number
+  order_id: string
+  product_id: number
+  quantity: number
+  price: number
+  special_instructions: string
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataFailedJob {
   id: number
   connection: string
@@ -788,4 +813,4 @@ export interface ProductCategoryRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | FailedJobRequestType | CustomerRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType
