@@ -15,7 +15,8 @@ const categories = ref([
     description: 'Traditional and specialty pizzas',
     productCount: 24,
     featured: true,
-    createdAt: '2023-05-10'
+    createdAt: '2023-05-10',
+    image: '/images/categories/pizza.jpg'
   },
   {
     id: 2,
@@ -24,7 +25,8 @@ const categories = ref([
     description: 'Gourmet and classic burgers',
     productCount: 18,
     featured: true,
-    createdAt: '2023-05-15'
+    createdAt: '2023-05-15',
+    image: ''
   },
   {
     id: 3,
@@ -33,7 +35,8 @@ const categories = ref([
     description: 'Fresh sushi, rolls, and Japanese cuisine',
     productCount: 32,
     featured: true,
-    createdAt: '2023-06-01'
+    createdAt: '2023-06-01',
+    image: '/images/categories/sushi.jpg'
   },
   {
     id: 4,
@@ -42,7 +45,8 @@ const categories = ref([
     description: 'Authentic Mexican dishes and street food',
     productCount: 22,
     featured: false,
-    createdAt: '2023-06-10'
+    createdAt: '2023-06-10',
+    image: ''
   },
   {
     id: 5,
@@ -51,7 +55,8 @@ const categories = ref([
     description: 'Italian pasta dishes and specialties',
     productCount: 16,
     featured: false,
-    createdAt: '2023-06-20'
+    createdAt: '2023-06-20',
+    image: '/images/categories/pasta.jpg'
   },
   {
     id: 6,
@@ -60,7 +65,8 @@ const categories = ref([
     description: 'Nutritious, plant-based, and health-conscious options',
     productCount: 28,
     featured: true,
-    createdAt: '2023-07-05'
+    createdAt: '2023-07-05',
+    image: '/images/categories/healthy.jpg'
   },
   {
     id: 7,
@@ -69,7 +75,8 @@ const categories = ref([
     description: 'Sweet treats, cakes, and pastries',
     productCount: 35,
     featured: false,
-    createdAt: '2023-07-15'
+    createdAt: '2023-07-15',
+    image: ''
   },
   {
     id: 8,
@@ -78,7 +85,8 @@ const categories = ref([
     description: 'Coffee, tea, smoothies, and specialty drinks',
     productCount: 19,
     featured: false,
-    createdAt: '2023-08-01'
+    createdAt: '2023-08-01',
+    image: '/images/categories/beverages.jpg'
   },
   {
     id: 9,
@@ -87,7 +95,8 @@ const categories = ref([
     description: 'Starters, small plates, and shareable items',
     productCount: 26,
     featured: true,
-    createdAt: '2023-08-10'
+    createdAt: '2023-08-10',
+    image: '/images/categories/appetizers.jpg'
   },
   {
     id: 10,
@@ -96,7 +105,8 @@ const categories = ref([
     description: 'Creative dishes combining Asian culinary traditions',
     productCount: 21,
     featured: false,
-    createdAt: '2023-08-20'
+    createdAt: '2023-08-20',
+    image: ''
   }
 ])
 
@@ -152,17 +162,45 @@ const newCategory = ref<{
   name: string;
   description: string;
   featured: boolean;
+  image: string;
 }>({
   name: '',
   description: '',
-  featured: false
+  featured: false,
+  image: ''
 })
+
+// Image preview helper
+const imagePreview = computed(() => {
+  return newCategory.value.image || '/images/categories/placeholder.jpg'
+})
+
+// Handle file upload
+function handleImageUpload(event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files[0]) {
+    const file = input.files[0]
+
+    // In a real application, you would upload the file to a server
+    // and get back a URL. For this demo, we'll simulate that by
+    // creating a local object URL.
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (e.target && e.target.result) {
+        // In a real app, this would be the URL returned from the server
+        newCategory.value.image = e.target.result as string
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+}
 
 function openAddModal(): void {
   newCategory.value = {
     name: '',
     description: '',
-    featured: false
+    featured: false,
+    image: ''
   }
   showAddModal.value = true
 }
@@ -183,9 +221,18 @@ function addCategory(): void {
     description: newCategory.value.description || '',
     productCount: 0,
     featured: newCategory.value.featured,
-    createdAt: currentDate
+    createdAt: currentDate,
+    image: newCategory.value.image || '/images/categories/placeholder.jpg'
   })
   closeAddModal()
+}
+
+// Color mapping for initial letters
+const initialColors: Record<string, string> = {
+  'Burgers': 'bg-red-500',
+  'Mexican': 'bg-green-500',
+  'Desserts': 'bg-purple-500',
+  'Asian Fusion': 'bg-blue-500'
 }
 </script>
 
@@ -291,8 +338,26 @@ function addCategory(): void {
                   </thead>
                   <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
                     <tr v-for="category in filteredCategories" :key="category.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
-                        {{ category.name }}
+                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="flex items-center space-x-3">
+                          <template v-if="category.image">
+                            <img
+                              :src="category.image"
+                              :alt="category.name"
+                              class="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                              onerror="this.src='/images/categories/placeholder.jpg'"
+                            />
+                          </template>
+                          <template v-else>
+                            <div
+                              :class="['h-10 w-10 rounded-full flex items-center justify-center text-white font-medium shadow-sm',
+                                initialColors[category.name] || 'bg-blue-500']"
+                            >
+                              {{ category.name ? category.name.charAt(0).toUpperCase() : '?' }}
+                            </div>
+                          </template>
+                          <span>{{ category.name }}</span>
+                        </div>
                       </td>
                       <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                         {{ category.description }}
@@ -310,7 +375,7 @@ function addCategory(): void {
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <div class="flex items-center justify-end space-x-2">
                           <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-license-draft h-5 w-5"></div>
+                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                           </button>
                           <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
                             <div class="i-hugeicons-waste h-5 w-5"></div>
@@ -364,6 +429,49 @@ function addCategory(): void {
                         class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
                       ></textarea>
                     </div>
+                  </div>
+                  <div>
+                    <label for="category-image" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Image</label>
+                    <div class="mt-2">
+                      <div class="flex items-center gap-3">
+                        <input
+                          type="text"
+                          id="category-image"
+                          v-model="newCategory.image"
+                          placeholder="/images/categories/your-category.jpg"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        />
+                        <span class="text-gray-500 dark:text-gray-400">or</span>
+                        <label for="file-upload" class="cursor-pointer rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
+                          Browse
+                          <input
+                            id="file-upload"
+                            type="file"
+                            accept="image/*"
+                            class="sr-only"
+                            @change="handleImageUpload"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <div class="mt-2 flex justify-center">
+                      <template v-if="newCategory.image">
+                        <img
+                          :src="imagePreview"
+                          alt="Category preview"
+                          class="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-gray-700 shadow-sm"
+                          onerror="this.src='/images/categories/placeholder.jpg'"
+                        />
+                      </template>
+                      <template v-else>
+                        <div
+                          class="h-16 w-16 rounded-full flex items-center justify-center text-white font-medium shadow-sm bg-blue-500"
+                        >
+                          {{ newCategory.name ? newCategory.name.charAt(0).toUpperCase() : '?' }}
+                        </div>
+                      </template>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left">Enter the URL of the category image or upload a file</p>
                   </div>
                   <div class="flex items-center">
                     <input
