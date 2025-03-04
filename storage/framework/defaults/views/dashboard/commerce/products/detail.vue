@@ -171,7 +171,7 @@ const closeVideoModal = () => {
 
 // Function to go back to products list
 const goBack = () => {
-  router.push('/dashboard/commerce/products')
+  router.push('/commerce/products')
 }
 
 // Function to edit product
@@ -231,7 +231,7 @@ const deleteProduct = () => {
     type: 'error',
   })
   // After successful deletion, navigate back to products list
-  // router.push('/dashboard/commerce/products')
+  // router.push('/commerce/products')
 }
 </script>
 
