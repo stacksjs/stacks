@@ -38,10 +38,9 @@ function groupMenuItems(items: MenuSection): MenuItem[][] {
 </script>
 
 <template>
-  <div class="max-w-md my-10">
-    <div class="space-y-4 mb-8">
+  <div class="max-w-md mt-2">
+    <div class="space-y-4 ">
       <div class="flex flex-col">
-
         <p class="text-gray-600 mt-1">Click the button below to show the dropdown menu</p>
       </div>
     </div>

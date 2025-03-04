@@ -26,7 +26,15 @@ const selectedPerson = ref<Person>(people[0] as Person)
 </script>
 
 <template>
-  <div class="flex flex-col my-10 z-50">
+
+<div class="max-w-md">
+    <div class="space-y-4">
+      <div class="flex flex-col">
+        <p class="text-gray-600 mt-1">Select a person from the list</p>
+      </div>
+    </div>
+
+  <div class="flex flex-col my-10 z-100">
     <Listbox v-model="selectedPerson">
       <div class="relative mt-1">
         <ListboxButton
@@ -79,4 +87,5 @@ const selectedPerson = ref<Person>(people[0] as Person)
       </div>
     </Listbox>
   </div>
+</div>
 </template>

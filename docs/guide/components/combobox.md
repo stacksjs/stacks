@@ -68,4 +68,4 @@ You are completely in charge of how you filter the results, whether it be with a
 
 <ComboboxDemo />
 
-Still have questions relating this component's usage? Contact us and we will help you out. In the meantime, if you are curious about the [`<CommandPalette />`](./command-palette.md) component read more on the next page.
+Still have questions relating this component’s usage? Contact us and we will help you out. In the meantime, if you are curious about the [`<CommandPalette />`](./command-palette.md) component read more on the next page.
