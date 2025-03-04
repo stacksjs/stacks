@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
-
 defineProps({
   title: {
     type: String,
@@ -15,7 +13,6 @@ defineProps({
     required: true,
   },
 })
-
 </script>
 
 <template>
@@ -25,20 +22,20 @@ defineProps({
       <div class="toast" />
       <div class="toast" />
     </div>
-    <h1 class=" text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 dark:to-blue-300 mb-3 text-5xl font-bold -mt-5">
+    <h1 class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 dark:to-blue-300 mb-3 text-5xl font-bold -mt-5">
       {{ title }}
     </h1>
     <p class="mb-3 mt-0 text-lg">
       {{ description }}
     </p>
 
-      <a
-        class="button btn-secondary"
-        :href="link"
-        target="_blank"
-      >
-        Github
-      </a>
+    <a
+      class="button btn-secondary"
+      :href="link"
+      target="_blank"
+    >
+      Github
+    </a>
   </div>
 </template>
 
@@ -47,6 +44,7 @@ defineProps({
   display: flex;
   flex-direction: column;
   margin: 0 auto;
+  width: 400px;
   height: 100px;
   width: 400px;
   position: relative;

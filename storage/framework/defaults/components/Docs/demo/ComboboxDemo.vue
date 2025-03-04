@@ -9,8 +9,6 @@ import {
 
 import { TransitionRoot } from '@stacksjs/transition'
 import { computed, ref } from 'vue'
-import Hero from './Hero.vue'
-import Installation from './Installation.vue'
 
 interface Person {
   id: number
@@ -96,20 +94,10 @@ const usageDescription = `Comboboxes are built using the <code><b>Combobox</b></
 <template>
   <div class="demo-wrapper">
     <div class="flex flex-col  mx-auto max-w-full">
-      <header class="flex-center flex-col py-20">
-        <Hero
-          title="stacks/combobox"
-          description="An opinionated combobox component for Stacks"
-          link="https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/combobox"
-        />
-      </header>
       <main
           class="text-primary grid grid-cols-1 gap-8 pb-20 text-xs 2xl:text-sm"
         >
-          <Installation code="bun install @stacksjs/combobox" />
-          <Usage :code="usageCode" :description="usageDescription" />
           <div class="flex flex-col gap-2">
-            <h2 class="text-2xl font-bold text-gray-900">Demo</h2>
             <p class="text-gray-600 text-xl">Search and select a person from the list</p>
           </div>
           <div class="relative">
