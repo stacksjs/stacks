@@ -28,6 +28,8 @@ export interface MorphOne<T = string> extends BaseRelation {
   id?: string
 }
 
+export interface MorphMany<T = string> extends MorphOne<T> {}
+
 export interface HasMany<T = string> extends Array<Relation<T>> {}
 export interface BelongsTo<T = string> extends Array<Relation<T>> {}
 
@@ -179,6 +181,8 @@ export interface ModelOptions extends Base {
   hasOneThrough?: HasOneThrough<ModelNames> | ModelNames[]
 
   morphOne?: MorphOne<ModelNames> | ModelNames
+
+  morphMany?: MorphMany<ModelNames>[] | ModelNames[]
 
   morphTo?: MorphTo
 

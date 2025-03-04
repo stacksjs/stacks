@@ -268,6 +268,38 @@ export async function generateModelString(
         }\n\n`
     }
 
+    if (relationType === 'morphType' && relationCount === 'many') {
+      const morphName = relation.relationName || `${formattedModelName}able`
+
+      // Add field to the model for relationship access
+      fieldString += `${snakeCase(morphName)}?: ${modelRelation}Model[] | undefined\n`
+
+      // Add getter for the relationship
+      getFields += `get ${snakeCase(morphName)}():${modelRelation}Model[] | undefined {
+        return this.attributes.${snakeCase(morphName)}
+      }\n\n`
+
+      // Add relationship to JSON output
+      jsonRelations += `${snakeCase(morphName)}: this.${snakeCase(morphName)},\n`
+
+      // Add method to retrieve the polymorphic related models
+      relationMethods += `
+        async ${morphName}(): Promise<${modelRelation}Model[]> {
+          if (this.id === undefined)
+            throw new HttpError(500, 'Relation Error!')
+    
+          const models = await ${modelRelation}
+            .where('${relation.modelKey}', '=', '${modelName}')
+            .where('${relation.foreignKey}', '=', this.id)
+            .get()
+    
+          if (!models || !models.length)
+            return []
+    
+          return models
+        }\n\n`
+    }
+
     if (relationType === 'hasType' && relationCount === 'one') {
       const relationName = relation.relationName || formattedModelRelation
 
