@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { onClickOutside, useLocalStorage } from '@vueuse/core'
-
 // Add Team interface
 interface Team {
   id: number

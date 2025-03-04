@@ -231,7 +231,7 @@ function saveProduct(): void {
   if (!editingProduct.value) return
 
   // Find the product index
-  const index = products.value.findIndex(p => p.id === editingProduct.value.id)
+  const index = products.value.findIndex(p => p.id === editingProduct.value?.id)
 
   if (index !== -1) {
     // Update the product
@@ -259,11 +259,11 @@ function saveSimilarProducts(): void {
   if (!editingProduct.value) return
 
   // Find the product index
-  const index = products.value.findIndex(p => p.id === editingProduct.value.id)
+  const index = products.value.findIndex(p => p.id === editingProduct.value?.id)
 
-  if (index !== -1 && editingProduct.value) {
+  if (index !== -1) {
     // Update only the similarProducts field
-    products.value[index].similarProducts = editingProduct.value.similarProducts || []
+    products.value[index]!.similarProducts = editingProduct.value.similarProducts || []
 
     // Show success message
     toast({
@@ -693,7 +693,7 @@ function toggleSort(column: string): void {
             <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-md dark:border-gray-700">
               <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                 <li
-                  v-for="product in products.filter(p => p.id !== editingProduct.id)"
+                  v-for="product in products.filter(p => editingProduct ? p.id !== editingProduct.id : false)"
                   :key="product.id"
                   class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
