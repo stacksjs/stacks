@@ -23,6 +23,9 @@ interface Sections {
   [key: string]: boolean
 }
 
+const route = useRoute()
+const router = useRouter()
+
 const calculateTransform = (section: string) => {
   if (!draggedItem || !isDragging.value) return ''
 
@@ -260,6 +263,16 @@ const switchTeam = (team: Team) => {
   showTeamSwitcher.value = false
   // Add your team switching logic here
 }
+
+// Check if any child route is active for a parent item
+const isChildRouteActive = (item: SidebarItem) => {
+  if (!item.children) return false
+
+  // Check if the current route exactly matches any child route
+  return item.children.some(child =>
+    route.path === child.to
+  )
+}
 </script>
 
 <template>
@@ -407,8 +420,13 @@ const switchTeam = (team: Team) => {
                       <RouterLink
                         :to="item.to"
                         class="sidebar-links group relative"
-                        :class="{ 'no-active': item.to.startsWith('#') }"
-                        @click.prevent="item.children ? toggleItem(item.to) : $router.push(item.to)"
+                        :class="{
+                          'no-active': item.to.startsWith('#'),
+                          'parent-active': (item.children && expandedItems[item.to] && isChildRouteActive(item))
+                        }"
+                        :active-class="item.to.startsWith('#') ? '' : 'router-link-active'"
+                        :exact-active-class="!item.to.startsWith('#') ? 'router-link-exact-active' : ''"
+                        @click.prevent="item.children ? toggleItem(item.to) : router.push(item.to)"
                       >
                         <template v-if="item.icon">
                           <div :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
@@ -433,18 +451,17 @@ const switchTeam = (team: Team) => {
                         <ul
                           v-if="item.children && expandedItems[item.to]"
                           role="list"
-                          class="mt-0.5 space-y-0.5 dropdown-list"
+                          class="mt-0.5 space-y-0.5 dropdown-list pl-4 border-l border-gray-200 dark:border-gray-700 ml-2.5 w-full"
                           :data-dropdown-id="item.to"
                           :style="{ 'max-height': item.to === '#commerce-products' ? '150px' : '200px' }"
                         >
-                          <li v-for="child in item.children" :key="child.to" class="dropdown-item">
-                            <RouterLink :to="child.to" class="sidebar-child-link group">
-                              <div :class="[
-                                child.icon,
-                                'transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 text-gray-400',
-                                item.to === '#commerce-products' ? 'h-4 w-4 flex-shrink-0' : 'h-5 w-5 mt-0.5'
-                              ]" />
-                              <span class="truncate" :class="{ 'my-auto': item.to === '#commerce-products' }">{{ child.text }}</span>
+                          <li v-for="child in item.children" :key="child.to" class="dropdown-item w-full">
+                            <RouterLink
+                              :to="child.to"
+                              class="sidebar-child-link group w-full"
+                              exact-active-class="router-link-exact-active"
+                            >
+                              <span class="truncate">{{ child.text }}</span>
                             </RouterLink>
                           </li>
                         </ul>
@@ -461,7 +478,7 @@ const switchTeam = (team: Team) => {
                 <RouterLink
                   to="/buddy"
                   class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': $route.path === '/buddy' }"
+                  :class="{ 'active-bottom-link': route.path === '/buddy' }"
                 >
                   <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
@@ -469,7 +486,7 @@ const switchTeam = (team: Team) => {
                 <RouterLink
                   to="/environment"
                   class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': $route.path === '/environment' }"
+                  :class="{ 'active-bottom-link': route.path === '/environment' }"
                 >
                   <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
@@ -477,7 +494,7 @@ const switchTeam = (team: Team) => {
                 <RouterLink
                   to="/access-tokens"
                   class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': $route.path === '/access-tokens' }"
+                  :class="{ 'active-bottom-link': route.path === '/access-tokens' }"
                 >
                   <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
@@ -485,7 +502,7 @@ const switchTeam = (team: Team) => {
                 <RouterLink
                   to="/settings/ai"
                   class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': $route.path.startsWith('/settings/ai') }"
+                  :class="{ 'active-bottom-link': route.path.startsWith('/settings/ai') }"
                 >
                   <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
                 </RouterLink>
@@ -521,6 +538,11 @@ const switchTeam = (team: Team) => {
   overflow: hidden;
 }
 
+/* Add spacing between the last item in a section and the next section */
+.section-content > li:last-child {
+  @apply mb-2;
+}
+
 .section-content::-webkit-scrollbar {
   width: 4px;
 }
@@ -537,12 +559,58 @@ const switchTeam = (team: Team) => {
   @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
 }
 
+.router-link-exact-active {
+  @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
+}
+
+/* Override for parent items with children */
+.no-active.router-link-active {
+  @apply !bg-transparent !text-blue-gray-600 dark:!text-blue-gray-200;
+}
+
+.no-active.router-link-active div[class^="i-hugeicons"],
+.no-active.router-link-active div[class^="i-heroicons"] {
+  @apply !text-gray-400 dark:!text-gray-200;
+}
+
+/* When parent is active (expanded) and has an active child, change text color */
+.no-active.parent-active {
+  @apply !text-blue-600 dark:!text-blue-400;
+}
+
+.no-active.parent-active div[class^="i-hugeicons"],
+.no-active.parent-active div[class^="i-heroicons"] {
+  @apply !text-blue-600 dark:!text-blue-400;
+}
+
 .router-link-active div[class^="i-hugeicons"] {
   @apply text-blue-600 dark:text-blue-400;
 }
 
 .router-link-active span.h-6 {
   @apply border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400;
+}
+
+/* Fix for regular items that should not be active when child routes are active */
+.sidebar-links.router-link-active:not(.no-active):not(.router-link-exact-active) {
+  @apply bg-transparent text-blue-gray-600 dark:text-blue-gray-200;
+}
+
+.sidebar-links.router-link-active:not(.no-active):not(.router-link-exact-active) div[class^="i-hugeicons"] {
+  @apply !text-gray-400 dark:!text-gray-200;
+}
+
+.sidebar-links.router-link-active:not(.router-link-exact-active) div[class^="i-hugeicons"] {
+  @apply !text-gray-400 dark:!text-gray-200;
+}
+
+/* Only apply active state to exact matches for regular items */
+.sidebar-links.router-link-exact-active:not(.no-active) {
+  @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
+}
+
+.sidebar-links.router-link-exact-active:not(.no-active) div[class^="i-hugeicons"] {
+  @apply text-blue-600 dark:text-blue-400;
 }
 
 .sidebar-bottom-link {
@@ -592,13 +660,13 @@ li[draggable="true"].dragging .drag-handle {
 }
 
 .sidebar-child-link {
-  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-gray-800
-         duration-150 ease-in-out transition flex items-center gap-x-3
-         rounded-md p-1 text-sm leading-6 font-semibold pl-8;
+  @apply text-blue-gray-600 dark:text-blue-gray-200 hover:text-blue-600 dark:hover:text-blue-400
+         duration-150 ease-in-out transition flex items-center
+         rounded-md py-1 px-2 text-sm leading-6 font-medium w-full;
 }
 
 .router-link-active.sidebar-child-link {
-  @apply bg-blue-gray-50 text-blue-600 dark:bg-gray-700 dark:text-blue-400;
+  @apply text-blue-600 dark:text-blue-400 bg-transparent font-semibold;
 }
 
 .no-active {
@@ -607,6 +675,25 @@ li[draggable="true"].dragging .drag-handle {
 
 .no-active div[class^="i-hugeicons"] {
   @apply !text-gray-400 dark:!text-gray-200;
+}
+
+.no-active:hover {
+  @apply !text-blue-600 dark:!text-blue-400;
+}
+
+.no-active:hover div[class^="i-hugeicons"],
+.no-active:hover div[class^="i-heroicons"] {
+  @apply !text-blue-600 dark:!text-blue-400;
+}
+
+/* When parent is active (expanded), change text color */
+.no-active.parent-active {
+  @apply !text-blue-600 dark:!text-blue-400;
+}
+
+.no-active.parent-active div[class^="i-hugeicons"],
+.no-active.parent-active div[class^="i-heroicons"] {
+  @apply !text-blue-600 dark:!text-blue-400;
 }
 
 .dropdown-enter-active,
@@ -627,6 +714,7 @@ li[draggable="true"].dragging .drag-handle {
 /* Make Products dropdown items even more compact */
 .dropdown-list {
   overflow-y: visible;
+  width: calc(100% - 10px);
 }
 
 /* Specific styling for the commerce-products dropdown */
@@ -638,16 +726,12 @@ li[draggable="true"].dragging .drag-handle {
 [data-dropdown-id="#commerce-products"] .dropdown-item,
 [data-dropdown-id="#social-posts"] .dropdown-item {
   height: 24px;
+  width: 100%;
 }
 
 [data-dropdown-id="#commerce-products"] .sidebar-child-link,
 [data-dropdown-id="#social-posts"] .sidebar-child-link {
-  @apply p-1 pl-7 text-xs flex items-center gap-x-2;
-}
-
-[data-dropdown-id="#commerce-products"] .sidebar-child-link div,
-[data-dropdown-id="#social-posts"] .sidebar-child-link div {
-  @apply flex-shrink-0;
+  @apply py-0.5 px-2 text-xs flex items-center;
 }
 
 [data-dropdown-id="#commerce-products"] .sidebar-child-link span,
@@ -657,6 +741,10 @@ li[draggable="true"].dragging .drag-handle {
 
 /* Adjust spacing between sections */
 ul[role="list"].flex.flex-1.flex-col.gap-y-4 {
-  @apply gap-y-3;
+  @apply gap-y-4;
+}
+
+.router-link-exact-active.sidebar-child-link {
+  @apply text-blue-600 dark:text-blue-400 font-semibold;
 }
 </style>
