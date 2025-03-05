@@ -1,6 +1,7 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
+import type { OrderModel } from './Order'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -13,6 +14,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Coupon from './Coupon'
 
+import Order from './Order'
 
 import User from './User'
 
@@ -581,7 +583,14 @@ export class OrderModel {
   }
 
   async pluck<K extends keyof OrderModel>(field: K): Promise<OrderModel[K][]> {
-    return OrderModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: OrderModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: OrderModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

@@ -508,7 +508,14 @@ export class TeamModel {
   }
 
   async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
-    return TeamModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: TeamModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: TeamModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

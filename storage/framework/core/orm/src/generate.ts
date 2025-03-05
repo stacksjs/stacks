@@ -1328,7 +1328,14 @@ export async function generateModelString(
         }
 
         async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
-          return ${modelName}Model.pluck(field)
+          if (this.hasSelect) {
+            const model = await this.selectFromQuery.execute()
+            return model.map((modelItem: ${modelName}Model) => modelItem[field])
+          }
+
+          const model = await this.selectFromQuery.selectAll().execute()
+
+          return model.map((modelItem: ${modelName}Model) => modelItem[field])
         }
 
         static async count(): Promise<number> {

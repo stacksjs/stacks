@@ -518,7 +518,14 @@ export class RequestModel {
   }
 
   async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {
-    return RequestModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: RequestModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: RequestModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

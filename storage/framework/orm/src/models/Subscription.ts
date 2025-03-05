@@ -541,7 +541,14 @@ export class SubscriptionModel {
   }
 
   async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
-    return SubscriptionModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: SubscriptionModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: SubscriptionModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

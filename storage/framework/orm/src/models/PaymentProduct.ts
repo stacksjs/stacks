@@ -501,7 +501,14 @@ export class PaymentProductModel {
   }
 
   async pluck<K extends keyof PaymentProductModel>(field: K): Promise<PaymentProductModel[K][]> {
-    return PaymentProductModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: PaymentProductModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: PaymentProductModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

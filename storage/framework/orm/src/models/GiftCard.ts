@@ -594,7 +594,14 @@ export class GiftCardModel {
   }
 
   async pluck<K extends keyof GiftCardModel>(field: K): Promise<GiftCardModel[K][]> {
-    return GiftCardModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: GiftCardModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: GiftCardModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

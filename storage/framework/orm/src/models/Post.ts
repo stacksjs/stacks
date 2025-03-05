@@ -459,7 +459,14 @@ export class PostModel {
   }
 
   async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
-    return PostModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: PostModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: PostModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {

@@ -533,7 +533,14 @@ export class LoyaltyRewardModel {
   }
 
   async pluck<K extends keyof LoyaltyRewardModel>(field: K): Promise<LoyaltyRewardModel[K][]> {
-    return LoyaltyRewardModel.pluck(field)
+    if (this.hasSelect) {
+      const model = await this.selectFromQuery.execute()
+      return model.map((modelItem: LoyaltyRewardModel) => modelItem[field])
+    }
+
+    const model = await this.selectFromQuery.selectAll().execute()
+
+    return model.map((modelItem: LoyaltyRewardModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {
