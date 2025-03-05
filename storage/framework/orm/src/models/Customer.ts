@@ -105,7 +105,7 @@ export class CustomerModel {
           },
 
           fullContactInfo: () => {
-            return `${model.name} (${attributes.email}, ${attributes.phone})`
+            return `${model.name} (${model.email}, ${model.phone})`
           },
 
         }
@@ -125,7 +125,7 @@ export class CustomerModel {
         },
 
         fullContactInfo: () => {
-          return `${model.name} (${attributes.email}, ${attributes.phone})`
+          return `${model.name} (${model.email}, ${model.phone})`
         },
 
       }
