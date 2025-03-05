@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
+import Chart from 'chart.js/auto'
 
 useHead({
   title: 'Dashboard - Marketing Waitlist',
@@ -29,6 +30,12 @@ interface Product {
   slug: string
   count: number
 }
+
+// Available statuses
+const statuses = ['all', 'Pending', 'Notified', 'Converted', 'Expired']
+
+// Available sources
+const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
 
 // Sample waitlist data
 const waitlistEntries = ref<WaitlistEntry[]>([
@@ -76,11 +83,11 @@ const waitlistEntries = ref<WaitlistEntry[]>([
     name: 'Sarah Wilson',
     email: 'sarah.w@example.com',
     phone: '+1 (555) 456-7890',
-    product: 'Matcha Green Tea Latte',
+    product: 'Avocado Toast',
     source: 'Website',
     status: 'Pending',
     dateAdded: '2024-01-18',
-    notes: null,
+    notes: 'Wants to be notified when back in stock',
     notified: false,
     priority: 2
   },
@@ -164,14 +171,8 @@ const statusFilter = ref('all')
 const sourceFilter = ref('all')
 const viewMode = useLocalStorage('waitlist-view-mode', 'list') // Default to list view and save in localStorage
 
-// Available statuses
-const statuses = ['all', 'Pending', 'Notified', 'Converted', 'Expired']
-
-// Available sources
-const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
-
 // Filtered and sorted entries
-const filteredEntries = computed<WaitlistEntry[]>(() => {
+const filteredEntries = computed(() => {
   return waitlistEntries.value
     .filter(entry => {
       // Apply search filter
@@ -284,111 +285,75 @@ const pendingEntries = computed(() => waitlistEntries.value.filter(e => e.status
 const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
 const convertedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Converted').length)
 
-// Computed properties for form fields to handle null currentEntry
-const entryName = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.name || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.name = value }
-})
+// Form state for entry fields
+const entryName = ref('')
+const entryEmail = ref('')
+const entryPhone = ref<string | null>('')
+const entryProduct = ref('')
+const entrySource = ref('Website')
+const entryStatus = ref('Pending')
+const entryNotes = ref<string | null>('')
+const entryPriority = ref(1)
 
-const entryEmail = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.email || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.email = value }
-})
-
-const entryPhone = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.phone || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.phone = value || null }
-})
-
-const entryProduct = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.product || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.product = value || '' }
-})
-
-const entrySource = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.source || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.source = value || '' }
-})
-
-const entryStatus = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.status || 'Pending',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.status = value || 'Pending' }
-})
-
-const entryNotes = computed<{
-  get: () => string;
-  set: (value: string) => void;
-}>({
-  get: () => currentEntry.value?.notes || '',
-  set: (value: string) => { if (currentEntry.value) currentEntry.value.notes = value || null }
-})
-
-const entryPriority = computed<{
-  get: () => number;
-  set: (value: number) => void;
-}>({
-  get: () => currentEntry.value?.priority || 1,
-  set: (value: number) => { if (currentEntry.value) currentEntry.value.priority = value }
-})
-
+// Initialize form fields when opening modal
 function openAddEntryModal(): void {
   isEditMode.value = false
-  currentEntry.value = {
-    id: Math.max(...waitlistEntries.value.map(e => e.id)) + 1,
-    name: '',
-    email: '',
-    phone: null,
-    product: '',
-    source: 'Website',
-    status: 'Pending',
-    dateAdded: new Date().toISOString().split('T')[0],
-    notes: null,
-    notified: false,
-    priority: 1
-  }
+
+  // Reset form fields
+  entryName.value = ''
+  entryEmail.value = ''
+  entryPhone.value = ''
+  entryProduct.value = ''
+  entrySource.value = 'Website'
+  entryStatus.value = 'Pending'
+  entryNotes.value = ''
+  entryPriority.value = 1
+
   showEntryModal.value = true
 }
 
 function openEditEntryModal(entry: WaitlistEntry): void {
   isEditMode.value = true
   currentEntry.value = { ...entry }
+
+  // Set form fields from entry
+  entryName.value = entry.name
+  entryEmail.value = entry.email
+  entryPhone.value = entry.phone
+  entryProduct.value = entry.product
+  entrySource.value = entry.source
+  entryStatus.value = entry.status
+  entryNotes.value = entry.notes
+  entryPriority.value = entry.priority
+
   showEntryModal.value = true
 }
 
-function closeEntryModal(): void {
-  showEntryModal.value = false
-}
-
 function saveEntry(): void {
-  if (!currentEntry.value) return
+  // Create entry object from form fields
+  const entry: WaitlistEntry = {
+    id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
+    name: entryName.value,
+    email: entryEmail.value,
+    phone: entryPhone.value,
+    product: entryProduct.value,
+    source: entrySource.value,
+    status: entryStatus.value,
+    dateAdded: isEditMode.value && currentEntry.value ? currentEntry.value.dateAdded : new Date().toISOString().split('T')[0] || '',
+    notes: entryNotes.value,
+    notified: isEditMode.value && currentEntry.value ? currentEntry.value.notified : false,
+    priority: entryPriority.value
+  }
 
-  if (isEditMode.value) {
+  if (isEditMode.value && currentEntry.value) {
     // Update existing entry
     const index = waitlistEntries.value.findIndex(e => e.id === currentEntry.value!.id)
     if (index !== -1) {
-      waitlistEntries.value[index] = { ...currentEntry.value }
+      waitlistEntries.value[index] = entry
     }
   } else {
     // Add new entry
-    waitlistEntries.value.push({ ...currentEntry.value })
+    waitlistEntries.value.push(entry)
   }
 
   showEntryModal.value = false
@@ -420,6 +385,396 @@ function markAsConverted(entryId: number): void {
     entry.status = 'Converted'
   }
 }
+
+// Notification system
+const showNotificationModal = ref(false)
+const notificationSubject = ref('')
+const notificationMessage = ref('')
+const selectedEntries = ref<number[]>([])
+const selectAll = ref(false)
+
+// Toggle select all entries
+function toggleSelectAll(): void {
+  selectAll.value = !selectAll.value
+  if (selectAll.value) {
+    selectedEntries.value = paginatedEntries.value.map(entry => entry.id)
+  } else {
+    selectedEntries.value = []
+  }
+}
+
+// Toggle selection of a single entry
+function toggleEntrySelection(entryId: number): void {
+  const index = selectedEntries.value.indexOf(entryId)
+  if (index === -1) {
+    selectedEntries.value.push(entryId)
+  } else {
+    selectedEntries.value.splice(index, 1)
+  }
+
+  // Update selectAll based on whether all entries are selected
+  selectAll.value = paginatedEntries.value.length > 0 &&
+    paginatedEntries.value.every(entry => selectedEntries.value.includes(entry.id))
+}
+
+// Open notification modal
+function openNotificationModal(): void {
+  if (selectedEntries.value.length === 0) {
+    alert('Please select at least one waitlist entry to notify')
+    return
+  }
+
+  notificationSubject.value = 'Product Now Available'
+  notificationMessage.value = 'Good news! The product you were waiting for is now available for purchase.'
+  showNotificationModal.value = true
+}
+
+// Send notifications to selected entries
+function sendNotifications(): void {
+  // In a real app, this would send actual emails or notifications
+  waitlistEntries.value.forEach(entry => {
+    if (selectedEntries.value.includes(entry.id)) {
+      entry.notified = true
+      entry.status = 'Notified'
+    }
+  })
+
+  // Reset selection and close modal
+  selectedEntries.value = []
+  selectAll.value = false
+  showNotificationModal.value = false
+
+  // Show success message (in a real app, this would be a toast notification)
+  alert(`Notifications sent to ${selectedEntries.value.length} customers`)
+}
+
+// Export waitlist data
+function exportWaitlist(): void {
+  // In a real app, this would generate a CSV or Excel file
+  alert('Waitlist data exported successfully')
+}
+
+// Bulk actions
+function bulkChangeStatus(status: string): void {
+  if (selectedEntries.value.length === 0) {
+    alert('Please select at least one waitlist entry')
+    return
+  }
+
+  waitlistEntries.value.forEach(entry => {
+    if (selectedEntries.value.includes(entry.id)) {
+      entry.status = status
+      if (status === 'Notified') {
+        entry.notified = true
+      }
+    }
+  })
+
+  // Reset selection
+  selectedEntries.value = []
+  selectAll.value = false
+}
+
+// Bulk delete
+function bulkDelete(): void {
+  if (selectedEntries.value.length === 0) {
+    alert('Please select at least one waitlist entry')
+    return
+  }
+
+  if (confirm(`Are you sure you want to delete ${selectedEntries.value.length} waitlist entries?`)) {
+    waitlistEntries.value = waitlistEntries.value.filter(entry => !selectedEntries.value.includes(entry.id))
+
+    // Reset selection
+    selectedEntries.value = []
+    selectAll.value = false
+  }
+}
+
+// Chart references
+const productChartRef = ref<HTMLCanvasElement | null>(null)
+const sourceChartRef = ref<HTMLCanvasElement | null>(null)
+const statusChartRef = ref<HTMLCanvasElement | null>(null)
+const trendChartRef = ref<HTMLCanvasElement | null>(null)
+
+// Chart instances
+let productChart: Chart | null = null
+let sourceChart: Chart | null = null
+let statusChart: Chart | null = null
+let trendChart: Chart | null = null
+
+// Generate random trend data for the past 30 days
+const generateTrendData = () => {
+  const data = []
+  const today = new Date()
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    data.push({
+      date: date.toISOString().split('T')[0],
+      count: Math.floor(Math.random() * 5) // Random number of entries per day (0-4)
+    })
+  }
+  return data
+}
+
+const trendData = ref(generateTrendData())
+
+// Chart colors
+const chartColors = {
+  blue: 'rgba(59, 130, 246, 0.8)',
+  green: 'rgba(16, 185, 129, 0.8)',
+  purple: 'rgba(139, 92, 246, 0.8)',
+  gray: 'rgba(156, 163, 175, 0.8)',
+  yellow: 'rgba(245, 158, 11, 0.8)',
+  red: 'rgba(239, 68, 68, 0.8)',
+  borderBlue: 'rgba(59, 130, 246, 1)',
+  borderGreen: 'rgba(16, 185, 129, 1)',
+  borderPurple: 'rgba(139, 92, 246, 1)',
+  borderGray: 'rgba(156, 163, 175, 1)',
+  borderYellow: 'rgba(245, 158, 11, 1)',
+  borderRed: 'rgba(239, 68, 68, 1)'
+}
+
+// Initialize charts
+onMounted(() => {
+  initProductChart()
+  initSourceChart()
+  initStatusChart()
+  initTrendChart()
+})
+
+// Initialize product interest chart
+function initProductChart() {
+  if (!productChartRef.value) return
+
+  const ctx = productChartRef.value.getContext('2d')
+  if (!ctx) return
+
+  const productData = products.value.map(p => p.count)
+  const productLabels = products.value.map(p => p.name)
+  const productColors = [
+    chartColors.blue,
+    chartColors.green,
+    chartColors.purple,
+    chartColors.yellow,
+    chartColors.red,
+    chartColors.gray
+  ]
+
+  productChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: productLabels,
+      datasets: [{
+        label: 'Number of Waitlist Entries',
+        data: productData,
+        backgroundColor: productColors,
+        borderColor: productColors.map(color => color.replace('0.8', '1')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: 'Product Interest'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  })
+}
+
+// Initialize source breakdown chart
+function initSourceChart() {
+  if (!sourceChartRef.value) return
+
+  const ctx = sourceChartRef.value.getContext('2d')
+  if (!ctx) return
+
+  const sourceLabels = sources.slice(1)
+  const sourceData = sourceLabels.map((source: string) =>
+    waitlistEntries.value.filter(entry => entry.source === source).length
+  )
+  const sourceColors = [
+    chartColors.blue,
+    chartColors.green,
+    chartColors.purple,
+    chartColors.yellow,
+    chartColors.red,
+    chartColors.gray
+  ]
+
+  sourceChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: sourceLabels,
+      datasets: [{
+        data: sourceData,
+        backgroundColor: sourceColors,
+        borderColor: sourceColors.map(color => color.replace('0.8', '1')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right'
+        },
+        title: {
+          display: true,
+          text: 'Source Breakdown'
+        }
+      }
+    }
+  })
+}
+
+// Initialize status breakdown chart
+function initStatusChart() {
+  if (!statusChartRef.value) return
+
+  const ctx = statusChartRef.value.getContext('2d')
+  if (!ctx) return
+
+  const statusLabels = statuses.slice(1)
+  const statusData = statusLabels.map((status: string) =>
+    waitlistEntries.value.filter(entry => entry.status === status).length
+  )
+  const statusColors = [
+    chartColors.blue,
+    chartColors.green,
+    chartColors.purple,
+    chartColors.gray
+  ]
+
+  statusChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+      labels: statusLabels,
+      datasets: [{
+        data: statusData,
+        backgroundColor: statusColors,
+        borderColor: statusColors.map(color => color.replace('0.8', '1')),
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'right'
+        },
+        title: {
+          display: true,
+          text: 'Status Breakdown'
+        }
+      }
+    }
+  })
+}
+
+// Initialize trend chart
+function initTrendChart() {
+  if (!trendChartRef.value) return
+
+  const ctx = trendChartRef.value.getContext('2d')
+  if (!ctx) return
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trendData.value.map(d => d.date),
+      datasets: [{
+        label: 'New Waitlist Entries',
+        data: trendData.value.map(d => d.count),
+        backgroundColor: chartColors.blue,
+        borderColor: chartColors.borderBlue,
+        borderWidth: 2,
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: true,
+          text: '30-Day Trend'
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            precision: 0
+          }
+        }
+      }
+    }
+  })
+}
+
+// Update charts when data changes
+function updateCharts(): void {
+  if (productChart && productChart.data) {
+    const chart = productChart as Chart<'bar'>
+    chart.data.labels = products.value.map(p => p.name)
+    if (chart.data.datasets && chart.data.datasets.length > 0) {
+      chart.data.datasets[0].data = products.value.map(p => p.count)
+    }
+    chart.update()
+  }
+
+  if (sourceChart && sourceChart.data) {
+    const chart = sourceChart as Chart<'doughnut'>
+    const sourceLabels = sources.slice(1)
+    chart.data.labels = sourceLabels
+    if (chart.data.datasets && chart.data.datasets.length > 0) {
+      chart.data.datasets[0].data = sourceLabels.map((source: string) =>
+        waitlistEntries.value.filter(entry => entry.source === source).length
+      )
+    }
+    chart.update()
+  }
+
+  if (statusChart && statusChart.data) {
+    const chart = statusChart as Chart<'pie'>
+    const statusLabels = statuses.slice(1)
+    chart.data.labels = statusLabels
+    if (chart.data.datasets && chart.data.datasets.length > 0) {
+      chart.data.datasets[0].data = statusLabels.map((status: string) =>
+        waitlistEntries.value.filter(entry => entry.status === status).length
+      )
+    }
+    chart.update()
+  }
+}
+
+// Watch for changes in waitlist entries to update charts
+watch(waitlistEntries, () => {
+  updateCharts()
+}, { deep: true })
 </script>
 
 <template>
@@ -434,7 +789,7 @@ function markAsConverted(entryId: number): void {
               Manage your product waitlist and notify customers when products become available
             </p>
           </div>
-          <div class="mt-4 sm:mt-0">
+          <div class="mt-4 flex space-x-3 sm:mt-0">
             <button
               type="button"
               @click="openAddEntryModal"
@@ -443,6 +798,65 @@ function markAsConverted(entryId: number): void {
               <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
               Add to waitlist
             </button>
+            <button
+              type="button"
+              @click="exportWaitlist"
+              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700"
+            >
+              <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
+              Export
+            </button>
+          </div>
+        </div>
+
+        <!-- Analytics section with Chart.js -->
+        <div class="mt-8 bg-white p-6 shadow rounded-lg dark:bg-blue-gray-800">
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Waitlist Analytics</h2>
+
+          <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <!-- Product interest chart -->
+            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
+              <div class="h-64">
+                <canvas ref="productChartRef"></canvas>
+              </div>
+            </div>
+
+            <!-- Source breakdown chart -->
+            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
+              <div class="h-64">
+                <canvas ref="sourceChartRef"></canvas>
+              </div>
+            </div>
+
+            <!-- Status breakdown chart -->
+            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
+              <div class="h-64">
+                <canvas ref="statusChartRef"></canvas>
+              </div>
+            </div>
+
+            <!-- 30-day trend chart -->
+            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
+              <div class="h-64">
+                <canvas ref="trendChartRef"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conversion rate -->
+          <div class="mt-6">
+            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Conversion Rate</h3>
+            <div class="mt-2 flex items-center">
+              <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
+                <div
+                  class="bg-green-600 h-4 rounded-full dark:bg-green-500"
+                  :style="{ width: `${(convertedEntries / (totalEntries || 1)) * 100}%` }"
+                ></div>
+              </div>
+              <span class="ml-3 text-sm font-medium text-gray-900 dark:text-white">
+                {{ Math.round((convertedEntries / (totalEntries || 1)) * 100) }}%
+              </span>
+            </div>
           </div>
         </div>
 
@@ -621,11 +1035,51 @@ function markAsConverted(entryId: number): void {
           </button>
         </div>
 
-        <!-- Waitlist table -->
+        <!-- Bulk actions toolbar -->
+        <div v-if="selectedEntries.length > 0" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ selectedEntries.length }} entries selected</span>
+            </div>
+            <div class="flex space-x-3">
+              <button
+                @click="openNotificationModal"
+                class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+              >
+                <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
+                Notify Selected
+              </button>
+              <button
+                @click="bulkChangeStatus('Converted')"
+                class="inline-flex items-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
+              >
+                <div class="i-hugeicons-check-circle h-4 w-4 mr-1"></div>
+                Mark as Converted
+              </button>
+              <button
+                @click="bulkDelete"
+                class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
+              >
+                <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
+                Delete Selected
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Waitlist table with selection checkboxes -->
         <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-blue-gray-900">
               <tr>
+                <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
+                  <input
+                    type="checkbox"
+                    :checked="selectAll"
+                    @change="toggleSelectAll"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                  />
+                </th>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
                   Name
                 </th>
@@ -651,11 +1105,19 @@ function markAsConverted(entryId: number): void {
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
               <tr v-if="paginatedEntries.length === 0" class="text-center">
-                <td colspan="7" class="py-10 text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="py-10 text-gray-500 dark:text-gray-400">
                   No waitlist entries found. Add your first entry to get started.
                 </td>
               </tr>
               <tr v-for="entry in paginatedEntries" :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                  <input
+                    type="checkbox"
+                    :checked="selectedEntries.includes(entry.id)"
+                    @change="toggleEntrySelection(entry.id)"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                  />
+                </td>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
                     <div>
@@ -684,19 +1146,30 @@ function markAsConverted(entryId: number): void {
                   </span>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <button
-                    @click="openEditEntryModal(entry)"
-                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    v-if="!entry.notified && entry.status !== 'Converted'"
-                    @click="markAsNotified(entry.id)"
-                    class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                  >
-                    Notify
-                  </button>
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      @click="openEditEntryModal(entry)"
+                      class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                      <span class="sr-only">Edit</span>
+                    </button>
+                    <button
+                      v-if="!entry.notified && entry.status !== 'Converted'"
+                      @click="markAsNotified(entry.id)"
+                      class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
+                    >
+                      <div class="i-hugeicons-notification-square h-5 w-5"></div>
+                      <span class="sr-only">Notify</span>
+                    </button>
+                    <button
+                      @click="deleteEntry(entry.id)"
+                      class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
+                    >
+                      <div class="i-hugeicons-waste h-5 w-5"></div>
+                      <span class="sr-only">Delete</span>
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -949,6 +1422,49 @@ function markAsConverted(entryId: number): void {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification modal -->
+    <div v-if="showNotificationModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+          <div>
+            <div class="mt-3 text-center sm:mt-5">
+              <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                Send Notification
+              </h3>
+              <div class="mt-2">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Subject:
+                </p>
+                <input
+                  v-model="notificationSubject"
+                  type="text"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                />
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  Message:
+                </p>
+                <textarea
+                  v-model="notificationMessage"
+                  rows="3"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-5 sm:mt-6">
+            <button
+              @click="sendNotifications"
+              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            >
+              Send Notification
+            </button>
           </div>
         </div>
       </div>
