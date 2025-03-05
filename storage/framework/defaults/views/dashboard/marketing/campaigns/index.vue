@@ -25,6 +25,17 @@ interface Campaign {
   ownerAvatar: string
   createdAt: string
   lastModified: string
+  // Email campaign specific fields
+  emailSubject?: string
+  emailContent?: string
+  emailTemplate?: string
+  emailSender?: string
+  emailList?: string
+  // Text message campaign specific fields
+  smsContent?: string
+  smsPhoneList?: string
+  smsSchedule?: string
+  smsCharacterCount?: number
 }
 
 // Sample campaigns data
@@ -180,6 +191,100 @@ const campaigns = ref<Campaign[]>([
     ownerAvatar: 'https://randomuser.me/api/portraits/women/90.jpg',
     createdAt: '2023-08-10',
     lastModified: '2023-08-10'
+  },
+  {
+    id: 13,
+    name: 'Monthly Newsletter',
+    type: 'Email',
+    status: 'Scheduled',
+    startDate: '2023-12-25',
+    endDate: '2023-12-25',
+    budget: 500,
+    spent: 0,
+    goal: 'Engagement',
+    goalTarget: 2000,
+    goalProgress: 0,
+    audience: 'All Subscribers',
+    channels: ['Email'],
+    owner: 'Sarah Miller',
+    ownerAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    createdAt: '2023-12-10',
+    lastModified: '2023-12-10',
+    emailSubject: 'Your December Newsletter - Special Holiday Offers Inside!',
+    emailContent: '<h1>December Newsletter</h1><p>Hello valued customer,</p><p>Check out our latest products and special holiday offers!</p><p>Use code <strong>HOLIDAY20</strong> for 20% off your next purchase.</p>',
+    emailTemplate: 'newsletter',
+    emailSender: 'newsletter@example.com',
+    emailList: 'All Subscribers'
+  },
+  {
+    id: 14,
+    name: 'Holiday Sale Announcement',
+    type: 'Email',
+    status: 'Active',
+    startDate: '2023-12-15',
+    endDate: '2023-12-31',
+    budget: 1200,
+    spent: 800,
+    goal: 'Sales',
+    goalTarget: 50000,
+    goalProgress: 32000,
+    audience: 'All Customers',
+    channels: ['Email'],
+    owner: 'Alex Johnson',
+    ownerAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    createdAt: '2023-12-01',
+    lastModified: '2023-12-05',
+    emailSubject: 'Holiday Sale - Up to 50% Off Everything!',
+    emailContent: '<h1>Holiday Sale!</h1><p>Dear customer,</p><p>Our biggest sale of the year is here! Enjoy up to 50% off everything in our store.</p><p>Sale ends December 31st. Don\'t miss out!</p>',
+    emailTemplate: 'promotional',
+    emailSender: 'sales@example.com',
+    emailList: 'All Customers'
+  },
+  {
+    id: 15,
+    name: 'Flash Sale Alert',
+    type: 'SMS',
+    status: 'Scheduled',
+    startDate: '2023-12-20',
+    endDate: '2023-12-20',
+    budget: 300,
+    spent: 0,
+    goal: 'Sales',
+    goalTarget: 10000,
+    goalProgress: 0,
+    audience: 'Opted-in Customers',
+    channels: ['SMS'],
+    owner: 'David Chen',
+    ownerAvatar: 'https://randomuser.me/api/portraits/men/67.jpg',
+    createdAt: '2023-12-15',
+    lastModified: '2023-12-15',
+    smsContent: 'FLASH SALE TODAY ONLY! 30% off all items with code FLASH30. Shop now at example.com/sale',
+    smsPhoneList: 'Opted-in Customers',
+    smsSchedule: 'Morning',
+    smsCharacterCount: 93
+  },
+  {
+    id: 16,
+    name: 'Order Delivery Notification',
+    type: 'SMS',
+    status: 'Active',
+    startDate: '2023-12-01',
+    endDate: null,
+    budget: 200,
+    spent: 120,
+    goal: 'Customer Service',
+    goalTarget: 500,
+    goalProgress: 320,
+    audience: 'Recent Customers',
+    channels: ['SMS'],
+    owner: 'Emily Wilson',
+    ownerAvatar: 'https://randomuser.me/api/portraits/women/23.jpg',
+    createdAt: '2023-11-25',
+    lastModified: '2023-11-30',
+    smsContent: 'Your order #[ORDER_ID] has been delivered! Thank you for shopping with us. Rate your experience: example.com/feedback/[ORDER_ID]',
+    smsPhoneList: 'Recent Customers',
+    smsSchedule: 'Immediate',
+    smsCharacterCount: 124
   }
 ])
 
@@ -195,7 +300,7 @@ const viewMode = ref('compact') // 'detailed' or 'compact'
 const statuses = ['all', 'Active', 'Scheduled', 'Draft', 'Completed']
 
 // Available types
-const types = ['all', 'Discount', 'Product Launch', 'Seasonal', 'Loyalty', 'App Promotion']
+const types = ['all', 'Email', 'SMS']
 
 // Computed filtered and sorted campaigns
 const filteredCampaigns = computed(() => {
@@ -357,7 +462,7 @@ const isEditMode = ref(false)
 const currentCampaign = ref<Campaign>({
   id: 0,
   name: '',
-  type: 'Social Media',
+  type: 'Email',
   status: 'Draft',
   audience: '',
   startDate: '',
@@ -375,14 +480,13 @@ const currentCampaign = ref<Campaign>({
 })
 
 const openNewCampaignModal = () => {
-  // Ensure we have a string date
   const today = new Date().toISOString().split('T')[0];
   if (!today) return; // Safety check
 
   currentCampaign.value = {
     id: Math.max(...campaigns.value.map(c => c.id)) + 1,
     name: '',
-    type: 'Social Media',
+    type: 'Email',
     status: 'Draft',
     audience: '',
     startDate: today,
@@ -396,7 +500,18 @@ const openNewCampaignModal = () => {
     owner: 'Alex Johnson',
     ownerAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
     createdAt: today,
-    lastModified: today
+    lastModified: today,
+    // Initialize email campaign fields
+    emailSubject: '',
+    emailContent: '',
+    emailTemplate: 'default',
+    emailSender: 'marketing@example.com',
+    emailList: 'All Subscribers',
+    // Initialize text message campaign fields
+    smsContent: '',
+    smsPhoneList: 'All Customers',
+    smsSchedule: 'Immediate',
+    smsCharacterCount: 0
   };
 
   isEditMode.value = false;
@@ -444,11 +559,67 @@ function deleteCampaign(campaignId: number): void {
   }
 }
 
+// Update SMS character count
+const updateSmsCharacterCount = () => {
+  if (currentCampaign.value && currentCampaign.value.smsContent) {
+    currentCampaign.value.smsCharacterCount = currentCampaign.value.smsContent.length;
+  } else if (currentCampaign.value) {
+    currentCampaign.value.smsCharacterCount = 0;
+  }
+};
+
 // Calculate summary statistics
 const totalActiveCampaigns = computed(() => campaigns.value.filter(c => c.status === 'Active').length)
 const totalScheduledCampaigns = computed(() => campaigns.value.filter(c => c.status === 'Scheduled').length)
-const totalBudget = computed(() => campaigns.value.reduce((sum, campaign) => sum + campaign.budget, 0))
-const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum + campaign.spent, 0))
+// Define empty placeholders for totalBudget and totalSpent to avoid template errors
+const totalBudget = computed(() => 0)
+const totalSpent = computed(() => 0)
+
+// Calculate campaign type metrics
+const totalEmailCampaigns = computed(() => campaigns.value.filter(c => c.type === 'Email').length)
+const totalSmsCampaigns = computed(() => campaigns.value.filter(c => c.type === 'SMS').length)
+// Commenting out other campaign types as we're focusing only on email and SMS
+// const totalSocialMediaCampaigns = computed(() => campaigns.value.filter(c => c.type === 'Social Media').length)
+
+// Get campaign type icon
+const getCampaignTypeIcon = (type: string): string => {
+  switch (type) {
+    case 'Email':
+      return 'i-hugeicons-envelope'
+    case 'SMS':
+      return 'i-hugeicons-message-text'
+    case 'Social Media':
+      return 'i-hugeicons-share-01'
+    case 'Content':
+      return 'i-hugeicons-document-text'
+    case 'PPC':
+      return 'i-hugeicons-cursor-click'
+    case 'SEO':
+      return 'i-hugeicons-search-magnifying-glass'
+    default:
+      return 'i-hugeicons-campaign'
+  }
+}
+
+// Get campaign type color
+const getCampaignTypeColor = (type: string): string => {
+  switch (type) {
+    case 'Email':
+      return 'text-blue-600 dark:text-blue-400'
+    case 'SMS':
+      return 'text-green-600 dark:text-green-400'
+    case 'Social Media':
+      return 'text-purple-600 dark:text-purple-400'
+    case 'Content':
+      return 'text-yellow-600 dark:text-yellow-400'
+    case 'PPC':
+      return 'text-red-600 dark:text-red-400'
+    case 'SEO':
+      return 'text-gray-600 dark:text-gray-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
+}
 </script>
 
 <template>
@@ -519,20 +690,20 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
             </div>
           </div>
 
-          <!-- Total budget card -->
+          <!-- Email campaigns card -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-purple-100 p-2 dark:bg-purple-900">
-                    <div class="i-hugeicons-wallet h-6 w-6 text-purple-600 dark:text-purple-300"></div>
+                    <div class="i-hugeicons-at h-6 w-6 text-purple-600 dark:text-purple-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Budget</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Email Campaigns</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ formatCurrency(totalBudget) }}</div>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalEmailCampaigns }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -540,20 +711,20 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
             </div>
           </div>
 
-          <!-- Total spent card -->
+          <!-- SMS campaigns card -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-orange-100 p-2 dark:bg-orange-900">
-                    <div class="i-hugeicons-chart-bar-01 h-6 w-6 text-orange-600 dark:text-orange-300"></div>
+                    <div class="i-hugeicons-sent h-6 w-6 text-orange-600 dark:text-orange-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Spent</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">SMS Campaigns</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ formatCurrency(totalSpent) }}</div>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalSmsCampaigns }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -583,9 +754,10 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
-                {{ status }}
-              </option>
+              <option value="Active">Active</option>
+              <option value="Scheduled">Scheduled</option>
+              <option value="Draft">Draft</option>
+              <option value="Completed">Completed</option>
             </select>
 
             <!-- Type filter -->
@@ -594,9 +766,8 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Types</option>
-              <option v-for="type in types.slice(1)" :key="type" :value="type">
-                {{ type }}
-              </option>
+              <option value="Email">Email</option>
+              <option value="SMS">Text Message (SMS)</option>
             </select>
 
             <!-- View mode toggle -->
@@ -687,7 +858,6 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Type</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Dates</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Budget</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Progress</th>
                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span class="sr-only">Actions</span>
@@ -696,7 +866,7 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
             </thead>
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
               <tr v-if="paginatedCampaigns.length === 0">
-                <td colspan="7" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
                   No campaigns found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -710,7 +880,10 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                   </div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  {{ campaign.type }}
+                  <div class="flex items-center">
+                    <div :class="getCampaignTypeIcon(campaign.type) + ' h-4 w-4 mr-2 ' + getCampaignTypeColor(campaign.type)"></div>
+                    {{ campaign.type }}
+                  </div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
                   <span :class="[getStatusClass(campaign.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
@@ -720,10 +893,6 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                   <div>{{ formatDate(campaign.startDate) }}</div>
                   <div class="text-xs">to {{ formatDate(campaign.endDate) }}</div>
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  <div>{{ formatCurrency(campaign.budget) }}</div>
-                  <div class="text-xs">{{ formatCurrency(campaign.spent) }} spent</div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
                   <div class="flex items-center">
@@ -782,23 +951,55 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
 
                 <div class="mt-4">
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">Budget:</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(campaign.budget) }}</span>
-                  </div>
-                  <div class="flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">Spent:</span>
-                    <span class="font-medium text-gray-900 dark:text-white">{{ formatCurrency(campaign.spent) }}</span>
-                  </div>
-                </div>
-
-                <div class="mt-4">
-                  <div class="flex justify-between text-sm">
                     <span class="text-gray-500 dark:text-gray-400">Start date:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(campaign.startDate) }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-500 dark:text-gray-400">End date:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(campaign.endDate) }}</span>
+                  </div>
+                </div>
+
+                <!-- Email campaign details -->
+                <div v-if="campaign.type === 'Email'" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Email Details</h4>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">Subject:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailSubject }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500 dark:text-gray-400">Sender:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailSender }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500 dark:text-gray-400">Recipients:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailList }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500 dark:text-gray-400">Template:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailTemplate }}</span>
+                  </div>
+                </div>
+
+                <!-- SMS campaign details -->
+                <div v-if="campaign.type === 'SMS'" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Text Message Campaign Details</h4>
+
+                  <div class="text-sm">
+                    <span class="text-gray-500 dark:text-gray-400">Message:</span>
+                    <p class="mt-1 font-medium text-gray-900 dark:text-white">{{ campaign.smsContent }}</p>
+                  </div>
+                  <div class="flex justify-between text-sm mt-2">
+                    <span class="text-gray-500 dark:text-gray-400">Recipients:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsPhoneList }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500 dark:text-gray-400">Schedule:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsSchedule }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm mt-1">
+                    <span class="text-gray-500 dark:text-gray-400">Characters:</span>
+                    <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsCharacterCount }}/160</span>
                   </div>
                 </div>
 
@@ -827,7 +1028,7 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                   </button>
                   <button
                     @click="deleteCampaign(campaign.id)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600 sm:col-start-1 sm:mt-0 sm:text-sm"
                   >
                     <div class="i-hugeicons-waste -ml-0.5 mr-2 h-4 w-4"></div>
                     Delete
@@ -839,7 +1040,7 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-blue-gray-800 sm:px-6">
+        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 dark:bg-blue-gray-800 sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               @click="prevPage"
@@ -879,7 +1080,7 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
                 <button
                   v-for="page in displayedPages"
@@ -900,7 +1101,7 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                   :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
                 </button>
               </nav>
             </div>
@@ -963,11 +1164,8 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
                           required
                         >
-                          <option value="Social Media">Social Media</option>
                           <option value="Email">Email</option>
-                          <option value="Content">Content</option>
-                          <option value="PPC">PPC</option>
-                          <option value="SEO">SEO</option>
+                          <option value="SMS">Text Message (SMS)</option>
                         </select>
                       </div>
                     </div>
@@ -1034,46 +1232,6 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                       </div>
                     </div>
 
-                    <div class="sm:col-span-3">
-                      <label for="campaign-budget" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Budget
-                      </label>
-                      <div class="mt-1 relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <span class="text-gray-500 sm:text-sm">$</span>
-                        </div>
-                        <input
-                          id="campaign-budget"
-                          v-model.number="currentCampaign.budget"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          class="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div class="sm:col-span-3">
-                      <label for="campaign-spent" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Spent
-                      </label>
-                      <div class="mt-1 relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                          <span class="text-gray-500 sm:text-sm">$</span>
-                        </div>
-                        <input
-                          id="campaign-spent"
-                          v-model.number="currentCampaign.spent"
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          class="block w-full rounded-md border-gray-300 pl-7 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                          required
-                        />
-                      </div>
-                    </div>
-
                     <div class="sm:col-span-6">
                       <label for="campaign-goal" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         Goal
@@ -1118,6 +1276,159 @@ const totalSpent = computed(() => campaigns.value.reduce((sum, campaign) => sum 
                           class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
                           required
                         />
+                      </div>
+                    </div>
+
+                    <!-- Campaign Type Specific Fields -->
+                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6 border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Email Campaign Details</h4>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="email-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Email Subject
+                        </label>
+                        <div class="mt-1">
+                          <input
+                            id="email-subject"
+                            v-model="currentCampaign.emailSubject"
+                            type="text"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="email-sender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Sender Email
+                        </label>
+                        <div class="mt-1">
+                          <input
+                            id="email-sender"
+                            v-model="currentCampaign.emailSender"
+                            type="email"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="email-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Recipient List
+                        </label>
+                        <div class="mt-1">
+                          <select
+                            id="email-list"
+                            v-model="currentCampaign.emailList"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          >
+                            <option value="All Subscribers">All Subscribers</option>
+                            <option value="Newsletter Subscribers">Newsletter Subscribers</option>
+                            <option value="Recent Customers">Recent Customers</option>
+                            <option value="Inactive Customers">Inactive Customers</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="email-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Email Template
+                        </label>
+                        <div class="mt-1">
+                          <select
+                            id="email-template"
+                            v-model="currentCampaign.emailTemplate"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          >
+                            <option value="default">Default Template</option>
+                            <option value="promotional">Promotional Template</option>
+                            <option value="newsletter">Newsletter Template</option>
+                            <option value="announcement">Announcement Template</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="sm:col-span-6">
+                        <label for="email-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Email Content
+                        </label>
+                        <div class="mt-1">
+                          <textarea
+                            id="email-content"
+                            v-model="currentCampaign.emailContent"
+                            rows="6"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          ></textarea>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          You can use HTML tags for formatting.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div v-if="currentCampaign.type === 'SMS'" class="sm:col-span-6 border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Text Message Campaign Details</h4>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="sms-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Message Content
+                        </label>
+                        <div class="mt-1">
+                          <textarea
+                            id="sms-content"
+                            v-model="currentCampaign.smsContent"
+                            rows="3"
+                            maxlength="160"
+                            @input="updateSmsCharacterCount"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          ></textarea>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                          {{ currentCampaign.smsCharacterCount }}/160 characters
+                        </p>
+                      </div>
+
+                      <div class="sm:col-span-6 mb-4">
+                        <label for="sms-phone-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Recipient List
+                        </label>
+                        <div class="mt-1">
+                          <select
+                            id="sms-phone-list"
+                            v-model="currentCampaign.smsPhoneList"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          >
+                            <option value="All Customers">All Customers</option>
+                            <option value="Opted-in Customers">Opted-in Customers</option>
+                            <option value="Recent Customers">Recent Customers</option>
+                            <option value="VIP Customers">VIP Customers</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="sm:col-span-6">
+                        <label for="sms-schedule" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Delivery Schedule
+                        </label>
+                        <div class="mt-1">
+                          <select
+                            id="sms-schedule"
+                            v-model="currentCampaign.smsSchedule"
+                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                            required
+                          >
+                            <option value="Immediate">Send Immediately</option>
+                            <option value="Morning">Morning (8-10 AM)</option>
+                            <option value="Afternoon">Afternoon (12-2 PM)</option>
+                            <option value="Evening">Evening (6-8 PM)</option>
+                          </select>
+                        </div>
                       </div>
                     </div>
                   </div>
