@@ -239,6 +239,40 @@ const products = ref<Product[]>([
     rating: 4.9,
     reviewCount: 167,
     dateAdded: '2023-12-20'
+  },
+  {
+    id: 13,
+    name: 'Truffle Mushroom Pasta',
+    description: 'Handmade fettuccine with wild mushrooms, truffle oil, and parmesan cream sauce',
+    price: 18.99,
+    salePrice: null,
+    category: 'Pasta',
+    manufacturer: 'Pasta Paradise',
+    tags: ['vegetarian', 'premium', 'new'],
+    imageUrl: 'https://images.unsplash.com/photo-1555072956-7758afb20e8f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 0,
+    status: 'Coming Soon',
+    featured: true,
+    rating: 0,
+    reviewCount: 0,
+    dateAdded: '2024-01-15'
+  },
+  {
+    id: 14,
+    name: 'Matcha Green Tea Latte',
+    description: 'Premium Japanese matcha powder whisked with steamed milk and a touch of honey',
+    price: 6.49,
+    salePrice: null,
+    category: 'Beverages',
+    manufacturer: 'Tea Time',
+    tags: ['tea', 'japanese', 'new'],
+    imageUrl: 'https://images.unsplash.com/photo-1536013455962-2668f3b24cdd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    inventory: 0,
+    status: 'Coming Soon',
+    featured: false,
+    rating: 0,
+    reviewCount: 0,
+    dateAdded: '2024-01-20'
   }
 ])
 
@@ -268,7 +302,7 @@ const statusFilter = ref('all')
 const viewMode = useLocalStorage('products-view-mode', 'list') // Default to list view and save in localStorage
 
 // Available statuses
-const statuses = ['all', 'Active', 'Low Stock', 'Out of Stock', 'Discontinued']
+const statuses = ['all', 'Active', 'Coming Soon', 'Low Stock', 'Out of Stock', 'Discontinued']
 
 // Computed filtered and sorted products
 const filteredProducts = computed(() => {
@@ -355,6 +389,8 @@ function getStatusClass(status: string): string {
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
     case 'Discontinued':
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+    case 'Coming Soon':
+      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
     default:
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
   }
@@ -469,6 +505,7 @@ function saveProduct(): void {
 const totalProducts = computed(() => products.value.length)
 const featuredProducts = computed(() => products.value.filter(p => p.featured).length)
 const lowStockProducts = computed(() => products.value.filter(p => p.status === 'Low Stock').length)
+const comingSoonProducts = computed(() => products.value.filter(p => p.status === 'Coming Soon').length)
 
 // Function to delete a product
 function deleteProduct(productId: number): void {
@@ -506,7 +543,7 @@ function deleteProduct(productId: number): void {
         </div>
 
         <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total products card -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-5">
@@ -563,6 +600,27 @@ function deleteProduct(productId: number): void {
                     <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Low Stock Products</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ lowStockProducts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Coming Soon products card -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="h-10 w-10 rounded-md bg-purple-100 p-2 dark:bg-purple-900">
+                    <div class="i-hugeicons-calendar-01 h-6 w-6 text-purple-600 dark:text-purple-300"></div>
+                  </div>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Coming Soon</dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ comingSoonProducts }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -701,6 +759,7 @@ function deleteProduct(productId: number): void {
               v-for="product in paginatedProducts"
               :key="product.id"
               class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-blue-gray-800"
+              :class="{ 'ring-2 ring-purple-500 dark:ring-purple-400': product.status === 'Coming Soon' }"
             >
               <!-- Product image with status badge -->
               <div class="relative aspect-square overflow-hidden bg-gray-200 dark:bg-gray-700">
@@ -708,6 +767,7 @@ function deleteProduct(productId: number): void {
                   :src="product.imageUrl"
                   :alt="product.name"
                   class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  :class="{ 'opacity-80': product.status === 'Coming Soon' }"
                 />
                 <span
                   v-if="product.status !== 'Active'"
@@ -721,6 +781,9 @@ function deleteProduct(productId: number): void {
                 >
                   Featured
                 </span>
+                <div v-if="product.status === 'Coming Soon'" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                  <span class="transform rotate-12 bg-purple-600 text-white px-6 py-2 text-lg font-bold shadow-lg">Coming Soon</span>
+                </div>
               </div>
 
               <!-- Product info -->
