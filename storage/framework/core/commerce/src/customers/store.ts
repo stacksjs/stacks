@@ -1,5 +1,5 @@
+import type { CustomerRequestType } from '@stacksjs/orm'
 import type { CustomersTable } from '../../../../orm/src/models/Customer'
-import type { CreateCustomerInput } from '../../types'
 import { db } from '@stacksjs/database'
 
 /**
@@ -8,18 +8,18 @@ import { db } from '@stacksjs/database'
  * @param data The customer data to store
  * @returns The newly created customer record
  */
-export async function store(data: CreateCustomerInput): Promise<CustomersTable | undefined> {
+export async function store(request: CustomerRequestType): Promise<CustomersTable | undefined> {
   // Set default values if not provided
   const customerData = {
-    name: data.name,
-    email: data.email,
-    phone: data.phone,
-    orders: data.orders || 0,
-    totalSpent: data.total_spent || 0,
-    lastOrder: data.last_order || new Date().toISOString().split('T')[0],
-    status: data.status || 'Active',
-    avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-    user_id: data.user_id,
+    name: request.get('name'),
+    email: request.get('email'),
+    phone: request.get('phone'),
+    orders: Number(request.get('orders')) || 0,
+    total_spent: Number(request.get('totalSpent')) || 0,
+    last_order: request.get('lastOrder') || new Date().toISOString().split('T')[0],
+    status: request.get('status') || 'Active',
+    avatar: request.get('avatar') || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    user_id: Number(request.get('user_id')),
   }
 
   try {
@@ -52,48 +52,6 @@ export async function store(data: CreateCustomerInput): Promise<CustomersTable |
 
       // Re-throw the error with a more user-friendly message
       throw new Error(`Failed to create customer: ${error.message}`)
-    }
-
-    throw error
-  }
-}
-
-/**
- * Create multiple customers at once
- *
- * @param customers Array of customer data to store
- * @returns Number of customers created
- */
-export async function bulkStore(customers: CreateCustomerInput[]): Promise<number> {
-  if (!customers.length)
-    return 0
-
-  try {
-    // Prepare customer data with defaults
-    const customersData = customers.map(data => ({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      orders: data.orders || 0,
-      totalSpent: data.total_spent || 0,
-      lastOrder: data.last_order || new Date().toISOString().split('T')[0],
-      status: data.status || 'Active',
-      avatar: data.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-      user_id: data.user_id,
-    }))
-
-    // Insert all customers
-    const result = await db
-      .insertInto('customers')
-      .values(customersData)
-      .execute()
-
-    // Return the number of affected rows
-    return result.length || 0
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to create customers in bulk: ${error.message}`)
     }
 
     throw error

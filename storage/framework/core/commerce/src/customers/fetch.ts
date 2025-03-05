@@ -1,4 +1,4 @@
-import type { CustomerTable } from '../types'
+import type { CustomersTable } from '../../types'
 import { db } from '@stacksjs/database'
 
 export interface FetchCustomersOptions {
@@ -11,7 +11,7 @@ export interface FetchCustomersOptions {
 }
 
 export interface PaginatedCustomers {
-  customers: CustomerTable[]
+  customers: CustomersTable[]
   pagination: {
     total: number
     currentPage: number
@@ -26,14 +26,14 @@ export interface CustomerStats {
   total: number
   active: number
   inactive: number
-  topSpenders: Partial<CustomerTable>[]
-  recentCustomers: Partial<CustomerTable>[]
+  topSpenders: Partial<CustomersTable>[]
+  recentCustomers: Partial<CustomersTable>[]
 }
 
 /**
  * Fetch all customers from the database
  */
-export async function fetchAll(): Promise<CustomerTable[]> {
+export async function fetchAll(): Promise<CustomersTable[]> {
   return await db
     .selectFrom('customers')
     .selectAll()
@@ -113,7 +113,7 @@ export async function fetchPaginated(options: FetchCustomersOptions = {}): Promi
 /**
  * Fetch a customer by ID
  */
-export async function fetchById(id: number): Promise<CustomerTable | undefined> {
+export async function fetchById(id: number): Promise<CustomersTable | undefined> {
   return await db
     .selectFrom('customers')
     .where('id', '=', id)

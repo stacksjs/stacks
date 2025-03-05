@@ -1,7 +1,6 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
-import type { OrderModel } from './Order'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
@@ -14,7 +13,6 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Coupon from './Coupon'
 
-import Order from './Order'
 
 import User from './User'
 
