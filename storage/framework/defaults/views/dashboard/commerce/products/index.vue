@@ -899,14 +899,14 @@ function deleteProduct(productId: number): void {
                   <div class="flex justify-end space-x-2">
                     <button
                       @click="openEditProductModal(product)"
-                      class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                     >
                       <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       <span class="sr-only">Edit {{ product.name }}</span>
                     </button>
                     <button
                       @click="deleteProduct(product.id)"
-                      class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     >
                       <div class="i-hugeicons-waste h-5 w-5"></div>
                       <span class="sr-only">Delete {{ product.name }}</span>
