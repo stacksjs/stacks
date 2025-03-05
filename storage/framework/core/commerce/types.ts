@@ -1,7 +1,5 @@
 import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 
-// Import the OrderTable type from the ORM
-import type { OrdersTable } from '../../../../orm/src/models/Order'
 // Import the CustomerTable type from the ORM
 import type {
   CustomerJsonResponse,
@@ -10,6 +8,8 @@ import type {
   CustomerUpdate,
   NewCustomer,
 } from '../../orm/src/models/Customer'
+// Import the OrderTable type from the ORM
+import type { OrdersTable } from '../../orm/src/models/Order'
 
 // Re-export the types
 export type {
@@ -102,4 +102,25 @@ export interface OrderItem {
   quantity: number
   price: number
   special_instructions?: string
+}
+
+// Type for status count
+export interface StatusCount {
+  status: string
+  count: number | string // Using string since SQL count might return as string
+}
+
+// Type for order type count
+export interface OrderTypeCount {
+  order_type: string
+  count: number | string // Using string since SQL count might return as string
+}
+
+// Type for the stats return value
+export interface OrderStats {
+  total: number
+  by_status: StatusCount[]
+  by_type: OrderTypeCount[]
+  recent: OrderType[]
+  revenue: number
 }
