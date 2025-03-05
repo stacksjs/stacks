@@ -716,7 +716,6 @@ export async function writeModelRequest(): Promise<void> {
         continue
 
       fieldString += ` ${otherModel.foreignKey}: number\n     `
-      fieldStringType += ` get(key: '${otherModel.foreignKey}'): string \n`
       fieldStringInt += `public ${otherModel.foreignKey} = 0\n`
     }
 
