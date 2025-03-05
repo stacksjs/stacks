@@ -1697,7 +1697,7 @@ const removeCondition = (index: number) => {
                                     @click="addCondition"
                                     class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
                                   >
-                                    <div class="i-hugeicons-plus-circle h-4 w-4 mr-2"></div>
+                                    <div class="i-hugeicons-plus-sign-circle h-4 w-4 mr-2"></div>
                                     Add Condition
                                   </button>
                                 </div>

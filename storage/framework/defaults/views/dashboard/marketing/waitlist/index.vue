@@ -520,20 +520,80 @@ const generateTrendData = () => {
 
 const trendData = ref(generateTrendData())
 
-// Chart colors
+// Chart colors with gradients
 const chartColors = {
-  blue: 'rgba(59, 130, 246, 0.8)',
-  green: 'rgba(16, 185, 129, 0.8)',
-  purple: 'rgba(139, 92, 246, 0.8)',
-  gray: 'rgba(156, 163, 175, 0.8)',
-  yellow: 'rgba(245, 158, 11, 0.8)',
-  red: 'rgba(239, 68, 68, 0.8)',
-  borderBlue: 'rgba(59, 130, 246, 1)',
-  borderGreen: 'rgba(16, 185, 129, 1)',
-  borderPurple: 'rgba(139, 92, 246, 1)',
-  borderGray: 'rgba(156, 163, 175, 1)',
-  borderYellow: 'rgba(245, 158, 11, 1)',
-  borderRed: 'rgba(239, 68, 68, 1)'
+  blue: {
+    fill: 'rgba(59, 130, 246, 0.2)',
+    stroke: 'rgba(59, 130, 246, 1)',
+    point: 'rgba(59, 130, 246, 1)',
+  },
+  green: {
+    fill: 'rgba(16, 185, 129, 0.2)',
+    stroke: 'rgba(16, 185, 129, 1)',
+    point: 'rgba(16, 185, 129, 1)',
+  },
+  purple: {
+    fill: 'rgba(139, 92, 246, 0.2)',
+    stroke: 'rgba(139, 92, 246, 1)',
+    point: 'rgba(139, 92, 246, 1)',
+  },
+  yellow: {
+    fill: 'rgba(245, 158, 11, 0.2)',
+    stroke: 'rgba(245, 158, 11, 1)',
+    point: 'rgba(245, 158, 11, 1)',
+  },
+  red: {
+    fill: 'rgba(239, 68, 68, 0.2)',
+    stroke: 'rgba(239, 68, 68, 1)',
+    point: 'rgba(239, 68, 68, 1)',
+  },
+}
+
+// Base chart options
+const baseChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom' as const,
+      labels: {
+        usePointStyle: true,
+        padding: 20,
+        font: {
+          size: 12
+        }
+      }
+    },
+    title: {
+      display: true,
+      font: {
+        size: 16,
+        weight: 'bold' as const
+      },
+      padding: {
+        top: 10,
+        bottom: 20
+      }
+    }
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+      ticks: {
+        precision: 0
+      }
+    },
+    x: {
+      grid: {
+        display: false
+      }
+    }
+  }
 }
 
 // Initialize charts
@@ -553,14 +613,9 @@ function initProductChart() {
 
   const productData = products.value.map(p => p.count)
   const productLabels = products.value.map(p => p.name)
-  const productColors = [
-    chartColors.blue,
-    chartColors.green,
-    chartColors.purple,
-    chartColors.yellow,
-    chartColors.red,
-    chartColors.gray
-  ]
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
+  gradient.addColorStop(0, chartColors.blue.fill)
+  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)')
 
   productChart = new Chart(ctx, {
     type: 'bar',
@@ -569,29 +624,22 @@ function initProductChart() {
       datasets: [{
         label: 'Number of Waitlist Entries',
         data: productData,
-        backgroundColor: productColors,
-        borderColor: productColors.map(color => color.replace('0.8', '1')),
-        borderWidth: 1
+        backgroundColor: gradient,
+        borderColor: chartColors.blue.stroke,
+        borderWidth: 2,
+        borderRadius: 6,
+        maxBarThickness: 40,
+        barPercentage: 0.5
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      ...baseChartOptions,
       plugins: {
         legend: {
           display: false
         },
         title: {
-          display: true,
-          text: 'Product Interest'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
+          display: false
         }
       }
     }
@@ -606,17 +654,9 @@ function initSourceChart() {
   if (!ctx) return
 
   const sourceLabels = sources.slice(1)
-  const sourceData = sourceLabels.map((source: string) =>
+  const sourceData = sourceLabels.map(source =>
     waitlistEntries.value.filter(entry => entry.source === source).length
   )
-  const sourceColors = [
-    chartColors.blue,
-    chartColors.green,
-    chartColors.purple,
-    chartColors.yellow,
-    chartColors.red,
-    chartColors.gray
-  ]
 
   sourceChart = new Chart(ctx, {
     type: 'doughnut',
@@ -624,21 +664,108 @@ function initSourceChart() {
       labels: sourceLabels,
       datasets: [{
         data: sourceData,
-        backgroundColor: sourceColors,
-        borderColor: sourceColors.map(color => color.replace('0.8', '1')),
-        borderWidth: 1
+        backgroundColor: [
+          chartColors.blue.fill,
+          chartColors.green.fill,
+          chartColors.purple.fill,
+          chartColors.yellow.fill,
+          chartColors.red.fill
+        ],
+        borderColor: [
+          chartColors.blue.stroke,
+          chartColors.green.stroke,
+          chartColors.purple.stroke,
+          chartColors.yellow.stroke,
+          chartColors.red.stroke
+        ],
+        borderWidth: 2,
+        hoverOffset: 4,
+        spacing: 2
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      ...baseChartOptions,
+      cutout: '75%',
       plugins: {
         legend: {
-          position: 'right'
+          position: 'right' as const,
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: {
+              size: 11
+            }
+          }
         },
         title: {
-          display: true,
-          text: 'Source Breakdown'
+          display: false
+        }
+      }
+    }
+  })
+}
+
+// Initialize trend chart
+function initTrendChart() {
+  if (!trendChartRef.value) return
+
+  const ctx = trendChartRef.value.getContext('2d')
+  if (!ctx) return
+
+  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
+  gradient.addColorStop(0, chartColors.blue.fill)
+  gradient.addColorStop(1, 'rgba(59, 130, 246, 0)')
+
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trendData.value.map(d => d.date),
+      datasets: [{
+        label: 'New Waitlist Entries',
+        data: trendData.value.map(d => d.count),
+        backgroundColor: gradient,
+        borderColor: chartColors.blue.stroke,
+        borderWidth: 2,
+        pointBackgroundColor: chartColors.blue.point,
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: chartColors.blue.stroke,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6
+      }]
+    },
+    options: {
+      ...baseChartOptions,
+      plugins: {
+        legend: {
+          display: false
+        },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            display: false
+          },
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+            maxTicksLimit: 7
+          }
+        },
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)',
+          },
+          ticks: {
+            precision: 0,
+            maxTicksLimit: 5
+          }
         }
       }
     }
@@ -653,15 +780,9 @@ function initStatusChart() {
   if (!ctx) return
 
   const statusLabels = statuses.slice(1)
-  const statusData = statusLabels.map((status: string) =>
+  const statusData = statusLabels.map(status =>
     waitlistEntries.value.filter(entry => entry.status === status).length
   )
-  const statusColors = [
-    chartColors.blue,
-    chartColors.green,
-    chartColors.purple,
-    chartColors.gray
-  ]
 
   statusChart = new Chart(ctx, {
     type: 'pie',
@@ -669,66 +790,38 @@ function initStatusChart() {
       labels: statusLabels,
       datasets: [{
         data: statusData,
-        backgroundColor: statusColors,
-        borderColor: statusColors.map(color => color.replace('0.8', '1')),
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'right'
-        },
-        title: {
-          display: true,
-          text: 'Status Breakdown'
-        }
-      }
-    }
-  })
-}
-
-// Initialize trend chart
-function initTrendChart() {
-  if (!trendChartRef.value) return
-
-  const ctx = trendChartRef.value.getContext('2d')
-  if (!ctx) return
-
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: trendData.value.map(d => d.date),
-      datasets: [{
-        label: 'New Waitlist Entries',
-        data: trendData.value.map(d => d.count),
-        backgroundColor: chartColors.blue,
-        borderColor: chartColors.borderBlue,
+        backgroundColor: [
+          chartColors.blue.fill,
+          chartColors.green.fill,
+          chartColors.purple.fill,
+          chartColors.red.fill
+        ],
+        borderColor: [
+          chartColors.blue.stroke,
+          chartColors.green.stroke,
+          chartColors.purple.stroke,
+          chartColors.red.stroke
+        ],
         borderWidth: 2,
-        tension: 0.3,
-        fill: true
+        hoverOffset: 4,
+        spacing: 2
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      ...baseChartOptions,
       plugins: {
         legend: {
-          display: false
+          position: 'right' as const,
+          labels: {
+            usePointStyle: true,
+            padding: 20,
+            font: {
+              size: 11
+            }
+          }
         },
         title: {
-          display: true,
-          text: '30-Day Trend'
-        }
-      },
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            precision: 0
-          }
+          display: false
         }
       }
     }
@@ -809,139 +902,85 @@ watch(waitlistEntries, () => {
           </div>
         </div>
 
-        <!-- Analytics section with Chart.js -->
-        <div class="mt-8 bg-white p-6 shadow rounded-lg dark:bg-blue-gray-800">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Waitlist Analytics</h2>
+        <!-- Stats Cards -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Entries</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalEntries }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ Math.round((totalEntries / 100) * 100) }}% total growth</span>
+            </dd>
+          </div>
 
-          <div class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <!-- Product interest chart -->
-            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
-              <div class="h-64">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Pending</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ pendingEntries }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
+              <div class="i-hugeicons-hourglass h-4 w-4 mr-1"></div>
+              <span>Awaiting notification</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Notified</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ notifiedEntries }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
+              <span>Ready to convert</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
+              {{ Math.round((convertedEntries / (totalEntries || 1)) * 100) }}%
+            </dd>
+            <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
+              <div class="i-hugeicons-shopping-cart-01 h-4 w-4 mr-1"></div>
+              <span>{{ convertedEntries }} converted</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <!-- Product Interest Chart -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Product Interest</h3>
+              <div class="mt-2 h-80">
                 <canvas ref="productChartRef"></canvas>
               </div>
             </div>
+          </div>
 
-            <!-- Source breakdown chart -->
-            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
-              <div class="h-64">
+          <!-- Source Distribution Chart -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Customer Sources</h3>
+              <div class="mt-2 h-80">
                 <canvas ref="sourceChartRef"></canvas>
               </div>
             </div>
+          </div>
 
-            <!-- Status breakdown chart -->
-            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
-              <div class="h-64">
+          <!-- Status Distribution Chart -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Status Overview</h3>
+              <div class="mt-2 h-80">
                 <canvas ref="statusChartRef"></canvas>
               </div>
             </div>
+          </div>
 
-            <!-- 30-day trend chart -->
-            <div class="bg-gray-50 rounded-lg p-4 dark:bg-blue-gray-700">
-              <div class="h-64">
+          <!-- Trend Chart -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">30-Day Trend</h3>
+              <div class="mt-2 h-80">
                 <canvas ref="trendChartRef"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Conversion rate -->
-          <div class="mt-6">
-            <h3 class="text-sm font-medium text-gray-500 dark:text-gray-400">Conversion Rate</h3>
-            <div class="mt-2 flex items-center">
-              <div class="flex-1 bg-gray-200 rounded-full h-4 dark:bg-gray-700">
-                <div
-                  class="bg-green-600 h-4 rounded-full dark:bg-green-500"
-                  :style="{ width: `${(convertedEntries / (totalEntries || 1)) * 100}%` }"
-                ></div>
-              </div>
-              <span class="ml-3 text-sm font-medium text-gray-900 dark:text-white">
-                {{ Math.round((convertedEntries / (totalEntries || 1)) * 100) }}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Total entries card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-user-account h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Entries</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalEntries }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pending entries card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-hourglass h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Pending</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ pendingEntries }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Notified entries card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-green-100 p-2 dark:bg-green-900">
-                    <div class="i-hugeicons-notification-square h-6 w-6 text-green-600 dark:text-green-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Notified</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ notifiedEntries }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Converted entries card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-purple-100 p-2 dark:bg-purple-900">
-                    <div class="i-hugeicons-shopping-cart-01 h-6 w-6 text-purple-600 dark:text-purple-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Converted</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ convertedEntries }}</div>
-                    </dd>
-                  </dl>
-                </div>
               </div>
             </div>
           </div>
