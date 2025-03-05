@@ -31,7 +31,6 @@ export default {
   },
 
   belongsTo: ['User', 'Coupon'],
-  hasMany: ['Order'],
 
   attributes: {
     status: {

@@ -1,26 +1,21 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
-import type { OrderModel } from './Order'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-
 import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Coupon from './Coupon'
 
-import Order from './Order'
-
 import User from './User'
 
 export interface OrdersTable {
   id?: number
-  orders?: OrderModel[] | undefined
   user_id?: number
   user?: UserModel
   coupon_id?: number
@@ -151,10 +146,6 @@ export class OrderModel {
     for (const [key, fn] of Object.entries(customSetter)) {
       model[key] = await fn()
     }
-  }
-
-  get orders(): OrderModel[] | undefined {
-    return this.attributes.orders
   }
 
   get user_id(): number | undefined {
@@ -1906,7 +1897,6 @@ export class OrderModel {
 
       updated_at: this.updated_at,
 
-      orders: this.orders,
       user_id: this.user_id,
       user: this.user,
       coupon_id: this.coupon_id,
