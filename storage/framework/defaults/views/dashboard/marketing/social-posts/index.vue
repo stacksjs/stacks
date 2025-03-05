@@ -525,7 +525,7 @@ function truncateText(text: string, maxLength: number): string {
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-document-text h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+                    <div class="i-hugeicons-document-validation h-6 w-6 text-blue-600 dark:text-blue-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">

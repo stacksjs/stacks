@@ -37,6 +37,7 @@ declare module 'vue' {
     DialogDemo: typeof import('./../defaults/components/Docs/demo/DialogDemo.vue')['default']
     DigitalDeliveryTable: typeof import('./../defaults/components/Dashboard/Commerce/Delivery/DigitalDeliveryTable.vue')['default']
     DNSForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/DNSForm.vue')['default']
+    DriversTable: typeof import('./../defaults/components/Dashboard/Commerce/Delivery/DriversTable.vue')['default']
     Dropdown: typeof import('./../defaults/components/Dashboard/Elements/Dropdown.vue')['default']
     DropdownDemo: typeof import('./../defaults/components/Docs/demo/DropdownDemo.vue')['default']
     EmailActivityChart: typeof import('./../defaults/components/Dashboard/Email/EmailActivityChart.vue')['default']
