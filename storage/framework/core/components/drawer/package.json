@@ -1,0 +1,62 @@
+{
+  "name": "@stacksjs/drawer",
+  "type": "module",
+  "version": "0.69.5",
+  "description": "A modern dropdown component.",
+  "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/components/dropdown#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/components/dropdown"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "dropdowns",
+    "components",
+    "library",
+    "stacks"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "README.md",
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "dev": "echo 'build'",
+    "build": "echo 'build'",
+    "build:demo": "echo 'build'",
+    "build:types": "echo 'build'",
+    "preview": "echo 'preview'",
+    "prepublishOnly": "echo 'prepublish'"
+  },
+  "dependencies": {
+    "@stacksjs/ui": "workspace:*",
+    "highlight.js": "^11.11.1"
+  },
+  "devDependencies": {
+    "@iconify-json/hugeicons": "^1.2.3",
+    "@microsoft/api-extractor": "^7.51.1",
+    "@stacksjs/alias": "workspace:*",
+    "@stacksjs/development": "workspace:*",
+    "@vue/tsconfig": "^0.7.0",
+    "unocss": "66.0.0",
+    "unplugin-icons": "^22.1.0"
+  }
+}
