@@ -66,6 +66,7 @@ declare module 'vue-router/auto-routes' {
     '/logs/': RouteRecordInfo<'/logs/', '/logs', Record<never, never>, Record<never, never>>,
     '/mailboxes/': RouteRecordInfo<'/mailboxes/', '/mailboxes', Record<never, never>, Record<never, never>>,
     '/marketing/campaigns/': RouteRecordInfo<'/marketing/campaigns/', '/marketing/campaigns', Record<never, never>, Record<never, never>>,
+    '/marketing/lists/': RouteRecordInfo<'/marketing/lists/', '/marketing/lists', Record<never, never>, Record<never, never>>,
     '/marketing/social-posts/': RouteRecordInfo<'/marketing/social-posts/', '/marketing/social-posts', Record<never, never>, Record<never, never>>,
     '/marketing/waitlist/': RouteRecordInfo<'/marketing/waitlist/', '/marketing/waitlist', Record<never, never>, Record<never, never>>,
     '/models/': RouteRecordInfo<'/models/', '/models', Record<never, never>, Record<never, never>>,
