@@ -9,6 +9,7 @@ useHead({
 // Define campaign type
 interface Campaign {
   id: number
+  uuid: string
   name: string
   type: string
   status: string
@@ -31,17 +32,41 @@ interface Campaign {
   emailTemplate?: string
   emailSender?: string
   emailList?: string
+  email_list_uuid?: string
+  from_email?: string
+  from_name?: string
+  html?: string
+  structured_html?: string
+  email_html?: string
+  webview_html?: string
+  mailable_class?: string
+  segment_class?: string
+  segment_description?: string
+  // Analytics
+  sent_to_number_of_subscribers?: string
+  open_count?: string
+  unique_open_count?: string
+  open_rate?: number
+  click_count?: string
+  unique_click_count?: string
+  click_rate?: number
+  unsubscribe_count?: string
+  unsubscribe_rate?: string
+  bounce_count?: string
+  bounce_rate?: string
   // Text message campaign specific fields
   smsContent?: string
   smsPhoneList?: string
   smsSchedule?: string
   smsCharacterCount?: number
+  scheduled_at?: string | null
 }
 
 // Sample campaigns data
 const campaigns = ref<Campaign[]>([
   {
     id: 1,
+    uuid: '11ce123b-57c4-429b-9840-c79f8047d8aa',
     name: 'Summer Sale Promotion',
     type: 'Discount',
     status: 'Active',
@@ -61,6 +86,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 2,
+    uuid: '22ce123b-57c4-429b-9840-c79f8047d8bb',
     name: 'New Product Launch',
     type: 'Product Launch',
     status: 'Scheduled',
@@ -80,6 +106,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 3,
+    uuid: '33ce123b-57c4-429b-9840-c79f8047d8cc',
     name: 'Holiday Season Special',
     type: 'Seasonal',
     status: 'Draft',
@@ -99,6 +126,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 4,
+    uuid: '44ce123b-57c4-429b-9840-c79f8047d8dd',
     name: 'Customer Loyalty Program',
     type: 'Loyalty',
     status: 'Active',
@@ -118,6 +146,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 5,
+    uuid: '55ce123b-57c4-429b-9840-c79f8047d8ee',
     name: 'Back to School Campaign',
     type: 'Seasonal',
     status: 'Completed',
@@ -137,6 +166,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 6,
+    uuid: '66ce123b-57c4-429b-9840-c79f8047d8ff',
     name: 'Spring Collection Launch',
     type: 'Product Launch',
     status: 'Completed',
@@ -156,6 +186,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 7,
+    uuid: '77ce123b-57c4-429b-9840-c79f8047d8gg',
     name: 'App Download Promotion',
     type: 'App Promotion',
     status: 'Active',
@@ -175,6 +206,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 8,
+    uuid: '88ce123b-57c4-429b-9840-c79f8047d8hh',
     name: 'Black Friday Sale',
     type: 'Discount',
     status: 'Draft',
@@ -194,6 +226,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 13,
+    uuid: '99ce123b-57c4-429b-9840-c79f8047d8ii',
     name: 'Monthly Newsletter',
     type: 'Email',
     status: 'Scheduled',
@@ -218,6 +251,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 14,
+    uuid: 'aace123b-57c4-429b-9840-c79f8047d8jj',
     name: 'Holiday Sale Announcement',
     type: 'Email',
     status: 'Active',
@@ -242,6 +276,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 15,
+    uuid: 'bbce123b-57c4-429b-9840-c79f8047d8kk',
     name: 'Flash Sale Alert',
     type: 'SMS',
     status: 'Scheduled',
@@ -265,6 +300,7 @@ const campaigns = ref<Campaign[]>([
   },
   {
     id: 16,
+    uuid: 'ccce123b-57c4-429b-9840-c79f8047d8ll',
     name: 'Order Delivery Notification',
     type: 'SMS',
     status: 'Active',
@@ -297,10 +333,20 @@ const typeFilter = ref('all')
 const viewMode = ref('compact') // 'detailed' or 'compact'
 
 // Available statuses
-const statuses = ['all', 'Active', 'Scheduled', 'Draft', 'Completed']
+const statuses = ['all', 'sent', 'scheduled', 'draft']
 
 // Available types
 const types = ['all', 'Email', 'SMS']
+
+// Available sorts
+const availableSorts = [
+  { value: 'name', label: 'Name' },
+  { value: 'unique_open_count', label: 'Opens' },
+  { value: 'unique_click_count', label: 'Clicks' },
+  { value: 'unsubscribe_rate', label: 'Unsubscribes' },
+  { value: 'sent_to_number_of_subscribers', label: 'Sent To' },
+  { value: 'sent', label: 'Send Date' }
+]
 
 // Computed filtered and sorted campaigns
 const filteredCampaigns = computed(() => {
@@ -461,6 +507,7 @@ const showCampaignModal = ref(false)
 const isEditMode = ref(false)
 const currentCampaign = ref<Campaign>({
   id: 0,
+  uuid: '',
   name: '',
   type: 'Email',
   status: 'Draft',
@@ -485,6 +532,7 @@ const openNewCampaignModal = () => {
 
   currentCampaign.value = {
     id: Math.max(...campaigns.value.map(c => c.id)) + 1,
+    uuid: crypto.randomUUID(),
     name: '',
     type: 'Email',
     status: 'Draft',
@@ -528,23 +576,34 @@ function closeCampaignModal(): void {
   showCampaignModal.value = false
 }
 
+// Add scheduling state
+const isScheduled = ref(false)
+const scheduleDate = ref('')
+const scheduleTime = ref('')
+
+// Update save campaign to handle scheduling
 const saveCampaign = () => {
   if (!currentCampaign.value) return;
 
-  // Ensure we have a string date
   const today = new Date().toISOString().split('T')[0];
-  if (!today) return; // Safety check
+  if (!today) return;
+
+  // Handle scheduling
+  if (isScheduled.value && scheduleDate.value && scheduleTime.value) {
+    const scheduledDateTime = `${scheduleDate.value} ${scheduleTime.value}:00`;
+    currentCampaign.value.scheduled_at = scheduledDateTime;
+  } else {
+    currentCampaign.value.scheduled_at = null;
+  }
 
   currentCampaign.value.lastModified = today;
 
   if (isEditMode.value) {
-    // Update existing campaign
     const index = campaigns.value.findIndex(c => c.id === currentCampaign.value?.id);
     if (index !== -1) {
       campaigns.value[index] = { ...currentCampaign.value };
     }
   } else {
-    // Add new campaign
     campaigns.value.push({ ...currentCampaign.value });
   }
 
@@ -619,6 +678,43 @@ const getCampaignTypeColor = (type: string): string => {
     default:
       return 'text-gray-600 dark:text-gray-400'
   }
+}
+
+// Add new actions
+const sendTestCampaign = async (campaign: Campaign) => {
+  // Implementation will be handled by API integration
+  console.log('Send test for campaign:', campaign.uuid)
+}
+
+const sendCampaign = async (campaign: Campaign) => {
+  // Implementation will be handled by API integration
+  console.log('Send campaign:', campaign.uuid)
+}
+
+// Update campaign metrics display
+const getCampaignMetrics = (campaign: Campaign) => {
+  return [
+    {
+      label: 'Sent To',
+      value: campaign.sent_to_number_of_subscribers || '0',
+      icon: 'i-hugeicons-user-multiple'
+    },
+    {
+      label: 'Clicks',
+      value: `${campaign.unique_click_count || '0'} (${campaign.click_rate || 0}%)`,
+      icon: 'i-hugeicons-mouse-left-click-02'
+    },
+    {
+      label: 'Unsubscribes',
+      value: `${campaign.unsubscribe_count || '0'} (${campaign.unsubscribe_rate || '0'}%)`,
+      icon: 'i-hugeicons-user-minus-01'
+    },
+    {
+      label: 'Bounces',
+      value: `${campaign.bounce_count || '0'} (${campaign.bounce_rate || '0'}%)`,
+      icon: 'i-hugeicons-alert-circle'
+    }
+  ]
 }
 </script>
 
@@ -858,7 +954,7 @@ const getCampaignTypeColor = (type: string): string => {
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Type</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Dates</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Progress</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Metrics</th>
                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span class="sr-only">Actions</span>
                 </th>
@@ -895,22 +991,37 @@ const getCampaignTypeColor = (type: string): string => {
                   <div class="text-xs">to {{ formatDate(campaign.endDate) }}</div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  <div class="flex items-center">
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mr-2">
-                      <div
-                        class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500"
-                        :style="{ width: `${calculateProgress(campaign.goalProgress, campaign.goalTarget)}%` }"
-                      ></div>
+                  <div class="space-y-1">
+                    <div v-for="metric in getCampaignMetrics(campaign)" :key="metric.label" class="flex items-center">
+                      <div :class="metric.icon + ' h-4 w-4 mr-2'"></div>
+                      <span class="text-xs">{{ metric.label }}: {{ metric.value }}</span>
                     </div>
-                    <span>{{ calculateProgress(campaign.goalProgress, campaign.goalTarget) }}%</span>
                   </div>
-                  <div class="text-xs mt-1">{{ campaign.goal }}: {{ campaign.goalProgress }} / {{ campaign.goalTarget }}</div>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div class="flex justify-end space-x-2">
                     <button
+                      v-if="campaign.status === 'draft' || campaign.status === 'scheduled'"
+                      @click="sendTestCampaign(campaign)"
+                      class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-150"
+                      title="Send Test"
+                    >
+                      <div class="i-hugeicons-paper-plane h-5 w-5"></div>
+                      <span class="sr-only">Send Test</span>
+                    </button>
+                    <button
+                      v-if="campaign.status === 'draft'"
+                      @click="sendCampaign(campaign)"
+                      class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-all duration-150"
+                      title="Send Campaign"
+                    >
+                      <div class="i-hugeicons-send h-5 w-5"></div>
+                      <span class="sr-only">Send Campaign</span>
+                    </button>
+                    <button
                       @click="openEditCampaignModal(campaign)"
                       class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-150"
+                      title="Edit"
                     >
                       <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       <span class="sr-only">Edit</span>
@@ -918,6 +1029,7 @@ const getCampaignTypeColor = (type: string): string => {
                     <button
                       @click="deleteCampaign(campaign.id)"
                       class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-all duration-150"
+                      title="Delete"
                     >
                       <div class="i-hugeicons-waste h-5 w-5"></div>
                       <span class="sr-only">Delete</span>
@@ -957,6 +1069,19 @@ const getCampaignTypeColor = (type: string): string => {
                   <div class="flex justify-between text-sm">
                     <span class="text-gray-500 dark:text-gray-400">End date:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(campaign.endDate) }}</span>
+                  </div>
+                </div>
+
+                <!-- Campaign Metrics -->
+                <div class="mt-4 grid grid-cols-2 gap-4">
+                  <div v-for="metric in getCampaignMetrics(campaign)" :key="metric.label" class="col-span-1">
+                    <div class="flex items-center">
+                      <div :class="metric.icon + ' h-5 w-5 mr-2 text-gray-400 dark:text-gray-500'"></div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">{{ metric.value }}</div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ metric.label }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -1018,7 +1143,24 @@ const getCampaignTypeColor = (type: string): string => {
                   </div>
                 </div>
 
+                <!-- Campaign Actions -->
                 <div class="mt-5 flex justify-end space-x-3">
+                  <button
+                    v-if="campaign.status === 'draft' || campaign.status === 'scheduled'"
+                    @click="sendTestCampaign(campaign)"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
+                  >
+                    <div class="i-hugeicons-paper-plane -ml-0.5 mr-2 h-4 w-4"></div>
+                    Test
+                  </button>
+                  <button
+                    v-if="campaign.status === 'draft'"
+                    @click="sendCampaign(campaign)"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
+                  >
+                    <div class="i-hugeicons-send -ml-0.5 mr-2 h-4 w-4"></div>
+                    Send
+                  </button>
                   <button
                     @click="openEditCampaignModal(campaign)"
                     class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
@@ -1028,7 +1170,7 @@ const getCampaignTypeColor = (type: string): string => {
                   </button>
                   <button
                     @click="deleteCampaign(campaign.id)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600 sm:col-start-1 sm:mt-0 sm:text-sm"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
                   >
                     <div class="i-hugeicons-waste -ml-0.5 mr-2 h-4 w-4"></div>
                     Delete
@@ -1279,156 +1421,118 @@ const getCampaignTypeColor = (type: string): string => {
                       </div>
                     </div>
 
-                    <!-- Campaign Type Specific Fields -->
-                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6 border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Email Campaign Details</h4>
-
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="email-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Email Subject
-                        </label>
-                        <div class="mt-1">
-                          <input
-                            id="email-subject"
-                            v-model="currentCampaign.emailSubject"
-                            type="text"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="email-sender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Sender Email
-                        </label>
-                        <div class="mt-1">
-                          <input
-                            id="email-sender"
-                            v-model="currentCampaign.emailSender"
-                            type="email"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="email-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Recipient List
-                        </label>
-                        <div class="mt-1">
-                          <select
-                            id="email-list"
-                            v-model="currentCampaign.emailList"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          >
-                            <option value="All Subscribers">All Subscribers</option>
-                            <option value="Newsletter Subscribers">Newsletter Subscribers</option>
-                            <option value="Recent Customers">Recent Customers</option>
-                            <option value="Inactive Customers">Inactive Customers</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="email-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Email Template
-                        </label>
-                        <div class="mt-1">
-                          <select
-                            id="email-template"
-                            v-model="currentCampaign.emailTemplate"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          >
-                            <option value="default">Default Template</option>
-                            <option value="promotional">Promotional Template</option>
-                            <option value="newsletter">Newsletter Template</option>
-                            <option value="announcement">Announcement Template</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div class="sm:col-span-6">
-                        <label for="email-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Email Content
-                        </label>
-                        <div class="mt-1">
-                          <textarea
-                            id="email-content"
-                            v-model="currentCampaign.emailContent"
-                            rows="6"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          ></textarea>
-                        </div>
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          You can use HTML tags for formatting.
-                        </p>
+                    <!-- Email List Selection -->
+                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6">
+                      <label for="email-list-uuid" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email List
+                      </label>
+                      <div class="mt-1">
+                        <select
+                          id="email-list-uuid"
+                          v-model="currentCampaign.email_list_uuid"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        >
+                          <option value="">Select an email list</option>
+                          <!-- This would be populated from the API -->
+                          <option value="845b334b-90de-455d-8e9f-50598d75c06b">Main List</option>
+                          <option value="945b334b-90de-455d-8e9f-50598d75c06c">Newsletter</option>
+                        </select>
                       </div>
                     </div>
 
-                    <div v-if="currentCampaign.type === 'SMS'" class="sm:col-span-6 border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                      <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Text Message Campaign Details</h4>
-
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="sms-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Message Content
-                        </label>
-                        <div class="mt-1">
-                          <textarea
-                            id="sms-content"
-                            v-model="currentCampaign.smsContent"
-                            rows="3"
-                            maxlength="160"
-                            @input="updateSmsCharacterCount"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          ></textarea>
-                        </div>
-                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                          {{ currentCampaign.smsCharacterCount }}/160 characters
-                        </p>
+                    <!-- From Name and Email -->
+                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-3">
+                      <label for="from-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        From Name
+                      </label>
+                      <div class="mt-1">
+                        <input
+                          id="from-name"
+                          v-model="currentCampaign.from_name"
+                          type="text"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        />
                       </div>
+                    </div>
 
-                      <div class="sm:col-span-6 mb-4">
-                        <label for="sms-phone-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Recipient List
-                        </label>
-                        <div class="mt-1">
-                          <select
-                            id="sms-phone-list"
-                            v-model="currentCampaign.smsPhoneList"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          >
-                            <option value="All Customers">All Customers</option>
-                            <option value="Opted-in Customers">Opted-in Customers</option>
-                            <option value="Recent Customers">Recent Customers</option>
-                            <option value="VIP Customers">VIP Customers</option>
-                          </select>
-                        </div>
+                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-3">
+                      <label for="from-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        From Email
+                      </label>
+                      <div class="mt-1">
+                        <input
+                          id="from-email"
+                          v-model="currentCampaign.from_email"
+                          type="email"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        />
                       </div>
+                    </div>
 
-                      <div class="sm:col-span-6">
-                        <label for="sms-schedule" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Delivery Schedule
+                    <!-- Email Content -->
+                    <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6">
+                      <label for="html-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Email Content (HTML)
+                      </label>
+                      <div class="mt-1">
+                        <textarea
+                          id="html-content"
+                          v-model="currentCampaign.html"
+                          rows="10"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        ></textarea>
+                      </div>
+                      <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        You can use HTML tags for formatting.
+                      </p>
+                    </div>
+
+                    <!-- Scheduling -->
+                    <div class="sm:col-span-6">
+                      <div class="flex items-center">
+                        <input
+                          id="schedule-campaign"
+                          v-model="isScheduled"
+                          type="checkbox"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700"
+                        />
+                        <label for="schedule-campaign" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                          Schedule this campaign
                         </label>
-                        <div class="mt-1">
-                          <select
-                            id="sms-schedule"
-                            v-model="currentCampaign.smsSchedule"
-                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
-                            required
-                          >
-                            <option value="Immediate">Send Immediately</option>
-                            <option value="Morning">Morning (8-10 AM)</option>
-                            <option value="Afternoon">Afternoon (12-2 PM)</option>
-                            <option value="Evening">Evening (6-8 PM)</option>
-                          </select>
-                        </div>
+                      </div>
+                    </div>
+
+                    <div v-if="isScheduled" class="sm:col-span-3">
+                      <label for="schedule-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Schedule Date
+                      </label>
+                      <div class="mt-1">
+                        <input
+                          id="schedule-date"
+                          v-model="scheduleDate"
+                          type="date"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div v-if="isScheduled" class="sm:col-span-3">
+                      <label for="schedule-time" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Schedule Time
+                      </label>
+                      <div class="mt-1">
+                        <input
+                          id="schedule-time"
+                          v-model="scheduleTime"
+                          type="time"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                          required
+                        />
                       </div>
                     </div>
                   </div>
