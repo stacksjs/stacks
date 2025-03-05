@@ -138,6 +138,7 @@ const tabs = [
   { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
   { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
   { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
 ]
 </script>
 
