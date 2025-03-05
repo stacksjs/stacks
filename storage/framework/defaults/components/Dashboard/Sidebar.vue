@@ -451,7 +451,7 @@ const isChildRouteActive = (item: SidebarItem) => {
                         <ul
                           v-if="item.children && expandedItems[item.to]"
                           role="list"
-                          class="mt-0.5 space-y-0.5 dropdown-list pl-4 border-l border-gray-200 dark:border-gray-700 ml-2.5 w-full"
+                          class="mt-0.5 space-y-0.5 dropdown-list pl-4 border-l border-gray-200 dark:border-gray-700 ml-2.5 w-full mb-4"
                           :data-dropdown-id="item.to"
                           :style="{ 'max-height': item.to === '#commerce-products' ? '150px' : '200px' }"
                         >
