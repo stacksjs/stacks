@@ -45,4 +45,4 @@ export class PaymentProductRequest extends Request<RequestDataPaymentProduct> im
   }
 }
 
-export const paymentproductRequest = new PaymentProductRequest()
+export const paymentProductRequest = new PaymentProductRequest()

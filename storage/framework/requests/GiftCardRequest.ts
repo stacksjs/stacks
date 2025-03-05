@@ -61,4 +61,4 @@ export class GiftCardRequest extends Request<RequestDataGiftCard> implements Gif
   }
 }
 
-export const giftcardRequest = new GiftCardRequest()
+export const giftCardRequest = new GiftCardRequest()

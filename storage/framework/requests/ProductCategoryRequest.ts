@@ -43,4 +43,4 @@ export class ProductCategoryRequest extends Request<RequestDataProductCategory> 
   }
 }
 
-export const productcategoryRequest = new ProductCategoryRequest()
+export const productCategoryRequest = new ProductCategoryRequest()

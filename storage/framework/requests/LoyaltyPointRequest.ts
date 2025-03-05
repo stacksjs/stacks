@@ -45,4 +45,4 @@ export class LoyaltyPointRequest extends Request<RequestDataLoyaltyPoint> implem
   }
 }
 
-export const loyaltypointRequest = new LoyaltyPointRequest()
+export const loyaltyPointRequest = new LoyaltyPointRequest()

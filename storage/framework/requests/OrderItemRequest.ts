@@ -37,4 +37,4 @@ export class OrderItemRequest extends Request<RequestDataOrderItem> implements O
   }
 }
 
-export const orderitemRequest = new OrderItemRequest()
+export const orderItemRequest = new OrderItemRequest()

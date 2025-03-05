@@ -45,4 +45,4 @@ export class PaymentTransactionRequest extends Request<RequestDataPaymentTransac
   }
 }
 
-export const paymenttransactionRequest = new PaymentTransactionRequest()
+export const paymentTransactionRequest = new PaymentTransactionRequest()

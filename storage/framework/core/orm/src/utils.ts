@@ -17,7 +17,7 @@ import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
-import { kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
+import { camelCase, kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 import { generateModelString } from './generate'
 
@@ -679,8 +679,6 @@ export async function writeModelRequest(): Promise<void> {
     fieldString += ` id: number\n`
     fieldStringInt += `public id = 1\n`
 
-    fieldStringType += ` get(key: 'id'): number\n`
-
     const entityGroups: Record<string, string[]> = {}
 
     // Group attributes by their entity type
@@ -709,11 +707,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    // Generate fieldStringType with grouped fields
-    for (const [entity, fields] of Object.entries(entityGroups)) {
-      const concatenatedFields = fields.join(' | ')
-      fieldStringType += ` get(key: ${concatenatedFields}): ${entity}\n`
-    }
+    fieldStringType += ` get<T>(key: T): string | undefined`
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 
@@ -792,7 +786,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    export const ${modelName.toLocaleLowerCase()}Request = new ${modelName}Request()
+    export const ${camelCase(modelName)}Request = new ${modelName}Request()
     `
 
     const writer = requestFile.writer()

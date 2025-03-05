@@ -49,4 +49,4 @@ export class LoyaltyRewardRequest extends Request<RequestDataLoyaltyReward> impl
   }
 }
 
-export const loyaltyrewardRequest = new LoyaltyRewardRequest()
+export const loyaltyRewardRequest = new LoyaltyRewardRequest()
