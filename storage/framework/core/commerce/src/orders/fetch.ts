@@ -1,4 +1,3 @@
-import { handleError } from '@stacksjs/error-handling'
 import type {
   OrderJsonResponse,
   OrderResponse,
@@ -8,6 +7,7 @@ import type {
   StatusCount,
 } from '../../types'
 import { db } from '@stacksjs/database'
+import { handleError } from '@stacksjs/error-handling'
 
 export interface FetchOrdersOptions {
   page?: number
