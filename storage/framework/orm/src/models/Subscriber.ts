@@ -1648,9 +1648,9 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereSubscribed(value: boolean): Promise<SubscriberModel[]> {
   const query = DB.instance.selectFrom('subscribers').where('subscribed', '=', value)
-  const results = await query.execute()
+  const results: SubscriberJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriberModel) => new SubscriberModel(modelItem))
+  return results.map((modelItem: SubscriberJsonResponse) => new SubscriberModel(modelItem))
 }
 
 export const Subscriber = SubscriberModel

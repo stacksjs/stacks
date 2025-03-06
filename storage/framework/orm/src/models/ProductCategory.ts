@@ -1793,44 +1793,44 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('name', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('description', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export async function whereImageUrl(value: string): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('image_url', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export async function whereIsActive(value: boolean): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('is_active', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export async function whereParentCategoryId(value: string): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('parent_category_id', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export async function whereDisplayOrder(value: number): Promise<ProductCategoryModel[]> {
   const query = DB.instance.selectFrom('product_categories').where('display_order', '=', value)
-  const results = await query.execute()
+  const results: ProductCategoryJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductCategoryModel) => new ProductCategoryModel(modelItem))
+  return results.map((modelItem: ProductCategoryJsonResponse) => new ProductCategoryModel(modelItem))
 }
 
 export const ProductCategory = ProductCategoryModel

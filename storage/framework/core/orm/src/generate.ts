@@ -501,7 +501,7 @@ export async function generateModelString(
         return customer
       }
   
-       async defaultPaymentMethod(): Promise<PaymentMethodsTable | undefined> {
+       async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
         const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
   
         return defaultPaymentMethod
@@ -808,9 +808,9 @@ export async function generateModelString(
 
     whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: ${entity}): Promise<${modelName}Model[]> {
           const query = DB.instance.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
-          const results = await query.execute()
+          const results: ${modelName}JsonResponse = await query.execute()
   
-          return results.map((modelItem: ${modelName}Model) => new ${modelName}Model(modelItem))
+          return results.map((modelItem: ${modelName}JsonResponse) => new ${modelName}Model(modelItem))
         } \n\n`
   }
 

@@ -1695,16 +1695,16 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereTitle(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('title', '=', value)
-  const results = await query.execute()
+  const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostModel) => new PostModel(modelItem))
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
 }
 
 export async function whereBody(value: string): Promise<PostModel[]> {
   const query = DB.instance.selectFrom('posts').where('body', '=', value)
-  const results = await query.execute()
+  const results: PostJsonResponse = await query.execute()
 
-  return results.map((modelItem: PostModel) => new PostModel(modelItem))
+  return results.map((modelItem: PostJsonResponse) => new PostModel(modelItem))
 }
 
 export const Post = PostModel

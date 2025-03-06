@@ -1814,58 +1814,58 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereMethod(value: string | string[]): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('method', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function wherePath(value: string): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('path', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereStatusCode(value: number): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('status_code', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereDurationMs(value: number): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('duration_ms', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereIpAddress(value: string): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('ip_address', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereMemoryUsage(value: number): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('memory_usage', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereUserAgent(value: string): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('user_agent', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export async function whereErrorMessage(value: string): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('error_message', '=', value)
-  const results = await query.execute()
+  const results: RequestJsonResponse = await query.execute()
 
-  return results.map((modelItem: RequestModel) => new RequestModel(modelItem))
+  return results.map((modelItem: RequestJsonResponse) => new RequestModel(modelItem))
 }
 
 export const Request = RequestModel

@@ -1968,100 +1968,100 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereCode(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('code', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('description', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereDiscountType(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('discount_type', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereDiscountValue(value: number): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('discount_value', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereMinOrderAmount(value: number): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('min_order_amount', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereMaxDiscountAmount(value: number): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('max_discount_amount', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereFreeProductId(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('free_product_id', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereIsActive(value: boolean): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('is_active', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereUsageLimit(value: number): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('usage_limit', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereUsageCount(value: number): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('usage_count', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereStartDate(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('start_date', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereEndDate(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereApplicableProducts(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('applicable_products', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export async function whereApplicableCategories(value: string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('applicable_categories', '=', value)
-  const results = await query.execute()
+  const results: CouponJsonResponse = await query.execute()
 
-  return results.map((modelItem: CouponModel) => new CouponModel(modelItem))
+  return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
 export const Coupon = CouponModel

@@ -1869,72 +1869,72 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('name', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereToken(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('token', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function wherePlainTextToken(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('plain_text_token', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereAbilities(value: string | string[]): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereLastUsedAt(value: Date | string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('last_used_at', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereExpiresAt(value: Date | string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('expires_at', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereRevokedAt(value: Date | string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('revoked_at', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereIpAddress(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('ip_address', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereDeviceName(value: string): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('device_name', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export async function whereIsSingleUse(value: boolean): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('is_single_use', '=', value)
-  const results = await query.execute()
+  const results: AccessTokenJsonResponse = await query.execute()
 
-  return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
+  return results.map((modelItem: AccessTokenJsonResponse) => new AccessTokenModel(modelItem))
 }
 
 export const AccessToken = AccessTokenModel

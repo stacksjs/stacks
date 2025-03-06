@@ -1743,23 +1743,23 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereQuantity(value: number): Promise<OrderItemModel[]> {
   const query = DB.instance.selectFrom('order_items').where('quantity', '=', value)
-  const results = await query.execute()
+  const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemModel) => new OrderItemModel(modelItem))
+  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
 }
 
 export async function wherePrice(value: number): Promise<OrderItemModel[]> {
   const query = DB.instance.selectFrom('order_items').where('price', '=', value)
-  const results = await query.execute()
+  const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemModel) => new OrderItemModel(modelItem))
+  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
 }
 
 export async function whereSpecialInstructions(value: string): Promise<OrderItemModel[]> {
   const query = DB.instance.selectFrom('order_items').where('special_instructions', '=', value)
-  const results = await query.execute()
+  const results: OrderItemJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderItemModel) => new OrderItemModel(modelItem))
+  return results.map((modelItem: OrderItemJsonResponse) => new OrderItemModel(modelItem))
 }
 
 export const OrderItem = OrderItemModel

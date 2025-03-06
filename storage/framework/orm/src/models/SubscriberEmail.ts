@@ -1688,9 +1688,9 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereEmail(value: string): Promise<SubscriberEmailModel[]> {
   const query = DB.instance.selectFrom('subscriber_emails').where('email', '=', value)
-  const results = await query.execute()
+  const results: SubscriberEmailJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriberEmailModel) => new SubscriberEmailModel(modelItem))
+  return results.map((modelItem: SubscriberEmailJsonResponse) => new SubscriberEmailModel(modelItem))
 }
 
 export const SubscriberEmail = SubscriberEmailModel

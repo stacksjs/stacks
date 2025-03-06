@@ -1888,72 +1888,72 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('name', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('description', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function wherePrice(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('price', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereImageUrl(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('image_url', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereIsAvailable(value: boolean): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('is_available', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereInventoryCount(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('inventory_count', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereCategoryId(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('category_id', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function wherePreparationTime(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('preparation_time', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereAllergens(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('allergens', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export async function whereNutritionalInfo(value: string): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('nutritional_info', '=', value)
-  const results = await query.execute()
+  const results: ProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductModel) => new ProductModel(modelItem))
+  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
 }
 
 export const Product = ProductModel

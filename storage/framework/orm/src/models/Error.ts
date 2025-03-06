@@ -1720,37 +1720,37 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereType(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('type', '=', value)
-  const results = await query.execute()
+  const results: ErrorJsonResponse = await query.execute()
 
-  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorJsonResponse) => new ErrorModel(modelItem))
 }
 
 export async function whereMessage(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('message', '=', value)
-  const results = await query.execute()
+  const results: ErrorJsonResponse = await query.execute()
 
-  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorJsonResponse) => new ErrorModel(modelItem))
 }
 
 export async function whereStack(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('stack', '=', value)
-  const results = await query.execute()
+  const results: ErrorJsonResponse = await query.execute()
 
-  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorJsonResponse) => new ErrorModel(modelItem))
 }
 
 export async function whereStatus(value: number): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('status', '=', value)
-  const results = await query.execute()
+  const results: ErrorJsonResponse = await query.execute()
 
-  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorJsonResponse) => new ErrorModel(modelItem))
 }
 
 export async function whereAdditionalInfo(value: string): Promise<ErrorModel[]> {
   const query = DB.instance.selectFrom('errors').where('additional_info', '=', value)
-  const results = await query.execute()
+  const results: ErrorJsonResponse = await query.execute()
 
-  return results.map((modelItem: ErrorModel) => new ErrorModel(modelItem))
+  return results.map((modelItem: ErrorJsonResponse) => new ErrorModel(modelItem))
 }
 
 export const Error = ErrorModel

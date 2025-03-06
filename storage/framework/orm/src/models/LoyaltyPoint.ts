@@ -1805,51 +1805,51 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereWalletId(value: string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('wallet_id', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function wherePoints(value: number): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('points', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function whereSource(value: string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('source', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function whereSourceReferenceId(value: string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('source_reference_id', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('description', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function whereExpiryDate(value: string): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('expiry_date', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export async function whereIsUsed(value: boolean): Promise<LoyaltyPointModel[]> {
   const query = DB.instance.selectFrom('loyalty_points').where('is_used', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyPointJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyPointModel) => new LoyaltyPointModel(modelItem))
+  return results.map((modelItem: LoyaltyPointJsonResponse) => new LoyaltyPointModel(modelItem))
 }
 
 export const LoyaltyPoint = LoyaltyPointModel

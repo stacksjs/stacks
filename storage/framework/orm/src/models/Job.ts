@@ -1720,37 +1720,37 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereQueue(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('queue', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function wherePayload(value: string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('payload', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereAttempts(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('attempts', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereAvailableAt(value: number): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('available_at', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export async function whereReservedAt(value: Date | string): Promise<JobModel[]> {
   const query = DB.instance.selectFrom('jobs').where('reserved_at', '=', value)
-  const results = await query.execute()
+  const results: JobJsonResponse = await query.execute()
 
-  return results.map((modelItem: JobModel) => new JobModel(modelItem))
+  return results.map((modelItem: JobJsonResponse) => new JobModel(modelItem))
 }
 
 export const Job = JobModel

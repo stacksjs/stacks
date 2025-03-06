@@ -1853,72 +1853,72 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereType(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('type', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('provider_id', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderStatus(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('provider_status', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereUnitPrice(value: number): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('unit_price', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderType(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('provider_type', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereProviderPriceId(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('provider_price_id', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereQuantity(value: number): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('quantity', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereTrialEndsAt(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('trial_ends_at', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereEndsAt(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('ends_at', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export async function whereLastUsedAt(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('last_used_at', '=', value)
-  const results = await query.execute()
+  const results: SubscriptionJsonResponse = await query.execute()
 
-  return results.map((modelItem: SubscriptionModel) => new SubscriptionModel(modelItem))
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
 }
 
 export const Subscription = SubscriptionModel

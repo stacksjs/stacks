@@ -1986,107 +1986,107 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereCode(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('code', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereInitialBalance(value: number): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('initial_balance', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereCurrentBalance(value: number): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('current_balance', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereCurrency(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('currency', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('status', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function wherePurchaserId(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('purchaser_id', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereRecipientEmail(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('recipient_email', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereRecipientName(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('recipient_name', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function wherePersonalMessage(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('personal_message', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereIsDigital(value: boolean): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('is_digital', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereIsReloadable(value: boolean): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('is_reloadable', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereIsActive(value: boolean): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('is_active', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereExpiryDate(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('expiry_date', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereLastUsedDate(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('last_used_date', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export async function whereTemplateId(value: string): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('template_id', '=', value)
-  const results = await query.execute()
+  const results: GiftCardJsonResponse = await query.execute()
 
-  return results.map((modelItem: GiftCardModel) => new GiftCardModel(modelItem))
+  return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
 export const GiftCard = GiftCardModel

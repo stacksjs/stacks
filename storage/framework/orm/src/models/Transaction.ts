@@ -1833,51 +1833,51 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereAmount(value: number): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('amount', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('status', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function wherePaymentMethod(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('payment_method', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function wherePaymentDetails(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('payment_details', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function whereTransactionReference(value: string): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('transaction_reference', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function whereLoyaltyPointsEarned(value: number): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('loyalty_points_earned', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export async function whereLoyaltyPointsRedeemed(value: number): Promise<TransactionModel[]> {
   const query = DB.instance.selectFrom('transactions').where('loyalty_points_redeemed', '=', value)
-  const results = await query.execute()
+  const results: TransactionJsonResponse = await query.execute()
 
-  return results.map((modelItem: TransactionModel) => new TransactionModel(modelItem))
+  return results.map((modelItem: TransactionJsonResponse) => new TransactionModel(modelItem))
 }
 
 export const Transaction = TransactionModel

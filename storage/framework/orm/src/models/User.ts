@@ -1776,7 +1776,7 @@ export class UserModel {
     return customer
   }
 
-  async defaultPaymentMethod(): Promise<PaymentMethodsTable | undefined> {
+  async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
     const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
 
     return defaultPaymentMethod
@@ -2088,30 +2088,30 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('name', '=', value)
-  const results = await query.execute()
+  const results: UserJsonResponse = await query.execute()
 
-  return results.map((modelItem: UserModel) => new UserModel(modelItem))
+  return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('email', '=', value)
-  const results = await query.execute()
+  const results: UserJsonResponse = await query.execute()
 
-  return results.map((modelItem: UserModel) => new UserModel(modelItem))
+  return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))
 }
 
 export async function whereJobTitle(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('job_title', '=', value)
-  const results = await query.execute()
+  const results: UserJsonResponse = await query.execute()
 
-  return results.map((modelItem: UserModel) => new UserModel(modelItem))
+  return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))
 }
 
 export async function wherePassword(value: string): Promise<UserModel[]> {
   const query = DB.instance.selectFrom('users').where('password', '=', value)
-  const results = await query.execute()
+  const results: UserJsonResponse = await query.execute()
 
-  return results.map((modelItem: UserModel) => new UserModel(modelItem))
+  return results.map((modelItem: UserJsonResponse) => new UserModel(modelItem))
 }
 
 export const User = UserModel

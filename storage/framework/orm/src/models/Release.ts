@@ -1648,9 +1648,9 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereVersion(value: string): Promise<ReleaseModel[]> {
   const query = DB.instance.selectFrom('releases').where('version', '=', value)
-  const results = await query.execute()
+  const results: ReleaseJsonResponse = await query.execute()
 
-  return results.map((modelItem: ReleaseModel) => new ReleaseModel(modelItem))
+  return results.map((modelItem: ReleaseJsonResponse) => new ReleaseModel(modelItem))
 }
 
 export const Release = ReleaseModel

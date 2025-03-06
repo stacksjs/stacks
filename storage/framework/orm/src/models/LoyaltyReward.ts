@@ -1868,65 +1868,65 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('name', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('description', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function wherePointsRequired(value: number): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('points_required', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereRewardType(value: string): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('reward_type', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereDiscountPercentage(value: number): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('discount_percentage', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereFreeProductId(value: string): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('free_product_id', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereIsActive(value: boolean): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('is_active', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereExpiryDays(value: number): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('expiry_days', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export async function whereImageUrl(value: string): Promise<LoyaltyRewardModel[]> {
   const query = DB.instance.selectFrom('loyalty_rewards').where('image_url', '=', value)
-  const results = await query.execute()
+  const results: LoyaltyRewardJsonResponse = await query.execute()
 
-  return results.map((modelItem: LoyaltyRewardModel) => new LoyaltyRewardModel(modelItem))
+  return results.map((modelItem: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(modelItem))
 }
 
 export const LoyaltyReward = LoyaltyRewardModel

@@ -1848,51 +1848,51 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('name', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('email', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function wherePhone(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('phone', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function whereTotalSpent(value: number): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('total_spent', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function whereLastOrder(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('last_order', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function whereStatus(value: string | string[]): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('status', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export async function whereAvatar(value: string): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('avatar', '=', value)
-  const results = await query.execute()
+  const results: CustomerJsonResponse = await query.execute()
 
-  return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
+  return results.map((modelItem: CustomerJsonResponse) => new CustomerModel(modelItem))
 }
 
 export const Customer = CustomerModel

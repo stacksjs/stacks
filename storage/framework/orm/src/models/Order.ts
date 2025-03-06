@@ -1943,79 +1943,79 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereStatus(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('status', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereTotalAmount(value: number): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('total_amount', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereTaxAmount(value: number): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('tax_amount', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereDiscountAmount(value: number): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('discount_amount', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereDeliveryFee(value: number): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('delivery_fee', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereTipAmount(value: number): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('tip_amount', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereOrderType(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('order_type', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereDeliveryAddress(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('delivery_address', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereSpecialInstructions(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('special_instructions', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereEstimatedDeliveryTime(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('estimated_delivery_time', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export async function whereAppliedCouponId(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('applied_coupon_id', '=', value)
-  const results = await query.execute()
+  const results: OrderJsonResponse = await query.execute()
 
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
+  return results.map((modelItem: OrderJsonResponse) => new OrderModel(modelItem))
 }
 
 export const Order = OrderModel

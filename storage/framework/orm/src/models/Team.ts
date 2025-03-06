@@ -1802,58 +1802,58 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('name', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereCompanyName(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('company_name', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('email', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereBillingEmail(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('billing_email', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('status', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('description', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function wherePath(value: string): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('path', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export async function whereIsPersonal(value: boolean): Promise<TeamModel[]> {
   const query = DB.instance.selectFrom('teams').where('is_personal', '=', value)
-  const results = await query.execute()
+  const results: TeamJsonResponse = await query.execute()
 
-  return results.map((modelItem: TeamModel) => new TeamModel(modelItem))
+  return results.map((modelItem: TeamJsonResponse) => new TeamModel(modelItem))
 }
 
 export const Team = TeamModel

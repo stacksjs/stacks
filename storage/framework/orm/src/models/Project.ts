@@ -1702,30 +1702,30 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('name', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereDescription(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('description', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereUrl(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('url', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<ProjectModel[]> {
   const query = DB.instance.selectFrom('projects').where('status', '=', value)
-  const results = await query.execute()
+  const results: ProjectJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProjectModel) => new ProjectModel(modelItem))
+  return results.map((modelItem: ProjectJsonResponse) => new ProjectModel(modelItem))
 }
 
 export const Project = ProjectModel

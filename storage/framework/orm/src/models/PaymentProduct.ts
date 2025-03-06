@@ -1770,51 +1770,51 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereName(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('name', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereDescription(value: number): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('description', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereKey(value: number): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('key', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereUnitPrice(value: number): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('unit_price', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereStatus(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('status', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereImage(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('image', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export async function whereProviderId(value: string): Promise<PaymentProductModel[]> {
   const query = DB.instance.selectFrom('payment_products').where('provider_id', '=', value)
-  const results = await query.execute()
+  const results: PaymentProductJsonResponse = await query.execute()
 
-  return results.map((modelItem: PaymentProductModel) => new PaymentProductModel(modelItem))
+  return results.map((modelItem: PaymentProductJsonResponse) => new PaymentProductModel(modelItem))
 }
 
 export const PaymentProduct = PaymentProductModel
