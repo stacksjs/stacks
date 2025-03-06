@@ -9,7 +9,6 @@ import { db } from '@stacksjs/database'
  * @returns The newly created customer record
  */
 export async function store(request: CustomerRequestType): Promise<CustomersTable | undefined> {
-  // Create customer data object directly
   const customerData: NewCustomer = {
     name: request.get('name'),
     email: request.get('email'),
@@ -40,14 +39,11 @@ export async function store(request: CustomerRequestType): Promise<CustomersTabl
     return undefined
   }
   catch (error) {
-    // Handle specific errors
     if (error instanceof Error) {
-      // Check for unique constraint violation on email
       if (error.message.includes('Duplicate entry') && error.message.includes('email')) {
         throw new Error('A customer with this email already exists')
       }
 
-      // Re-throw the error with a more user-friendly message
       throw new Error(`Failed to create customer: ${error.message}`)
     }
 
