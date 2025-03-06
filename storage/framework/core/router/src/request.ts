@@ -40,8 +40,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get<T>(element: T): string | undefined {
-    return this.query[typeof element]
+  public get<T>(element: string, defaultValue?: T): T | undefined {
+    return this.query[typeof element] || defaultValue
   }
 
   public all(): T {

@@ -707,7 +707,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    fieldStringType += ` get<T>(key: string): T | undefined`
+    fieldStringType += ` get<T = string>(key: string, defaultValue?: T): T | undefined`
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 
