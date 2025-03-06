@@ -311,7 +311,7 @@ const formatNumber = (num: number): string => {
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-bell h-6 w-6 text-white" />
+                <div class="i-hugeicons-bell h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Total Notifications
@@ -322,7 +322,7 @@ const formatNumber = (num: number): string => {
                 {{ formatNumber(notificationStats.total_sent) }}
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Increased by</span>
                 122
               </p>
@@ -332,7 +332,7 @@ const formatNumber = (num: number): string => {
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-check-circle h-6 w-6 text-white" />
+                <div class="i-hugeicons-check-circle h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Delivery Rate
@@ -343,7 +343,7 @@ const formatNumber = (num: number): string => {
                 {{ notificationStats.delivery_rate }}%
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Increased by</span>
                 0.5%
               </p>
@@ -353,7 +353,7 @@ const formatNumber = (num: number): string => {
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-clock-01 h-6 w-6 text-white" />
+                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Average Delivery Time
@@ -364,7 +364,7 @@ const formatNumber = (num: number): string => {
                 {{ notificationStats.avg_delivery_time }}s
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Decreased by</span>
                 0.1s
               </p>
@@ -385,7 +385,7 @@ const formatNumber = (num: number): string => {
               class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               <span>View All</span>
-              <div class="i-heroicons-arrow-right h-4 w-4" />
+              <div class="i-hugeicons-arrow-right h-4 w-4" />
             </router-link>
           </div>
           <div class="mt-4 flow-root">

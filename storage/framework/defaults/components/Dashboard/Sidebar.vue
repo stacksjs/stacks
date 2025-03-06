@@ -449,7 +449,7 @@ const isChildRouteActive = (item: SidebarItem) => {
                           <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
                           <div
                             v-if="item.children"
-                            class="i-heroicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
+                            class="i-hugeicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
                             :class="{ 'transform rotate-90': expandedItems[item.to] }"
                           />
                         </div>
@@ -578,7 +578,7 @@ const isChildRouteActive = (item: SidebarItem) => {
 }
 
 .no-active.router-link-active div[class^="i-hugeicons"],
-.no-active.router-link-active div[class^="i-heroicons"] {
+.no-active.router-link-active div[class^="i-hugeicons"] {
   @apply !text-gray-400 dark:!text-gray-200;
 }
 
@@ -588,7 +588,7 @@ const isChildRouteActive = (item: SidebarItem) => {
 }
 
 .no-active.parent-active div[class^="i-hugeicons"],
-.no-active.parent-active div[class^="i-heroicons"] {
+.no-active.parent-active div[class^="i-hugeicons"] {
   @apply !text-blue-600 dark:!text-blue-400;
 }
 
@@ -691,7 +691,7 @@ li[draggable="true"].dragging .drag-handle {
 }
 
 .no-active:hover div[class^="i-hugeicons"],
-.no-active:hover div[class^="i-heroicons"] {
+.no-active:hover div[class^="i-hugeicons"] {
   @apply !text-blue-600 dark:!text-blue-400;
 }
 
@@ -701,7 +701,7 @@ li[draggable="true"].dragging .drag-handle {
 }
 
 .no-active.parent-active div[class^="i-hugeicons"],
-.no-active.parent-active div[class^="i-heroicons"] {
+.no-active.parent-active div[class^="i-hugeicons"] {
   @apply !text-blue-600 dark:!text-blue-400;
 }
 

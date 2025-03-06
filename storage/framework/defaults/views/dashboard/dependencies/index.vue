@@ -9,7 +9,7 @@ useHead({
     <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">
       <div class="py-2">
         <div class="flex flex-row rounded-lg bg-gray-50 p-4 text-sm text-gray-600 dark:bg-blue-gray-700 dark:text-gray-400">
-          <div class="i-heroicons-information-circle h-6 w-6 flex-shrink-0 text-gray-400" />
+          <div class="i-hugeicons-information-circle h-6 w-6 flex-shrink-0 text-gray-400" />
           <div class="ml-4 mt-0.5 flex flex-grow">
             <p class="">
               Search for dependencies using tea.
@@ -113,7 +113,7 @@ useHead({
                       class="text-left text-gray-400 transition duration-150 ease-in-out hover:text-blue-gray-500"
                     >
 
-                      <div class="i-heroicons-ellipsis-vertical h-5 w-5" />
+                      <div class="i-hugeicons-ellipsis-vertical h-5 w-5" />
 
                       <div
                         v-if="false"

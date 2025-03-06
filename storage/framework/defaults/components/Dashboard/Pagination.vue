@@ -25,14 +25,14 @@
             class="relative inline-flex items-center border border-gray-300 rounded-l-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">First</span>
-            <div class="i-heroicons-chevron-double-left-20-solid h-5 w-5" />
+            <div class="i-hugeicons-chevron-double-left-20-solid h-5 w-5" />
           </a>
           <a
             href="#"
             class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Previous</span>
-            <div class="i-heroicons-chevron-left-20-solid h-5 w-5" />
+            <div class="i-hugeicons-chevron-left-20-solid h-5 w-5" />
           </a>
           <a
             href="#"
@@ -60,14 +60,14 @@
             class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Next</span>
-            <div class="i-heroicons-chevron-right-20-solid h-5 w-5" />
+            <div class="i-hugeicons-chevron-right-20-solid h-5 w-5" />
           </a>
           <a
             href="#"
             class="relative inline-flex items-center border border-gray-300 rounded-r-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Last</span>
-            <div class="i-heroicons-chevron-double-right-20-solid h-5 w-5" />
+            <div class="i-hugeicons-chevron-double-right-20-solid h-5 w-5" />
           </a>
         </nav>
       </div>

@@ -214,7 +214,7 @@ onMounted(async () => {
             type="button"
             class="inline-flex items-center rounded-md bg-white dark:bg-blue-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500"
           >
-            <div class="i-heroicons-funnel h-5 w-5 mr-2" />
+            <div class="i-hugeicons-funnel h-5 w-5 mr-2" />
             {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
           </button>
         </div>
@@ -227,7 +227,7 @@ onMounted(async () => {
           <label for="search" class="sr-only">Search notifications</label>
           <div class="relative rounded-md shadow-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-heroicons-magnifying-glass h-5 w-5 text-gray-400" />
+              <div class="i-hugeicons-magnifying-glass h-5 w-5 text-gray-400" />
             </div>
             <input
               v-model="searchQuery"
@@ -292,11 +292,11 @@ onMounted(async () => {
                       <div class="flex items-center justify-end">
                         Sent
                         <div v-if="sortField === 'sent_at'" class="ml-2">
-                          <div v-if="sortDirection === 'desc'" class="i-heroicons-chevron-down h-4 w-4" />
-                          <div v-else class="i-heroicons-chevron-up h-4 w-4" />
+                          <div v-if="sortDirection === 'desc'" class="i-hugeicons-chevron-down h-4 w-4" />
+                          <div v-else class="i-hugeicons-chevron-up h-4 w-4" />
                         </div>
                         <div v-else class="ml-2">
-                          <div class="i-heroicons-arrows-up-down h-4 w-4 text-gray-400" />
+                          <div class="i-hugeicons-arrows-up-down h-4 w-4 text-gray-400" />
                         </div>
                       </div>
                     </th>
@@ -304,11 +304,11 @@ onMounted(async () => {
                       <div class="flex items-center justify-end">
                         Delivered
                         <div v-if="sortField === 'delivered_at'" class="ml-2">
-                          <div v-if="sortDirection === 'desc'" class="i-heroicons-chevron-down h-4 w-4" />
-                          <div v-else class="i-heroicons-chevron-up h-4 w-4" />
+                          <div v-if="sortDirection === 'desc'" class="i-hugeicons-chevron-down h-4 w-4" />
+                          <div v-else class="i-hugeicons-chevron-up h-4 w-4" />
                         </div>
                         <div v-else class="ml-2">
-                          <div class="i-heroicons-arrows-up-down h-4 w-4 text-gray-400" />
+                          <div class="i-hugeicons-arrows-up-down h-4 w-4 text-gray-400" />
                         </div>
                       </div>
                     </th>

@@ -146,7 +146,7 @@ function getStatus(conclusion: string) {
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
+                    <div class="i-hugeicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
 
                     <span>
                       Building
@@ -158,7 +158,7 @@ function getStatus(conclusion: string) {
                 <div
                   class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-check-circle-20-solid h-6 w-6 text-green-500" />
+                  <div class="i-hugeicons-check-circle-20-solid h-6 w-6 text-green-500" />
                 </div>
               </div>
             </div>
@@ -197,7 +197,7 @@ function getStatus(conclusion: string) {
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
+                    <div class="i-hugeicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
                     <span>
                       Deployment Summary
                     </span>
@@ -208,7 +208,7 @@ function getStatus(conclusion: string) {
                 <div
                   class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-check-circle-20-solid h-6 w-6 text-green-500" />
+                  <div class="i-hugeicons-check-circle-20-solid h-6 w-6 text-green-500" />
                 </div>
               </div>
             </div>
@@ -247,7 +247,7 @@ function getStatus(conclusion: string) {
               <div class="flex gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <div class="i-heroicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
+                    <div class="i-hugeicons-chevron-right-20-solid h-6 w-6 flex-none text-gray-400" />
                     <span>
                       Running Checks
                     </span>
@@ -258,7 +258,7 @@ function getStatus(conclusion: string) {
                 <div
                   class="sm:flex sm:flex-col sm:items-end"
                 >
-                  <div class="i-heroicons-x-circle-20-solid h-6 w-6 text-red-500" />
+                  <div class="i-hugeicons-x-circle-20-solid h-6 w-6 text-red-500" />
                 </div>
               </div>
             </div>

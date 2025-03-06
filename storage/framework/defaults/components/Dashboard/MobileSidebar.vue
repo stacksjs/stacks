@@ -45,7 +45,7 @@
           >
             <span class="sr-only">Close sidebar</span>
 
-            <div class="i-heroicons-x-mark h-6 w-6 text-white" />
+            <div class="i-hugeicons-x-mark h-6 w-6 text-white" />
           </button>
         </div>
 

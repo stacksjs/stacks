@@ -13,13 +13,13 @@ interface MenuItem {
 type MenuSection = (MenuItem | { divider: true })[]
 
 const menuItems: MenuSection = [
-  { icon: 'i-heroicons-pencil-20-solid', label: 'Edit', action: () => console.log('Edit clicked') },
-  { icon: 'i-heroicons-document-duplicate-20-solid', label: 'Duplicate', action: () => console.log('Duplicate clicked') },
+  { icon: 'i-hugeicons-pencil-20-solid', label: 'Edit', action: () => console.log('Edit clicked') },
+  { icon: 'i-hugeicons-document-duplicate-20-solid', label: 'Duplicate', action: () => console.log('Duplicate clicked') },
   { divider: true },
-  { icon: 'i-heroicons-archive-box-20-solid', label: 'Archive', action: () => console.log('Archive clicked') },
-  { icon: 'i-heroicons-arrow-path-20-solid', label: 'Move', action: () => console.log('Move clicked') },
+  { icon: 'i-hugeicons-archive-box-20-solid', label: 'Archive', action: () => console.log('Archive clicked') },
+  { icon: 'i-hugeicons-arrow-path-20-solid', label: 'Move', action: () => console.log('Move clicked') },
   { divider: true },
-  { icon: 'i-heroicons-trash-20-solid', label: 'Delete', variant: 'danger', action: () => console.log('Delete clicked') },
+  { icon: 'i-hugeicons-trash-20-solid', label: 'Delete', variant: 'danger', action: () => console.log('Delete clicked') },
 ]
 
 const isOpen = ref(false)
@@ -51,7 +51,7 @@ function groupMenuItems(items: MenuSection): MenuItem[][] {
       >
         Options
         <div
-          class="i-heroicons-chevron-down-20-solid w-5 h-5 transition-transform duration-200"
+          class="i-hugeicons-chevron-down-20-solid w-5 h-5 transition-transform duration-200"
           :class="{ 'rotate-180': isOpen }"
         />
       </DropdownButton>

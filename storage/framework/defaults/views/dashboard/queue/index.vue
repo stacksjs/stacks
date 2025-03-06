@@ -326,7 +326,7 @@ workers.value = workers.value.map(worker => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-queue-list h-6 w-6 text-white" />
+                <div class="i-hugeicons-queue-list h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Total Jobs
@@ -337,7 +337,7 @@ workers.value = workers.value.map(worker => ({
                 71,897
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Increased by</span>
                 122
               </p>
@@ -347,7 +347,7 @@ workers.value = workers.value.map(worker => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-clock-01 h-6 w-6 text-white" />
+                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Average Processing Time
@@ -358,7 +358,7 @@ workers.value = workers.value.map(worker => ({
                 2.3s
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Decreased by</span>
                 0.4s
               </p>
@@ -368,7 +368,7 @@ workers.value = workers.value.map(worker => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-bolt h-6 w-6 text-white" />
+                <div class="i-hugeicons-bolt h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Jobs Per Minute
@@ -379,7 +379,7 @@ workers.value = workers.value.map(worker => ({
                 42
               </p>
               <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
-                <div class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
                 <span class="sr-only">Decreased by</span>
                 8
               </p>
@@ -492,14 +492,14 @@ workers.value = workers.value.map(worker => ({
                 @click="retryFailedJobs"
                 class="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
-                <div class="i-heroicons-arrow-path h-5 w-5 mr-1" />
+                <div class="i-hugeicons-arrow-path h-5 w-5 mr-1" />
                 Retry Failed Jobs
               </button>
               <button
                 @click="clearFailedJobs"
                 class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500"
               >
-                <div class="i-heroicons-trash h-5 w-5 mr-1" />
+                <div class="i-hugeicons-trash h-5 w-5 mr-1" />
                 Clear Failed Jobs
               </button>
             </div>
@@ -537,7 +537,7 @@ workers.value = workers.value.map(worker => ({
                       @click="restartWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 rounded-md hover:bg-green-100 dark:hover:bg-green-900"
                     >
-                      <div class="i-heroicons-play h-4 w-4 mr-1" />
+                      <div class="i-hugeicons-play h-4 w-4 mr-1" />
                       Start
                     </button>
                     <button
@@ -545,7 +545,7 @@ workers.value = workers.value.map(worker => ({
                       @click="pauseWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900"
                     >
-                      <div class="i-heroicons-pause h-4 w-4 mr-1" />
+                      <div class="i-hugeicons-pause h-4 w-4 mr-1" />
                       Pause
                     </button>
                     <button
@@ -553,7 +553,7 @@ workers.value = workers.value.map(worker => ({
                       @click="stopWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 rounded-md hover:bg-red-100 dark:hover:bg-red-900"
                     >
-                      <div class="i-heroicons-stop h-4 w-4 mr-1" />
+                      <div class="i-hugeicons-stop h-4 w-4 mr-1" />
                       Stop
                     </button>
                   </div>
@@ -595,7 +595,7 @@ workers.value = workers.value.map(worker => ({
 
                     <div v-if="worker.memory_usage / worker.memory_limit > 0.9" class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-3">
                       <div class="flex">
-                        <div class="i-heroicons-exclamation-triangle h-5 w-5 text-yellow-400" />
+                        <div class="i-hugeicons-exclamation-triangle h-5 w-5 text-yellow-400" />
                         <div class="ml-3">
                           <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">
                             High Memory Usage

@@ -79,7 +79,7 @@ const formatInput = (text: string) => {
                 <ComboboxButton
                   class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-500"
                 >
-                  <div class="i-heroicons-chevron-up-down-20-solid w-5 h-5" />
+                  <div class="i-hugeicons-chevron-up-down-20-solid w-5 h-5" />
                 </ComboboxButton>
               </div>
 
@@ -126,7 +126,7 @@ const formatInput = (text: string) => {
                         class="absolute inset-y-0 left-0 flex items-center pl-3"
                         :class="{ 'text-white': active, 'text-indigo-600': !active }"
                       >
-                        <div class="i-heroicons-check-20-solid w-5 h-5" />
+                        <div class="i-hugeicons-check-20-solid w-5 h-5" />
                       </span>
                     </li>
                   </ComboboxOption>

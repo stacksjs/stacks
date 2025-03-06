@@ -35,8 +35,8 @@
           <span v-if="isColumnSortable(col)" class="flex-none ml-2 rounded"
             :class="isColumnUsedAsSort(col) ? `bg-gray-200 text-gray-900 group-hover:bg-gray-300` : `text-gray-400 invisible group-hover:visible group-focus:visible`"
             @click="toggleSort(col)">
-            <div v-if="table.sort?.includes('desc')" class="w-5 h-5 i-heroicons-solid-chevron-down" />
-            <div v-if="table.sort?.includes('asc')" class="w-5 h-5 i-heroicons-solid-chevron-up" />
+            <div v-if="table.sort?.includes('desc')" class="w-5 h-5 i-hugeicons-solid-chevron-down" />
+            <div v-if="table.sort?.includes('asc')" class="w-5 h-5 i-hugeicons-solid-chevron-up" />
           </span>
         </a>
       </th> -->
@@ -50,8 +50,8 @@
           <span v-if="isColumnSortable(lastColumn[0])"
             :class="isColumnUsedAsSort(lastColumn) ? `bg-gray-200 text-gray-900 group-hover:bg-gray-300` : `text-gray-400 invisible group-hover:visible group-focus:visible`"
             @click="toggleSort(lastColumn[0])">
-            <div v-if="table.sort?.includes('desc')" class="w-5 h-5 i-heroicons-solid-chevron-down" />
-            <div v-if="table.sort?.includes('asc')" class="w-5 h-5 i-heroicons-solid-chevron-up" />
+            <div v-if="table.sort?.includes('desc')" class="w-5 h-5 i-hugeicons-solid-chevron-down" />
+            <div v-if="table.sort?.includes('asc')" class="w-5 h-5 i-hugeicons-solid-chevron-up" />
           </span> -->
         </a>
       </th>

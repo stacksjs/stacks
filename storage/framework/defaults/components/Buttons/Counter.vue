@@ -14,7 +14,7 @@ function increment() {
       @click="increment"
     >
       <i
-        class="i-heroicons-outline-plus mr-3 h-4 w-4 -ml-1"
+        class="i-hugeicons-outline-plus mr-3 h-4 w-4 -ml-1"
         aria-hidden="true"
       />
       Counter: {{ count }}

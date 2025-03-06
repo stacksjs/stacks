@@ -112,7 +112,7 @@ const solutions = [
             class="group inline-flex items-center rounded-md bg-orange-700 px-3 py-2 text-base font-medium hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75"
           >
             <span>Example</span>
-            <div class="i-heroicons-chevron-down-20-solid h-5 w-5" />
+            <div class="i-hugeicons-chevron-down-20-solid h-5 w-5" />
           </PopoverButton>
 
           <transition

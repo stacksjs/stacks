@@ -86,13 +86,13 @@
             class="bg-white border rounded-l-md font-medium border-gray-300 text-sm py-2 px-2 text-gray-500 relative inline-flex items-center hover:bg-gray-50"
             @click.prevent="paginateTo(1)">
             <span class="sr-only">First</span>
-            <div class="h-4 w-5 i-heroicons-solid-chevron-double-left" />
+            <div class="h-4 w-5 i-hugeicons-solid-chevron-double-left" />
           </a>
           <a href="#"
             class="bg-white border font-medium border-gray-300 text-sm py-2 px-2 text-gray-500 relative inline-flex items-center hover:bg-gray-50"
             @click.prevent="back()">
             <span class="sr-only">Previous</span>
-            <div class="h-5 w-5 i-heroicons-solid-chevron-left" />
+            <div class="h-5 w-5 i-hugeicons-solid-chevron-left" />
           </a> -->
 
           <!-- Current: "z-10 bg-blue-50 border-blue-500 text-blue-600", Default: "bg-white border-gray-300 text-gray-500 hover:bg-gray-50" -->
@@ -111,13 +111,13 @@
             class="bg-white border font-medium border-gray-300 text-sm py-2 px-2 text-gray-500 relative inline-flex items-center underline-transparent hover:bg-gray-50"
             @click.prevent="next()">
             <span class="sr-only">Next</span>
-            <div class="h-5 w-5 i-heroicons-solid-chevron-right" />
+            <div class="h-5 w-5 i-hugeicons-solid-chevron-right" />
           </a>
           <a href="#"
             class="bg-white border rounded-r-md font-medium border-gray-300 text-sm py-2 px-2 text-gray-500 relative inline-flex items-center underline-transparent hover:bg-gray-50"
             @click.prevent="paginateTo(lastPageNumber)">
             <span class="sr-only">Last</span>
-            <div class="h-4 w-5 i-heroicons-solid-chevron-double-right" />
+            <div class="h-4 w-5 i-hugeicons-solid-chevron-double-right" />
           </a> -->
         </nav>
       </div>

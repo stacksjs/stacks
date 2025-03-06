@@ -774,7 +774,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
             to="/settings/mail"
             class="inline-flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
           >
-            <div class="i-heroicons-cog-6-tooth w-6 h-6"></div>
+            <div class="i-hugeicons-cog-6-tooth w-6 h-6"></div>
           </router-link>
         </div>
       </div>
@@ -878,7 +878,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                   class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
                 >
                   View All
-                  <div class="i-heroicons-arrow-right w-4 h-4"></div>
+                  <div class="i-hugeicons-arrow-right w-4 h-4"></div>
                 </router-link>
                 <button
                   @click="addServer"
@@ -905,7 +905,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                     class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/50"
                   >
                     <span class="sr-only">Edit</span>
-                    <div class="i-heroicons-pencil-square w-5 h-5"></div>
+                    <div class="i-hugeicons-pencil-square w-5 h-5"></div>
                   </button>
                   <template v-else>
                     <button
@@ -913,14 +913,14 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                       class="inline-flex items-center p-1.5 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200 rounded-md hover:bg-red-50 dark:hover:bg-red-900/50"
                     >
                       <span class="sr-only">Remove</span>
-                      <div class="i-heroicons-trash w-5 h-5"></div>
+                      <div class="i-hugeicons-trash w-5 h-5"></div>
                     </button>
                     <button
                       @click="toggleEditMode(key)"
                       class="inline-flex items-center p-1.5 text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200 rounded-md hover:bg-green-50 dark:hover:bg-green-900/50"
                     >
                       <span class="sr-only">Save</span>
-                      <div class="i-heroicons-check w-5 h-5"></div>
+                      <div class="i-hugeicons-check w-5 h-5"></div>
                     </button>
                   </template>
                 </div>
@@ -940,7 +940,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                     </div>
                   </div>
                   <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                    <div class="i-heroicons-link w-4 h-4"></div>
+                    <div class="i-hugeicons-link w-4 h-4"></div>
                     <p>{{ server.domain }}</p>
                   </div>
                   <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
@@ -951,7 +951,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                 <!-- Server Configuration -->
                 <div v-if="!editMode[key]" class="mt-4">
                   <div class="flex items-center gap-2">
-                    <div class="i-heroicons-server w-4 h-4 text-gray-400"></div>
+                    <div class="i-hugeicons-server w-4 h-4 text-gray-400"></div>
                     <span class="text-sm text-gray-900 dark:text-gray-100">
                       {{ (workerSizes[server.size as keyof typeof workerSizes].ram / 1024).toFixed(0) }}GB RAM ({{ server.size }})
                     </span>
@@ -981,7 +981,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                         type="button"
                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-200"
                       >
-                        <div class="i-heroicons-sparkles w-5 h-5"></div>
+                        <div class="i-hugeicons-sparkles w-5 h-5"></div>
                       </button>
                     </div>
                   </div>

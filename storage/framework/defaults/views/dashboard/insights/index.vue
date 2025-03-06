@@ -402,21 +402,21 @@ const statsCards = [
     value: '71,897',
     change: '+122',
     changeType: 'increase',
-    icon: 'i-heroicons-arrow-trending-up',
+    icon: 'i-hugeicons-arrow-trending-up',
   },
   {
     title: 'Average Response Time',
     value: '235ms',
     change: '-12ms',
     changeType: 'decrease',
-    icon: 'i-heroicons-clock-01',
+    icon: 'i-hugeicons-clock-01',
   },
   {
     title: 'Success Rate',
     value: '99.95%',
     change: '+0.2%',
     changeType: 'increase',
-    icon: 'i-heroicons-check-circle',
+    icon: 'i-hugeicons-check-circle',
   },
 ]
 </script>
@@ -449,8 +449,8 @@ const statsCards = [
                 'ml-2 flex items-baseline text-sm font-semibold',
                 stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
               ]">
-                <span v-if="stat.changeType === 'increase'" class="i-heroicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span v-else class="i-heroicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                <span v-if="stat.changeType === 'increase'" class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <span v-else class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
                 {{ stat.change }}
               </p>
             </dd>
@@ -674,11 +674,11 @@ const statsCards = [
                     <!-- Hits/Misses Stats -->
                     <div class="mt-3 flex items-center space-x-4 text-xs">
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-check-circle h-4 w-4 text-green-500" />
+                        <div class="i-hugeicons-check-circle h-4 w-4 text-green-500" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ key.hits }} hits</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-x-circle h-4 w-4 text-red-500" />
+                        <div class="i-hugeicons-x-circle h-4 w-4 text-red-500" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ key.misses }} misses</span>
                       </div>
                     </div>
@@ -719,16 +719,16 @@ const statsCards = [
                   </div>
                   <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
                     <div class="flex items-center space-x-2">
-                      <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
                       <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.location }}</span>
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.latest }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.count }}</span>
                       </div>
                     </div>
@@ -765,16 +765,16 @@ const statsCards = [
                   </div>
                   <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
                     <div class="flex items-center space-x-2">
-                      <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
                       <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.location }}</span>
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.count }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.slowest }}ms</span>
                       </div>
                     </div>
@@ -822,18 +822,18 @@ const statsCards = [
                         <span class="font-mono text-sm text-gray-900 dark:text-gray-100">{{ route.route }}</span>
                       </div>
                       <div v-if="route.action" class="mt-2 flex items-center space-x-2">
-                        <div class="i-heroicons-code-bracket-square h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
                         <span class="font-mono text-xs text-gray-500 dark:text-gray-400">{{ route.action }}</span>
                       </div>
                     </div>
                     <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-blue-gray-600 pt-3">
                       <div class="flex items-center space-x-4">
                         <div class="flex items-center space-x-1">
-                          <div class="i-heroicons-clock-01 h-4 w-4 text-gray-400" />
+                          <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
                           <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.count }} requests</span>
                         </div>
                         <div class="flex items-center space-x-1">
-                          <div class="i-heroicons-bolt h-4 w-4 text-gray-400" />
+                          <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
                           <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.slowest }}ms</span>
                         </div>
                       </div>
@@ -849,7 +849,7 @@ const statsCards = [
             <div class="overflow-hidden rounded-lg dark:bg-blue-gray-700 flex justify-center items-center h-full">
               <div class="p-6">
                 <div class="flex flex-col items-center text-center">
-                  <div class="i-heroicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
+                  <div class="i-hugeicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
                   <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                     Extend Your Dashboard
                   </h3>
@@ -857,7 +857,7 @@ const statsCards = [
                     Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
                   </p>
                   <a href="https://stacksjs.org/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-blue-gray-800">
-                    <div class="i-heroicons-book-open h-5 w-5 mr-2" />
+                    <div class="i-hugeicons-book-open h-5 w-5 mr-2" />
                     Read the Documentation
                   </a>
                 </div>

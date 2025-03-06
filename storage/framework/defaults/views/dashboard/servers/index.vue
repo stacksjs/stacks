@@ -751,10 +751,10 @@ const getEventTypeColor = (type: string) => {
 
 const getEventTypeIcon = (type: string) => {
   switch (type) {
-    case 'success': return 'i-heroicons-check-circle'
-    case 'error': return 'i-heroicons-x-circle'
-    case 'warning': return 'i-heroicons-exclamation-triangle'
-    default: return 'i-heroicons-information-circle'
+    case 'success': return 'i-hugeicons-check-circle'
+    case 'error': return 'i-hugeicons-x-circle'
+    case 'warning': return 'i-hugeicons-exclamation-triangle'
+    default: return 'i-hugeicons-information-circle'
   }
 }
 </script>
@@ -790,7 +790,7 @@ const getEventTypeIcon = (type: string) => {
           <div class="flex-1">
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <div class="i-heroicons-magnifying-glass w-5 h-5 text-gray-400"></div>
+                <div class="i-hugeicons-magnifying-glass w-5 h-5 text-gray-400"></div>
               </div>
               <input
                 v-model="searchQuery"
@@ -821,7 +821,7 @@ const getEventTypeIcon = (type: string) => {
                     <div
                       v-if="sortKey === header.toLowerCase()"
                       class="w-4 h-4"
-                      :class="sortOrder === 'asc' ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
+                      :class="sortOrder === 'asc' ? 'i-hugeicons-chevron-up' : 'i-hugeicons-chevron-down'"
                     ></div>
                   </div>
                 </th>

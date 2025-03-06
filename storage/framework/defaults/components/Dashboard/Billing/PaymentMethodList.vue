@@ -59,8 +59,8 @@ async function makeDefault(paymentMethodId: number) {
                 :disabled="isDefaultLoading[method.id]"
                 @click="makeDefault(method.id)"
               >
-                <span v-if="!isDefaultLoading[method.id]" class="i-heroicons-star text-gray-700" />
-                <span v-if="isDefaultLoading[method.id]" class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
+                <span v-if="!isDefaultLoading[method.id]" class="i-hugeicons-star text-gray-700" />
+                <span v-if="isDefaultLoading[method.id]" class="i-hugeicons-arrow-path-rounded-square-20-solid animate-spin text-gray-500" />
               </button>
 
               <button
@@ -69,7 +69,7 @@ async function makeDefault(paymentMethodId: number) {
                 :disabled="isDefaultLoading[method.id]"
                 @click="deletePayment(method.id)"
               >
-                <span class="i-heroicons-trash text-gray-700" />
+                <span class="i-hugeicons-trash text-gray-700" />
               </button>
             </div>
           </div>

@@ -21,7 +21,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
           <DropdownButton
             class="btn-primary w-full inline-flex justify-center rounded-md px-4 py-2.5 text-sm text-white font-medium focus:outline-none focus-visible:ring-2"
           >
-            Dropdown <div class="i-heroicons-chevron-down-20-solid ml-2 h-5 w-5" />
+            Dropdown <div class="i-hugeicons-chevron-down-20-solid ml-2 h-5 w-5" />
           </DropdownButton>
         </div>
 
@@ -43,7 +43,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-heroicons-pencil-20-solid mr-2 h-5 w-5" />
+                  <div class="i-hugeicons-pencil-20-solid mr-2 h-5 w-5" />
                   Edit
                 </button>
               </DropdownItem>
@@ -53,7 +53,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-heroicons-document-duplicate-20-solid" />
+                  <div class="i-hugeicons-document-duplicate-20-solid" />
                   Duplicate
                 </button>
               </DropdownItem>
@@ -65,7 +65,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-heroicons-archive-box-20-solid mr-2 h-5 w-5" />
+                  <div class="i-hugeicons-archive-box-20-solid mr-2 h-5 w-5" />
                   Archive
                 </button>
               </DropdownItem>
@@ -75,7 +75,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-heroicons-arrow-path-20-solid mr-2 h-5 w-5" />
+                  <div class="i-hugeicons-arrow-path-20-solid mr-2 h-5 w-5" />
                   Move
                 </button>
               </DropdownItem>
@@ -88,7 +88,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-heroicons-trash-20-solid mr-2 h-5 w-5" />
+                  <div class="i-hugeicons-trash-20-solid mr-2 h-5 w-5" />
                   Delete
                 </button>
               </DropdownItem>

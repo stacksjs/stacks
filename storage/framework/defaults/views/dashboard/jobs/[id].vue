@@ -165,7 +165,7 @@ onMounted(async () => {
             class="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             @click="router.back()"
           >
-            <div class="i-heroicons-arrow-left h-5 w-5 mr-1" />
+            <div class="i-hugeicons-arrow-left h-5 w-5 mr-1" />
             Back
           </button>
           <h1 class="ml-4 text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">
@@ -179,7 +179,7 @@ onMounted(async () => {
       </div>
 
       <div v-else-if="!job" class="text-center py-12">
-        <div class="i-heroicons-exclamation-circle h-12 w-12 mx-auto text-gray-400" />
+        <div class="i-hugeicons-exclamation-circle h-12 w-12 mx-auto text-gray-400" />
         <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-gray-100">Job not found</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The job you're looking for doesn't exist or has been deleted.</p>
       </div>

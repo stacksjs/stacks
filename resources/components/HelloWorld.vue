@@ -34,7 +34,7 @@ onMounted(() => {
             <div class="p-6">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-book-open h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-book-open h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
 
@@ -58,7 +58,7 @@ onMounted(() => {
             <div class="border-t border-gray-200 p-6 md:border-l md:border-t-0 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-puzzle h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-puzzle h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
@@ -82,7 +82,7 @@ onMounted(() => {
             <div class="border-t border-gray-200 p-6 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-template h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-template h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
@@ -105,7 +105,7 @@ onMounted(() => {
             <div class="border-t border-gray-200 p-6 md:border-l dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-variable h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-variable h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg text-gray-900 font-semibold leading-7 dark:text-white">
@@ -140,7 +140,7 @@ onMounted(() => {
             <div class="border-t border-gray-200 p-6 dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-terminal h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-terminal h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg font-semibold leading-7">
@@ -168,7 +168,7 @@ onMounted(() => {
             <div class="border-t border-gray-200 p-6 md:border-l dark:border-gray-700">
               <div class="flex items-center">
                 <i
-                  class="i-heroicons-outline-globe h-8 w-8 text-gray-500"
+                  class="i-hugeicons-outline-globe h-8 w-8 text-gray-500"
                   aria-hidden="true"
                 />
                 <div class="ml-4 text-lg text-gray-900 font-semibold leading-7 dark:text-white">
@@ -228,7 +228,7 @@ onMounted(() => {
           <div class="text-center text-sm text-gray-500 sm:text-left">
             <div class="flex items-center">
               <i
-                class="i-heroicons-outline-heart h-5 w-5 text-gray-400 -mt-px"
+                class="i-hugeicons-outline-heart h-5 w-5 text-gray-400 -mt-px"
                 aria-hidden="true"
               />
               <svg

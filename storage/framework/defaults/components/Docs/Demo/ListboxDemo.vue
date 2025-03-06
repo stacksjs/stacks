@@ -44,7 +44,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
           <span
             class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
           >
-            <div class="i-heroicons-chevron-up-down-20-solid" />
+            <div class="i-hugeicons-chevron-up-down-20-solid" />
           </span>
         </ListboxButton>
 
@@ -78,7 +78,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
                   v-if="selected"
                   class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
                 >
-                  <div class="i-heroicons-check-20-solid" />
+                  <div class="i-hugeicons-check-20-solid" />
                 </span>
               </li>
             </ListboxOption>

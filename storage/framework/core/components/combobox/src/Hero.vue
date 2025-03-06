@@ -67,7 +67,7 @@ const filteredPeople = computed(() =>{
               <ComboboxButton
                 class="absolute inset-y-0 right-0 flex items-center pr-2"
               >
-                <div class="i-heroicons-chevron-up-down-20-solid" />
+                <div class="i-hugeicons-chevron-up-down-20-solid" />
               </ComboboxButton>
             </div>
             <TransitionRoot
@@ -111,7 +111,7 @@ const filteredPeople = computed(() =>{
                       class="absolute inset-y-0 left-0 flex items-center pl-3"
                       :class="{ 'text-white': active, 'text-teal-600': !active }"
                     >
-                      <div class="i-heroicons-check-20-solid" />
+                      <div class="i-hugeicons-check-20-solid" />
                     </span>
                   </li>
                 </ComboboxOption>

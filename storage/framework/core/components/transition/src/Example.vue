@@ -155,8 +155,8 @@ async function handleCopyCode() {
         class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
         @click="handleCopyCode"
       >
-        <div v-if="showCheckIcon" class="i-heroicons-check text-gray-500" />
-        <div v-else class="i-heroicons-document-duplicate text-gray-500" />
+        <div v-if="showCheckIcon" class="i-hugeicons-check text-gray-500" />
+        <div v-else class="i-hugeicons-document-duplicate text-gray-500" />
       </button>
     </div>
 

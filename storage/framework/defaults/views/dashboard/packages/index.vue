@@ -535,7 +535,7 @@ const starsData = computed(() => ({
                       {{ selectedPackages.length === 0 ? 'Select packages...' : `${selectedPackages.length} selected` }}
                     </span>
                     <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <div class="i-heroicons-chevron-up-down h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
+                      <div class="i-hugeicons-chevron-up-down h-5 w-5 text-gray-400 dark:text-gray-500" aria-hidden="true" />
                     </span>
                   </ListboxButton>
 
@@ -570,7 +570,7 @@ const starsData = computed(() => ({
                             v-if="selected"
                             class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400"
                           >
-                            <div class="i-heroicons-check h-5 w-5" aria-hidden="true" />
+                            <div class="i-hugeicons-check h-5 w-5" aria-hidden="true" />
                           </span>
                         </li>
                       </ListboxOption>
@@ -592,7 +592,7 @@ const starsData = computed(() => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-arrow-down-tray h-6 w-6 text-white" />
+                <div class="i-hugeicons-arrow-down-tray h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Downloads
@@ -608,7 +608,7 @@ const starsData = computed(() => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-users h-6 w-6 text-white" />
+                <div class="i-hugeicons-users h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Contributors
@@ -624,7 +624,7 @@ const starsData = computed(() => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-bug-ant h-6 w-6 text-white" />
+                <div class="i-hugeicons-bug-ant h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Issues

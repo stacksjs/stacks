@@ -33,7 +33,7 @@ function handleClose() {
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
         @click="handleOpen('fade')"
       >
-        <div class="i-heroicons-presentation-chart-line-20-solid mr-2 w-5 h-5" />
+        <div class="i-hugeicons-presentation-chart-line-20-solid mr-2 w-5 h-5" />
         Show Dialog
       </button>
     </div>
@@ -57,7 +57,7 @@ function handleClose() {
           @click="handleOpen(trans)"
         >
           <span class="flex items-center justify-center gap-2">
-            <div v-if="currentTransition === trans" class="i-heroicons-check-circle-20-solid w-5 h-5" />
+            <div v-if="currentTransition === trans" class="i-hugeicons-check-circle-20-solid w-5 h-5" />
             {{ trans }}
           </span>
         </button>
@@ -78,7 +78,7 @@ function handleClose() {
                   class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
                   @click="handleClose"
                 >
-                  <div class="i-heroicons-x-mark-20-solid w-5 h-5" />
+                  <div class="i-hugeicons-x-mark-20-solid w-5 h-5" />
                 </button>
               </div>
 

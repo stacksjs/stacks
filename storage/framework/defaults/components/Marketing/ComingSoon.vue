@@ -62,7 +62,7 @@ async function submitEmail() {
             <span class="rounded-full bg-blue-600/10 px-3 py-1 text-sm text-blue-600 font-semibold leading-6 ring-1 ring-blue-600/10 ring-inset">Coming soon</span>
             <!-- <span class="inline-flex items-center space-x-2 text-sm font-medium leading-6 text-gray-600">
               <span>Just shipped v1.0</span>
-               <div class="i-heroicons-chevron-right"></div>
+               <div class="i-hugeicons-chevron-right"></div>
             </span> -->
           </a>
         </div>
@@ -86,7 +86,7 @@ async function submitEmail() {
             <div class="w-380px flex rounded-md shadow-sm">
               <div class="relative flex flex-grow items-stretch focus-within:z-10">
                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <div class="i-heroicons-envelope h-5 w-5 text-gray-400" />
+                  <div class="i-hugeicons-envelope h-5 w-5 text-gray-400" />
                 </div>
 
                 <input id="email" v-model="email" type="email" name="email" class="block w-full border-0 rounded-none rounded-l-md py-1.5 pl-10 text-gray-900 ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-blue-600 focus:ring-inset" placeholder="may-we-ask@your-email.org">

@@ -35,10 +35,10 @@ watch(isOpen, () => {
       </span>
 
       <span
-        v-if="isOpen" class="i-heroicons-minus"
+        v-if="isOpen" class="i-hugeicons-minus"
       />
       <span
-        v-else class="i-heroicons-chevron-down"
+        v-else class="i-hugeicons-chevron-down"
       />
     </a>
 

@@ -157,7 +157,7 @@ export interface UiOptions {
    * ```
    * @example
    * ```html
-   * <i class="i-heroicons-outline-book-open w-8 h-8 text-gray-500" aria-hidden="true" />
+   * <i class="i-hugeicons-outline-book-open w-8 h-8 text-gray-500" aria-hidden="true" />
    * ```
    */
   icons: Icon | Icon[]

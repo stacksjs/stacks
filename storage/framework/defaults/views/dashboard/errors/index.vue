@@ -365,7 +365,7 @@ const analyzeWithAI = async (errorId: string) => {
                             class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-green-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-green-400"
                             aria-label="Mark error as resolved"
                           >
-                            <div class="i-heroicons-check-circle h-4 w-4" />
+                            <div class="i-hugeicons-check-circle h-4 w-4" />
                           </button>
                           <button
                             @click="analyzeWithAI(error.id)"
@@ -379,7 +379,7 @@ const analyzeWithAI = async (errorId: string) => {
                           >
                             <div :class="[
                               'h-4 w-4',
-                              isAiAnalyzing ? 'i-heroicons-arrow-path animate-spin' : 'i-heroicons-sparkles'
+                              isAiAnalyzing ? 'i-hugeicons-arrow-path animate-spin' : 'i-hugeicons-sparkles'
                             ]" />
                           </button>
                         </template>
@@ -389,14 +389,14 @@ const analyzeWithAI = async (errorId: string) => {
                           :class="{ 'rounded-l-md': activeTab === 'resolved' }"
                           aria-label="Share error details"
                         >
-                          <div class="i-heroicons-share h-4 w-4" />
+                          <div class="i-hugeicons-share h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
                           aria-label="View error details"
                         >
-                          <div class="i-heroicons-eye h-4 w-4" />
+                          <div class="i-hugeicons-eye h-4 w-4" />
                         </button>
                       </div>
                     </td>

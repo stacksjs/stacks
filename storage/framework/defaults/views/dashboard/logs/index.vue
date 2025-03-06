@@ -236,13 +236,13 @@ const toggleProject = (projectId: string) => {
 const getLogIcon = (type: Log['type']) => {
   switch (type) {
     case 'error':
-      return 'i-heroicons-outline-exclamation-circle'
+      return 'i-hugeicons-outline-exclamation-circle'
     case 'info':
-      return 'i-heroicons-outline-information-circle'
+      return 'i-hugeicons-outline-information-circle'
     case 'success':
-      return 'i-heroicons-outline-check-circle'
+      return 'i-hugeicons-outline-check-circle'
     default:
-      return 'i-heroicons-outline-terminal'
+      return 'i-hugeicons-outline-terminal'
   }
 }
 
@@ -472,7 +472,7 @@ watch(timeRange, async () => {
               @click="toggleAutoRefresh"
             >
               <i
-                class="i-heroicons-outline-refresh h-4 w-4"
+                class="i-hugeicons-outline-refresh h-4 w-4"
                 :class="{ 'animate-spin': autoRefresh }"
                 aria-hidden="true"
               />
@@ -550,7 +550,7 @@ watch(timeRange, async () => {
                     <td class="px-6 py-4 whitespace-nowrap text-right">
                       <div class="text-sm text-gray-900">
                         <i
-                          class="i-heroicons-outline-clock h-4 w-4 mr-2 text-gray-400"
+                          class="i-hugeicons-outline-clock h-4 w-4 mr-2 text-gray-400"
                           aria-hidden="true"
                         />
                         {{ new Date(log.timestamp).toLocaleTimeString() }}
@@ -582,7 +582,7 @@ watch(timeRange, async () => {
                   class="text-gray-500 hover:text-gray-700"
                 >
                   <i
-                    class="i-heroicons-outline-x h-5 w-5"
+                    class="i-hugeicons-outline-x h-5 w-5"
                     aria-hidden="true"
                   />
                 </button>

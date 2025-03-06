@@ -190,7 +190,7 @@ useHead({
                 Production
               </div>
 
-              <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
+              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
             </li>
 
             <li class="relative flex items-center py-4 space-x-4">
@@ -234,7 +234,7 @@ useHead({
                 Staging
               </div>
 
-              <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
+              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
             </li>
 
             <li class="relative flex items-center py-4 space-x-4">
@@ -278,7 +278,7 @@ useHead({
                 Development
               </div>
 
-              <div class="i-heroicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
+              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
             </li>
           </ul>
         </div>
@@ -392,7 +392,7 @@ useHead({
                   >
                     <span class="sr-only">Open options</span>
 
-                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
+                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--
@@ -450,7 +450,7 @@ useHead({
                     aria-haspopup="true"
                   >
                     <span class="sr-only">Open options</span>
-                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
+                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--
@@ -508,7 +508,7 @@ useHead({
                     aria-haspopup="true"
                   >
                     <span class="sr-only">Open options</span>
-                    <div class="i-heroicons-ellipsis-horizontal h-5 w-5" />
+                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
                   </button>
 
                   <!--

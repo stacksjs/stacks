@@ -154,7 +154,7 @@ const commonPorts = [
               to="/servers"
               class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
             >
-              <div class="i-heroicons-arrow-left w-4 h-4"></div>
+              <div class="i-hugeicons-arrow-left w-4 h-4"></div>
               Back to Servers
             </router-link>
           </div>

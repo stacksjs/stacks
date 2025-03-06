@@ -14,7 +14,7 @@ const showModal = ref(false)
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-rocket-launch h-6 w-6 text-white" />
+                <div class="i-hugeicons-rocket-launch h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
@@ -40,7 +40,7 @@ const showModal = ref(false)
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-clock-01 h-6 w-6 text-white" />
+                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">
@@ -66,7 +66,7 @@ const showModal = ref(false)
           <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-heroicons-check-circle h-6 w-6 text-white" />
+                <div class="i-hugeicons-check-circle h-6 w-6 text-white" />
               </div>
 
               <p class="ml-16 truncate text-sm text-gray-500 font-medium">

@@ -689,10 +689,10 @@ const getEventTypeColor = (type: string) => {
 
 const getEventTypeIcon = (type: string) => {
   switch (type) {
-    case 'success': return 'i-heroicons-check-circle'
-    case 'error': return 'i-heroicons-x-circle'
-    case 'warning': return 'i-heroicons-exclamation-triangle'
-    default: return 'i-heroicons-information-circle'
+    case 'success': return 'i-hugeicons-check-circle'
+    case 'error': return 'i-hugeicons-x-circle'
+    case 'warning': return 'i-hugeicons-exclamation-triangle'
+    default: return 'i-hugeicons-information-circle'
   }
 }
 </script>
@@ -750,14 +750,14 @@ const getEventTypeIcon = (type: string) => {
                 class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
               >
                 <span class="sr-only">Zoom In</span>
-                <div class="i-heroicons-plus w-5 h-5" />
+                <div class="i-hugeicons-plus w-5 h-5" />
               </button>
               <button
                 @click="zoomOut"
                 class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
               >
                 <span class="sr-only">Zoom Out</span>
-                <div class="i-heroicons-minus w-5 h-5" />
+                <div class="i-hugeicons-minus w-5 h-5" />
               </button>
               <button
                 @click="resetZoom"

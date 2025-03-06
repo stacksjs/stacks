@@ -182,7 +182,7 @@ const pageTitle = computed<string>(() => options.find(option => option.key === n
         </template>
         <template v-else>
           <div class="text-center">
-            <div class="i-heroicons-cog-8-tooth h-12 w-12 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200" />
+            <div class="i-hugeicons-cog-8-tooth h-12 w-12 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200" />
             <h3 class="mt-2 text-sm text-gray-900 font-semibold">
               Settings <span class="font-bold">{{ pageTitle }}</span> Form not created yet
             </h3>

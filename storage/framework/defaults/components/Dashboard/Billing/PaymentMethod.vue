@@ -75,7 +75,7 @@ function cancelForm() {
         @click="loadWebElement()"
       >
         <span v-if="isLoadingWebElement" class="inline-flex items-center">
-          <div class="i-heroicons-arrow-path-rounded-square-20-solid animate-spin" />
+          <div class="i-hugeicons-arrow-path-rounded-square-20-solid animate-spin" />
           <span class="ml-2">Loading...</span>
         </span>
         <span v-else>Add Payment Method</span>
