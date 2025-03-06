@@ -558,7 +558,7 @@ onUnmounted(() => {
                 class="relative inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-r-md shadow-sm hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
               >
                 <div v-if="isDownloading" class="i-hugeicons-arrow-path w-4 h-4 animate-spin" />
-                <div v-else class="i-hugeicons-arrow-down-tray w-4 h-4" />
+                <div v-else class="i-hugeicons-arrow-down-02-tray w-4 h-4" />
                 Download
               </button>
             </div>

@@ -1084,7 +1084,7 @@ const removeCondition = (index: number) => {
             Name
             <span v-if="sortBy === 'name'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -1095,7 +1095,7 @@ const removeCondition = (index: number) => {
             Date
             <span v-if="sortBy === 'startDate'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
             </span>
           </button>
           <!-- <button
@@ -1106,7 +1106,7 @@ const removeCondition = (index: number) => {
             Budget
             <span v-if="sortBy === 'budget'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
             </span>
           </button> -->
           <button
@@ -1117,7 +1117,7 @@ const removeCondition = (index: number) => {
             Progress
             <span v-if="sortBy === 'goalProgress'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
             </span>
           </button>
         </div>

@@ -450,7 +450,7 @@ const statsCards = [
                 stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
               ]">
                 <span v-if="stat.changeType === 'increase'" class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
-                <span v-else class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                <span v-else class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
                 {{ stat.change }}
               </p>
             </dd>
@@ -728,7 +728,7 @@ const statsCards = [
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.latest }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ exception.count }}</span>
                       </div>
                     </div>
@@ -774,7 +774,7 @@ const statsCards = [
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.count }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
+                        <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ query.slowest }}ms</span>
                       </div>
                     </div>
@@ -833,7 +833,7 @@ const statsCards = [
                           <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.count }} requests</span>
                         </div>
                         <div class="flex items-center space-x-1">
-                          <div class="i-hugeicons-bolt h-4 w-4 text-gray-400" />
+                          <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
                           <span class="font-mono text-gray-500 dark:text-gray-400">{{ route.slowest }}ms</span>
                         </div>
                       </div>

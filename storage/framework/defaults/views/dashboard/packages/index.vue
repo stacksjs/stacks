@@ -592,7 +592,7 @@ const starsData = computed(() => ({
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-arrow-down-tray h-6 w-6 text-white" />
+                <div class="i-hugeicons-arrow-down-02-tray h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
                 Total Downloads

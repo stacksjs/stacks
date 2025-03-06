@@ -387,7 +387,7 @@ function getTrendClass(trend: 'up' | 'down' | 'stable', inverse: boolean = false
 
 function getTrendIcon(trend: 'up' | 'down' | 'stable'): string {
   if (trend === 'up') return 'i-hugeicons-arrow-up-01'
-  if (trend === 'down') return 'i-hugeicons-arrow-down-01'
+  if (trend === 'down') return 'i-hugeicons-arrow-down-02-01'
   return 'i-hugeicons-minus'
 }
 
@@ -654,7 +654,7 @@ const categoryChartOptions = {
                       <div v-if="showComparison" class="mt-1 flex items-center text-sm">
                         <span :class="revenueChange.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                           <div v-if="revenueChange.percent >= 0" class="i-hugeicons-arrow-up-01 h-4 w-4 inline-block"></div>
-                          <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4 inline-block"></div>
+                          <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4 inline-block"></div>
                           {{ formatPercent(Math.abs(revenueChange.percent)) }}
                         </span>
                         <span class="ml-1 text-gray-500 dark:text-gray-400">vs previous period</span>
@@ -683,7 +683,7 @@ const categoryChartOptions = {
                       <div v-if="showComparison" class="mt-1 flex items-center text-sm">
                         <span :class="ordersChange.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                           <div v-if="ordersChange.percent >= 0" class="i-hugeicons-arrow-up-01 h-4 w-4 inline-block"></div>
-                          <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4 inline-block"></div>
+                          <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4 inline-block"></div>
                           {{ formatPercent(Math.abs(ordersChange.percent)) }}
                         </span>
                         <span class="ml-1 text-gray-500 dark:text-gray-400">vs previous period</span>
@@ -712,7 +712,7 @@ const categoryChartOptions = {
                       <div v-if="showComparison" class="mt-1 flex items-center text-sm">
                         <span :class="aovChange.percent >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
                           <div v-if="aovChange.percent >= 0" class="i-hugeicons-arrow-up-01 h-4 w-4 inline-block"></div>
-                          <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4 inline-block"></div>
+                          <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4 inline-block"></div>
                           {{ formatPercent(Math.abs(aovChange.percent)) }}
                         </span>
                         <span class="ml-1 text-gray-500 dark:text-gray-400">vs previous period</span>

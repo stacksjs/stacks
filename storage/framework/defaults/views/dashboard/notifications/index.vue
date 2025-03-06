@@ -364,7 +364,7 @@ const formatNumber = (num: number): string => {
                 {{ notificationStats.avg_delivery_time }}s
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Decreased by</span>
                 0.1s
               </p>

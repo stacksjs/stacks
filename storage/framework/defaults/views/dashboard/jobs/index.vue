@@ -324,7 +324,7 @@ const getLogLevelColor = (level: string): string => {
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-queue-list h-6 w-6 text-white" />
+                <div class="i-hugeicons-queue-02 h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Total Jobs
@@ -335,7 +335,7 @@ const getLogLevelColor = (level: string): string => {
                 71,897
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-up-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Increased by</span>
                 122
               </p>
@@ -356,7 +356,7 @@ const getLogLevelColor = (level: string): string => {
                 2.3s
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
                 <span class="sr-only">Decreased by</span>
                 0.4s
               </p>
@@ -366,7 +366,7 @@ const getLogLevelColor = (level: string): string => {
           <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-bolt h-6 w-6 text-white" />
+                <div class="i-hugeicons-energy h-6 w-6 text-white" />
               </div>
               <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
                 Jobs Per Minute
@@ -377,7 +377,7 @@ const getLogLevelColor = (level: string): string => {
                 42
               </p>
               <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
-                <div class="i-hugeicons-arrow-down h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
                 <span class="sr-only">Decreased by</span>
                 8
               </p>

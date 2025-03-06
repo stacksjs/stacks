@@ -161,7 +161,7 @@
         <li>
           <RouterLink to="queue" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-hugeicons-queue-list h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+              <div class="i-hugeicons-queue-02 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               Queue
             </div>
             <div class="i-hugeicons-chevron-right h-5 w-5 self-end text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />

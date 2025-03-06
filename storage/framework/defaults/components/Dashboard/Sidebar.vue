@@ -412,7 +412,7 @@ const isChildRouteActive = (item: SidebarItem) => {
 
                   <div
                     :class="[
-                      'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                      'i-hugeicons-arrow-down-02-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
                       { 'transform -rotate-90': !sections[sectionKey] }
                     ]"
                   />
