@@ -23,9 +23,9 @@ const recentActivity = [
 ]
 
 const quickLinks = [
-  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-text', href: '/dashboard/blog', color: 'bg-blue-500' },
+  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/dashboard/blog', color: 'bg-blue-500' },
   { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-01', href: '/dashboard/commerce', color: 'bg-green-500' },
-  { name: 'Servers', description: 'Monitor server performance and status', icon: 'i-hugeicons-server-01', href: '/dashboard/servers', color: 'bg-purple-500' },
+  { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-ai-cloud', href: '/dashboard/servers', color: 'bg-purple-500' },
   { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/dashboard/settings', color: 'bg-gray-500' },
 ]
 
@@ -61,11 +61,11 @@ function getActivityIcon(type: string): string {
     case 'deployment':
       return 'i-hugeicons-rocket-02'
     case 'blog':
-      return 'i-hugeicons-document-text'
-    case 'server':
-      return 'i-hugeicons-server-01'
+      return 'i-hugeicons-document-validation'
+    case 'cloud':
+      return 'i-hugeicons-ai-cloud'
     case 'error':
-      return 'i-hugeicons-exclamation-triangle'
+      return 'i-hugeicons-alert-02'
     case 'commerce':
       return 'i-hugeicons-shopping-cart-01'
     default:
@@ -223,7 +223,7 @@ function getActivityColor(status: string): string {
                   <div class="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4">
                     <div class="flex">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-book-open h-5 w-5 text-blue-600 dark:text-blue-400"></div>
+                        <div class="i-hugeicons-book-open-02 h-5 w-5 text-blue-600 dark:text-blue-400"></div>
                       </div>
                       <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Documentation</h3>
@@ -242,7 +242,7 @@ function getActivityColor(status: string): string {
                   <div class="rounded-md bg-green-50 dark:bg-green-900/20 p-4">
                     <div class="flex">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-video-camera h-5 w-5 text-green-600 dark:text-green-400"></div>
+                        <div class="i-hugeicons-video-01 h-5 w-5 text-green-600 dark:text-green-400"></div>
                       </div>
                       <div class="ml-3">
                         <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Video Tutorials</h3>
@@ -261,7 +261,7 @@ function getActivityColor(status: string): string {
                   <div class="rounded-md bg-purple-50 dark:bg-purple-900/20 p-4">
                     <div class="flex">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-users-01 h-5 w-5 text-purple-600 dark:text-purple-400"></div>
+                        <div class="i-hugeicons-user-group h-5 w-5 text-purple-600 dark:text-purple-400"></div>
                       </div>
                       <div class="ml-3">
                         <h3 class="text-sm font-medium text-purple-800 dark:text-purple-300">Community</h3>
