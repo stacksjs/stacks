@@ -1451,7 +1451,7 @@ const removeCondition = (index: number) => {
 
           <div class="sm:flex sm:items-start">
             <div class="mt-3 w-full text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+              <h3 class="text-xl font-medium leading-6 text-gray-900 dark:text-white">
                 {{ isEditMode ? 'Edit Campaign' : 'Create New Campaign' }}
               </h3>
               <div class="mt-6">
@@ -1525,7 +1525,7 @@ const removeCondition = (index: number) => {
                     </div>
 
                     <!-- Goal Definition Section -->
-                    <div class="sm:col-span-6">
+                    <div class="sm:col-span-6 pt-8">
                       <div class="border-b border-gray-200 pb-4 dark:border-gray-700">
                         <h3 class="text-base font-semibold text-gray-900 dark:text-white">Goal Definition</h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Define what constitutes a successful conversion for this campaign.</p>
@@ -1569,7 +1569,7 @@ const removeCondition = (index: number) => {
                         <div class="space-y-4">
                           <div>
                             <label for="goal-trigger" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Goal Trigger
+                              Trigger
                             </label>
                             <select
                               id="goal-trigger"
@@ -1758,10 +1758,91 @@ const removeCondition = (index: number) => {
                             </template>
                           </div>
 
-                          <!-- Rest of the existing template code -->
                           <!-- Email List Selection -->
-                          <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6">
-                            <!-- ... rest of the existing template ... -->
+                          <div v-if="currentCampaign.type === 'Email'" class="sm:col-span-6 pt-8">
+                            <div class="border-b border-gray-200 pb-4 dark:border-gray-700">
+                              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Email Campaign Settings</h3>
+                              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your email campaign details.</p>
+                            </div>
+
+                            <div class="mt-4 space-y-4">
+                              <div>
+                                <label for="email-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Email List
+                                </label>
+                                <select
+                                  id="email-list"
+                                  v-model="currentCampaign.emailList"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                                  required
+                                >
+                                  <option value="All Subscribers">All Subscribers</option>
+                                  <option value="Newsletter">Newsletter</option>
+                                  <option value="Product Updates">Product Updates</option>
+                                  <option value="Marketing">Marketing</option>
+                                  <option value="Cart Abandoners">Cart Abandoners</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label for="email-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Email Subject
+                                </label>
+                                <input
+                                  id="email-subject"
+                                  v-model="currentCampaign.emailSubject"
+                                  type="text"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                                  placeholder="Enter email subject"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <label for="email-sender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Sender Email
+                                </label>
+                                <input
+                                  id="email-sender"
+                                  v-model="currentCampaign.emailSender"
+                                  type="email"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                                  placeholder="noreply@example.com"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <label for="email-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Email Template
+                                </label>
+                                <select
+                                  id="email-template"
+                                  v-model="currentCampaign.emailTemplate"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                                  required
+                                >
+                                  <option value="default">Default Template</option>
+                                  <option value="newsletter">Newsletter Template</option>
+                                  <option value="promotional">Promotional Template</option>
+                                  <option value="abandoned-cart">Abandoned Cart Template</option>
+                                </select>
+                              </div>
+
+                              <div>
+                                <label for="email-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  Email Content
+                                </label>
+                                <textarea
+                                  id="email-content"
+                                  v-model="currentCampaign.emailContent"
+                                  rows="6"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white sm:text-sm"
+                                  placeholder="Enter your email content here..."
+                                  required
+                                ></textarea>
+                              </div>
+                            </div>
                           </div>
 
                           <!-- Text Message Campaign Fields -->
@@ -1785,7 +1866,7 @@ const removeCondition = (index: number) => {
                           </div>
 
                           <!-- Submit Button -->
-                          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+                          <div class="mt-12 sm:mt-12 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
                             <button
                               type="submit"
                               class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-700 dark:hover:bg-blue-600 sm:col-start-2 sm:text-sm"
