@@ -24,6 +24,7 @@ declare module 'vue-router/auto-routes' {
     '/blog/': RouteRecordInfo<'/blog/', '/blog', Record<never, never>, Record<never, never>>,
     '/blog/categories/': RouteRecordInfo<'/blog/categories/', '/blog/categories', Record<never, never>, Record<never, never>>,
     '/blog/posts/': RouteRecordInfo<'/blog/posts/', '/blog/posts', Record<never, never>, Record<never, never>>,
+    '/blog/tags/': RouteRecordInfo<'/blog/tags/', '/blog/tags', Record<never, never>, Record<never, never>>,
     '/buddy/': RouteRecordInfo<'/buddy/', '/buddy', Record<never, never>, Record<never, never>>,
     '/cloud/': RouteRecordInfo<'/cloud/', '/cloud', Record<never, never>, Record<never, never>>,
     '/commands/': RouteRecordInfo<'/commands/', '/commands', Record<never, never>, Record<never, never>>,

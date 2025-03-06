@@ -160,16 +160,8 @@ const sectionContent: Record<string, SectionContent> = {
     items: [
       { to: '/blog', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/blog/posts', icon: 'i-hugeicons-document-validation', text: 'Posts' },
-      {
-        to: '#blog-content',
-        icon: 'i-hugeicons-folder-01',
-        text: 'Content',
-        children: [
-          { to: '/blog/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
-          { to: '/blog/tags', icon: 'i-hugeicons-tag', text: 'Tags' },
-          { to: '/blog/media', icon: 'i-hugeicons-image-01', text: 'Media Library' }
-        ]
-      },
+      { to: '/blog/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+      { to: '/blog/tags', icon: 'i-hugeicons-tag-01', text: 'Tags' },
       { to: '/blog/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
       { to: '/blog/authors', icon: 'i-hugeicons-user-edit-01', text: 'Authors' },
       { to: '/blog/seo', icon: 'i-hugeicons-seo', text: 'SEO' },
