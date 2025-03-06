@@ -683,7 +683,12 @@ const baseChartOptions = {
         bottom: 20
       }
     }
-  },
+  }
+}
+
+// Base chart options with scales (for bar and line charts)
+const baseChartOptionsWithScales = {
+  ...baseChartOptions,
   scales: {
     y: {
       beginAtZero: true,
@@ -733,20 +738,20 @@ function initProductChart() {
   productChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: partySizes.map(size => `${size} ${size === 1 ? 'person' : 'people'}`),
+      labels: partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`),
       datasets: [{
-        label: 'Number of Parties',
+        label: 'Number of Orders',
         data: partySizeCounts,
         backgroundColor: gradient,
         borderColor: chartColors.blue.stroke,
         borderWidth: 2,
         borderRadius: 6,
-        maxBarThickness: 40,
-        barPercentage: 0.5
+        maxBarThickness: 60,
+        barPercentage: 0.7
       }]
     },
     options: {
-      ...baseChartOptions,
+      ...baseChartOptionsWithScales,
       plugins: {
         legend: {
           display: false
@@ -801,6 +806,10 @@ function initSourceChart() {
     options: {
       ...baseChartOptions,
       cutout: '75%',
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      },
       plugins: {
         legend: {
           position: 'right' as const,
@@ -852,7 +861,7 @@ function initTrendChart() {
       }]
     },
     options: {
-      ...baseChartOptions,
+      ...baseChartOptionsWithScales,
       plugins: {
         legend: {
           display: false
@@ -924,6 +933,10 @@ function initStatusChart() {
     },
     options: {
       ...baseChartOptions,
+      scales: {
+        x: { display: false },
+        y: { display: false }
+      },
       plugins: {
         legend: {
           position: 'right' as const,
@@ -955,7 +968,7 @@ function updateCharts(): void {
       return waitlistEntries.value.filter(entry => entry.quantity === size).length
     })
 
-    chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'person' : 'people'}`)
+    chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`)
     if (chart.data.datasets && chart.data.datasets.length > 0) {
       chart.data.datasets[0].data = partySizeCounts
     }
@@ -1085,7 +1098,7 @@ watch(waitlistEntries, () => {
           <!-- Wait Time Trend Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Wait Time Trend</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Waitlist Entries</h3>
               <div class="mt-2 h-80">
                 <canvas ref="trendChartRef"></canvas>
               </div>
@@ -1095,17 +1108,17 @@ watch(waitlistEntries, () => {
           <!-- Party Size Distribution Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Party Sizes</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Order Quantities</h3>
               <div class="mt-2 h-80">
                 <canvas ref="productChartRef"></canvas>
               </div>
             </div>
           </div>
 
-          <!-- Table Preference Chart -->
+          <!-- Source Distribution Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Table Preferences</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Source Distribution</h3>
               <div class="mt-2 h-80">
                 <canvas ref="sourceChartRef"></canvas>
               </div>
@@ -1342,7 +1355,7 @@ watch(waitlistEntries, () => {
                       @click="markAsPurchased(entry.id)"
                       class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                     >
-                      <div class="i-hugeicons-shopping-cart h-5 w-5"></div>
+                      <div class="i-hugeicons-shopping-cart-01 h-5 w-5"></div>
                       <span class="sr-only">Purchase</span>
                     </button>
                   </div>
@@ -1395,7 +1408,7 @@ watch(waitlistEntries, () => {
                   ]"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
                 <button
                   v-for="page in totalPages"
@@ -1419,7 +1432,7 @@ watch(waitlistEntries, () => {
                   ]"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
                 </button>
               </nav>
             </div>
