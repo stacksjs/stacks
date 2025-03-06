@@ -32,7 +32,7 @@ export async function fetchAll(): Promise<CouponsTable[]> {
  * Process coupon data from the database
  * Parses JSON strings for applicable_products and applicable_categories
  */
-function processCouponData(coupon: any): CouponsTable {
+function processCouponData(coupon: CouponsTable): CouponsTable {
   // Create a copy to avoid modifying the original object
   const processed = { ...coupon }
 
@@ -69,7 +69,7 @@ export async function fetchPaginated(options: FetchCouponsOptions = {}): Promise
   // Apply search filter if provided
   if (options.search) {
     const searchTerm = `%${options.search}%`
-    const searchFilter = eb => eb.or([
+    const searchFilter = (eb: any) => eb.or([
       eb('code', 'like', searchTerm),
       eb('description', 'like', searchTerm),
       eb('discount_type', 'like', searchTerm),
@@ -204,7 +204,7 @@ export async function fetchStats(): Promise<CouponStats> {
   const currentDate = new Date().toISOString().split('T')[0]
   const activeCoupons = await db
     .selectFrom('coupons')
-    .where('is_active', '=', 1)
+    .where('is_active', '=', true)
     .where('start_date', '<=', currentDate)
     .where('end_date', '>=', currentDate)
     .select(eb => eb.fn.count('id').as('count'))
