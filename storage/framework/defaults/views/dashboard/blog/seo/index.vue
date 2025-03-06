@@ -413,7 +413,7 @@ function getPostTitleById(id: number): string {
               @click="openGlobalSettingsModal"
               class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
             >
-              <div class="i-hugeicons-cog-01 h-5 w-5 mr-1"></div>
+              <div class="i-hugeicons-settings-02 h-5 w-5 mr-1"></div>
               Global Settings
             </button>
             <button
@@ -421,7 +421,7 @@ function getPostTitleById(id: number): string {
               @click="openBulkOptimizationModal"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
-              <div class="i-hugeicons-magic-wand h-5 w-5 mr-1"></div>
+              <div class="i-hugeicons-magic-wand-05 h-5 w-5 mr-1"></div>
               Bulk Optimize
             </button>
           </div>

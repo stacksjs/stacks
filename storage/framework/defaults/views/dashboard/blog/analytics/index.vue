@@ -1,6 +1,10 @@
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
+
+// Register Chart.js components
+Chart.register(...registerables)
 
 useHead({
   title: 'Dashboard - Blog Analytics',
@@ -22,6 +26,7 @@ interface Country {
   name: string
   visits: number
   percentage: number
+  flag: string
 }
 
 interface PageData {
@@ -52,6 +57,7 @@ interface BrowserData {
 interface CountryData {
   name: string
   visitors: number
+  flag: string
 }
 
 // Date range options
@@ -71,6 +77,10 @@ const comparisonType = ref('no-comparison')
 const customStartDate = ref('')
 const customEndDate = ref('')
 const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+
+// Search functionality
+const searchQuery = ref('')
+const isSearching = ref(false)
 
 // Analytics overview data
 const analyticsOverview = ref({
@@ -117,6 +127,72 @@ const trafficData = ref([
   { date: '2025-02-01', pageViews: 60, visitors: 40 }
 ])
 
+// Chart.js configuration
+const chartConfig = reactive({
+  type: 'line' as keyof ChartTypeRegistry,
+  data: {
+    labels: trafficData.value.map(item => item.date),
+    datasets: [
+      {
+        label: 'Page Views',
+        data: trafficData.value.map(item => item.pageViews),
+        backgroundColor: 'rgba(147, 197, 253, 0.3)',
+        borderColor: 'rgba(59, 130, 246, 0.8)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: 'Visitors',
+        data: trafficData.value.map(item => item.visitors),
+        backgroundColor: 'rgba(147, 197, 253, 0.1)',
+        borderColor: 'rgba(96, 165, 250, 0.8)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          maxTicksLimit: 4,
+          callback: function(value: any, index: number) {
+            const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
+            return index % Math.floor(trafficData.value.length / 4) === 0 ? labels[Math.floor(index / (trafficData.value.length / 4))] || '' : ''
+          }
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          borderDash: [2, 4],
+          color: 'rgba(160, 174, 192, 0.2)'
+        },
+        ticks: {
+          maxTicksLimit: 6
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top' as const
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false
+      }
+    }
+  }
+})
+
 // Pages data
 const pagesData = ref<PageData[]>([
   { path: '/', entries: 1800, visitors: 1800, views: 2100 },
@@ -161,13 +237,13 @@ const browserData = ref<BrowserData[]>([
   { name: 'Mozilla', visitors: 24, percentage: 1 }
 ])
 
-// Countries data
+// Countries data with flag emojis
 const countriesData = ref<CountryData[]>([
-  { name: 'United States of America', visitors: 768 },
-  { name: 'Germany', visitors: 140 },
-  { name: 'United Kingdom', visitors: 87 },
-  { name: 'India', visitors: 83 },
-  { name: 'Indonesia', visitors: 80 }
+  { name: 'United States of America', visitors: 768, flag: '🇺🇸' },
+  { name: 'Germany', visitors: 140, flag: '🇩🇪' },
+  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧' },
+  { name: 'India', visitors: 83, flag: '🇮🇳' },
+  { name: 'Indonesia', visitors: 80, flag: '🇮🇩' }
 ])
 
 // Format numbers with commas
@@ -181,6 +257,45 @@ function getPercentageColorClass(percentage: number): string {
   if (percentage >= 40) return 'text-yellow-600 dark:text-yellow-400'
   return 'text-red-600 dark:text-red-400'
 }
+
+// Search functionality
+function toggleSearch(): void {
+  isSearching.value = !isSearching.value
+  if (!isSearching.value) {
+    searchQuery.value = ''
+  }
+}
+
+// Filter data based on search query
+const filteredPagesData = computed(() => {
+  if (!searchQuery.value) return pagesData.value
+  const query = searchQuery.value.toLowerCase()
+  return pagesData.value.filter(page => page.path.toLowerCase().includes(query))
+})
+
+const filteredReferrersData = computed(() => {
+  if (!searchQuery.value) return referrersData.value
+  const query = searchQuery.value.toLowerCase()
+  return referrersData.value.filter(referrer => referrer.name.toLowerCase().includes(query))
+})
+
+const filteredDeviceData = computed(() => {
+  if (!searchQuery.value) return deviceData.value
+  const query = searchQuery.value.toLowerCase()
+  return deviceData.value.filter(device => device.name.toLowerCase().includes(query))
+})
+
+const filteredBrowserData = computed(() => {
+  if (!searchQuery.value) return browserData.value
+  const query = searchQuery.value.toLowerCase()
+  return browserData.value.filter(browser => browser.name.toLowerCase().includes(query))
+})
+
+const filteredCountriesData = computed(() => {
+  if (!searchQuery.value) return countriesData.value
+  const query = searchQuery.value.toLowerCase()
+  return countriesData.value.filter(country => country.name.toLowerCase().includes(query))
+})
 
 // Mock function to update data when date range changes
 function updateDataForDateRange(): void {
@@ -198,9 +313,13 @@ function handleDateRangeChange(): void {
 }
 
 // Initialize chart when component is mounted
+let trafficChart: Chart | null = null
+
 onMounted(() => {
-  // In a real app, this would initialize a chart library like Chart.js
-  console.log('Component mounted, chart would be initialized here')
+  const ctx = document.getElementById('trafficChart') as HTMLCanvasElement
+  if (ctx) {
+    trafficChart = new Chart(ctx, chartConfig)
+  }
   updateDataForDateRange()
 })
 </script>
@@ -212,7 +331,7 @@ onMounted(() => {
         <!-- Header with date range selector -->
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex items-center space-x-2">
-            <div class="i-hugeicons-calendar h-5 w-5 text-gray-500 dark:text-gray-400"></div>
+            <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
           </div>
 
@@ -281,49 +400,47 @@ onMounted(() => {
 
         <!-- Traffic Chart -->
         <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
-          <!-- Chart placeholder - in a real app, this would be a Chart.js or similar component -->
-          <div class="h-80 w-full relative">
-            <!-- Y-axis labels -->
-            <div class="absolute top-0 right-0 h-full flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 pr-2">
-              <div>500</div>
-              <div>400</div>
-              <div>300</div>
-              <div>200</div>
-              <div>100</div>
-              <div>0</div>
-            </div>
-
-            <!-- Chart area with gradient -->
-            <div class="h-full w-full pr-10 relative">
-              <!-- Area chart placeholder -->
-              <div class="absolute inset-0 bg-gradient-to-b from-blue-100/50 to-transparent dark:from-blue-900/20 rounded-lg"></div>
-
-              <!-- Line chart placeholder -->
-              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 1000 400" preserveAspectRatio="none">
-                <!-- First line (lighter) -->
-                <path
-                  d="M0,350 C50,300 100,250 150,200 C200,150 250,100 300,150 C350,200 400,250 450,200 C500,150 550,100 600,50 C650,100 700,150 750,200 C800,250 850,300 900,350 C950,380 1000,390 1000,390 L1000,400 L0,400 Z"
-                  fill="rgba(147, 197, 253, 0.3)"
-                  stroke="none"
-                />
-
-                <!-- Second line (darker) -->
-                <path
-                  d="M0,380 C50,350 100,320 150,280 C200,240 250,200 300,240 C350,280 400,320 450,280 C500,240 550,200 600,160 C650,200 700,240 750,280 C800,320 850,350 900,380 C950,390 1000,395 1000,395"
-                  fill="none"
-                  stroke="rgba(59, 130, 246, 0.8)"
-                  stroke-width="2"
-                />
-              </svg>
-
-              <!-- X-axis labels -->
-              <div class="absolute bottom-0 left-0 w-full flex justify-between text-xs text-gray-500 dark:text-gray-400">
-                <div>Jan 2024</div>
-                <div>May 2024</div>
-                <div>Sep 2024</div>
-                <div>Jan 2025</div>
+          <!-- Global search input (shown when isSearching is true) -->
+          <div v-if="isSearching" class="mb-4">
+            <div class="relative">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
               </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                placeholder="Search across all analytics data..."
+                autofocus
+              />
+              <button
+                @click="toggleSearch"
+                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <div class="i-hugeicons-cancel-circle h-5 w-5"></div>
+              </button>
             </div>
+          </div>
+
+          <!-- Chart header with search toggle -->
+          <div v-else class="flex justify-between items-center mb-4">
+            <div>
+              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Traffic Overview</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Daily page views and unique visitors
+              </p>
+            </div>
+            <button
+              @click="toggleSearch"
+              class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+            >
+              <div class="i-hugeicons-search-01 h-5 w-5"></div>
+            </button>
+          </div>
+
+          <!-- Chart.js canvas -->
+          <div class="h-80 w-full">
+            <canvas id="trafficChart"></canvas>
           </div>
         </div>
 
@@ -337,7 +454,10 @@ onMounted(() => {
                 <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <div class="i-hugeicons-list h-5 w-5"></div>
                 </button>
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <button
+                  @click="toggleSearch"
+                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
                   <div class="i-hugeicons-search-01 h-5 w-5"></div>
                 </button>
               </div>
@@ -362,7 +482,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(page, index) in pagesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(page, index) in filteredPagesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {{ page.path }}
                     </td>
@@ -381,9 +501,9 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                Next
-              </button>
+              <a href="/dashboard/blog/analytics/pages" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all pages
+              </a>
             </div>
           </div>
 
@@ -395,7 +515,10 @@ onMounted(() => {
                 <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <div class="i-hugeicons-list h-5 w-5"></div>
                 </button>
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                <button
+                  @click="toggleSearch"
+                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
                   <div class="i-hugeicons-search-01 h-5 w-5"></div>
                 </button>
               </div>
@@ -417,7 +540,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(referrer, index) in referrersData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(referrer, index) in filteredReferrersData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {{ referrer.name }}
                     </td>
@@ -433,9 +556,9 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                Next
-              </button>
+              <a href="/dashboard/blog/analytics/referrers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all referrers
+              </a>
             </div>
           </div>
         </div>
@@ -449,6 +572,12 @@ onMounted(() => {
               <div class="flex space-x-2">
                 <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <div class="i-hugeicons-list h-5 w-5"></div>
+                </button>
+                <button
+                  @click="toggleSearch"
+                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
                 </button>
               </div>
             </div>
@@ -466,7 +595,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(device, index) in deviceData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(device, index) in filteredDeviceData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {{ device.name }}
                     </td>
@@ -479,9 +608,9 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                Next
-              </button>
+              <a href="/dashboard/blog/analytics/devices" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all devices
+              </a>
             </div>
           </div>
 
@@ -492,6 +621,12 @@ onMounted(() => {
               <div class="flex space-x-2">
                 <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <div class="i-hugeicons-list h-5 w-5"></div>
+                </button>
+                <button
+                  @click="toggleSearch"
+                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
                 </button>
               </div>
             </div>
@@ -509,7 +644,7 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(browser, index) in browserData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(browser, index) in filteredBrowserData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                       {{ browser.name }}
                     </td>
@@ -522,9 +657,9 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                Next
-              </button>
+              <a href="/dashboard/blog/analytics/browsers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all browsers
+              </a>
             </div>
           </div>
 
@@ -535,6 +670,12 @@ onMounted(() => {
               <div class="flex space-x-2">
                 <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
                   <div class="i-hugeicons-list h-5 w-5"></div>
+                </button>
+                <button
+                  @click="toggleSearch"
+                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
                 </button>
               </div>
             </div>
@@ -552,8 +693,9 @@ onMounted(() => {
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(country, index) in countriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(country, index) in filteredCountriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <span class="mr-2">{{ country.flag }}</span>
                       {{ country.name }}
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
@@ -565,9 +707,9 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                Next
-              </button>
+              <a href="/dashboard/blog/analytics/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all countries
+              </a>
             </div>
           </div>
         </div>
