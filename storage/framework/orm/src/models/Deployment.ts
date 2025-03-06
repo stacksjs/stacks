@@ -124,7 +124,7 @@ export class DeploymentModel {
     }
   }
 
-  async mapCustomSetters(model: DeploymentJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewDeployment): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -423,7 +423,7 @@ export class DeploymentModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: DeploymentModel) => instance.parseResult(new DeploymentModel(modelItem)))
+    return models.map((modelItem: DeploymentJsonResponse) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
@@ -627,7 +627,7 @@ export class DeploymentModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: DeploymentModel) => {
+    const data = await Promise.all(models.map(async (model: DeploymentJsonResponse) => {
       return new DeploymentModel(model)
     }))
 
@@ -1307,7 +1307,7 @@ export class DeploymentModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<DeploymentType | undefined> {
+  static async latest(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 
     const model = await DB.instance.selectFrom('deployments')
@@ -1325,7 +1325,7 @@ export class DeploymentModel {
     return data
   }
 
-  static async oldest(): Promise<DeploymentType | undefined> {
+  static async oldest(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 
     const model = await DB.instance.selectFrom('deployments')
@@ -1470,8 +1470,8 @@ export class DeploymentModel {
     return instance
   }
 
-  async last(): Promise<DeploymentType | undefined> {
-    let model: DeploymentModel | undefined
+  async last(): Promise<DeploymentModel | undefined> {
+    let model: DeploymentJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1490,7 +1490,7 @@ export class DeploymentModel {
     return data
   }
 
-  static async last(): Promise<DeploymentType | undefined> {
+  static async last(): Promise<DeploymentModel | undefined> {
     const model = await DB.instance.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

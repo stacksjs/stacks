@@ -111,7 +111,7 @@ export class ReleaseModel {
     }
   }
 
-  async mapCustomSetters(model: ReleaseJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewRelease): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -346,7 +346,7 @@ export class ReleaseModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ReleaseModel) => instance.parseResult(new ReleaseModel(modelItem)))
+    return models.map((modelItem: ReleaseJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
@@ -550,7 +550,7 @@ export class ReleaseModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ReleaseModel) => {
+    const data = await Promise.all(models.map(async (model: ReleaseJsonResponse) => {
       return new ReleaseModel(model)
     }))
 
@@ -1178,7 +1178,7 @@ export class ReleaseModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ReleaseType | undefined> {
+  static async latest(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 
     const model = await DB.instance.selectFrom('releases')
@@ -1196,7 +1196,7 @@ export class ReleaseModel {
     return data
   }
 
-  static async oldest(): Promise<ReleaseType | undefined> {
+  static async oldest(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 
     const model = await DB.instance.selectFrom('releases')
@@ -1341,8 +1341,8 @@ export class ReleaseModel {
     return instance
   }
 
-  async last(): Promise<ReleaseType | undefined> {
-    let model: ReleaseModel | undefined
+  async last(): Promise<ReleaseModel | undefined> {
+    let model: ReleaseJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1361,7 +1361,7 @@ export class ReleaseModel {
     return data
   }
 
-  static async last(): Promise<ReleaseType | undefined> {
+  static async last(): Promise<ReleaseModel | undefined> {
     const model = await DB.instance.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

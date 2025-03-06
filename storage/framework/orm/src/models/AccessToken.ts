@@ -131,7 +131,7 @@ export class AccessTokenModel {
     }
   }
 
-  async mapCustomSetters(model: AccessTokenJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewAccessToken): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -454,7 +454,7 @@ export class AccessTokenModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: AccessTokenModel) => instance.parseResult(new AccessTokenModel(modelItem)))
+    return models.map((modelItem: AccessTokenJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
@@ -658,7 +658,7 @@ export class AccessTokenModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: AccessTokenModel) => {
+    const data = await Promise.all(models.map(async (model: AccessTokenJsonResponse) => {
       return new AccessTokenModel(model)
     }))
 
@@ -1358,7 +1358,7 @@ export class AccessTokenModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<AccessTokenType | undefined> {
+  static async latest(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 
     const model = await DB.instance.selectFrom('personal_access_tokens')
@@ -1376,7 +1376,7 @@ export class AccessTokenModel {
     return data
   }
 
-  static async oldest(): Promise<AccessTokenType | undefined> {
+  static async oldest(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 
     const model = await DB.instance.selectFrom('personal_access_tokens')
@@ -1521,8 +1521,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  async last(): Promise<AccessTokenType | undefined> {
-    let model: AccessTokenModel | undefined
+  async last(): Promise<AccessTokenModel | undefined> {
+    let model: AccessTokenJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1541,7 +1541,7 @@ export class AccessTokenModel {
     return data
   }
 
-  static async last(): Promise<AccessTokenType | undefined> {
+  static async last(): Promise<AccessTokenModel | undefined> {
     const model = await DB.instance.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

@@ -125,7 +125,7 @@ export class TransactionModel {
     }
   }
 
-  async mapCustomSetters(model: TransactionJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewTransaction): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -424,7 +424,7 @@ export class TransactionModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: TransactionModel) => instance.parseResult(new TransactionModel(modelItem)))
+    return models.map((modelItem: TransactionJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
@@ -628,7 +628,7 @@ export class TransactionModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: TransactionModel) => {
+    const data = await Promise.all(models.map(async (model: TransactionJsonResponse) => {
       return new TransactionModel(model)
     }))
 
@@ -1321,7 +1321,7 @@ export class TransactionModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<TransactionType | undefined> {
+  static async latest(): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('transactions')
@@ -1339,7 +1339,7 @@ export class TransactionModel {
     return data
   }
 
-  static async oldest(): Promise<TransactionType | undefined> {
+  static async oldest(): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('transactions')
@@ -1484,8 +1484,8 @@ export class TransactionModel {
     return instance
   }
 
-  async last(): Promise<TransactionType | undefined> {
-    let model: TransactionModel | undefined
+  async last(): Promise<TransactionModel | undefined> {
+    let model: TransactionJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1504,7 +1504,7 @@ export class TransactionModel {
     return data
   }
 
-  static async last(): Promise<TransactionType | undefined> {
+  static async last(): Promise<TransactionModel | undefined> {
     const model = await DB.instance.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

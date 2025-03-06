@@ -122,7 +122,7 @@ export class TeamModel {
     }
   }
 
-  async mapCustomSetters(model: TeamJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewTeam): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -417,7 +417,7 @@ export class TeamModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: TeamModel) => instance.parseResult(new TeamModel(modelItem)))
+    return models.map((modelItem: TeamJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<TeamModel[]> {
@@ -621,7 +621,7 @@ export class TeamModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: TeamModel) => {
+    const data = await Promise.all(models.map(async (model: TeamJsonResponse) => {
       return new TeamModel(model)
     }))
 
@@ -1305,7 +1305,7 @@ export class TeamModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<TeamType | undefined> {
+  static async latest(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(undefined)
 
     const model = await DB.instance.selectFrom('teams')
@@ -1323,7 +1323,7 @@ export class TeamModel {
     return data
   }
 
-  static async oldest(): Promise<TeamType | undefined> {
+  static async oldest(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(undefined)
 
     const model = await DB.instance.selectFrom('teams')
@@ -1468,8 +1468,8 @@ export class TeamModel {
     return instance
   }
 
-  async last(): Promise<TeamType | undefined> {
-    let model: TeamModel | undefined
+  async last(): Promise<TeamModel | undefined> {
+    let model: TeamJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1488,7 +1488,7 @@ export class TeamModel {
     return data
   }
 
-  static async last(): Promise<TeamType | undefined> {
+  static async last(): Promise<TeamModel | undefined> {
     const model = await DB.instance.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

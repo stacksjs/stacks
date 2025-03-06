@@ -120,7 +120,7 @@ export class RequestModel {
     }
   }
 
-  async mapCustomSetters(model: RequestJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewRequest): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -427,7 +427,7 @@ export class RequestModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: RequestModel) => instance.parseResult(new RequestModel(modelItem)))
+    return models.map((modelItem: RequestJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<RequestModel[]> {
@@ -631,7 +631,7 @@ export class RequestModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: RequestModel) => {
+    const data = await Promise.all(models.map(async (model: RequestJsonResponse) => {
       return new RequestModel(model)
     }))
 
@@ -1326,7 +1326,7 @@ export class RequestModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<RequestType | undefined> {
+  static async latest(): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 
     const model = await DB.instance.selectFrom('requests')
@@ -1344,7 +1344,7 @@ export class RequestModel {
     return data
   }
 
-  static async oldest(): Promise<RequestType | undefined> {
+  static async oldest(): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 
     const model = await DB.instance.selectFrom('requests')
@@ -1489,8 +1489,8 @@ export class RequestModel {
     return instance
   }
 
-  async last(): Promise<RequestType | undefined> {
-    let model: RequestModel | undefined
+  async last(): Promise<RequestModel | undefined> {
+    let model: RequestJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1509,7 +1509,7 @@ export class RequestModel {
     return data
   }
 
-  static async last(): Promise<RequestType | undefined> {
+  static async last(): Promise<RequestModel | undefined> {
     const model = await DB.instance.selectFrom('requests').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

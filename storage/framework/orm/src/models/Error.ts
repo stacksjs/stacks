@@ -115,7 +115,7 @@ export class ErrorModel {
     }
   }
 
-  async mapCustomSetters(model: ErrorJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewError): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -382,7 +382,7 @@ export class ErrorModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ErrorModel) => instance.parseResult(new ErrorModel(modelItem)))
+    return models.map((modelItem: ErrorJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
@@ -586,7 +586,7 @@ export class ErrorModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ErrorModel) => {
+    const data = await Promise.all(models.map(async (model: ErrorJsonResponse) => {
       return new ErrorModel(model)
     }))
 
@@ -1246,7 +1246,7 @@ export class ErrorModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ErrorType | undefined> {
+  static async latest(): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(undefined)
 
     const model = await DB.instance.selectFrom('errors')
@@ -1264,7 +1264,7 @@ export class ErrorModel {
     return data
   }
 
-  static async oldest(): Promise<ErrorType | undefined> {
+  static async oldest(): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(undefined)
 
     const model = await DB.instance.selectFrom('errors')
@@ -1409,8 +1409,8 @@ export class ErrorModel {
     return instance
   }
 
-  async last(): Promise<ErrorType | undefined> {
-    let model: ErrorModel | undefined
+  async last(): Promise<ErrorModel | undefined> {
+    let model: ErrorJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1429,7 +1429,7 @@ export class ErrorModel {
     return data
   }
 
-  static async last(): Promise<ErrorType | undefined> {
+  static async last(): Promise<ErrorModel | undefined> {
     const model = await DB.instance.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

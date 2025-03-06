@@ -135,7 +135,7 @@ export class CouponModel {
     }
   }
 
-  async mapCustomSetters(model: CouponJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewCoupon): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -494,7 +494,7 @@ export class CouponModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: CouponModel) => instance.parseResult(new CouponModel(modelItem)))
+    return models.map((modelItem: CouponJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<CouponModel[]> {
@@ -698,7 +698,7 @@ export class CouponModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: CouponModel) => {
+    const data = await Promise.all(models.map(async (model: CouponJsonResponse) => {
       return new CouponModel(model)
     }))
 
@@ -1447,7 +1447,7 @@ export class CouponModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<CouponType | undefined> {
+  static async latest(): Promise<CouponModel | undefined> {
     const instance = new CouponModel(undefined)
 
     const model = await DB.instance.selectFrom('coupons')
@@ -1465,7 +1465,7 @@ export class CouponModel {
     return data
   }
 
-  static async oldest(): Promise<CouponType | undefined> {
+  static async oldest(): Promise<CouponModel | undefined> {
     const instance = new CouponModel(undefined)
 
     const model = await DB.instance.selectFrom('coupons')
@@ -1610,8 +1610,8 @@ export class CouponModel {
     return instance
   }
 
-  async last(): Promise<CouponType | undefined> {
-    let model: CouponModel | undefined
+  async last(): Promise<CouponModel | undefined> {
+    let model: CouponJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1630,7 +1630,7 @@ export class CouponModel {
     return data
   }
 
-  static async last(): Promise<CouponType | undefined> {
+  static async last(): Promise<CouponModel | undefined> {
     const model = await DB.instance.selectFrom('coupons').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

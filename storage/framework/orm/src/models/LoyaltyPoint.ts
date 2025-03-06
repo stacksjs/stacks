@@ -120,7 +120,7 @@ export class LoyaltyPointModel {
     }
   }
 
-  async mapCustomSetters(model: LoyaltyPointJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewLoyaltyPoint): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -411,7 +411,7 @@ export class LoyaltyPointModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: LoyaltyPointModel) => instance.parseResult(new LoyaltyPointModel(modelItem)))
+    return models.map((modelItem: LoyaltyPointJsonResponse) => instance.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<LoyaltyPointModel[]> {
@@ -615,7 +615,7 @@ export class LoyaltyPointModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: LoyaltyPointModel) => {
+    const data = await Promise.all(models.map(async (model: LoyaltyPointJsonResponse) => {
       return new LoyaltyPointModel(model)
     }))
 
@@ -1308,7 +1308,7 @@ export class LoyaltyPointModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<LoyaltyPointType | undefined> {
+  static async latest(): Promise<LoyaltyPointModel | undefined> {
     const instance = new LoyaltyPointModel(undefined)
 
     const model = await DB.instance.selectFrom('loyalty_points')
@@ -1326,7 +1326,7 @@ export class LoyaltyPointModel {
     return data
   }
 
-  static async oldest(): Promise<LoyaltyPointType | undefined> {
+  static async oldest(): Promise<LoyaltyPointModel | undefined> {
     const instance = new LoyaltyPointModel(undefined)
 
     const model = await DB.instance.selectFrom('loyalty_points')
@@ -1471,8 +1471,8 @@ export class LoyaltyPointModel {
     return instance
   }
 
-  async last(): Promise<LoyaltyPointType | undefined> {
-    let model: LoyaltyPointModel | undefined
+  async last(): Promise<LoyaltyPointModel | undefined> {
+    let model: LoyaltyPointJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1491,7 +1491,7 @@ export class LoyaltyPointModel {
     return data
   }
 
-  static async last(): Promise<LoyaltyPointType | undefined> {
+  static async last(): Promise<LoyaltyPointModel | undefined> {
     const model = await DB.instance.selectFrom('loyalty_points').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

@@ -128,7 +128,7 @@ export class ProductModel {
     }
   }
 
-  async mapCustomSetters(model: ProductJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewProduct): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -451,7 +451,7 @@ export class ProductModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ProductModel) => instance.parseResult(new ProductModel(modelItem)))
+    return models.map((modelItem: ProductJsonResponse) => instance.parseResult(new ProductModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
@@ -655,7 +655,7 @@ export class ProductModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ProductModel) => {
+    const data = await Promise.all(models.map(async (model: ProductJsonResponse) => {
       return new ProductModel(model)
     }))
 
@@ -1372,7 +1372,7 @@ export class ProductModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ProductType | undefined> {
+  static async latest(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 
     const model = await DB.instance.selectFrom('products')
@@ -1390,7 +1390,7 @@ export class ProductModel {
     return data
   }
 
-  static async oldest(): Promise<ProductType | undefined> {
+  static async oldest(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 
     const model = await DB.instance.selectFrom('products')
@@ -1535,8 +1535,8 @@ export class ProductModel {
     return instance
   }
 
-  async last(): Promise<ProductType | undefined> {
-    let model: ProductModel | undefined
+  async last(): Promise<ProductModel | undefined> {
+    let model: ProductJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1555,7 +1555,7 @@ export class ProductModel {
     return data
   }
 
-  static async last(): Promise<ProductType | undefined> {
+  static async last(): Promise<ProductModel | undefined> {
     const model = await DB.instance.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

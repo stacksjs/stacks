@@ -121,7 +121,7 @@ export class ProductCategoryModel {
     }
   }
 
-  async mapCustomSetters(model: ProductCategoryJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewProductCategory): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -408,7 +408,7 @@ export class ProductCategoryModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ProductCategoryModel) => instance.parseResult(new ProductCategoryModel(modelItem)))
+    return models.map((modelItem: ProductCategoryJsonResponse) => instance.parseResult(new ProductCategoryModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<ProductCategoryModel[]> {
@@ -612,7 +612,7 @@ export class ProductCategoryModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ProductCategoryModel) => {
+    const data = await Promise.all(models.map(async (model: ProductCategoryJsonResponse) => {
       return new ProductCategoryModel(model)
     }))
 
@@ -1297,7 +1297,7 @@ export class ProductCategoryModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ProductCategoryType | undefined> {
+  static async latest(): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 
     const model = await DB.instance.selectFrom('product_categories')
@@ -1315,7 +1315,7 @@ export class ProductCategoryModel {
     return data
   }
 
-  static async oldest(): Promise<ProductCategoryType | undefined> {
+  static async oldest(): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 
     const model = await DB.instance.selectFrom('product_categories')
@@ -1460,8 +1460,8 @@ export class ProductCategoryModel {
     return instance
   }
 
-  async last(): Promise<ProductCategoryType | undefined> {
-    let model: ProductCategoryModel | undefined
+  async last(): Promise<ProductCategoryModel | undefined> {
+    let model: ProductCategoryJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1480,7 +1480,7 @@ export class ProductCategoryModel {
     return data
   }
 
-  static async last(): Promise<ProductCategoryType | undefined> {
+  static async last(): Promise<ProductCategoryModel | undefined> {
     const model = await DB.instance.selectFrom('product_categories').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

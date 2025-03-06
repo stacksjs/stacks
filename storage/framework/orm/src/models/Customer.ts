@@ -136,7 +136,7 @@ export class CustomerModel {
     }
   }
 
-  async mapCustomSetters(model: CustomerJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewCustomer): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -439,7 +439,7 @@ export class CustomerModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: CustomerModel) => instance.parseResult(new CustomerModel(modelItem)))
+    return models.map((modelItem: CustomerJsonResponse) => instance.parseResult(new CustomerModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<CustomerModel[]> {
@@ -643,7 +643,7 @@ export class CustomerModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: CustomerModel) => {
+    const data = await Promise.all(models.map(async (model: CustomerJsonResponse) => {
       return new CustomerModel(model)
     }))
 
@@ -1336,7 +1336,7 @@ export class CustomerModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<CustomerType | undefined> {
+  static async latest(): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 
     const model = await DB.instance.selectFrom('customers')
@@ -1354,7 +1354,7 @@ export class CustomerModel {
     return data
   }
 
-  static async oldest(): Promise<CustomerType | undefined> {
+  static async oldest(): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 
     const model = await DB.instance.selectFrom('customers')
@@ -1499,8 +1499,8 @@ export class CustomerModel {
     return instance
   }
 
-  async last(): Promise<CustomerType | undefined> {
-    let model: CustomerModel | undefined
+  async last(): Promise<CustomerModel | undefined> {
+    let model: CustomerJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1519,7 +1519,7 @@ export class CustomerModel {
     return data
   }
 
-  static async last(): Promise<CustomerType | undefined> {
+  static async last(): Promise<CustomerModel | undefined> {
     const model = await DB.instance.selectFrom('customers').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

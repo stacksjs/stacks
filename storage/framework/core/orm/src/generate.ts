@@ -1018,7 +1018,7 @@ export async function generateModelString(
           }
         }
 
-        async mapCustomSetters(model: ${modelName}JsonResponse): Promise<void> {
+        async mapCustomSetters(model: New${modelName}): Promise<void> {
           const customSetter = {
             default: () => {
             },
@@ -1237,7 +1237,7 @@ export async function generateModelString(
           instance.mapCustomGetters(models)
           await instance.loadRelations(models)
   
-          return models.map((modelItem: ${modelName}Model) => instance.parseResult(new ${modelName}Model(modelItem)))
+          return models.map((modelItem: ${modelName}JsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
@@ -1440,7 +1440,7 @@ export async function generateModelString(
           this.mapCustomGetters(models)
           await this.loadRelations(models)
   
-          const data = await Promise.all(models.map(async (model: ${modelName}Model) => {
+          const data = await Promise.all(models.map(async (model: ${modelName}JsonResponse) => {
             return new ${modelName}Model(model)
           }))
           
@@ -2075,7 +2075,7 @@ export async function generateModelString(
           return model !== null && model !== undefined
         }
 
-        static async latest(): Promise<${modelName}Type | undefined> {
+        static async latest(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
 
           const model = await DB.instance.selectFrom('${tableName}')
@@ -2093,7 +2093,7 @@ export async function generateModelString(
           return data
         }
 
-        static async oldest(): Promise<${modelName}Type | undefined> {
+        static async oldest(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
 
           const model = await DB.instance.selectFrom('${tableName}')
@@ -2235,8 +2235,8 @@ export async function generateModelString(
           return instance
         }
   
-        async last(): Promise<${modelName}Type | undefined> {
-          let model: ${modelName}Model | undefined
+        async last(): Promise<${modelName}Model | undefined> {
+          let model: ${modelName}JsonResponse | undefined
 
           if (this.hasSelect) {
             model = await this.selectFromQuery.executeTakeFirst()
@@ -2255,7 +2255,7 @@ export async function generateModelString(
           return data
         }
   
-        static async last(): Promise<${modelName}Type | undefined> {
+        static async last(): Promise<${modelName}Model | undefined> {
           const model = await DB.instance.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
   
           if (!model)

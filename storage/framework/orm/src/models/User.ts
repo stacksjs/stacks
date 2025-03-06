@@ -148,7 +148,7 @@ export class UserModel {
     }
   }
 
-  async mapCustomSetters(model: UserJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewUser): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -457,7 +457,7 @@ export class UserModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: UserModel) => instance.parseResult(new UserModel(modelItem)))
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new UserModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
@@ -661,7 +661,7 @@ export class UserModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: UserModel) => {
+    const data = await Promise.all(models.map(async (model: UserJsonResponse) => {
       return new UserModel(model)
     }))
 
@@ -1330,7 +1330,7 @@ export class UserModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<UserType | undefined> {
+  static async latest(): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 
     const model = await DB.instance.selectFrom('users')
@@ -1348,7 +1348,7 @@ export class UserModel {
     return data
   }
 
-  static async oldest(): Promise<UserType | undefined> {
+  static async oldest(): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 
     const model = await DB.instance.selectFrom('users')
@@ -1493,8 +1493,8 @@ export class UserModel {
     return instance
   }
 
-  async last(): Promise<UserType | undefined> {
-    let model: UserModel | undefined
+  async last(): Promise<UserModel | undefined> {
+    let model: UserJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1513,7 +1513,7 @@ export class UserModel {
     return data
   }
 
-  static async last(): Promise<UserType | undefined> {
+  static async last(): Promise<UserModel | undefined> {
     const model = await DB.instance.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

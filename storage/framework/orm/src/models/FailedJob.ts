@@ -115,7 +115,7 @@ export class FailedJobModel {
     }
   }
 
-  async mapCustomSetters(model: FailedJobJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewFailedJob): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -382,7 +382,7 @@ export class FailedJobModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: FailedJobModel) => instance.parseResult(new FailedJobModel(modelItem)))
+    return models.map((modelItem: FailedJobJsonResponse) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {
@@ -586,7 +586,7 @@ export class FailedJobModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: FailedJobModel) => {
+    const data = await Promise.all(models.map(async (model: FailedJobJsonResponse) => {
       return new FailedJobModel(model)
     }))
 
@@ -1246,7 +1246,7 @@ export class FailedJobModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<FailedJobType | undefined> {
+  static async latest(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(undefined)
 
     const model = await DB.instance.selectFrom('failed_jobs')
@@ -1264,7 +1264,7 @@ export class FailedJobModel {
     return data
   }
 
-  static async oldest(): Promise<FailedJobType | undefined> {
+  static async oldest(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(undefined)
 
     const model = await DB.instance.selectFrom('failed_jobs')
@@ -1409,8 +1409,8 @@ export class FailedJobModel {
     return instance
   }
 
-  async last(): Promise<FailedJobType | undefined> {
-    let model: FailedJobModel | undefined
+  async last(): Promise<FailedJobModel | undefined> {
+    let model: FailedJobJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1429,7 +1429,7 @@ export class FailedJobModel {
     return data
   }
 
-  static async last(): Promise<FailedJobType | undefined> {
+  static async last(): Promise<FailedJobModel | undefined> {
     const model = await DB.instance.selectFrom('failed_jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

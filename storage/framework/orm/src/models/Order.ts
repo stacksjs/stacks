@@ -138,7 +138,7 @@ export class OrderModel {
     }
   }
 
-  async mapCustomSetters(model: OrderJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewOrder): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -481,7 +481,7 @@ export class OrderModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: OrderModel) => instance.parseResult(new OrderModel(modelItem)))
+    return models.map((modelItem: OrderJsonResponse) => instance.parseResult(new OrderModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<OrderModel[]> {
@@ -685,7 +685,7 @@ export class OrderModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: OrderModel) => {
+    const data = await Promise.all(models.map(async (model: OrderJsonResponse) => {
       return new OrderModel(model)
     }))
 
@@ -1410,7 +1410,7 @@ export class OrderModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<OrderType | undefined> {
+  static async latest(): Promise<OrderModel | undefined> {
     const instance = new OrderModel(undefined)
 
     const model = await DB.instance.selectFrom('orders')
@@ -1428,7 +1428,7 @@ export class OrderModel {
     return data
   }
 
-  static async oldest(): Promise<OrderType | undefined> {
+  static async oldest(): Promise<OrderModel | undefined> {
     const instance = new OrderModel(undefined)
 
     const model = await DB.instance.selectFrom('orders')
@@ -1573,8 +1573,8 @@ export class OrderModel {
     return instance
   }
 
-  async last(): Promise<OrderType | undefined> {
-    let model: OrderModel | undefined
+  async last(): Promise<OrderModel | undefined> {
+    let model: OrderJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1593,7 +1593,7 @@ export class OrderModel {
     return data
   }
 
-  static async last(): Promise<OrderType | undefined> {
+  static async last(): Promise<OrderModel | undefined> {
     const model = await DB.instance.selectFrom('orders').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

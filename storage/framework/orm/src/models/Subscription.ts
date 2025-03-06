@@ -127,7 +127,7 @@ export class SubscriptionModel {
     }
   }
 
-  async mapCustomSetters(model: SubscriptionJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewSubscription): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -450,7 +450,7 @@ export class SubscriptionModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: SubscriptionModel) => instance.parseResult(new SubscriptionModel(modelItem)))
+    return models.map((modelItem: SubscriptionJsonResponse) => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
@@ -654,7 +654,7 @@ export class SubscriptionModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: SubscriptionModel) => {
+    const data = await Promise.all(models.map(async (model: SubscriptionJsonResponse) => {
       return new SubscriptionModel(model)
     }))
 
@@ -1358,7 +1358,7 @@ export class SubscriptionModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<SubscriptionType | undefined> {
+  static async latest(): Promise<SubscriptionModel | undefined> {
     const instance = new SubscriptionModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriptions')
@@ -1376,7 +1376,7 @@ export class SubscriptionModel {
     return data
   }
 
-  static async oldest(): Promise<SubscriptionType | undefined> {
+  static async oldest(): Promise<SubscriptionModel | undefined> {
     const instance = new SubscriptionModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriptions')
@@ -1521,8 +1521,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  async last(): Promise<SubscriptionType | undefined> {
-    let model: SubscriptionModel | undefined
+  async last(): Promise<SubscriptionModel | undefined> {
+    let model: SubscriptionJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1541,7 +1541,7 @@ export class SubscriptionModel {
     return data
   }
 
-  static async last(): Promise<SubscriptionType | undefined> {
+  static async last(): Promise<SubscriptionModel | undefined> {
     const model = await DB.instance.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

@@ -117,7 +117,7 @@ export class PostModel {
     }
   }
 
-  async mapCustomSetters(model: PostJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewPost): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -368,7 +368,7 @@ export class PostModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: PostModel) => instance.parseResult(new PostModel(modelItem)))
+    return models.map((modelItem: PostJsonResponse) => instance.parseResult(new PostModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
@@ -572,7 +572,7 @@ export class PostModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: PostModel) => {
+    const data = await Promise.all(models.map(async (model: PostJsonResponse) => {
       return new PostModel(model)
     }))
 
@@ -1208,7 +1208,7 @@ export class PostModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<PostType | undefined> {
+  static async latest(): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 
     const model = await DB.instance.selectFrom('posts')
@@ -1226,7 +1226,7 @@ export class PostModel {
     return data
   }
 
-  static async oldest(): Promise<PostType | undefined> {
+  static async oldest(): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 
     const model = await DB.instance.selectFrom('posts')
@@ -1371,8 +1371,8 @@ export class PostModel {
     return instance
   }
 
-  async last(): Promise<PostType | undefined> {
-    let model: PostModel | undefined
+  async last(): Promise<PostModel | undefined> {
+    let model: PostJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1391,7 +1391,7 @@ export class PostModel {
     return data
   }
 
-  static async last(): Promise<PostType | undefined> {
+  static async last(): Promise<PostModel | undefined> {
     const model = await DB.instance.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

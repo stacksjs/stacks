@@ -113,7 +113,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  async mapCustomSetters(model: SubscriberEmailJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewSubscriberEmail): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -364,7 +364,7 @@ export class SubscriberEmailModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: SubscriberEmailModel) => instance.parseResult(new SubscriberEmailModel(modelItem)))
+    return models.map((modelItem: SubscriberEmailJsonResponse) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
@@ -568,7 +568,7 @@ export class SubscriberEmailModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: SubscriberEmailModel) => {
+    const data = await Promise.all(models.map(async (model: SubscriberEmailJsonResponse) => {
       return new SubscriberEmailModel(model)
     }))
 
@@ -1207,7 +1207,7 @@ export class SubscriberEmailModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<SubscriberEmailType | undefined> {
+  static async latest(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriber_emails')
@@ -1225,7 +1225,7 @@ export class SubscriberEmailModel {
     return data
   }
 
-  static async oldest(): Promise<SubscriberEmailType | undefined> {
+  static async oldest(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriber_emails')
@@ -1370,8 +1370,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  async last(): Promise<SubscriberEmailType | undefined> {
-    let model: SubscriberEmailModel | undefined
+  async last(): Promise<SubscriberEmailModel | undefined> {
+    let model: SubscriberEmailJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1390,7 +1390,7 @@ export class SubscriberEmailModel {
     return data
   }
 
-  static async last(): Promise<SubscriberEmailType | undefined> {
+  static async last(): Promise<SubscriberEmailModel | undefined> {
     const model = await DB.instance.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

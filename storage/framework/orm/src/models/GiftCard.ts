@@ -136,7 +136,7 @@ export class GiftCardModel {
     }
   }
 
-  async mapCustomSetters(model: GiftCardJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewGiftCard): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -503,7 +503,7 @@ export class GiftCardModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: GiftCardModel) => instance.parseResult(new GiftCardModel(modelItem)))
+    return models.map((modelItem: GiftCardJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<GiftCardModel[]> {
@@ -707,7 +707,7 @@ export class GiftCardModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: GiftCardModel) => {
+    const data = await Promise.all(models.map(async (model: GiftCardJsonResponse) => {
       return new GiftCardModel(model)
     }))
 
@@ -1464,7 +1464,7 @@ export class GiftCardModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<GiftCardType | undefined> {
+  static async latest(): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 
     const model = await DB.instance.selectFrom('gift_cards')
@@ -1482,7 +1482,7 @@ export class GiftCardModel {
     return data
   }
 
-  static async oldest(): Promise<GiftCardType | undefined> {
+  static async oldest(): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 
     const model = await DB.instance.selectFrom('gift_cards')
@@ -1627,8 +1627,8 @@ export class GiftCardModel {
     return instance
   }
 
-  async last(): Promise<GiftCardType | undefined> {
-    let model: GiftCardModel | undefined
+  async last(): Promise<GiftCardModel | undefined> {
+    let model: GiftCardJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1647,7 +1647,7 @@ export class GiftCardModel {
     return data
   }
 
-  static async last(): Promise<GiftCardType | undefined> {
+  static async last(): Promise<GiftCardModel | undefined> {
     const model = await DB.instance.selectFrom('gift_cards').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

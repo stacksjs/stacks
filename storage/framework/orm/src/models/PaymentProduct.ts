@@ -119,7 +119,7 @@ export class PaymentProductModel {
     }
   }
 
-  async mapCustomSetters(model: PaymentProductJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewPaymentProduct): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -410,7 +410,7 @@ export class PaymentProductModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: PaymentProductModel) => instance.parseResult(new PaymentProductModel(modelItem)))
+    return models.map((modelItem: PaymentProductJsonResponse) => instance.parseResult(new PaymentProductModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<PaymentProductModel[]> {
@@ -614,7 +614,7 @@ export class PaymentProductModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: PaymentProductModel) => {
+    const data = await Promise.all(models.map(async (model: PaymentProductJsonResponse) => {
       return new PaymentProductModel(model)
     }))
 
@@ -1294,7 +1294,7 @@ export class PaymentProductModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<PaymentProductType | undefined> {
+  static async latest(): Promise<PaymentProductModel | undefined> {
     const instance = new PaymentProductModel(undefined)
 
     const model = await DB.instance.selectFrom('payment_products')
@@ -1312,7 +1312,7 @@ export class PaymentProductModel {
     return data
   }
 
-  static async oldest(): Promise<PaymentProductType | undefined> {
+  static async oldest(): Promise<PaymentProductModel | undefined> {
     const instance = new PaymentProductModel(undefined)
 
     const model = await DB.instance.selectFrom('payment_products')
@@ -1457,8 +1457,8 @@ export class PaymentProductModel {
     return instance
   }
 
-  async last(): Promise<PaymentProductType | undefined> {
-    let model: PaymentProductModel | undefined
+  async last(): Promise<PaymentProductModel | undefined> {
+    let model: PaymentProductJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1477,7 +1477,7 @@ export class PaymentProductModel {
     return data
   }
 
-  static async last(): Promise<PaymentProductType | undefined> {
+  static async last(): Promise<PaymentProductModel | undefined> {
     const model = await DB.instance.selectFrom('payment_products').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

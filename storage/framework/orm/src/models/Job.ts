@@ -115,7 +115,7 @@ export class JobModel {
     }
   }
 
-  async mapCustomSetters(model: JobJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewJob): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -382,7 +382,7 @@ export class JobModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: JobModel) => instance.parseResult(new JobModel(modelItem)))
+    return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
@@ -586,7 +586,7 @@ export class JobModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: JobModel) => {
+    const data = await Promise.all(models.map(async (model: JobJsonResponse) => {
       return new JobModel(model)
     }))
 
@@ -1246,7 +1246,7 @@ export class JobModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<JobType | undefined> {
+  static async latest(): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 
     const model = await DB.instance.selectFrom('jobs')
@@ -1264,7 +1264,7 @@ export class JobModel {
     return data
   }
 
-  static async oldest(): Promise<JobType | undefined> {
+  static async oldest(): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 
     const model = await DB.instance.selectFrom('jobs')
@@ -1409,8 +1409,8 @@ export class JobModel {
     return instance
   }
 
-  async last(): Promise<JobType | undefined> {
-    let model: JobModel | undefined
+  async last(): Promise<JobModel | undefined> {
+    let model: JobJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1429,7 +1429,7 @@ export class JobModel {
     return data
   }
 
-  static async last(): Promise<JobType | undefined> {
+  static async last(): Promise<JobModel | undefined> {
     const model = await DB.instance.selectFrom('jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)

@@ -114,7 +114,7 @@ export class ProjectModel {
     }
   }
 
-  async mapCustomSetters(model: ProjectJsonResponse): Promise<void> {
+  async mapCustomSetters(model: NewProject): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -373,7 +373,7 @@ export class ProjectModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ProjectModel) => instance.parseResult(new ProjectModel(modelItem)))
+    return models.map((modelItem: ProjectJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
@@ -577,7 +577,7 @@ export class ProjectModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ProjectModel) => {
+    const data = await Promise.all(models.map(async (model: ProjectJsonResponse) => {
       return new ProjectModel(model)
     }))
 
@@ -1229,7 +1229,7 @@ export class ProjectModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ProjectType | undefined> {
+  static async latest(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 
     const model = await DB.instance.selectFrom('projects')
@@ -1247,7 +1247,7 @@ export class ProjectModel {
     return data
   }
 
-  static async oldest(): Promise<ProjectType | undefined> {
+  static async oldest(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 
     const model = await DB.instance.selectFrom('projects')
@@ -1392,8 +1392,8 @@ export class ProjectModel {
     return instance
   }
 
-  async last(): Promise<ProjectType | undefined> {
-    let model: ProjectModel | undefined
+  async last(): Promise<ProjectModel | undefined> {
+    let model: ProjectJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1412,7 +1412,7 @@ export class ProjectModel {
     return data
   }
 
-  static async last(): Promise<ProjectType | undefined> {
+  static async last(): Promise<ProjectModel | undefined> {
     const model = await DB.instance.selectFrom('projects').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
