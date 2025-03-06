@@ -729,14 +729,14 @@ const paginationRange = computed(() => {
     </div>
 
     <!-- Pagination -->
-    <div class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-blue-gray-800 px-4 py-3 sm:px-6">
+    <div class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 dark:bg-blue-gray-800 px-4 py-3 sm:px-6">
       <div class="flex flex-1 justify-between sm:hidden">
         <button
           @click="currentPage > 1 ? currentPage-- : null"
           :disabled="currentPage === 1"
           :class="[
             currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-            'relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200'
+            'relative inline-flex items-center rounded-md border border-gray-300 dark:border-gray-600 dark:bg-blue-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200'
           ]"
         >
           Previous
@@ -773,7 +773,7 @@ const paginationRange = computed(() => {
               :class="{ 'cursor-not-allowed opacity-50': currentPage === 1 }"
             >
               <span class="sr-only">Previous</span>
-              <div class="i-hugeicons-arrow-left h-5 w-5"></div>
+              <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
             </button>
             <template v-for="page in paginationRange" :key="page">
               <button
@@ -801,7 +801,7 @@ const paginationRange = computed(() => {
               :class="{ 'cursor-not-allowed opacity-50': currentPage === totalPages }"
             >
               <span class="sr-only">Next</span>
-              <div class="i-hugeicons-arrow-right h-5 w-5"></div>
+              <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
             </button>
           </nav>
         </div>
