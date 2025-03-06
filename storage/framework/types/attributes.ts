@@ -6,7 +6,7 @@ export interface Attributes {
   email: string
   token: string
   plain_text_token: string
-  abilities: string[]
+  abilities: string | string[]
   last_used_at: Date | string
   expires_at: Date | string
   revoked_at: Date | string
@@ -56,7 +56,7 @@ export interface Attributes {
   is_default: boolean
   provider_id: string
   amount: number
-  method: string[]
+  method: string | string[]
   status_code: number
   duration_ms: number
   memory_usage: number

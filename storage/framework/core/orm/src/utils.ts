@@ -1262,7 +1262,7 @@ export async function generateKyselyTypes(): Promise<void> {
 }
 
 export function mapEntity(attribute: ModelElement): string | undefined {
-  const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+  const entity = attribute.fieldArray?.entity === 'enum' ? 'string | string[]' : attribute.fieldArray?.entity
 
   const mapEntity = entity === 'date' ? 'Date | string' : entity
 

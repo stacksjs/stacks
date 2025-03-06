@@ -21,7 +21,7 @@ export interface PersonalAccessTokensTable {
   name?: string
   token?: string
   plain_text_token?: string
-  abilities?: string[]
+  abilities?: string | string[]
   last_used_at?: Date | string
   expires_at?: Date | string
   revoked_at?: Date | string
@@ -175,7 +175,7 @@ export class AccessTokenModel {
     return this.attributes.plain_text_token
   }
 
-  get abilities(): string[] | undefined {
+  get abilities(): string | string[] | undefined {
     return this.attributes.abilities
   }
 
@@ -223,7 +223,7 @@ export class AccessTokenModel {
     this.attributes.plain_text_token = value
   }
 
-  set abilities(value: string[]) {
+  set abilities(value: string | string[]) {
     this.attributes.abilities = value
   }
 
@@ -1888,7 +1888,7 @@ export async function wherePlainTextToken(value: string): Promise<AccessTokenMod
   return results.map((modelItem: AccessTokenModel) => new AccessTokenModel(modelItem))
 }
 
-export async function whereAbilities(value: string[]): Promise<AccessTokenModel[]> {
+export async function whereAbilities(value: string | string[]): Promise<AccessTokenModel[]> {
   const query = DB.instance.selectFrom('personal_access_tokens').where('abilities', '=', value)
   const results = await query.execute()
 

@@ -22,7 +22,7 @@ export interface CustomersTable {
   phone?: string
   total_spent?: number
   last_order?: string
-  status?: string[]
+  status?: string | string[]
   avatar?: string
   uuid?: string
 
@@ -188,7 +188,7 @@ export class CustomerModel {
     return this.attributes.last_order
   }
 
-  get status(): string[] | undefined {
+  get status(): string | string[] | undefined {
     return this.attributes.status
   }
 
@@ -228,7 +228,7 @@ export class CustomerModel {
     this.attributes.last_order = value
   }
 
-  set status(value: string[]) {
+  set status(value: string | string[]) {
     this.attributes.status = value
   }
 
@@ -1881,7 +1881,7 @@ export async function whereLastOrder(value: string): Promise<CustomerModel[]> {
   return results.map((modelItem: CustomerModel) => new CustomerModel(modelItem))
 }
 
-export async function whereStatus(value: string[]): Promise<CustomerModel[]> {
+export async function whereStatus(value: string | string[]): Promise<CustomerModel[]> {
   const query = DB.instance.selectFrom('customers').where('status', '=', value)
   const results = await query.execute()
 

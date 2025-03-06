@@ -41,8 +41,6 @@ export async function fetchPaginated(options: FetchCustomersOptions = {}): Promi
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
-  const sortBy = options.sortBy || 'created_at'
-  const sortOrder = options.sortOrder || 'desc'
 
   // Start building the query
   let query = db.selectFrom('customers')
@@ -55,21 +53,12 @@ export async function fetchPaginated(options: FetchCustomersOptions = {}): Promi
     countQuery = countQuery.where('name', 'like', searchTerm)
   }
 
-  // Basic status filter
-  if (options.status && options.status !== 'all') {
-    query = query.where('status', '=', options.status)
-    countQuery = countQuery.where('status', '=', options.status)
-  }
-
   // Get total count
   const countResult = await countQuery
     .select(eb => eb.fn.count('id').as('total'))
     .executeTakeFirst()
 
   const total = Number(countResult?.total || 0)
-
-  // Basic sorting
-  query = query.orderBy(sortBy, sortOrder)
 
   // Basic pagination
   const customers = await query

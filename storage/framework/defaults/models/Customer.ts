@@ -13,7 +13,7 @@ export default {
     useSearch: {
       displayable: ['id', 'name', 'email', 'phone', 'status'],
       searchable: ['name', 'email', 'phone'],
-      sortable: ['name', 'orders', 'totalSpent', 'lastOrder', 'created_at', 'updated_at'],
+      sortable: ['name', 'totalSpent', 'lastOrder', 'created_at', 'updated_at'],
       filterable: ['status'],
     },
 

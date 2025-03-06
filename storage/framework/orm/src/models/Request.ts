@@ -7,7 +7,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface RequestsTable {
   id?: number
-  method?: string[]
+  method?: string | string[]
   path?: string
   status_code?: number
   duration_ms?: number
@@ -136,7 +136,7 @@ export class RequestModel {
     return this.attributes.id
   }
 
-  get method(): string[] | undefined {
+  get method(): string | string[] | undefined {
     return this.attributes.method
   }
 
@@ -180,7 +180,7 @@ export class RequestModel {
     return this.attributes.deleted_at
   }
 
-  set method(value: string[]) {
+  set method(value: string | string[]) {
     this.attributes.method = value
   }
 
@@ -1812,7 +1812,7 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereMethod(value: string[]): Promise<RequestModel[]> {
+export async function whereMethod(value: string | string[]): Promise<RequestModel[]> {
   const query = DB.instance.selectFrom('requests').where('method', '=', value)
   const results = await query.execute()
 
