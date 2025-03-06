@@ -1071,529 +1071,496 @@ function getRoleBadgeClass(role: string): string {
       </div>
     </div>
 
-    <div>
-      <!-- Filters and search -->
-      <div class="px-4 lg:px-8 sm:px-6">
-        <div>
-          <div class="py-5">
-            <div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-              <div class="ml-4 mt-2">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Authors</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  A list of all authors in your blog system including their name, email, role, and post count.
-                </p>
-              </div>
-              <div class="ml-4 mt-2 flex-shrink-0">
-                <button
-                  @click="openNewAuthorModal"
-                  type="button"
-                  class="relative inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                >
-                  <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-                  </svg>
-                  Add author
-                </button>
-              </div>
-            </div>
-          </div>
+    <!-- Authors Table -->
+    <div class="px-4 pt-12 lg:px-8 sm:px-6">
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            Authors
+          </h1>
+          <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            A list of all your blog authors.
+          </p>
+        </div>
 
-          <div>
-            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <!-- Search -->
-              <div>
-                <label for="search" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Search</label>
-                <div class="relative mt-2 rounded-md shadow-sm">
-                  <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                    <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                      <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    v-model="searchQuery"
-                    id="search"
-                    class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white dark:bg-blue-gray-600"
-                    placeholder="Search authors..."
-                  />
-                </div>
-              </div>
-
-              <!-- Role filter -->
-              <div>
-                <label for="role-filter" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Role</label>
-                <select
-                  id="role-filter"
-                  v-model="roleFilter"
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white dark:bg-blue-gray-600"
-                >
-                  <option value="all">All Roles</option>
-                  <option value="admin">Admin</option>
-                  <option value="editor">Editor</option>
-                  <option value="contributor">Contributor</option>
-                </select>
-              </div>
-
-              <!-- Sort by -->
-              <div>
-                <label for="sort-by" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Sort by</label>
-                <select
-                  id="sort-by"
-                  v-model="sortBy"
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white dark:bg-blue-gray-600"
-                >
-                  <option value="name">Name</option>
-                  <option value="postCount">Post Count</option>
-                  <option value="role">Role</option>
-                  <option value="createdAt">Date Added</option>
-                </select>
-              </div>
-
-              <!-- Sort order -->
-              <div>
-                <label for="sort-order" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-100">Order</label>
-                <select
-                  id="sort-order"
-                  v-model="sortOrder"
-                  class="mt-2 block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6 bg-white dark:bg-blue-gray-600"
-                >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </select>
-              </div>
-            </div>
-          </div>
+        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+          <button
+            type="button"
+            @click="openNewAuthorModal"
+            class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline">
+            Add Author
+          </button>
         </div>
       </div>
 
-      <!-- Authors Table -->
-      <div class="px-4 pt-12 lg:px-8 sm:px-6">
-        <div class="mt-8 flow-root">
-          <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-            <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg w-full">
-                <table class="min-w-full divide-y divide-gray-300 w-full">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
-                        ID
-                      </th>
+      <!-- Search and filters -->
+      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="relative max-w-md w-full">
+          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <input
+            v-model="searchQuery"
+            type="search"
+            placeholder="Search authors..."
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+          />
+        </div>
 
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                        Name
-                      </th>
+        <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-3">
+          <select
+            v-model="roleFilter"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="all">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="editor">Editor</option>
+            <option value="contributor">Contributor</option>
+          </select>
 
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
-                        Role
-                      </th>
+          <select
+            v-model="itemsPerPage"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+          >
+            <option :value="5">5 per page</option>
+            <option :value="10">10 per page</option>
+            <option :value="20">20 per page</option>
+            <option :value="50">50 per page</option>
+          </select>
+        </div>
+      </div>
 
-                      <th scope="col" class="px-3 py-3.5 text-right text-sm text-gray-900 font-semibold">
-                        Posts
-                      </th>
+      <!-- Bulk actions -->
+      <div v-if="hasSelectedAuthors" class="mt-4 bg-gray-50 dark:bg-blue-gray-600 p-3 rounded-md flex items-center justify-between">
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+          <span class="font-medium">{{ selectedAuthorIds.length }}</span> author{{ selectedAuthorIds.length > 1 ? 's' : '' }} selected
+        </div>
+        <div class="flex space-x-2">
+          <button
+            @click="confirmDeleteSelected"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm"
+          >
+            <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Delete Selected
+          </button>
+        </div>
+      </div>
 
-                      <th scope="col" class="px-3 py-3.5 text-right text-sm text-gray-900 font-semibold">
-                        Created At
-                      </th>
+      <div class="mt-8 flow-root">
+        <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
+          <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600 authors-table">
+                <thead class="bg-gray-50 dark:bg-blue-gray-600">
+                  <tr>
+                    <th scope="col" class="relative px-3 py-3.5">
+                      <input
+                        type="checkbox"
+                        :checked="selectAll"
+                        @change="toggleSelectAll"
+                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
+                      />
+                    </th>
+                    <th
+                      scope="col"
+                      class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6 cursor-pointer"
+                      @click="sortBy = 'id'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                    >
+                      ID
+                      <span v-if="sortBy === 'id'" class="ml-1">
+                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                      </span>
+                    </th>
 
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                        <span class="sr-only">Edit</span>
-                      </th>
-                    </tr>
-                  </thead>
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      @click="sortBy = 'name'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                    >
+                      Name
+                      <span v-if="sortBy === 'name'" class="ml-1">
+                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                      </span>
+                    </th>
 
-                  <tbody class="bg-white divide-y divide-gray-200">
-                    <tr v-for="author in paginatedAuthors" :key="author.id">
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
-                        {{ author.id }}
-                      </td>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                      Role
+                    </th>
 
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <div class="flex items-center">
-                          <div class="h-10 w-10 flex-shrink-0">
-                            <img
-                              :src="author.avatar || 'https://carefreeagency-eliinova.s3.amazonaws.com/images/avatar/default.svg'"
-                              alt=""
-                              class="h-10 w-10 rounded-full"
-                            >
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      @click="sortBy = 'postCount'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                    >
+                      Posts
+                      <span v-if="sortBy === 'postCount'" class="ml-1">
+                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                      </span>
+                    </th>
+
+                    <th
+                      scope="col"
+                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      @click="sortBy = 'createdAt'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                    >
+                      Created At
+                      <span v-if="sortBy === 'createdAt'" class="ml-1">
+                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                      </span>
+                    </th>
+
+                    <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                  <tr v-for="author in paginatedAuthors" :key="author.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
+                    <td class="relative px-3 py-4">
+                      <input
+                        type="checkbox"
+                        :checked="selectedAuthorIds.includes(author.id)"
+                        @change="toggleAuthorSelection(author.id)"
+                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
+                      />
+                    </td>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                      {{ author.id }}
+                    </td>
+
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                      <div class="flex items-center">
+                        <div class="h-10 w-10 flex-shrink-0">
+                          <img
+                            :src="author.avatar"
+                            alt=""
+                            class="h-10 w-10 rounded-full"
+                          >
+                        </div>
+
+                        <div class="ml-4">
+                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
+                            {{ author.name }}
                           </div>
-
-                          <div class="ml-4">
-                            <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
-                              {{ author.name }}
-                            </div>
-                            <div class="text-sm text-gray-500 dark:text-gray-300 dark:text-gray-400">
-                              {{ author.email }}
-                            </div>
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {{ author.email }}
                           </div>
                         </div>
-                      </td>
+                      </div>
+                    </td>
 
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        <span :class="['role-badge', author.role]">{{ author.role }}</span>
-                      </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                      <span :class="getRoleBadgeClass(author.role)" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
+                        {{ author.role }}
+                      </span>
+                    </td>
 
-                      <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                        {{ author.postCount }}
-                      </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                      {{ author.postCount }}
+                    </td>
 
-                      <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500">
-                        {{ formatDateString(author.createdAt) }}
-                      </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                      {{ formatDateString(author.createdAt) }}
+                    </td>
 
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                        <a @click="openEditModal(author)" href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, {{ author.name }}</span></a>
-                      </td>
-                    </tr>
-                    <!-- Empty state -->
-                    <tr v-if="paginatedAuthors.length === 0">
-                      <td colspan="6" class="py-10 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                          <svg class="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No authors found</h3>
-                          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No authors match your current filters.</p>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <button @click="openEditModal(author)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                        Edit
+                      </button>
+                      <button @click="confirmDeleteAuthor(author)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
 
       <!-- Pagination -->
-      <div class="px-4 py-5 sm:px-6 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between">
-          <div class="flex-1 flex justify-between sm:hidden">
-            <button
-              @click="currentPage > 1 ? currentPage-- : null"
-              :disabled="currentPage === 1"
-              class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-700 hover:bg-gray-50 dark:hover:bg-blue-gray-600 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              @click="currentPage < totalPages ? currentPage++ : null"
-              :disabled="currentPage === totalPages"
-              class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-700 hover:bg-gray-50 dark:hover:bg-blue-gray-600 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-          <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing
-                <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
-                to
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredAuthors.length) }}</span>
-                of
-                <span class="font-medium">{{ filteredAuthors.length }}</span>
-                results
-              </p>
-            </div>
-            <div>
-              <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                <button
-                  @click="currentPage > 1 ? currentPage-- : null"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-600 disabled:opacity-50"
-                >
-                  <span class="sr-only">Previous</span>
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l4.5-4.25a.75.75 0 010-1.08l4.5 4.25a.75.75 0 01-1.06.02z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-                <template v-for="page in totalPages" :key="page">
-                  <button
-                    v-if="page === currentPage"
-                    class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-sm font-medium text-indigo-600 dark:text-indigo-300"
-                  >
-                    {{ page }}
-                  </button>
-                  <button
-                    v-else
-                    @click="currentPage = page"
-                    class="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-blue-gray-600"
-                  >
-                    {{ page }}
-                  </button>
-                </template>
-                <button
-                  @click="currentPage < totalPages ? currentPage++ : null"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-600 disabled:opacity-50"
-                >
-                  <span class="sr-only">Next</span>
-                  <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
-                  </svg>
-                </button>
-              </nav>
-            </div>
-          </div>
+      <div class="mt-6 flex items-center justify-between">
+        <div class="text-sm text-gray-700 dark:text-gray-300">
+          Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredAuthors.length) }}</span> of <span class="font-medium">{{ filteredAuthors.length }}</span> authors
         </div>
-      </div>
-
-      <!-- Bulk actions -->
-      <div v-if="hasSelectedAuthors" class="mt-4 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg shadow-sm">
-        <div class="flex items-center space-x-3">
-          <div class="flex items-center">
-            <svg class="w-4 h-4 fill-current text-blue-500 dark:text-blue-400 shrink-0 mr-2" viewBox="0 0 16 16">
-              <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1zm1-3H7V4h2v5z" />
-            </svg>
-            <span class="text-sm font-medium text-blue-800 dark:text-blue-300">
-              {{ selectedAuthorIds.length }} author{{ selectedAuthorIds.length !== 1 ? 's' : '' }} selected
-            </span>
-          </div>
-          <div class="border-l border-blue-200 dark:border-blue-700 h-6 mx-2"></div>
+        <div class="flex space-x-2">
           <button
-            @click="confirmDeleteSelected"
-            class="btn-sm bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-rose-500 hover:text-rose-600"
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
           >
-            <svg class="w-4 h-4 fill-current shrink-0 mr-1" viewBox="0 0 16 16">
-              <path d="M5 7h2v6H5V7zm4 0h2v6H9V7zm3-6v2h4v2h-1v10c0 .6-.4 1-1 1H2c-.6 0-1-.4-1-1-1-1V5H0V3h4V1c0-.6.4-1 1-1h6c.6 0 1 .4 1 1zM6 2v1h4V2H6zm7 3H3v9h10V5z" />
-            </svg>
-            <span>Delete Selected</span>
+            Previous
+          </button>
+          <div class="flex space-x-1">
+            <button
+              v-for="page in paginationRange"
+              :key="page"
+              @click="currentPage = page"
+              :class="{ 'bg-blue-600 text-white hover:bg-blue-500': currentPage === page, 'bg-white dark:bg-blue-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-blue-gray-500': currentPage !== page }"
+              class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            >
+              {{ page }}
+            </button>
+          </div>
+          <button
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+          >
+            Next
           </button>
         </div>
       </div>
+    </div>
 
-      <!-- New Author Modal -->
-      <div
-        v-if="showNewAuthorModal"
-        class="fixed inset-0 bg-slate-900 bg-opacity-30 z-50 transition-opacity"
-        aria-hidden="true"
-      >
-        <!-- Modal dialog -->
-        <div
-          class="fixed inset-0 z-50 overflow-hidden flex items-center my-4 justify-center px-4 sm:px-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-          <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-          <div
-            class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-headline"
-          >
-            <div>
-              <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-headline">
-                  Add New Author
-                </h3>
-                <div class="mt-4">
-                  <div class="mb-4">
-                    <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                    <input
-                      type="text"
-                      id="name"
-                      v-model="newAuthor.name"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter name"
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                    <input
-                      type="email"
-                      id="email"
-                      v-model="newAuthor.email"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter email"
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
-                    <textarea
-                      id="bio"
-                      v-model="newAuthor.bio"
-                      rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter bio"
-                    ></textarea>
-                  </div>
-                  <div class="mb-4">
-                    <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-                    <select
-                      id="role"
-                      v-model="newAuthor.role"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="editor">Editor</option>
-                      <option value="contributor">Contributor</option>
-                    </select>
-                  </div>
-                </div>
+    <!-- New Author Modal -->
+    <div v-if="showNewAuthorModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeNewAuthorModal"></div>
+
+        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                </svg>
               </div>
-            </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="button"
-                @click="closeNewAuthorModal"
-                class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="createAuthor"
-                :disabled="!newAuthor.name || !newAuthor.email || !newAuthor.role"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Add Author
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Edit Author Modal -->
-      <div
-        v-if="showEditModal"
-        class="fixed inset-0 bg-slate-900 bg-opacity-30 z-50 transition-opacity"
-        aria-hidden="true"
-      >
-        <!-- Modal dialog -->
-        <div
-          class="fixed inset-0 z-50 overflow-hidden flex items-center my-4 justify-center px-4 sm:px-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-          <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-          <div
-            class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-headline"
-          >
-            <div>
-              <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-headline">
-                  Edit Author
-                </h3>
-                <div v-if="authorToEdit" class="mt-4">
-                  <div class="mb-4">
-                    <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-                    <input
-                      type="text"
-                      id="edit-name"
-                      v-model="authorToEdit.name"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter name"
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label for="edit-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-                    <input
-                      type="email"
-                      id="edit-email"
-                      v-model="authorToEdit.email"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter email"
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label for="edit-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
-                    <textarea
-                      id="edit-bio"
-                      v-model="authorToEdit.bio"
-                      rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      placeholder="Enter bio"
-                    ></textarea>
-                  </div>
-                  <div class="mb-4">
-                    <label for="edit-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
-                    <select
-                      id="edit-role"
-                      v-model="authorToEdit.role"
-                      class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    >
-                      <option value="admin">Admin</option>
-                      <option value="editor">Editor</option>
-                      <option value="contributor">Contributor</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="button"
-                @click="closeEditModal"
-                class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="updateAuthor"
-                :disabled="!authorToEdit || !authorToEdit.name || !authorToEdit.email || !authorToEdit.role"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Update
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Delete Confirmation Modal -->
-      <div
-        v-if="showDeleteConfirmation"
-        class="fixed inset-0 bg-slate-900 bg-opacity-30 z-50 transition-opacity"
-        aria-hidden="true"
-      >
-        <!-- Modal dialog -->
-        <div
-          class="fixed inset-0 z-50 overflow-hidden flex items-center my-4 justify-center px-4 sm:px-6"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-          <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-          <div
-            class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-headline"
-          >
-            <div>
-              <div class="mt-3 text-center sm:mt-0 sm:text-left">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-gray-100" id="modal-headline">
-                  Delete Author
-                </h3>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Add New Author</h3>
                 <div class="mt-2">
                   <p class="text-sm text-gray-500 dark:text-gray-400">
-                    Are you sure you want to delete {{ selectedAuthorIds.length > 1 ? 'these authors' : 'this author' }}? This action cannot be undone.
+                    Create a new author account. Authors can create and manage blog content.
                   </p>
                 </div>
               </div>
             </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-              <button
-                type="button"
-                @click="showDeleteConfirmation = false"
-                class="w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                @click="deleteSelectedAuthors"
-                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:col-start-2 sm:text-sm"
-              >
-                Delete
-              </button>
+
+            <div class="mt-6 space-y-4">
+              <div>
+                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  v-model="newAuthor.name"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  placeholder="Enter full name"
+                />
+              </div>
+
+              <div>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  v-model="newAuthor.email"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  placeholder="email@example.com"
+                />
+              </div>
+
+              <div>
+                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                <select
+                  id="role"
+                  v-model="newAuthor.role"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="editor">Editor</option>
+                  <option value="contributor">Contributor</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                <textarea
+                  id="bio"
+                  v-model="newAuthor.bio"
+                  rows="3"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  placeholder="Brief author biography"
+                ></textarea>
+              </div>
             </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button
+              type="button"
+              @click="createAuthor"
+              class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Create
+            </button>
+            <button
+              type="button"
+              @click="closeNewAuthorModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Author Modal -->
+    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
+
+        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Edit Author</h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    Update author information and permissions.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="authorToEdit" class="mt-6 space-y-4">
+              <div>
+                <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <input
+                  type="text"
+                  id="edit-name"
+                  v-model="authorToEdit.name"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label for="edit-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input
+                  type="email"
+                  id="edit-email"
+                  v-model="authorToEdit.email"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                />
+              </div>
+
+              <div>
+                <label for="edit-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                <select
+                  id="edit-role"
+                  v-model="authorToEdit.role"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                >
+                  <option value="admin">Admin</option>
+                  <option value="editor">Editor</option>
+                  <option value="contributor">Contributor</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="edit-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                <textarea
+                  id="edit-bio"
+                  v-model="authorToEdit.bio"
+                  rows="3"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                ></textarea>
+              </div>
+
+              <div>
+                <label for="edit-posts" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Post Count</label>
+                <input
+                  type="number"
+                  id="edit-posts"
+                  v-model="authorToEdit.postCount"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button
+              type="button"
+              @click="updateAuthor"
+              class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              @click="closeEditModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteConfirmation" class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+
+        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
+                <svg class="h-6 w-6 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Delete Confirmation</h3>
+                <div class="mt-2">
+                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                    {{ selectedAuthorIds.length > 1
+                      ? `Are you sure you want to delete ${selectedAuthorIds.length} authors? This action cannot be undone.`
+                      : authorToDelete
+                        ? `Are you sure you want to delete ${authorToDelete.name}? This action cannot be undone.`
+                        : 'Are you sure you want to delete this author? This action cannot be undone.' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button
+              type="button"
+              @click="deleteSelectedAuthors"
+              class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Delete
+            </button>
+            <button
+              type="button"
+              @click="closeDeleteModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            >
+              Cancel
+            </button>
           </div>
         </div>
       </div>

@@ -660,7 +660,7 @@ const previewTags = computed(() => {
                                 class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30 dark:hover:bg-blue-900/50"
                                 :class="{ 'bg-blue-100 dark:bg-blue-900/50': selectedTag === tag }"
                               >
-                                <div class="i-hugeicons-tag h-3 w-3 mr-1"></div>
+                                <div class="i-hugeicons-tag-01 h-3 w-3 mr-1"></div>
                                 {{ tag }}
                               </button>
                             </div>
@@ -689,14 +689,14 @@ const previewTags = computed(() => {
                       </td>
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <div class="flex items-center justify-end space-x-2">
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                             <div class="i-hugeicons-view h-5 w-5"></div>
                           </button>
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-license-draft h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                           </button>
-                          <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                            <div class="i-hugeicons-trash-bin h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                            <div class="i-hugeicons-waste h-5 w-5"></div>
                           </button>
                         </div>
                       </td>
