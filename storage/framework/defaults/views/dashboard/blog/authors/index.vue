@@ -1071,33 +1071,11 @@ function getRoleBadgeClass(role: string): string {
       </div>
     </div>
 
-    <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-      <!-- Page header -->
-      <div class="sm:flex sm:justify-between sm:items-center mb-8">
-        <!-- Left: Title -->
-        <div class="mb-4 sm:mb-0">
-          <h1 class="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">Blog Authors</h1>
-        </div>
-
-        <!-- Right: Actions -->
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-          <!-- Add author button -->
-          <button
-            @click="openNewAuthorModal"
-            class="btn bg-indigo-500 hover:bg-indigo-600 text-white"
-          >
-            <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-              <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1h6v6c0 .6.4 1 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-            </svg>
-            <span class="hidden xs:block ml-2">Add Author</span>
-          </button>
-        </div>
-      </div>
-
+    <div>
       <!-- Filters and search -->
       <div class="px-4 lg:px-8 sm:px-6">
-        <div class="bg-white dark:bg-blue-gray-700 shadow rounded-lg">
-          <div class="border-b border-gray-200 dark:border-gray-700 px-4 py-5 sm:px-6">
+        <div>
+          <div class="py-5">
             <div class="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
               <div class="ml-4 mt-2">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Authors</h3>
@@ -1120,7 +1098,7 @@ function getRoleBadgeClass(role: string): string {
             </div>
           </div>
 
-          <div class="px-4 py-5 sm:p-6">
+          <div>
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <!-- Search -->
               <div>
@@ -1190,19 +1168,6 @@ function getRoleBadgeClass(role: string): string {
 
       <!-- Authors Table -->
       <div class="px-4 pt-12 lg:px-8 sm:px-6">
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="text-base text-gray-900 font-semibold leading-6">
-              Authors
-            </h1>
-            <p class="mt-2 text-sm text-gray-700">
-              A list of all your blog authors.
-            </p>
-          </div>
-
-          <!-- Removing the Add Author button -->
-        </div>
-
         <div class="mt-8 flow-root">
           <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
             <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
