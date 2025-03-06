@@ -402,7 +402,7 @@ const statsCards = [
     value: '71,897',
     change: '+122',
     changeType: 'increase',
-    icon: 'i-hugeicons-arrow-trending-up',
+    icon: 'i-hugeicons-arrow-up-01',
   },
   {
     title: 'Average Response Time',
