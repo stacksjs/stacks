@@ -785,7 +785,7 @@ const getCampaignTypeIcon = (type: string): string => {
     case 'Social Media':
       return 'i-hugeicons-share-01'
     case 'Content':
-      return 'i-hugeicons-document-text'
+      return 'i-hugeicons-document-validation'
     case 'PPC':
       return 'i-hugeicons-cursor-click'
     case 'SEO':

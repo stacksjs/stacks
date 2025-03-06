@@ -45,6 +45,7 @@ const calculateTransform = (section: string) => {
 // State for each section's collapse status
 const sections = useLocalStorage<Sections>('sidebar-sections', {
   library: true,
+  blog: true,
   app: true,
   data: true,
   commerce: true,
@@ -62,7 +63,7 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'app', 'data', 'commerce', 'marketing', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'blog', 'app', 'data', 'commerce', 'marketing', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -153,6 +154,26 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/functions', icon: 'i-hugeicons-function-square', text: 'Functions' },
       { to: '/releases', icon: 'i-hugeicons-right-to-left-list-number', text: 'Releases' },
       { to: '/packages', icon: 'i-hugeicons-package', text: 'Packages' }
+    ]
+  },
+  blog: {
+    items: [
+      { to: '/blog', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/blog/posts', icon: 'i-hugeicons-document-validation', text: 'Posts' },
+      {
+        to: '#blog-content',
+        icon: 'i-hugeicons-folder-01',
+        text: 'Content',
+        children: [
+          { to: '/blog/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+          { to: '/blog/tags', icon: 'i-hugeicons-tag', text: 'Tags' },
+          { to: '/blog/media', icon: 'i-hugeicons-image-01', text: 'Media Library' }
+        ]
+      },
+      { to: '/blog/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
+      { to: '/blog/authors', icon: 'i-hugeicons-user-edit-01', text: 'Authors' },
+      { to: '/blog/seo', icon: 'i-hugeicons-seo', text: 'SEO' },
+      { to: '/blog/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
     ]
   },
   app: {
@@ -412,7 +433,7 @@ const isChildRouteActive = (item: SidebarItem) => {
 
                   <div
                     :class="[
-                      'i-hugeicons-arrow-down-02-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
+                      'i-hugeicons-arrow-down-01 h-4 w-4 text-gray-300 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700',
                       { 'transform -rotate-90': !sections[sectionKey] }
                     ]"
                   />
@@ -449,7 +470,7 @@ const isChildRouteActive = (item: SidebarItem) => {
                           <span class="truncate" :class="{ 'ml-[4px]': item.icon }">{{ item.text }}</span>
                           <div
                             v-if="item.children"
-                            class="i-hugeicons-chevron-right h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
+                            class="i-hugeicons-arrow-right-01 h-4 w-4 text-gray-300 transition-transform duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700"
                             :class="{ 'transform rotate-90': expandedItems[item.to] }"
                           />
                         </div>

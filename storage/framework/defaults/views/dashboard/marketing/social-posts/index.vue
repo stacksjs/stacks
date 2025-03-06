@@ -723,7 +723,7 @@ function truncateText(text: string, maxLength: number): string {
         <!-- Detailed view -->
         <div v-if="viewMode === 'detailed'" class="mt-6">
           <div v-if="paginatedPosts.length === 0" class="py-12 text-center">
-            <div class="i-hugeicons-document-text mx-auto h-12 w-12 text-gray-400"></div>
+            <div class="i-hugeicons-document-validation mx-auto h-12 w-12 text-gray-400"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No posts found</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
