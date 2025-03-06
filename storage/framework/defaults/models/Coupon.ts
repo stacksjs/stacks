@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -45,7 +44,7 @@ export default {
           maxLength: 'Code must have a maximum of 50 characters',
         },
       },
-      factory: (faker: Faker) => faker.string.alphanumeric(8).toUpperCase(),
+      factory: faker => faker.string.alphanumeric(8).toUpperCase(),
     },
 
     description: {
@@ -55,7 +54,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.commerce.productDescription(),
+      factory: faker => faker.commerce.productDescription(),
     },
 
     discount_type: {
@@ -65,7 +64,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement(['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_ITEM']),
+      factory: faker => faker.helpers.arrayElement(['PERCENTAGE', 'FIXED_AMOUNT', 'FREE_ITEM']),
     },
 
     discount_value: {
@@ -75,7 +74,7 @@ export default {
       validation: {
         rule: schema.number().min(0.01),
       },
-      factory: (faker: Faker) => faker.number.float({ min: 5, max: 50 }),
+      factory: faker => faker.number.float({ min: 5, max: 50 }),
     },
 
     min_order_amount: {
@@ -85,7 +84,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => Number.parseFloat(faker.commerce.price({ min: 0, max: 50, dec: 2 })),
+      factory: faker => Number.parseFloat(faker.commerce.price({ min: 0, max: 50, dec: 2 })),
     },
 
     max_discount_amount: {
@@ -95,7 +94,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => Number.parseFloat(faker.commerce.price({ min: 5, max: 100, dec: 2 })), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => Number.parseFloat(faker.commerce.price({ min: 5, max: 100, dec: 2 })), { probability: 0.7 }),
     },
 
     free_product_id: {
@@ -105,7 +104,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.3 }),
+      factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.3 }),
     },
 
     is_active: {
@@ -115,7 +114,7 @@ export default {
       validation: {
         rule: schema.boolean(),
       },
-      factory: (faker: Faker) => faker.datatype.boolean({ probability: 0.8 }),
+      factory: faker => faker.datatype.boolean({ probability: 0.8 }),
     },
 
     usage_limit: {
@@ -125,7 +124,7 @@ export default {
       validation: {
         rule: schema.number().min(1),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 100 }), { probability: 0.6 }),
+      factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 100 }), { probability: 0.6 }),
     },
 
     usage_count: {
@@ -135,7 +134,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => faker.number.int({ min: 0, max: 50 }),
+      factory: faker => faker.number.int({ min: 0, max: 50 }),
     },
 
     start_date: {
@@ -145,7 +144,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.date.recent().toISOString(),
+      factory: faker => faker.date.recent().toISOString(),
     },
 
     end_date: {
@@ -155,7 +154,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.date.future().toISOString(),
+      factory: faker => faker.date.future().toISOString(),
     },
 
     applicable_products: {
@@ -165,7 +164,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => {
+      factory: (faker) => {
         // Generate product IDs array and stringify
         const count = faker.number.int({ min: 0, max: 5 })
         const productIds = Array.from({ length: count }, () => faker.string.uuid())
@@ -180,7 +179,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => {
+      factory: (faker) => {
         // Generate category IDs array and stringify
         const count = faker.number.int({ min: 0, max: 3 })
         const categoryIds = Array.from({ length: count }, () => faker.string.uuid())

@@ -124,3 +124,41 @@ export interface OrderTotals {
   tax_amount: number
   total_amount: number
 }
+
+export interface CouponStats {
+  /** Total number of coupons in the system */
+  total: number
+
+  /** Number of currently active coupons */
+  active: number
+
+  /** Distribution of coupons by discount type */
+  by_type: DiscountTypeCount[]
+
+  /** List of most frequently used coupons */
+  most_used: {
+    id: string
+    code: string
+    discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
+    discount_value: number
+    usage_count: number
+  }[]
+
+  /** List of upcoming coupons that will be active soon */
+  upcoming: {
+    id: string
+    code: string
+    discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
+    discount_value: number
+    start_date: string
+    end_date: string
+  }[]
+}
+
+/**
+ * Represents statistics for a discount type
+ */
+export interface DiscountTypeCount {
+  discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
+  count: number
+}
