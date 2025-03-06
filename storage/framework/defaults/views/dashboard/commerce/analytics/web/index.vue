@@ -199,8 +199,8 @@
           </div>
         </div>
 
-        <!-- Device Types and Browsers -->
-        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Device Types, Browsers, and Countries -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Device Types -->
           <div>
             <div class="mb-4">
@@ -290,6 +290,51 @@
               </a>
             </div>
           </div>
+
+          <!-- Countries -->
+          <div>
+            <div class="mb-4">
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">Countries</h3>
+            </div>
+
+            <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+                  <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      Countries
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      Visitors
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+                  <tr v-for="(country, index) in countriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="{ width: country.percentage + '%' }"></div>
+                      <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ formatNumber(country.visitors) }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ country.percentage }}%</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="mt-2 flex justify-end">
+              <a href="/dashboard/commerce/analytics/web/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                View all countries
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -343,6 +388,13 @@ interface BrowserData {
   name: string
   visitors: number
   percentage: number
+}
+
+interface CountryData {
+  name: string
+  visitors: number
+  percentage: number
+  flag: string
 }
 
 // Date range options
@@ -517,6 +569,27 @@ const browserData = ref<BrowserData[]>([
   { name: 'Samsung Internet', visitors: 524, percentage: 4 },
   { name: 'Opera', visitors: 124, percentage: 1 }
 ])
+
+// Countries data with flag emojis
+const countriesData = ref<CountryData[]>([
+  { name: 'United States of America', visitors: 4768, flag: '🇺🇸', percentage: 0 },
+  { name: 'United Kingdom', visitors: 1587, flag: '🇬🇧', percentage: 0 },
+  { name: 'Germany', visitors: 1240, flag: '🇩🇪', percentage: 0 },
+  { name: 'Canada', visitors: 983, flag: '🇨🇦', percentage: 0 },
+  { name: 'France', visitors: 876, flag: '🇫🇷', percentage: 0 },
+  { name: 'Australia', visitors: 765, flag: '🇦🇺', percentage: 0 },
+  { name: 'Japan', visitors: 654, flag: '🇯🇵', percentage: 0 },
+  { name: 'India', visitors: 583, flag: '🇮🇳', percentage: 0 },
+  { name: 'Brazil', visitors: 432, flag: '🇧🇷', percentage: 0 },
+  { name: 'Mexico', visitors: 321, flag: '🇲🇽', percentage: 0 }
+])
+
+// Calculate percentages for countries based on visitors
+const totalCountryVisitors = computed(() => countriesData.value.reduce((sum, country) => sum + country.visitors, 0))
+// Update percentages
+countriesData.value.forEach(country => {
+  country.percentage = Math.round((country.visitors / totalCountryVisitors.value) * 100)
+})
 
 // Format numbers with commas
 function formatNumber(number: number): string {
