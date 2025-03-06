@@ -135,7 +135,7 @@ export async function generateModelString(
       }`
 
     instanceSoftDeleteStatementsUpdateFrom += `
-        const instance = new ${modelName}Model(null)
+        const instance = new ${modelName}Model(undefined)
   
         if (instance.softDeletes) {
           return await DB.instance.updateTable('${tableName}')
@@ -159,7 +159,7 @@ export async function generateModelString(
 
   if (typeof observer === 'boolean') {
     if (observer) {
-      removeInstanceStatment += `const instance = new ${modelName}Model(null)`
+      removeInstanceStatment += `const instance = new ${modelName}Model(undefined)`
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model)`
       mittUpdateStatement += `if (model)\n dispatch('${formattedModelName}:updated', model)`
       mittDeleteStatement += `if (model)\n dispatch('${formattedModelName}:deleted', model)`
@@ -170,7 +170,7 @@ export async function generateModelString(
   }
 
   if (Array.isArray(observer)) {
-    removeInstanceStatment += `const instance = new ${modelName}Model(null)`
+    removeInstanceStatment += `const instance = new ${modelName}Model(undefined)`
     // Iterate through the array and append statements based on its contents
     if (observer.includes('create')) {
       mittCreateStatement += `if (model)\n dispatch('${formattedModelName}:created', model);`
@@ -799,7 +799,7 @@ export async function generateModelString(
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.where('${attribute.field}', '=', value)
   
@@ -962,7 +962,7 @@ export async function generateModelString(
         private hasSaved: boolean
         private customColumns: Record<string, unknown> = {}
        
-        constructor(${formattedModelName}: ${modelName}JsonResponse | null) {
+        constructor(${formattedModelName}: ${modelName}JsonResponse | undefined) {
           if (${formattedModelName}) {
 
             this.attributes = { ...${formattedModelName} }
@@ -1084,7 +1084,7 @@ export async function generateModelString(
         }
 
         static select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           // Initialize a query with the table name and selected fields
           instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -1116,7 +1116,7 @@ export async function generateModelString(
 
         // Method to find a ${modelName} by ID
         static async find(id: number): Promise<${modelName}Model | undefined> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyFind(id)
         }
@@ -1176,13 +1176,13 @@ export async function generateModelString(
         }
 
         static async firstOrFail(): Promise<${modelName}Model | undefined> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyFirstOrFail()
         }
   
         static async all(): Promise<${modelName}Model[]> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const models = await DB.instance.selectFrom('${tableName}').selectAll().execute()
 
@@ -1218,7 +1218,7 @@ export async function generateModelString(
         }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
           
           return await instance.applyFindOrFail(id)
         }
@@ -1226,7 +1226,7 @@ export async function generateModelString(
         async applyFindMany(ids: number[]): Promise<${modelName}Model[]> {
           let query = DB.instance.selectFrom('${tableName}').where('id', 'in', ids)
   
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           ${instanceSoftDeleteStatements}
   
@@ -1241,7 +1241,7 @@ export async function generateModelString(
         }
   
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyFindMany(ids)
         }
@@ -1257,7 +1257,7 @@ export async function generateModelString(
         }
 
         static skip(count: number): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -1295,7 +1295,7 @@ export async function generateModelString(
         }
 
         static async chunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           await instance.applyChunk(size, callback)
         }
@@ -1307,7 +1307,7 @@ export async function generateModelString(
         }
 
         static take(count: number): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -1315,7 +1315,7 @@ export async function generateModelString(
         }
 
         static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
-         const instance = new ${modelName}Model(null)
+         const instance = new ${modelName}Model(undefined)
 
           if (instance.hasSelect) {
             const model = await instance.selectFromQuery.execute()
@@ -1339,7 +1339,7 @@ export async function generateModelString(
         }
 
         static async count(): Promise<number> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const result = await instance.selectFromQuery
             .select(sql\`COUNT(*) as count\`)
@@ -1357,7 +1357,7 @@ export async function generateModelString(
         }
         
         static async max(field: keyof ${modelName}Model): Promise<number> {
-         const instance = new ${modelName}Model(null)
+         const instance = new ${modelName}Model(undefined)
 
           const result = await instance.selectFromQuery
             .select(sql\`MAX(\${sql.raw(field as string)}) as max \`)
@@ -1375,7 +1375,7 @@ export async function generateModelString(
         }
 
         static async min(field: keyof ${modelName}Model): Promise<number> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const result = await instance.selectFromQuery
             .select(sql\`MIN(\${sql.raw(field as string)}) as min \`)
@@ -1393,7 +1393,7 @@ export async function generateModelString(
         }
 
         static async avg(field: keyof ${modelName}Model): Promise<number> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const result = await instance.selectFromQuery
             .select(sql\`AVG(\${sql.raw(field as string)}) as avg \`)
@@ -1411,7 +1411,7 @@ export async function generateModelString(
         }
 
         static async sum(field: keyof ${modelName}Model): Promise<number> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const result = await instance.selectFromQuery
             .select(sql\`SUM(\${sql.raw(field as string)}) as sum \`)
@@ -1452,7 +1452,7 @@ export async function generateModelString(
         }
 
         static async get(): Promise<${modelName}Model[]> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyGet()
         }
@@ -1470,7 +1470,7 @@ export async function generateModelString(
         }
 
         static has(relation: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
             exists(
@@ -1484,7 +1484,7 @@ export async function generateModelString(
         }
 
         static whereExists(callback: (qb: any) => any): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) => 
             exists(callback({ exists, selectFrom }))
@@ -1564,7 +1564,7 @@ export async function generateModelString(
           relation: string,
           callback: (query: SubqueryBuilder<keyof ${modelName}Model>) => void
         ): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
           
           return instance.applyWhereHas(relation, callback)
         }
@@ -1588,7 +1588,7 @@ export async function generateModelString(
         }
 
         static doesntHave(relation: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return instance.applyDoesntHave(relation)
         }
@@ -1657,7 +1657,7 @@ export async function generateModelString(
           relation: string,
           callback: (query: SubqueryBuilder<${formattedTableName}Table>) => void
         ): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
           
           return instance.applyWhereDoesntHave(relation, callback)
         }
@@ -1698,7 +1698,7 @@ export async function generateModelString(
   
         // Method to get all ${tableName}
         static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<${modelName}Response> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyPaginate(options)
         }
@@ -1730,13 +1730,13 @@ export async function generateModelString(
         }
   
         static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return await instance.applyCreate(new${modelName})
         }
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const valuesFiltered = new${modelName}.map((new${modelName}: New${modelName}) => {
             const filteredValues = Object.fromEntries(
@@ -1803,7 +1803,7 @@ export async function generateModelString(
         }
 
         static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return instance.applyWhere<V>(column, ...args)
         }
@@ -1815,7 +1815,7 @@ export async function generateModelString(
         }
 
         static whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1827,7 +1827,7 @@ export async function generateModelString(
           const operator = value === undefined ? '=' : operatorOrValue
           const actualValue = value === undefined ? operatorOrValue : value
 
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
           instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
           
           return instance
@@ -1838,7 +1838,7 @@ export async function generateModelString(
         }
 
         static whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return instance.applyWhereRef(column, ...args)
         }
@@ -1850,7 +1850,7 @@ export async function generateModelString(
         }
 
         static whereRaw(sqlStatement: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.where(sql\`\${sqlStatement}\`)
 
@@ -1884,7 +1884,7 @@ export async function generateModelString(
         }
 
         static orWhere(...conditions: [string, any][]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return instance.applyOrWhere(...conditions)
         }
@@ -1900,7 +1900,7 @@ export async function generateModelString(
           condition: boolean,
           callback: (query: ${modelName}Model) => ${modelName}Model,
         ): ${modelName}Model {
-          let instance = new ${modelName}Model(null)
+          let instance = new ${modelName}Model(undefined)
   
           if (condition)
             instance = callback(instance)
@@ -1925,7 +1925,7 @@ export async function generateModelString(
         }
   
         static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
             eb(column, '=', '').or(column, 'is not', null)
@@ -1959,7 +1959,7 @@ export async function generateModelString(
         }
   
         static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
             eb(column, '=', '').or(column, 'is', null)
@@ -1993,7 +1993,7 @@ export async function generateModelString(
         }
   
         static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           return instance.applyWhereIn<V>(column, values)
         }
@@ -2017,7 +2017,7 @@ export async function generateModelString(
         }
 
         static whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           return instance.applyWhereBetween<V>(column, range)
         }
@@ -2037,7 +2037,7 @@ export async function generateModelString(
         }
           
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           return instance.applyWhereLike(column, value)
         }
@@ -2057,7 +2057,7 @@ export async function generateModelString(
         }
   
         static whereNotIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           return instance.applyWhereNotIn<V>(column, values)
         }
@@ -2076,7 +2076,7 @@ export async function generateModelString(
         }
 
         static async latest(): Promise<${modelName}Type | undefined> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
@@ -2094,7 +2094,7 @@ export async function generateModelString(
         }
 
         static async oldest(): Promise<${modelName}Type | undefined> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
@@ -2115,7 +2115,7 @@ export async function generateModelString(
           condition: Partial<${modelName}Type>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
@@ -2146,7 +2146,7 @@ export async function generateModelString(
           condition: Partial<${modelName}Type>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           const key = Object.keys(condition)[0] as keyof ${modelName}Type
   
@@ -2228,7 +2228,7 @@ export async function generateModelString(
         }
   
         static with(relations: string[]): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
     
           instance.withRelations = relations
             
@@ -2273,7 +2273,7 @@ export async function generateModelString(
         }
   
         static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
   
@@ -2287,7 +2287,7 @@ export async function generateModelString(
         }
   
         static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
   
@@ -2301,7 +2301,7 @@ export async function generateModelString(
         }
 
         static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
   
@@ -2315,7 +2315,7 @@ export async function generateModelString(
         }
         
         static inRandomOrder(): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
 
           instance.selectFromQuery = instance.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
 
@@ -2329,7 +2329,7 @@ export async function generateModelString(
         }
 
         static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
   
@@ -2343,7 +2343,7 @@ export async function generateModelString(
         }
   
         static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
   
@@ -2474,7 +2474,7 @@ export async function generateModelString(
         }
   
         static distinct(column: keyof ${modelName}Type): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
   
@@ -2490,7 +2490,7 @@ export async function generateModelString(
         }
   
         static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
   

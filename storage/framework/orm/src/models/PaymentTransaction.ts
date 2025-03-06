@@ -75,7 +75,7 @@ export class PaymentTransactionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymenttransaction: PaymentTransactionJsonResponse | null) {
+  constructor(paymenttransaction: PaymentTransactionJsonResponse | undefined) {
     if (paymenttransaction) {
       this.attributes = { ...paymenttransaction }
       this.originalAttributes = { ...paymenttransaction }
@@ -270,7 +270,7 @@ export class PaymentTransactionModel {
   }
 
   static select(params: (keyof PaymentTransactionType)[] | RawBuilder<string> | string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -302,7 +302,7 @@ export class PaymentTransactionModel {
 
   // Method to find a PaymentTransaction by ID
   static async find(id: number): Promise<PaymentTransactionModel | undefined> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -362,13 +362,13 @@ export class PaymentTransactionModel {
   }
 
   static async firstOrFail(): Promise<PaymentTransactionModel | undefined> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<PaymentTransactionModel[]> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const models = await DB.instance.selectFrom('payment_transactions').selectAll().execute()
 
@@ -402,7 +402,7 @@ export class PaymentTransactionModel {
   }
 
   static async findOrFail(id: number): Promise<PaymentTransactionModel> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -410,7 +410,7 @@ export class PaymentTransactionModel {
   async applyFindMany(ids: number[]): Promise<PaymentTransactionModel[]> {
     let query = DB.instance.selectFrom('payment_transactions').where('id', 'in', ids)
 
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     query = query.selectAll()
 
@@ -423,7 +423,7 @@ export class PaymentTransactionModel {
   }
 
   static async findMany(ids: number[]): Promise<PaymentTransactionModel[]> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -439,7 +439,7 @@ export class PaymentTransactionModel {
   }
 
   static skip(count: number): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -477,7 +477,7 @@ export class PaymentTransactionModel {
   }
 
   static async chunk(size: number, callback: (models: PaymentTransactionModel[]) => Promise<void>): Promise<void> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -489,7 +489,7 @@ export class PaymentTransactionModel {
   }
 
   static take(count: number): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -497,7 +497,7 @@ export class PaymentTransactionModel {
   }
 
   static async pluck<K extends keyof PaymentTransactionModel>(field: K): Promise<PaymentTransactionModel[K][]> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -521,7 +521,7 @@ export class PaymentTransactionModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -539,7 +539,7 @@ export class PaymentTransactionModel {
   }
 
   static async max(field: keyof PaymentTransactionModel): Promise<number> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -557,7 +557,7 @@ export class PaymentTransactionModel {
   }
 
   static async min(field: keyof PaymentTransactionModel): Promise<number> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -575,7 +575,7 @@ export class PaymentTransactionModel {
   }
 
   static async avg(field: keyof PaymentTransactionModel): Promise<number> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -593,7 +593,7 @@ export class PaymentTransactionModel {
   }
 
   static async sum(field: keyof PaymentTransactionModel): Promise<number> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -635,7 +635,7 @@ export class PaymentTransactionModel {
   }
 
   static async get(): Promise<PaymentTransactionModel[]> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyGet()
   }
@@ -653,7 +653,7 @@ export class PaymentTransactionModel {
   }
 
   static has(relation: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -667,7 +667,7 @@ export class PaymentTransactionModel {
   }
 
   static whereExists(callback: (qb: any) => any): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -749,7 +749,7 @@ export class PaymentTransactionModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof PaymentTransactionModel>) => void,
   ): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -773,7 +773,7 @@ export class PaymentTransactionModel {
   }
 
   static doesntHave(relation: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -842,7 +842,7 @@ export class PaymentTransactionModel {
     relation: string,
     callback: (query: SubqueryBuilder<PaymentTransactionsTable>) => void,
   ): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -883,7 +883,7 @@ export class PaymentTransactionModel {
 
   // Method to get all payment_transactions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PaymentTransactionResponse> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -913,13 +913,13 @@ export class PaymentTransactionModel {
   }
 
   static async create(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyCreate(newPaymentTransaction)
   }
 
   static async createMany(newPaymentTransaction: NewPaymentTransaction[]): Promise<void> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const valuesFiltered = newPaymentTransaction.map((newPaymentTransaction: NewPaymentTransaction) => {
       const filteredValues = Object.fromEntries(
@@ -977,7 +977,7 @@ export class PaymentTransactionModel {
   }
 
   static where<V = string>(column: keyof PaymentTransactionsTable, ...args: [V] | [Operator, V]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -989,7 +989,7 @@ export class PaymentTransactionModel {
   }
 
   static whereColumn(first: keyof PaymentTransactionsTable, operator: Operator, second: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1001,7 +1001,7 @@ export class PaymentTransactionModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1012,7 +1012,7 @@ export class PaymentTransactionModel {
   }
 
   static whereRef(column: keyof PaymentTransactionsTable, ...args: string[]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1024,7 +1024,7 @@ export class PaymentTransactionModel {
   }
 
   static whereRaw(sqlStatement: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1058,7 +1058,7 @@ export class PaymentTransactionModel {
   }
 
   static orWhere(...conditions: [string, any][]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1074,7 +1074,7 @@ export class PaymentTransactionModel {
     condition: boolean,
     callback: (query: PaymentTransactionModel) => PaymentTransactionModel,
   ): PaymentTransactionModel {
-    let instance = new PaymentTransactionModel(null)
+    let instance = new PaymentTransactionModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1099,7 +1099,7 @@ export class PaymentTransactionModel {
   }
 
   static whereNotNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1133,7 +1133,7 @@ export class PaymentTransactionModel {
   }
 
   static whereNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1151,7 +1151,7 @@ export class PaymentTransactionModel {
   }
 
   static whereName(value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -1159,7 +1159,7 @@ export class PaymentTransactionModel {
   }
 
   static whereDescription(value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
@@ -1167,7 +1167,7 @@ export class PaymentTransactionModel {
   }
 
   static whereAmount(value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
 
@@ -1175,7 +1175,7 @@ export class PaymentTransactionModel {
   }
 
   static whereType(value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
@@ -1183,7 +1183,7 @@ export class PaymentTransactionModel {
   }
 
   static whereProviderId(value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
 
@@ -1205,7 +1205,7 @@ export class PaymentTransactionModel {
   }
 
   static whereIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1229,7 +1229,7 @@ export class PaymentTransactionModel {
   }
 
   static whereBetween<V = number>(column: keyof PaymentTransactionsTable, range: [V, V]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1249,7 +1249,7 @@ export class PaymentTransactionModel {
   }
 
   static whereLike(column: keyof PaymentTransactionsTable, value: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1269,7 +1269,7 @@ export class PaymentTransactionModel {
   }
 
   static whereNotIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1288,7 +1288,7 @@ export class PaymentTransactionModel {
   }
 
   static async latest(): Promise<PaymentTransactionType | undefined> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
@@ -1306,7 +1306,7 @@ export class PaymentTransactionModel {
   }
 
   static async oldest(): Promise<PaymentTransactionType | undefined> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('payment_transactions')
       .selectAll()
@@ -1327,7 +1327,7 @@ export class PaymentTransactionModel {
     condition: Partial<PaymentTransactionType>,
     newPaymentTransaction: NewPaymentTransaction,
   ): Promise<PaymentTransactionModel> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof PaymentTransactionType
 
@@ -1358,7 +1358,7 @@ export class PaymentTransactionModel {
     condition: Partial<PaymentTransactionType>,
     newPaymentTransaction: NewPaymentTransaction,
   ): Promise<PaymentTransactionModel> {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof PaymentTransactionType
 
@@ -1443,7 +1443,7 @@ export class PaymentTransactionModel {
   }
 
   static with(relations: string[]): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.withRelations = relations
 
@@ -1488,7 +1488,7 @@ export class PaymentTransactionModel {
   }
 
   static orderBy(column: keyof PaymentTransactionsTable, order: 'asc' | 'desc'): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1502,7 +1502,7 @@ export class PaymentTransactionModel {
   }
 
   static groupBy(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1516,7 +1516,7 @@ export class PaymentTransactionModel {
   }
 
   static having<V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1530,7 +1530,7 @@ export class PaymentTransactionModel {
   }
 
   static inRandomOrder(): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1544,7 +1544,7 @@ export class PaymentTransactionModel {
   }
 
   static orderByDesc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1558,7 +1558,7 @@ export class PaymentTransactionModel {
   }
 
   static orderByAsc(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1700,7 +1700,7 @@ export class PaymentTransactionModel {
   }
 
   static distinct(column: keyof PaymentTransactionType): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1716,7 +1716,7 @@ export class PaymentTransactionModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(null)
+    const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

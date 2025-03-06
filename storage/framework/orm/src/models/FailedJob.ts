@@ -62,7 +62,7 @@ export class FailedJobModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(failedjob: FailedJobJsonResponse | null) {
+  constructor(failedjob: FailedJobJsonResponse | undefined) {
     if (failedjob) {
       this.attributes = { ...failedjob }
       this.originalAttributes = { ...failedjob }
@@ -233,7 +233,7 @@ export class FailedJobModel {
   }
 
   static select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -265,7 +265,7 @@ export class FailedJobModel {
 
   // Method to find a FailedJob by ID
   static async find(id: number): Promise<FailedJobModel | undefined> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -325,13 +325,13 @@ export class FailedJobModel {
   }
 
   static async firstOrFail(): Promise<FailedJobModel | undefined> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<FailedJobModel[]> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const models = await DB.instance.selectFrom('failed_jobs').selectAll().execute()
 
@@ -365,7 +365,7 @@ export class FailedJobModel {
   }
 
   static async findOrFail(id: number): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -373,7 +373,7 @@ export class FailedJobModel {
   async applyFindMany(ids: number[]): Promise<FailedJobModel[]> {
     let query = DB.instance.selectFrom('failed_jobs').where('id', 'in', ids)
 
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     query = query.selectAll()
 
@@ -386,7 +386,7 @@ export class FailedJobModel {
   }
 
   static async findMany(ids: number[]): Promise<FailedJobModel[]> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -402,7 +402,7 @@ export class FailedJobModel {
   }
 
   static skip(count: number): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -440,7 +440,7 @@ export class FailedJobModel {
   }
 
   static async chunk(size: number, callback: (models: FailedJobModel[]) => Promise<void>): Promise<void> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -452,7 +452,7 @@ export class FailedJobModel {
   }
 
   static take(count: number): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -460,7 +460,7 @@ export class FailedJobModel {
   }
 
   static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -484,7 +484,7 @@ export class FailedJobModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -502,7 +502,7 @@ export class FailedJobModel {
   }
 
   static async max(field: keyof FailedJobModel): Promise<number> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -520,7 +520,7 @@ export class FailedJobModel {
   }
 
   static async min(field: keyof FailedJobModel): Promise<number> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -538,7 +538,7 @@ export class FailedJobModel {
   }
 
   static async avg(field: keyof FailedJobModel): Promise<number> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -556,7 +556,7 @@ export class FailedJobModel {
   }
 
   static async sum(field: keyof FailedJobModel): Promise<number> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -598,7 +598,7 @@ export class FailedJobModel {
   }
 
   static async get(): Promise<FailedJobModel[]> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyGet()
   }
@@ -616,7 +616,7 @@ export class FailedJobModel {
   }
 
   static has(relation: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -630,7 +630,7 @@ export class FailedJobModel {
   }
 
   static whereExists(callback: (qb: any) => any): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -712,7 +712,7 @@ export class FailedJobModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof FailedJobModel>) => void,
   ): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -736,7 +736,7 @@ export class FailedJobModel {
   }
 
   static doesntHave(relation: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -805,7 +805,7 @@ export class FailedJobModel {
     relation: string,
     callback: (query: SubqueryBuilder<FailedJobsTable>) => void,
   ): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -846,7 +846,7 @@ export class FailedJobModel {
 
   // Method to get all failed_jobs
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<FailedJobResponse> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -874,13 +874,13 @@ export class FailedJobModel {
   }
 
   static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return await instance.applyCreate(newFailedJob)
   }
 
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const valuesFiltered = newFailedJob.map((newFailedJob: NewFailedJob) => {
       const filteredValues = Object.fromEntries(
@@ -936,7 +936,7 @@ export class FailedJobModel {
   }
 
   static where<V = string>(column: keyof FailedJobsTable, ...args: [V] | [Operator, V]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -948,7 +948,7 @@ export class FailedJobModel {
   }
 
   static whereColumn(first: keyof FailedJobsTable, operator: Operator, second: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -960,7 +960,7 @@ export class FailedJobModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -971,7 +971,7 @@ export class FailedJobModel {
   }
 
   static whereRef(column: keyof FailedJobsTable, ...args: string[]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -983,7 +983,7 @@ export class FailedJobModel {
   }
 
   static whereRaw(sqlStatement: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1017,7 +1017,7 @@ export class FailedJobModel {
   }
 
   static orWhere(...conditions: [string, any][]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1033,7 +1033,7 @@ export class FailedJobModel {
     condition: boolean,
     callback: (query: FailedJobModel) => FailedJobModel,
   ): FailedJobModel {
-    let instance = new FailedJobModel(null)
+    let instance = new FailedJobModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1058,7 +1058,7 @@ export class FailedJobModel {
   }
 
   static whereNotNull(column: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1092,7 +1092,7 @@ export class FailedJobModel {
   }
 
   static whereNull(column: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1110,7 +1110,7 @@ export class FailedJobModel {
   }
 
   static whereConnection(value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('connection', '=', value)
 
@@ -1118,7 +1118,7 @@ export class FailedJobModel {
   }
 
   static whereQueue(value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
@@ -1126,7 +1126,7 @@ export class FailedJobModel {
   }
 
   static wherePayload(value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
@@ -1134,7 +1134,7 @@ export class FailedJobModel {
   }
 
   static whereException(value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('exception', '=', value)
 
@@ -1142,7 +1142,7 @@ export class FailedJobModel {
   }
 
   static whereFailedAt(value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('failed_at', '=', value)
 
@@ -1164,7 +1164,7 @@ export class FailedJobModel {
   }
 
   static whereIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1188,7 +1188,7 @@ export class FailedJobModel {
   }
 
   static whereBetween<V = number>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1208,7 +1208,7 @@ export class FailedJobModel {
   }
 
   static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1228,7 +1228,7 @@ export class FailedJobModel {
   }
 
   static whereNotIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1247,7 +1247,7 @@ export class FailedJobModel {
   }
 
   static async latest(): Promise<FailedJobType | undefined> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
@@ -1265,7 +1265,7 @@ export class FailedJobModel {
   }
 
   static async oldest(): Promise<FailedJobType | undefined> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
@@ -1286,7 +1286,7 @@ export class FailedJobModel {
     condition: Partial<FailedJobType>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof FailedJobType
 
@@ -1317,7 +1317,7 @@ export class FailedJobModel {
     condition: Partial<FailedJobType>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof FailedJobType
 
@@ -1402,7 +1402,7 @@ export class FailedJobModel {
   }
 
   static with(relations: string[]): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.withRelations = relations
 
@@ -1447,7 +1447,7 @@ export class FailedJobModel {
   }
 
   static orderBy(column: keyof FailedJobsTable, order: 'asc' | 'desc'): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1461,7 +1461,7 @@ export class FailedJobModel {
   }
 
   static groupBy(column: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1475,7 +1475,7 @@ export class FailedJobModel {
   }
 
   static having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1489,7 +1489,7 @@ export class FailedJobModel {
   }
 
   static inRandomOrder(): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1503,7 +1503,7 @@ export class FailedJobModel {
   }
 
   static orderByDesc(column: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1517,7 +1517,7 @@ export class FailedJobModel {
   }
 
   static orderByAsc(column: keyof FailedJobsTable): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1631,7 +1631,7 @@ export class FailedJobModel {
   }
 
   static distinct(column: keyof FailedJobType): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1647,7 +1647,7 @@ export class FailedJobModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): FailedJobModel {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

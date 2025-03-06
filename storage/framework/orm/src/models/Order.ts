@@ -85,7 +85,7 @@ export class OrderModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(order: OrderJsonResponse | null) {
+  constructor(order: OrderJsonResponse | undefined) {
     if (order) {
       this.attributes = { ...order }
       this.originalAttributes = { ...order }
@@ -332,7 +332,7 @@ export class OrderModel {
   }
 
   static select(params: (keyof OrderType)[] | RawBuilder<string> | string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -364,7 +364,7 @@ export class OrderModel {
 
   // Method to find a Order by ID
   static async find(id: number): Promise<OrderModel | undefined> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -424,13 +424,13 @@ export class OrderModel {
   }
 
   static async firstOrFail(): Promise<OrderModel | undefined> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<OrderModel[]> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const models = await DB.instance.selectFrom('orders').selectAll().execute()
 
@@ -464,7 +464,7 @@ export class OrderModel {
   }
 
   static async findOrFail(id: number): Promise<OrderModel> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -472,7 +472,7 @@ export class OrderModel {
   async applyFindMany(ids: number[]): Promise<OrderModel[]> {
     let query = DB.instance.selectFrom('orders').where('id', 'in', ids)
 
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     query = query.selectAll()
 
@@ -485,7 +485,7 @@ export class OrderModel {
   }
 
   static async findMany(ids: number[]): Promise<OrderModel[]> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -501,7 +501,7 @@ export class OrderModel {
   }
 
   static skip(count: number): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -539,7 +539,7 @@ export class OrderModel {
   }
 
   static async chunk(size: number, callback: (models: OrderModel[]) => Promise<void>): Promise<void> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -551,7 +551,7 @@ export class OrderModel {
   }
 
   static take(count: number): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -559,7 +559,7 @@ export class OrderModel {
   }
 
   static async pluck<K extends keyof OrderModel>(field: K): Promise<OrderModel[K][]> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -583,7 +583,7 @@ export class OrderModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -601,7 +601,7 @@ export class OrderModel {
   }
 
   static async max(field: keyof OrderModel): Promise<number> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -619,7 +619,7 @@ export class OrderModel {
   }
 
   static async min(field: keyof OrderModel): Promise<number> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -637,7 +637,7 @@ export class OrderModel {
   }
 
   static async avg(field: keyof OrderModel): Promise<number> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -655,7 +655,7 @@ export class OrderModel {
   }
 
   static async sum(field: keyof OrderModel): Promise<number> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -697,7 +697,7 @@ export class OrderModel {
   }
 
   static async get(): Promise<OrderModel[]> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyGet()
   }
@@ -715,7 +715,7 @@ export class OrderModel {
   }
 
   static has(relation: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -729,7 +729,7 @@ export class OrderModel {
   }
 
   static whereExists(callback: (qb: any) => any): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -811,7 +811,7 @@ export class OrderModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof OrderModel>) => void,
   ): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -835,7 +835,7 @@ export class OrderModel {
   }
 
   static doesntHave(relation: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -904,7 +904,7 @@ export class OrderModel {
     relation: string,
     callback: (query: SubqueryBuilder<OrdersTable>) => void,
   ): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -945,7 +945,7 @@ export class OrderModel {
 
   // Method to get all orders
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<OrderResponse> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -978,13 +978,13 @@ export class OrderModel {
   }
 
   static async create(newOrder: NewOrder): Promise<OrderModel> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return await instance.applyCreate(newOrder)
   }
 
   static async createMany(newOrder: NewOrder[]): Promise<void> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const valuesFiltered = newOrder.map((newOrder: NewOrder) => {
       const filteredValues = Object.fromEntries(
@@ -1018,7 +1018,7 @@ export class OrderModel {
 
   // Method to remove a Order
   static async remove(id: number): Promise<any> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1052,7 +1052,7 @@ export class OrderModel {
   }
 
   static where<V = string>(column: keyof OrdersTable, ...args: [V] | [Operator, V]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1064,7 +1064,7 @@ export class OrderModel {
   }
 
   static whereColumn(first: keyof OrdersTable, operator: Operator, second: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1076,7 +1076,7 @@ export class OrderModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1087,7 +1087,7 @@ export class OrderModel {
   }
 
   static whereRef(column: keyof OrdersTable, ...args: string[]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1099,7 +1099,7 @@ export class OrderModel {
   }
 
   static whereRaw(sqlStatement: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1133,7 +1133,7 @@ export class OrderModel {
   }
 
   static orWhere(...conditions: [string, any][]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1149,7 +1149,7 @@ export class OrderModel {
     condition: boolean,
     callback: (query: OrderModel) => OrderModel,
   ): OrderModel {
-    let instance = new OrderModel(null)
+    let instance = new OrderModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1174,7 +1174,7 @@ export class OrderModel {
   }
 
   static whereNotNull(column: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1208,7 +1208,7 @@ export class OrderModel {
   }
 
   static whereNull(column: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1226,7 +1226,7 @@ export class OrderModel {
   }
 
   static whereStatus(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
@@ -1234,7 +1234,7 @@ export class OrderModel {
   }
 
   static whereTotalAmount(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('total_amount', '=', value)
 
@@ -1242,7 +1242,7 @@ export class OrderModel {
   }
 
   static whereTaxAmount(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
 
@@ -1250,7 +1250,7 @@ export class OrderModel {
   }
 
   static whereDiscountAmount(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
 
@@ -1258,7 +1258,7 @@ export class OrderModel {
   }
 
   static whereDeliveryFee(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('delivery_fee', '=', value)
 
@@ -1266,7 +1266,7 @@ export class OrderModel {
   }
 
   static whereTipAmount(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('tip_amount', '=', value)
 
@@ -1274,7 +1274,7 @@ export class OrderModel {
   }
 
   static whereOrderType(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('order_type', '=', value)
 
@@ -1282,7 +1282,7 @@ export class OrderModel {
   }
 
   static whereDeliveryAddress(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('delivery_address', '=', value)
 
@@ -1290,7 +1290,7 @@ export class OrderModel {
   }
 
   static whereSpecialInstructions(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
 
@@ -1298,7 +1298,7 @@ export class OrderModel {
   }
 
   static whereEstimatedDeliveryTime(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('estimated_delivery_time', '=', value)
 
@@ -1306,7 +1306,7 @@ export class OrderModel {
   }
 
   static whereAppliedCouponId(value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('applied_coupon_id', '=', value)
 
@@ -1328,7 +1328,7 @@ export class OrderModel {
   }
 
   static whereIn<V = number>(column: keyof OrdersTable, values: V[]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1352,7 +1352,7 @@ export class OrderModel {
   }
 
   static whereBetween<V = number>(column: keyof OrdersTable, range: [V, V]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1372,7 +1372,7 @@ export class OrderModel {
   }
 
   static whereLike(column: keyof OrdersTable, value: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1392,7 +1392,7 @@ export class OrderModel {
   }
 
   static whereNotIn<V = number>(column: keyof OrdersTable, values: V[]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1411,7 +1411,7 @@ export class OrderModel {
   }
 
   static async latest(): Promise<OrderType | undefined> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const model = await DB.instance.selectFrom('orders')
       .selectAll()
@@ -1429,7 +1429,7 @@ export class OrderModel {
   }
 
   static async oldest(): Promise<OrderType | undefined> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const model = await DB.instance.selectFrom('orders')
       .selectAll()
@@ -1450,7 +1450,7 @@ export class OrderModel {
     condition: Partial<OrderType>,
     newOrder: NewOrder,
   ): Promise<OrderModel> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof OrderType
 
@@ -1481,7 +1481,7 @@ export class OrderModel {
     condition: Partial<OrderType>,
     newOrder: NewOrder,
   ): Promise<OrderModel> {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof OrderType
 
@@ -1566,7 +1566,7 @@ export class OrderModel {
   }
 
   static with(relations: string[]): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.withRelations = relations
 
@@ -1611,7 +1611,7 @@ export class OrderModel {
   }
 
   static orderBy(column: keyof OrdersTable, order: 'asc' | 'desc'): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1625,7 +1625,7 @@ export class OrderModel {
   }
 
   static groupBy(column: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1639,7 +1639,7 @@ export class OrderModel {
   }
 
   static having<V = string>(column: keyof OrdersTable, operator: Operator, value: V): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1653,7 +1653,7 @@ export class OrderModel {
   }
 
   static inRandomOrder(): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1667,7 +1667,7 @@ export class OrderModel {
   }
 
   static orderByDesc(column: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1681,7 +1681,7 @@ export class OrderModel {
   }
 
   static orderByAsc(column: keyof OrdersTable): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1843,7 +1843,7 @@ export class OrderModel {
   }
 
   static distinct(column: keyof OrderType): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1859,7 +1859,7 @@ export class OrderModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): OrderModel {
-    const instance = new OrderModel(null)
+    const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

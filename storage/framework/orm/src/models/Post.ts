@@ -64,7 +64,7 @@ export class PostModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(post: PostJsonResponse | null) {
+  constructor(post: PostJsonResponse | undefined) {
     if (post) {
       this.attributes = { ...post }
       this.originalAttributes = { ...post }
@@ -219,7 +219,7 @@ export class PostModel {
   }
 
   static select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -251,7 +251,7 @@ export class PostModel {
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -311,13 +311,13 @@ export class PostModel {
   }
 
   static async firstOrFail(): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const models = await DB.instance.selectFrom('posts').selectAll().execute()
 
@@ -351,7 +351,7 @@ export class PostModel {
   }
 
   static async findOrFail(id: number): Promise<PostModel> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -359,7 +359,7 @@ export class PostModel {
   async applyFindMany(ids: number[]): Promise<PostModel[]> {
     let query = DB.instance.selectFrom('posts').where('id', 'in', ids)
 
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     query = query.selectAll()
 
@@ -372,7 +372,7 @@ export class PostModel {
   }
 
   static async findMany(ids: number[]): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -388,7 +388,7 @@ export class PostModel {
   }
 
   static skip(count: number): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -426,7 +426,7 @@ export class PostModel {
   }
 
   static async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -438,7 +438,7 @@ export class PostModel {
   }
 
   static take(count: number): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -446,7 +446,7 @@ export class PostModel {
   }
 
   static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -470,7 +470,7 @@ export class PostModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -488,7 +488,7 @@ export class PostModel {
   }
 
   static async max(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -506,7 +506,7 @@ export class PostModel {
   }
 
   static async min(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -524,7 +524,7 @@ export class PostModel {
   }
 
   static async avg(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -542,7 +542,7 @@ export class PostModel {
   }
 
   static async sum(field: keyof PostModel): Promise<number> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -584,7 +584,7 @@ export class PostModel {
   }
 
   static async get(): Promise<PostModel[]> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyGet()
   }
@@ -602,7 +602,7 @@ export class PostModel {
   }
 
   static has(relation: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -616,7 +616,7 @@ export class PostModel {
   }
 
   static whereExists(callback: (qb: any) => any): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -698,7 +698,7 @@ export class PostModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof PostModel>) => void,
   ): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -722,7 +722,7 @@ export class PostModel {
   }
 
   static doesntHave(relation: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -791,7 +791,7 @@ export class PostModel {
     relation: string,
     callback: (query: SubqueryBuilder<PostsTable>) => void,
   ): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -832,7 +832,7 @@ export class PostModel {
 
   // Method to get all posts
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<PostResponse> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -860,13 +860,13 @@ export class PostModel {
   }
 
   static async create(newPost: NewPost): Promise<PostModel> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return await instance.applyCreate(newPost)
   }
 
   static async createMany(newPost: NewPost[]): Promise<void> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const valuesFiltered = newPost.map((newPost: NewPost) => {
       const filteredValues = Object.fromEntries(
@@ -922,7 +922,7 @@ export class PostModel {
   }
 
   static where<V = string>(column: keyof PostsTable, ...args: [V] | [Operator, V]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -934,7 +934,7 @@ export class PostModel {
   }
 
   static whereColumn(first: keyof PostsTable, operator: Operator, second: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -946,7 +946,7 @@ export class PostModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -957,7 +957,7 @@ export class PostModel {
   }
 
   static whereRef(column: keyof PostsTable, ...args: string[]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -969,7 +969,7 @@ export class PostModel {
   }
 
   static whereRaw(sqlStatement: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1003,7 +1003,7 @@ export class PostModel {
   }
 
   static orWhere(...conditions: [string, any][]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1019,7 +1019,7 @@ export class PostModel {
     condition: boolean,
     callback: (query: PostModel) => PostModel,
   ): PostModel {
-    let instance = new PostModel(null)
+    let instance = new PostModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1044,7 +1044,7 @@ export class PostModel {
   }
 
   static whereNotNull(column: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1078,7 +1078,7 @@ export class PostModel {
   }
 
   static whereNull(column: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1096,7 +1096,7 @@ export class PostModel {
   }
 
   static whereTitle(value: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
 
@@ -1104,7 +1104,7 @@ export class PostModel {
   }
 
   static whereBody(value: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
 
@@ -1126,7 +1126,7 @@ export class PostModel {
   }
 
   static whereIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1150,7 +1150,7 @@ export class PostModel {
   }
 
   static whereBetween<V = number>(column: keyof PostsTable, range: [V, V]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1170,7 +1170,7 @@ export class PostModel {
   }
 
   static whereLike(column: keyof PostsTable, value: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1190,7 +1190,7 @@ export class PostModel {
   }
 
   static whereNotIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1209,7 +1209,7 @@ export class PostModel {
   }
 
   static async latest(): Promise<PostType | undefined> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
@@ -1227,7 +1227,7 @@ export class PostModel {
   }
 
   static async oldest(): Promise<PostType | undefined> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
@@ -1248,7 +1248,7 @@ export class PostModel {
     condition: Partial<PostType>,
     newPost: NewPost,
   ): Promise<PostModel> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof PostType
 
@@ -1279,7 +1279,7 @@ export class PostModel {
     condition: Partial<PostType>,
     newPost: NewPost,
   ): Promise<PostModel> {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof PostType
 
@@ -1364,7 +1364,7 @@ export class PostModel {
   }
 
   static with(relations: string[]): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.withRelations = relations
 
@@ -1409,7 +1409,7 @@ export class PostModel {
   }
 
   static orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1423,7 +1423,7 @@ export class PostModel {
   }
 
   static groupBy(column: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1437,7 +1437,7 @@ export class PostModel {
   }
 
   static having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1451,7 +1451,7 @@ export class PostModel {
   }
 
   static inRandomOrder(): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1465,7 +1465,7 @@ export class PostModel {
   }
 
   static orderByDesc(column: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1479,7 +1479,7 @@ export class PostModel {
   }
 
   static orderByAsc(column: keyof PostsTable): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1607,7 +1607,7 @@ export class PostModel {
   }
 
   static distinct(column: keyof PostType): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1623,7 +1623,7 @@ export class PostModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): PostModel {
-    const instance = new PostModel(null)
+    const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

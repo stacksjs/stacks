@@ -74,7 +74,7 @@ export class SubscriptionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscription: SubscriptionJsonResponse | null) {
+  constructor(subscription: SubscriptionJsonResponse | undefined) {
     if (subscription) {
       this.attributes = { ...subscription }
       this.originalAttributes = { ...subscription }
@@ -301,7 +301,7 @@ export class SubscriptionModel {
   }
 
   static select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -333,7 +333,7 @@ export class SubscriptionModel {
 
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -393,13 +393,13 @@ export class SubscriptionModel {
   }
 
   static async firstOrFail(): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<SubscriptionModel[]> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const models = await DB.instance.selectFrom('subscriptions').selectAll().execute()
 
@@ -433,7 +433,7 @@ export class SubscriptionModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriptionModel> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -441,7 +441,7 @@ export class SubscriptionModel {
   async applyFindMany(ids: number[]): Promise<SubscriptionModel[]> {
     let query = DB.instance.selectFrom('subscriptions').where('id', 'in', ids)
 
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     query = query.selectAll()
 
@@ -454,7 +454,7 @@ export class SubscriptionModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriptionModel[]> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -470,7 +470,7 @@ export class SubscriptionModel {
   }
 
   static skip(count: number): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -508,7 +508,7 @@ export class SubscriptionModel {
   }
 
   static async chunk(size: number, callback: (models: SubscriptionModel[]) => Promise<void>): Promise<void> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -520,7 +520,7 @@ export class SubscriptionModel {
   }
 
   static take(count: number): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -528,7 +528,7 @@ export class SubscriptionModel {
   }
 
   static async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -552,7 +552,7 @@ export class SubscriptionModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -570,7 +570,7 @@ export class SubscriptionModel {
   }
 
   static async max(field: keyof SubscriptionModel): Promise<number> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -588,7 +588,7 @@ export class SubscriptionModel {
   }
 
   static async min(field: keyof SubscriptionModel): Promise<number> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -606,7 +606,7 @@ export class SubscriptionModel {
   }
 
   static async avg(field: keyof SubscriptionModel): Promise<number> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -624,7 +624,7 @@ export class SubscriptionModel {
   }
 
   static async sum(field: keyof SubscriptionModel): Promise<number> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -666,7 +666,7 @@ export class SubscriptionModel {
   }
 
   static async get(): Promise<SubscriptionModel[]> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyGet()
   }
@@ -684,7 +684,7 @@ export class SubscriptionModel {
   }
 
   static has(relation: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -698,7 +698,7 @@ export class SubscriptionModel {
   }
 
   static whereExists(callback: (qb: any) => any): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -780,7 +780,7 @@ export class SubscriptionModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof SubscriptionModel>) => void,
   ): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -804,7 +804,7 @@ export class SubscriptionModel {
   }
 
   static doesntHave(relation: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -873,7 +873,7 @@ export class SubscriptionModel {
     relation: string,
     callback: (query: SubqueryBuilder<SubscriptionsTable>) => void,
   ): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -914,7 +914,7 @@ export class SubscriptionModel {
 
   // Method to get all subscriptions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriptionResponse> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -944,13 +944,13 @@ export class SubscriptionModel {
   }
 
   static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return await instance.applyCreate(newSubscription)
   }
 
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const valuesFiltered = newSubscription.map((newSubscription: NewSubscription) => {
       const filteredValues = Object.fromEntries(
@@ -1008,7 +1008,7 @@ export class SubscriptionModel {
   }
 
   static where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1020,7 +1020,7 @@ export class SubscriptionModel {
   }
 
   static whereColumn(first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1032,7 +1032,7 @@ export class SubscriptionModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1043,7 +1043,7 @@ export class SubscriptionModel {
   }
 
   static whereRef(column: keyof SubscriptionsTable, ...args: string[]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1055,7 +1055,7 @@ export class SubscriptionModel {
   }
 
   static whereRaw(sqlStatement: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1089,7 +1089,7 @@ export class SubscriptionModel {
   }
 
   static orWhere(...conditions: [string, any][]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1105,7 +1105,7 @@ export class SubscriptionModel {
     condition: boolean,
     callback: (query: SubscriptionModel) => SubscriptionModel,
   ): SubscriptionModel {
-    let instance = new SubscriptionModel(null)
+    let instance = new SubscriptionModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1130,7 +1130,7 @@ export class SubscriptionModel {
   }
 
   static whereNotNull(column: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1164,7 +1164,7 @@ export class SubscriptionModel {
   }
 
   static whereNull(column: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1182,7 +1182,7 @@ export class SubscriptionModel {
   }
 
   static whereType(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
 
@@ -1190,7 +1190,7 @@ export class SubscriptionModel {
   }
 
   static whereProviderId(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
 
@@ -1198,7 +1198,7 @@ export class SubscriptionModel {
   }
 
   static whereProviderStatus(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerStatus', '=', value)
 
@@ -1206,7 +1206,7 @@ export class SubscriptionModel {
   }
 
   static whereUnitPrice(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
 
@@ -1214,7 +1214,7 @@ export class SubscriptionModel {
   }
 
   static whereProviderType(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerType', '=', value)
 
@@ -1222,7 +1222,7 @@ export class SubscriptionModel {
   }
 
   static whereProviderPriceId(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('providerPriceId', '=', value)
 
@@ -1230,7 +1230,7 @@ export class SubscriptionModel {
   }
 
   static whereQuantity(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
@@ -1238,7 +1238,7 @@ export class SubscriptionModel {
   }
 
   static whereTrialEndsAt(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('trialEndsAt', '=', value)
 
@@ -1246,7 +1246,7 @@ export class SubscriptionModel {
   }
 
   static whereEndsAt(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('endsAt', '=', value)
 
@@ -1254,7 +1254,7 @@ export class SubscriptionModel {
   }
 
   static whereLastUsedAt(value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
 
@@ -1276,7 +1276,7 @@ export class SubscriptionModel {
   }
 
   static whereIn<V = number>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1300,7 +1300,7 @@ export class SubscriptionModel {
   }
 
   static whereBetween<V = number>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1320,7 +1320,7 @@ export class SubscriptionModel {
   }
 
   static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1340,7 +1340,7 @@ export class SubscriptionModel {
   }
 
   static whereNotIn<V = number>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1359,7 +1359,7 @@ export class SubscriptionModel {
   }
 
   static async latest(): Promise<SubscriptionType | undefined> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
@@ -1377,7 +1377,7 @@ export class SubscriptionModel {
   }
 
   static async oldest(): Promise<SubscriptionType | undefined> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
@@ -1398,7 +1398,7 @@ export class SubscriptionModel {
     condition: Partial<SubscriptionType>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
@@ -1429,7 +1429,7 @@ export class SubscriptionModel {
     condition: Partial<SubscriptionType>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriptionType
 
@@ -1514,7 +1514,7 @@ export class SubscriptionModel {
   }
 
   static with(relations: string[]): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.withRelations = relations
 
@@ -1559,7 +1559,7 @@ export class SubscriptionModel {
   }
 
   static orderBy(column: keyof SubscriptionsTable, order: 'asc' | 'desc'): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1573,7 +1573,7 @@ export class SubscriptionModel {
   }
 
   static groupBy(column: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1587,7 +1587,7 @@ export class SubscriptionModel {
   }
 
   static having<V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1601,7 +1601,7 @@ export class SubscriptionModel {
   }
 
   static inRandomOrder(): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1615,7 +1615,7 @@ export class SubscriptionModel {
   }
 
   static orderByDesc(column: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1629,7 +1629,7 @@ export class SubscriptionModel {
   }
 
   static orderByAsc(column: keyof SubscriptionsTable): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1757,7 +1757,7 @@ export class SubscriptionModel {
   }
 
   static distinct(column: keyof SubscriptionType): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1773,7 +1773,7 @@ export class SubscriptionModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriptionModel {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

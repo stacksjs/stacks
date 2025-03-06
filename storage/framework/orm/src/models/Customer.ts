@@ -75,7 +75,7 @@ export class CustomerModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(customer: CustomerJsonResponse | null) {
+  constructor(customer: CustomerJsonResponse | undefined) {
     if (customer) {
       this.attributes = { ...customer }
       this.originalAttributes = { ...customer }
@@ -290,7 +290,7 @@ export class CustomerModel {
   }
 
   static select(params: (keyof CustomerType)[] | RawBuilder<string> | string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -322,7 +322,7 @@ export class CustomerModel {
 
   // Method to find a Customer by ID
   static async find(id: number): Promise<CustomerModel | undefined> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -382,13 +382,13 @@ export class CustomerModel {
   }
 
   static async firstOrFail(): Promise<CustomerModel | undefined> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<CustomerModel[]> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const models = await DB.instance.selectFrom('customers').selectAll().execute()
 
@@ -422,7 +422,7 @@ export class CustomerModel {
   }
 
   static async findOrFail(id: number): Promise<CustomerModel> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -430,7 +430,7 @@ export class CustomerModel {
   async applyFindMany(ids: number[]): Promise<CustomerModel[]> {
     let query = DB.instance.selectFrom('customers').where('id', 'in', ids)
 
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     query = query.selectAll()
 
@@ -443,7 +443,7 @@ export class CustomerModel {
   }
 
   static async findMany(ids: number[]): Promise<CustomerModel[]> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -459,7 +459,7 @@ export class CustomerModel {
   }
 
   static skip(count: number): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -497,7 +497,7 @@ export class CustomerModel {
   }
 
   static async chunk(size: number, callback: (models: CustomerModel[]) => Promise<void>): Promise<void> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -509,7 +509,7 @@ export class CustomerModel {
   }
 
   static take(count: number): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -517,7 +517,7 @@ export class CustomerModel {
   }
 
   static async pluck<K extends keyof CustomerModel>(field: K): Promise<CustomerModel[K][]> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -541,7 +541,7 @@ export class CustomerModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -559,7 +559,7 @@ export class CustomerModel {
   }
 
   static async max(field: keyof CustomerModel): Promise<number> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -577,7 +577,7 @@ export class CustomerModel {
   }
 
   static async min(field: keyof CustomerModel): Promise<number> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -595,7 +595,7 @@ export class CustomerModel {
   }
 
   static async avg(field: keyof CustomerModel): Promise<number> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -613,7 +613,7 @@ export class CustomerModel {
   }
 
   static async sum(field: keyof CustomerModel): Promise<number> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -655,7 +655,7 @@ export class CustomerModel {
   }
 
   static async get(): Promise<CustomerModel[]> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyGet()
   }
@@ -673,7 +673,7 @@ export class CustomerModel {
   }
 
   static has(relation: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -687,7 +687,7 @@ export class CustomerModel {
   }
 
   static whereExists(callback: (qb: any) => any): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -769,7 +769,7 @@ export class CustomerModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof CustomerModel>) => void,
   ): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -793,7 +793,7 @@ export class CustomerModel {
   }
 
   static doesntHave(relation: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -862,7 +862,7 @@ export class CustomerModel {
     relation: string,
     callback: (query: SubqueryBuilder<CustomersTable>) => void,
   ): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -903,7 +903,7 @@ export class CustomerModel {
 
   // Method to get all customers
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<CustomerResponse> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -936,13 +936,13 @@ export class CustomerModel {
   }
 
   static async create(newCustomer: NewCustomer): Promise<CustomerModel> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return await instance.applyCreate(newCustomer)
   }
 
   static async createMany(newCustomer: NewCustomer[]): Promise<void> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const valuesFiltered = newCustomer.map((newCustomer: NewCustomer) => {
       const filteredValues = Object.fromEntries(
@@ -976,7 +976,7 @@ export class CustomerModel {
 
   // Method to remove a Customer
   static async remove(id: number): Promise<any> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1010,7 +1010,7 @@ export class CustomerModel {
   }
 
   static where<V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1022,7 +1022,7 @@ export class CustomerModel {
   }
 
   static whereColumn(first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1034,7 +1034,7 @@ export class CustomerModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1045,7 +1045,7 @@ export class CustomerModel {
   }
 
   static whereRef(column: keyof CustomersTable, ...args: string[]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1057,7 +1057,7 @@ export class CustomerModel {
   }
 
   static whereRaw(sqlStatement: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1091,7 +1091,7 @@ export class CustomerModel {
   }
 
   static orWhere(...conditions: [string, any][]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1107,7 +1107,7 @@ export class CustomerModel {
     condition: boolean,
     callback: (query: CustomerModel) => CustomerModel,
   ): CustomerModel {
-    let instance = new CustomerModel(null)
+    let instance = new CustomerModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1132,7 +1132,7 @@ export class CustomerModel {
   }
 
   static whereNotNull(column: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1166,7 +1166,7 @@ export class CustomerModel {
   }
 
   static whereNull(column: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1184,7 +1184,7 @@ export class CustomerModel {
   }
 
   static whereName(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -1192,7 +1192,7 @@ export class CustomerModel {
   }
 
   static whereEmail(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
@@ -1200,7 +1200,7 @@ export class CustomerModel {
   }
 
   static wherePhone(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
 
@@ -1208,7 +1208,7 @@ export class CustomerModel {
   }
 
   static whereTotalSpent(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('totalSpent', '=', value)
 
@@ -1216,7 +1216,7 @@ export class CustomerModel {
   }
 
   static whereLastOrder(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('lastOrder', '=', value)
 
@@ -1224,7 +1224,7 @@ export class CustomerModel {
   }
 
   static whereStatus(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
@@ -1232,7 +1232,7 @@ export class CustomerModel {
   }
 
   static whereAvatar(value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
 
@@ -1254,7 +1254,7 @@ export class CustomerModel {
   }
 
   static whereIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1278,7 +1278,7 @@ export class CustomerModel {
   }
 
   static whereBetween<V = number>(column: keyof CustomersTable, range: [V, V]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1298,7 +1298,7 @@ export class CustomerModel {
   }
 
   static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1318,7 +1318,7 @@ export class CustomerModel {
   }
 
   static whereNotIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1337,7 +1337,7 @@ export class CustomerModel {
   }
 
   static async latest(): Promise<CustomerType | undefined> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const model = await DB.instance.selectFrom('customers')
       .selectAll()
@@ -1355,7 +1355,7 @@ export class CustomerModel {
   }
 
   static async oldest(): Promise<CustomerType | undefined> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const model = await DB.instance.selectFrom('customers')
       .selectAll()
@@ -1376,7 +1376,7 @@ export class CustomerModel {
     condition: Partial<CustomerType>,
     newCustomer: NewCustomer,
   ): Promise<CustomerModel> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof CustomerType
 
@@ -1407,7 +1407,7 @@ export class CustomerModel {
     condition: Partial<CustomerType>,
     newCustomer: NewCustomer,
   ): Promise<CustomerModel> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof CustomerType
 
@@ -1492,7 +1492,7 @@ export class CustomerModel {
   }
 
   static with(relations: string[]): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.withRelations = relations
 
@@ -1537,7 +1537,7 @@ export class CustomerModel {
   }
 
   static orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1551,7 +1551,7 @@ export class CustomerModel {
   }
 
   static groupBy(column: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1565,7 +1565,7 @@ export class CustomerModel {
   }
 
   static having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1579,7 +1579,7 @@ export class CustomerModel {
   }
 
   static inRandomOrder(): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1593,7 +1593,7 @@ export class CustomerModel {
   }
 
   static orderByDesc(column: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1607,7 +1607,7 @@ export class CustomerModel {
   }
 
   static orderByAsc(column: keyof CustomersTable): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1754,7 +1754,7 @@ export class CustomerModel {
   }
 
   static distinct(column: keyof CustomerType): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1770,7 +1770,7 @@ export class CustomerModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): CustomerModel {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

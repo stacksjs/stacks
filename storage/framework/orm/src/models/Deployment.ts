@@ -71,7 +71,7 @@ export class DeploymentModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(deployment: DeploymentJsonResponse | null) {
+  constructor(deployment: DeploymentJsonResponse | undefined) {
     if (deployment) {
       this.attributes = { ...deployment }
       this.originalAttributes = { ...deployment }
@@ -274,7 +274,7 @@ export class DeploymentModel {
   }
 
   static select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -306,7 +306,7 @@ export class DeploymentModel {
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -366,13 +366,13 @@ export class DeploymentModel {
   }
 
   static async firstOrFail(): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<DeploymentModel[]> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const models = await DB.instance.selectFrom('deployments').selectAll().execute()
 
@@ -406,7 +406,7 @@ export class DeploymentModel {
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -414,7 +414,7 @@ export class DeploymentModel {
   async applyFindMany(ids: number[]): Promise<DeploymentModel[]> {
     let query = DB.instance.selectFrom('deployments').where('id', 'in', ids)
 
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     query = query.selectAll()
 
@@ -427,7 +427,7 @@ export class DeploymentModel {
   }
 
   static async findMany(ids: number[]): Promise<DeploymentModel[]> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -443,7 +443,7 @@ export class DeploymentModel {
   }
 
   static skip(count: number): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -481,7 +481,7 @@ export class DeploymentModel {
   }
 
   static async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -493,7 +493,7 @@ export class DeploymentModel {
   }
 
   static take(count: number): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -501,7 +501,7 @@ export class DeploymentModel {
   }
 
   static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -525,7 +525,7 @@ export class DeploymentModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -543,7 +543,7 @@ export class DeploymentModel {
   }
 
   static async max(field: keyof DeploymentModel): Promise<number> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -561,7 +561,7 @@ export class DeploymentModel {
   }
 
   static async min(field: keyof DeploymentModel): Promise<number> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -579,7 +579,7 @@ export class DeploymentModel {
   }
 
   static async avg(field: keyof DeploymentModel): Promise<number> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -597,7 +597,7 @@ export class DeploymentModel {
   }
 
   static async sum(field: keyof DeploymentModel): Promise<number> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -639,7 +639,7 @@ export class DeploymentModel {
   }
 
   static async get(): Promise<DeploymentModel[]> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyGet()
   }
@@ -657,7 +657,7 @@ export class DeploymentModel {
   }
 
   static has(relation: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -671,7 +671,7 @@ export class DeploymentModel {
   }
 
   static whereExists(callback: (qb: any) => any): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -753,7 +753,7 @@ export class DeploymentModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof DeploymentModel>) => void,
   ): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -777,7 +777,7 @@ export class DeploymentModel {
   }
 
   static doesntHave(relation: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -846,7 +846,7 @@ export class DeploymentModel {
     relation: string,
     callback: (query: SubqueryBuilder<DeploymentsTable>) => void,
   ): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -887,7 +887,7 @@ export class DeploymentModel {
 
   // Method to get all deployments
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<DeploymentResponse> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -917,13 +917,13 @@ export class DeploymentModel {
   }
 
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return await instance.applyCreate(newDeployment)
   }
 
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const valuesFiltered = newDeployment.map((newDeployment: NewDeployment) => {
       const filteredValues = Object.fromEntries(
@@ -981,7 +981,7 @@ export class DeploymentModel {
   }
 
   static where<V = string>(column: keyof DeploymentsTable, ...args: [V] | [Operator, V]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -993,7 +993,7 @@ export class DeploymentModel {
   }
 
   static whereColumn(first: keyof DeploymentsTable, operator: Operator, second: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1005,7 +1005,7 @@ export class DeploymentModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1016,7 +1016,7 @@ export class DeploymentModel {
   }
 
   static whereRef(column: keyof DeploymentsTable, ...args: string[]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1028,7 +1028,7 @@ export class DeploymentModel {
   }
 
   static whereRaw(sqlStatement: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1062,7 +1062,7 @@ export class DeploymentModel {
   }
 
   static orWhere(...conditions: [string, any][]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1078,7 +1078,7 @@ export class DeploymentModel {
     condition: boolean,
     callback: (query: DeploymentModel) => DeploymentModel,
   ): DeploymentModel {
-    let instance = new DeploymentModel(null)
+    let instance = new DeploymentModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1103,7 +1103,7 @@ export class DeploymentModel {
   }
 
   static whereNotNull(column: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1137,7 +1137,7 @@ export class DeploymentModel {
   }
 
   static whereNull(column: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1155,7 +1155,7 @@ export class DeploymentModel {
   }
 
   static whereCommitSha(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('commitSha', '=', value)
 
@@ -1163,7 +1163,7 @@ export class DeploymentModel {
   }
 
   static whereCommitMessage(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('commitMessage', '=', value)
 
@@ -1171,7 +1171,7 @@ export class DeploymentModel {
   }
 
   static whereBranch(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('branch', '=', value)
 
@@ -1179,7 +1179,7 @@ export class DeploymentModel {
   }
 
   static whereStatus(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
@@ -1187,7 +1187,7 @@ export class DeploymentModel {
   }
 
   static whereExecutionTime(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('executionTime', '=', value)
 
@@ -1195,7 +1195,7 @@ export class DeploymentModel {
   }
 
   static whereDeployScript(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('deployScript', '=', value)
 
@@ -1203,7 +1203,7 @@ export class DeploymentModel {
   }
 
   static whereTerminalOutput(value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('terminalOutput', '=', value)
 
@@ -1225,7 +1225,7 @@ export class DeploymentModel {
   }
 
   static whereIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1249,7 +1249,7 @@ export class DeploymentModel {
   }
 
   static whereBetween<V = number>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1269,7 +1269,7 @@ export class DeploymentModel {
   }
 
   static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1289,7 +1289,7 @@ export class DeploymentModel {
   }
 
   static whereNotIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1308,7 +1308,7 @@ export class DeploymentModel {
   }
 
   static async latest(): Promise<DeploymentType | undefined> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
@@ -1326,7 +1326,7 @@ export class DeploymentModel {
   }
 
   static async oldest(): Promise<DeploymentType | undefined> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
@@ -1347,7 +1347,7 @@ export class DeploymentModel {
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
@@ -1378,7 +1378,7 @@ export class DeploymentModel {
     condition: Partial<DeploymentType>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof DeploymentType
 
@@ -1463,7 +1463,7 @@ export class DeploymentModel {
   }
 
   static with(relations: string[]): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.withRelations = relations
 
@@ -1508,7 +1508,7 @@ export class DeploymentModel {
   }
 
   static orderBy(column: keyof DeploymentsTable, order: 'asc' | 'desc'): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1522,7 +1522,7 @@ export class DeploymentModel {
   }
 
   static groupBy(column: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1536,7 +1536,7 @@ export class DeploymentModel {
   }
 
   static having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1550,7 +1550,7 @@ export class DeploymentModel {
   }
 
   static inRandomOrder(): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1564,7 +1564,7 @@ export class DeploymentModel {
   }
 
   static orderByDesc(column: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1578,7 +1578,7 @@ export class DeploymentModel {
   }
 
   static orderByAsc(column: keyof DeploymentsTable): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1706,7 +1706,7 @@ export class DeploymentModel {
   }
 
   static distinct(column: keyof DeploymentType): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1722,7 +1722,7 @@ export class DeploymentModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): DeploymentModel {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

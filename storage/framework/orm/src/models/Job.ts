@@ -62,7 +62,7 @@ export class JobModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(job: JobJsonResponse | null) {
+  constructor(job: JobJsonResponse | undefined) {
     if (job) {
       this.attributes = { ...job }
       this.originalAttributes = { ...job }
@@ -233,7 +233,7 @@ export class JobModel {
   }
 
   static select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -265,7 +265,7 @@ export class JobModel {
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -325,13 +325,13 @@ export class JobModel {
   }
 
   static async firstOrFail(): Promise<JobModel | undefined> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<JobModel[]> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const models = await DB.instance.selectFrom('jobs').selectAll().execute()
 
@@ -365,7 +365,7 @@ export class JobModel {
   }
 
   static async findOrFail(id: number): Promise<JobModel> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -373,7 +373,7 @@ export class JobModel {
   async applyFindMany(ids: number[]): Promise<JobModel[]> {
     let query = DB.instance.selectFrom('jobs').where('id', 'in', ids)
 
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     query = query.selectAll()
 
@@ -386,7 +386,7 @@ export class JobModel {
   }
 
   static async findMany(ids: number[]): Promise<JobModel[]> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -402,7 +402,7 @@ export class JobModel {
   }
 
   static skip(count: number): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -440,7 +440,7 @@ export class JobModel {
   }
 
   static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -452,7 +452,7 @@ export class JobModel {
   }
 
   static take(count: number): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -460,7 +460,7 @@ export class JobModel {
   }
 
   static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -484,7 +484,7 @@ export class JobModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -502,7 +502,7 @@ export class JobModel {
   }
 
   static async max(field: keyof JobModel): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -520,7 +520,7 @@ export class JobModel {
   }
 
   static async min(field: keyof JobModel): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -538,7 +538,7 @@ export class JobModel {
   }
 
   static async avg(field: keyof JobModel): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -556,7 +556,7 @@ export class JobModel {
   }
 
   static async sum(field: keyof JobModel): Promise<number> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -598,7 +598,7 @@ export class JobModel {
   }
 
   static async get(): Promise<JobModel[]> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyGet()
   }
@@ -616,7 +616,7 @@ export class JobModel {
   }
 
   static has(relation: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -630,7 +630,7 @@ export class JobModel {
   }
 
   static whereExists(callback: (qb: any) => any): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -712,7 +712,7 @@ export class JobModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof JobModel>) => void,
   ): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -736,7 +736,7 @@ export class JobModel {
   }
 
   static doesntHave(relation: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -805,7 +805,7 @@ export class JobModel {
     relation: string,
     callback: (query: SubqueryBuilder<JobsTable>) => void,
   ): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -846,7 +846,7 @@ export class JobModel {
 
   // Method to get all jobs
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<JobResponse> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -874,13 +874,13 @@ export class JobModel {
   }
 
   static async create(newJob: NewJob): Promise<JobModel> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return await instance.applyCreate(newJob)
   }
 
   static async createMany(newJob: NewJob[]): Promise<void> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const valuesFiltered = newJob.map((newJob: NewJob) => {
       const filteredValues = Object.fromEntries(
@@ -936,7 +936,7 @@ export class JobModel {
   }
 
   static where<V = string>(column: keyof JobsTable, ...args: [V] | [Operator, V]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -948,7 +948,7 @@ export class JobModel {
   }
 
   static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -960,7 +960,7 @@ export class JobModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -971,7 +971,7 @@ export class JobModel {
   }
 
   static whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -983,7 +983,7 @@ export class JobModel {
   }
 
   static whereRaw(sqlStatement: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1017,7 +1017,7 @@ export class JobModel {
   }
 
   static orWhere(...conditions: [string, any][]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1033,7 +1033,7 @@ export class JobModel {
     condition: boolean,
     callback: (query: JobModel) => JobModel,
   ): JobModel {
-    let instance = new JobModel(null)
+    let instance = new JobModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1058,7 +1058,7 @@ export class JobModel {
   }
 
   static whereNotNull(column: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1092,7 +1092,7 @@ export class JobModel {
   }
 
   static whereNull(column: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1110,7 +1110,7 @@ export class JobModel {
   }
 
   static whereQueue(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
 
@@ -1118,7 +1118,7 @@ export class JobModel {
   }
 
   static wherePayload(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
 
@@ -1126,7 +1126,7 @@ export class JobModel {
   }
 
   static whereAttempts(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
 
@@ -1134,7 +1134,7 @@ export class JobModel {
   }
 
   static whereAvailableAt(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
 
@@ -1142,7 +1142,7 @@ export class JobModel {
   }
 
   static whereReservedAt(value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
 
@@ -1164,7 +1164,7 @@ export class JobModel {
   }
 
   static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1188,7 +1188,7 @@ export class JobModel {
   }
 
   static whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1208,7 +1208,7 @@ export class JobModel {
   }
 
   static whereLike(column: keyof JobsTable, value: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1228,7 +1228,7 @@ export class JobModel {
   }
 
   static whereNotIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1247,7 +1247,7 @@ export class JobModel {
   }
 
   static async latest(): Promise<JobType | undefined> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
@@ -1265,7 +1265,7 @@ export class JobModel {
   }
 
   static async oldest(): Promise<JobType | undefined> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
@@ -1286,7 +1286,7 @@ export class JobModel {
     condition: Partial<JobType>,
     newJob: NewJob,
   ): Promise<JobModel> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof JobType
 
@@ -1317,7 +1317,7 @@ export class JobModel {
     condition: Partial<JobType>,
     newJob: NewJob,
   ): Promise<JobModel> {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof JobType
 
@@ -1402,7 +1402,7 @@ export class JobModel {
   }
 
   static with(relations: string[]): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.withRelations = relations
 
@@ -1447,7 +1447,7 @@ export class JobModel {
   }
 
   static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1461,7 +1461,7 @@ export class JobModel {
   }
 
   static groupBy(column: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1475,7 +1475,7 @@ export class JobModel {
   }
 
   static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1489,7 +1489,7 @@ export class JobModel {
   }
 
   static inRandomOrder(): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1503,7 +1503,7 @@ export class JobModel {
   }
 
   static orderByDesc(column: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1517,7 +1517,7 @@ export class JobModel {
   }
 
   static orderByAsc(column: keyof JobsTable): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1631,7 +1631,7 @@ export class JobModel {
   }
 
   static distinct(column: keyof JobType): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1647,7 +1647,7 @@ export class JobModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): JobModel {
-    const instance = new JobModel(null)
+    const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

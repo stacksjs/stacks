@@ -60,7 +60,7 @@ export class SubscriberEmailModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscriberemail: SubscriberEmailJsonResponse | null) {
+  constructor(subscriberemail: SubscriberEmailJsonResponse | undefined) {
     if (subscriberemail) {
       this.attributes = { ...subscriberemail }
       this.originalAttributes = { ...subscriberemail }
@@ -207,7 +207,7 @@ export class SubscriberEmailModel {
   }
 
   static select(params: (keyof SubscriberEmailType)[] | RawBuilder<string> | string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -239,7 +239,7 @@ export class SubscriberEmailModel {
 
   // Method to find a SubscriberEmail by ID
   static async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -299,13 +299,13 @@ export class SubscriberEmailModel {
   }
 
   static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<SubscriberEmailModel[]> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const models = await DB.instance.selectFrom('subscriber_emails').selectAll().execute()
 
@@ -343,7 +343,7 @@ export class SubscriberEmailModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberEmailModel> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -351,7 +351,7 @@ export class SubscriberEmailModel {
   async applyFindMany(ids: number[]): Promise<SubscriberEmailModel[]> {
     let query = DB.instance.selectFrom('subscriber_emails').where('id', 'in', ids)
 
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
@@ -368,7 +368,7 @@ export class SubscriberEmailModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -384,7 +384,7 @@ export class SubscriberEmailModel {
   }
 
   static skip(count: number): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -422,7 +422,7 @@ export class SubscriberEmailModel {
   }
 
   static async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -434,7 +434,7 @@ export class SubscriberEmailModel {
   }
 
   static take(count: number): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -442,7 +442,7 @@ export class SubscriberEmailModel {
   }
 
   static async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -466,7 +466,7 @@ export class SubscriberEmailModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -484,7 +484,7 @@ export class SubscriberEmailModel {
   }
 
   static async max(field: keyof SubscriberEmailModel): Promise<number> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -502,7 +502,7 @@ export class SubscriberEmailModel {
   }
 
   static async min(field: keyof SubscriberEmailModel): Promise<number> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -520,7 +520,7 @@ export class SubscriberEmailModel {
   }
 
   static async avg(field: keyof SubscriberEmailModel): Promise<number> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -538,7 +538,7 @@ export class SubscriberEmailModel {
   }
 
   static async sum(field: keyof SubscriberEmailModel): Promise<number> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -580,7 +580,7 @@ export class SubscriberEmailModel {
   }
 
   static async get(): Promise<SubscriberEmailModel[]> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyGet()
   }
@@ -598,7 +598,7 @@ export class SubscriberEmailModel {
   }
 
   static has(relation: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -612,7 +612,7 @@ export class SubscriberEmailModel {
   }
 
   static whereExists(callback: (qb: any) => any): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -694,7 +694,7 @@ export class SubscriberEmailModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof SubscriberEmailModel>) => void,
   ): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -718,7 +718,7 @@ export class SubscriberEmailModel {
   }
 
   static doesntHave(relation: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -787,7 +787,7 @@ export class SubscriberEmailModel {
     relation: string,
     callback: (query: SubqueryBuilder<SubscriberEmailsTable>) => void,
   ): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -828,7 +828,7 @@ export class SubscriberEmailModel {
 
   // Method to get all subscriber_emails
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberEmailResponse> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -856,13 +856,13 @@ export class SubscriberEmailModel {
   }
 
   static async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyCreate(newSubscriberEmail)
   }
 
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const valuesFiltered = newSubscriberEmail.map((newSubscriberEmail: NewSubscriberEmail) => {
       const filteredValues = Object.fromEntries(
@@ -891,7 +891,7 @@ export class SubscriberEmailModel {
 
   // Method to remove a SubscriberEmail
   static async remove(id: number): Promise<any> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     if (instance.softDeletes) {
       return await DB.instance.updateTable('subscriber_emails')
@@ -929,7 +929,7 @@ export class SubscriberEmailModel {
   }
 
   static where<V = string>(column: keyof SubscriberEmailsTable, ...args: [V] | [Operator, V]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -941,7 +941,7 @@ export class SubscriberEmailModel {
   }
 
   static whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -953,7 +953,7 @@ export class SubscriberEmailModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -964,7 +964,7 @@ export class SubscriberEmailModel {
   }
 
   static whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -976,7 +976,7 @@ export class SubscriberEmailModel {
   }
 
   static whereRaw(sqlStatement: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1010,7 +1010,7 @@ export class SubscriberEmailModel {
   }
 
   static orWhere(...conditions: [string, any][]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1026,7 +1026,7 @@ export class SubscriberEmailModel {
     condition: boolean,
     callback: (query: SubscriberEmailModel) => SubscriberEmailModel,
   ): SubscriberEmailModel {
-    let instance = new SubscriberEmailModel(null)
+    let instance = new SubscriberEmailModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1051,7 +1051,7 @@ export class SubscriberEmailModel {
   }
 
   static whereNotNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1085,7 +1085,7 @@ export class SubscriberEmailModel {
   }
 
   static whereNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1103,7 +1103,7 @@ export class SubscriberEmailModel {
   }
 
   static whereEmail(value: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
@@ -1125,7 +1125,7 @@ export class SubscriberEmailModel {
   }
 
   static whereIn<V = number>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1149,7 +1149,7 @@ export class SubscriberEmailModel {
   }
 
   static whereBetween<V = number>(column: keyof SubscriberEmailsTable, range: [V, V]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1169,7 +1169,7 @@ export class SubscriberEmailModel {
   }
 
   static whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1189,7 +1189,7 @@ export class SubscriberEmailModel {
   }
 
   static whereNotIn<V = number>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1208,7 +1208,7 @@ export class SubscriberEmailModel {
   }
 
   static async latest(): Promise<SubscriberEmailType | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
@@ -1226,7 +1226,7 @@ export class SubscriberEmailModel {
   }
 
   static async oldest(): Promise<SubscriberEmailType | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
@@ -1247,7 +1247,7 @@ export class SubscriberEmailModel {
     condition: Partial<SubscriberEmailType>,
     newSubscriberEmail: NewSubscriberEmail,
   ): Promise<SubscriberEmailModel> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriberEmailType
 
@@ -1278,7 +1278,7 @@ export class SubscriberEmailModel {
     condition: Partial<SubscriberEmailType>,
     newSubscriberEmail: NewSubscriberEmail,
   ): Promise<SubscriberEmailModel> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriberEmailType
 
@@ -1363,7 +1363,7 @@ export class SubscriberEmailModel {
   }
 
   static with(relations: string[]): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.withRelations = relations
 
@@ -1408,7 +1408,7 @@ export class SubscriberEmailModel {
   }
 
   static orderBy(column: keyof SubscriberEmailsTable, order: 'asc' | 'desc'): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1422,7 +1422,7 @@ export class SubscriberEmailModel {
   }
 
   static groupBy(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1436,7 +1436,7 @@ export class SubscriberEmailModel {
   }
 
   static having<V = string>(column: keyof SubscriberEmailsTable, operator: Operator, value: V): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1450,7 +1450,7 @@ export class SubscriberEmailModel {
   }
 
   static inRandomOrder(): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1464,7 +1464,7 @@ export class SubscriberEmailModel {
   }
 
   static orderByDesc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1478,7 +1478,7 @@ export class SubscriberEmailModel {
   }
 
   static orderByAsc(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1601,7 +1601,7 @@ export class SubscriberEmailModel {
   }
 
   static distinct(column: keyof SubscriberEmailType): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1617,7 +1617,7 @@ export class SubscriberEmailModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

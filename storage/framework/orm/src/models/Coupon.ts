@@ -82,7 +82,7 @@ export class CouponModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(coupon: CouponJsonResponse | null) {
+  constructor(coupon: CouponJsonResponse | undefined) {
     if (coupon) {
       this.attributes = { ...coupon }
       this.originalAttributes = { ...coupon }
@@ -345,7 +345,7 @@ export class CouponModel {
   }
 
   static select(params: (keyof CouponType)[] | RawBuilder<string> | string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -377,7 +377,7 @@ export class CouponModel {
 
   // Method to find a Coupon by ID
   static async find(id: number): Promise<CouponModel | undefined> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -437,13 +437,13 @@ export class CouponModel {
   }
 
   static async firstOrFail(): Promise<CouponModel | undefined> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<CouponModel[]> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const models = await DB.instance.selectFrom('coupons').selectAll().execute()
 
@@ -477,7 +477,7 @@ export class CouponModel {
   }
 
   static async findOrFail(id: number): Promise<CouponModel> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -485,7 +485,7 @@ export class CouponModel {
   async applyFindMany(ids: number[]): Promise<CouponModel[]> {
     let query = DB.instance.selectFrom('coupons').where('id', 'in', ids)
 
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     query = query.selectAll()
 
@@ -498,7 +498,7 @@ export class CouponModel {
   }
 
   static async findMany(ids: number[]): Promise<CouponModel[]> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -514,7 +514,7 @@ export class CouponModel {
   }
 
   static skip(count: number): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -552,7 +552,7 @@ export class CouponModel {
   }
 
   static async chunk(size: number, callback: (models: CouponModel[]) => Promise<void>): Promise<void> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -564,7 +564,7 @@ export class CouponModel {
   }
 
   static take(count: number): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -572,7 +572,7 @@ export class CouponModel {
   }
 
   static async pluck<K extends keyof CouponModel>(field: K): Promise<CouponModel[K][]> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -596,7 +596,7 @@ export class CouponModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -614,7 +614,7 @@ export class CouponModel {
   }
 
   static async max(field: keyof CouponModel): Promise<number> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -632,7 +632,7 @@ export class CouponModel {
   }
 
   static async min(field: keyof CouponModel): Promise<number> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -650,7 +650,7 @@ export class CouponModel {
   }
 
   static async avg(field: keyof CouponModel): Promise<number> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -668,7 +668,7 @@ export class CouponModel {
   }
 
   static async sum(field: keyof CouponModel): Promise<number> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -710,7 +710,7 @@ export class CouponModel {
   }
 
   static async get(): Promise<CouponModel[]> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyGet()
   }
@@ -728,7 +728,7 @@ export class CouponModel {
   }
 
   static has(relation: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -742,7 +742,7 @@ export class CouponModel {
   }
 
   static whereExists(callback: (qb: any) => any): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -824,7 +824,7 @@ export class CouponModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof CouponModel>) => void,
   ): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -848,7 +848,7 @@ export class CouponModel {
   }
 
   static doesntHave(relation: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -917,7 +917,7 @@ export class CouponModel {
     relation: string,
     callback: (query: SubqueryBuilder<CouponsTable>) => void,
   ): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -958,7 +958,7 @@ export class CouponModel {
 
   // Method to get all coupons
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<CouponResponse> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -991,13 +991,13 @@ export class CouponModel {
   }
 
   static async create(newCoupon: NewCoupon): Promise<CouponModel> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return await instance.applyCreate(newCoupon)
   }
 
   static async createMany(newCoupon: NewCoupon[]): Promise<void> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const valuesFiltered = newCoupon.map((newCoupon: NewCoupon) => {
       const filteredValues = Object.fromEntries(
@@ -1031,7 +1031,7 @@ export class CouponModel {
 
   // Method to remove a Coupon
   static async remove(id: number): Promise<any> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1065,7 +1065,7 @@ export class CouponModel {
   }
 
   static where<V = string>(column: keyof CouponsTable, ...args: [V] | [Operator, V]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1077,7 +1077,7 @@ export class CouponModel {
   }
 
   static whereColumn(first: keyof CouponsTable, operator: Operator, second: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1089,7 +1089,7 @@ export class CouponModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1100,7 +1100,7 @@ export class CouponModel {
   }
 
   static whereRef(column: keyof CouponsTable, ...args: string[]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1112,7 +1112,7 @@ export class CouponModel {
   }
 
   static whereRaw(sqlStatement: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1146,7 +1146,7 @@ export class CouponModel {
   }
 
   static orWhere(...conditions: [string, any][]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1162,7 +1162,7 @@ export class CouponModel {
     condition: boolean,
     callback: (query: CouponModel) => CouponModel,
   ): CouponModel {
-    let instance = new CouponModel(null)
+    let instance = new CouponModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1187,7 +1187,7 @@ export class CouponModel {
   }
 
   static whereNotNull(column: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1221,7 +1221,7 @@ export class CouponModel {
   }
 
   static whereNull(column: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1239,7 +1239,7 @@ export class CouponModel {
   }
 
   static whereCode(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
 
@@ -1247,7 +1247,7 @@ export class CouponModel {
   }
 
   static whereDescription(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
@@ -1255,7 +1255,7 @@ export class CouponModel {
   }
 
   static whereDiscountType(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('discount_type', '=', value)
 
@@ -1263,7 +1263,7 @@ export class CouponModel {
   }
 
   static whereDiscountValue(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('discount_value', '=', value)
 
@@ -1271,7 +1271,7 @@ export class CouponModel {
   }
 
   static whereMinOrderAmount(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('min_order_amount', '=', value)
 
@@ -1279,7 +1279,7 @@ export class CouponModel {
   }
 
   static whereMaxDiscountAmount(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('max_discount_amount', '=', value)
 
@@ -1287,7 +1287,7 @@ export class CouponModel {
   }
 
   static whereFreeProductId(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
 
@@ -1295,7 +1295,7 @@ export class CouponModel {
   }
 
   static whereIsActive(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
 
@@ -1303,7 +1303,7 @@ export class CouponModel {
   }
 
   static whereUsageLimit(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('usage_limit', '=', value)
 
@@ -1311,7 +1311,7 @@ export class CouponModel {
   }
 
   static whereUsageCount(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('usage_count', '=', value)
 
@@ -1319,7 +1319,7 @@ export class CouponModel {
   }
 
   static whereStartDate(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('start_date', '=', value)
 
@@ -1327,7 +1327,7 @@ export class CouponModel {
   }
 
   static whereEndDate(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('end_date', '=', value)
 
@@ -1335,7 +1335,7 @@ export class CouponModel {
   }
 
   static whereApplicableProducts(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('applicable_products', '=', value)
 
@@ -1343,7 +1343,7 @@ export class CouponModel {
   }
 
   static whereApplicableCategories(value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('applicable_categories', '=', value)
 
@@ -1365,7 +1365,7 @@ export class CouponModel {
   }
 
   static whereIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1389,7 +1389,7 @@ export class CouponModel {
   }
 
   static whereBetween<V = number>(column: keyof CouponsTable, range: [V, V]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1409,7 +1409,7 @@ export class CouponModel {
   }
 
   static whereLike(column: keyof CouponsTable, value: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1429,7 +1429,7 @@ export class CouponModel {
   }
 
   static whereNotIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1448,7 +1448,7 @@ export class CouponModel {
   }
 
   static async latest(): Promise<CouponType | undefined> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const model = await DB.instance.selectFrom('coupons')
       .selectAll()
@@ -1466,7 +1466,7 @@ export class CouponModel {
   }
 
   static async oldest(): Promise<CouponType | undefined> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const model = await DB.instance.selectFrom('coupons')
       .selectAll()
@@ -1487,7 +1487,7 @@ export class CouponModel {
     condition: Partial<CouponType>,
     newCoupon: NewCoupon,
   ): Promise<CouponModel> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof CouponType
 
@@ -1518,7 +1518,7 @@ export class CouponModel {
     condition: Partial<CouponType>,
     newCoupon: NewCoupon,
   ): Promise<CouponModel> {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof CouponType
 
@@ -1603,7 +1603,7 @@ export class CouponModel {
   }
 
   static with(relations: string[]): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.withRelations = relations
 
@@ -1648,7 +1648,7 @@ export class CouponModel {
   }
 
   static orderBy(column: keyof CouponsTable, order: 'asc' | 'desc'): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1662,7 +1662,7 @@ export class CouponModel {
   }
 
   static groupBy(column: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1676,7 +1676,7 @@ export class CouponModel {
   }
 
   static having<V = string>(column: keyof CouponsTable, operator: Operator, value: V): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1690,7 +1690,7 @@ export class CouponModel {
   }
 
   static inRandomOrder(): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1704,7 +1704,7 @@ export class CouponModel {
   }
 
   static orderByDesc(column: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1718,7 +1718,7 @@ export class CouponModel {
   }
 
   static orderByAsc(column: keyof CouponsTable): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1867,7 +1867,7 @@ export class CouponModel {
   }
 
   static distinct(column: keyof CouponType): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1883,7 +1883,7 @@ export class CouponModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): CouponModel {
-    const instance = new CouponModel(null)
+    const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

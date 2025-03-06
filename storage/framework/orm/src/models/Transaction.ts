@@ -72,7 +72,7 @@ export class TransactionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(transaction: TransactionJsonResponse | null) {
+  constructor(transaction: TransactionJsonResponse | undefined) {
     if (transaction) {
       this.attributes = { ...transaction }
       this.originalAttributes = { ...transaction }
@@ -275,7 +275,7 @@ export class TransactionModel {
   }
 
   static select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -307,7 +307,7 @@ export class TransactionModel {
 
   // Method to find a Transaction by ID
   static async find(id: number): Promise<TransactionModel | undefined> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -367,13 +367,13 @@ export class TransactionModel {
   }
 
   static async firstOrFail(): Promise<TransactionModel | undefined> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<TransactionModel[]> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const models = await DB.instance.selectFrom('transactions').selectAll().execute()
 
@@ -407,7 +407,7 @@ export class TransactionModel {
   }
 
   static async findOrFail(id: number): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -415,7 +415,7 @@ export class TransactionModel {
   async applyFindMany(ids: number[]): Promise<TransactionModel[]> {
     let query = DB.instance.selectFrom('transactions').where('id', 'in', ids)
 
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     query = query.selectAll()
 
@@ -428,7 +428,7 @@ export class TransactionModel {
   }
 
   static async findMany(ids: number[]): Promise<TransactionModel[]> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -444,7 +444,7 @@ export class TransactionModel {
   }
 
   static skip(count: number): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -482,7 +482,7 @@ export class TransactionModel {
   }
 
   static async chunk(size: number, callback: (models: TransactionModel[]) => Promise<void>): Promise<void> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -494,7 +494,7 @@ export class TransactionModel {
   }
 
   static take(count: number): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -502,7 +502,7 @@ export class TransactionModel {
   }
 
   static async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -526,7 +526,7 @@ export class TransactionModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -544,7 +544,7 @@ export class TransactionModel {
   }
 
   static async max(field: keyof TransactionModel): Promise<number> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -562,7 +562,7 @@ export class TransactionModel {
   }
 
   static async min(field: keyof TransactionModel): Promise<number> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -580,7 +580,7 @@ export class TransactionModel {
   }
 
   static async avg(field: keyof TransactionModel): Promise<number> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -598,7 +598,7 @@ export class TransactionModel {
   }
 
   static async sum(field: keyof TransactionModel): Promise<number> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -640,7 +640,7 @@ export class TransactionModel {
   }
 
   static async get(): Promise<TransactionModel[]> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyGet()
   }
@@ -658,7 +658,7 @@ export class TransactionModel {
   }
 
   static has(relation: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -672,7 +672,7 @@ export class TransactionModel {
   }
 
   static whereExists(callback: (qb: any) => any): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -754,7 +754,7 @@ export class TransactionModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof TransactionModel>) => void,
   ): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -778,7 +778,7 @@ export class TransactionModel {
   }
 
   static doesntHave(relation: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -847,7 +847,7 @@ export class TransactionModel {
     relation: string,
     callback: (query: SubqueryBuilder<TransactionsTable>) => void,
   ): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -888,7 +888,7 @@ export class TransactionModel {
 
   // Method to get all transactions
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<TransactionResponse> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -921,13 +921,13 @@ export class TransactionModel {
   }
 
   static async create(newTransaction: NewTransaction): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return await instance.applyCreate(newTransaction)
   }
 
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const valuesFiltered = newTransaction.map((newTransaction: NewTransaction) => {
       const filteredValues = Object.fromEntries(
@@ -961,7 +961,7 @@ export class TransactionModel {
 
   // Method to remove a Transaction
   static async remove(id: number): Promise<any> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -995,7 +995,7 @@ export class TransactionModel {
   }
 
   static where<V = string>(column: keyof TransactionsTable, ...args: [V] | [Operator, V]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1007,7 +1007,7 @@ export class TransactionModel {
   }
 
   static whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1019,7 +1019,7 @@ export class TransactionModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1030,7 +1030,7 @@ export class TransactionModel {
   }
 
   static whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1042,7 +1042,7 @@ export class TransactionModel {
   }
 
   static whereRaw(sqlStatement: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1076,7 +1076,7 @@ export class TransactionModel {
   }
 
   static orWhere(...conditions: [string, any][]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1092,7 +1092,7 @@ export class TransactionModel {
     condition: boolean,
     callback: (query: TransactionModel) => TransactionModel,
   ): TransactionModel {
-    let instance = new TransactionModel(null)
+    let instance = new TransactionModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1117,7 +1117,7 @@ export class TransactionModel {
   }
 
   static whereNotNull(column: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1151,7 +1151,7 @@ export class TransactionModel {
   }
 
   static whereNull(column: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1169,7 +1169,7 @@ export class TransactionModel {
   }
 
   static whereAmount(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
 
@@ -1177,7 +1177,7 @@ export class TransactionModel {
   }
 
   static whereStatus(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
@@ -1185,7 +1185,7 @@ export class TransactionModel {
   }
 
   static wherePaymentMethod(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payment_method', '=', value)
 
@@ -1193,7 +1193,7 @@ export class TransactionModel {
   }
 
   static wherePaymentDetails(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('payment_details', '=', value)
 
@@ -1201,7 +1201,7 @@ export class TransactionModel {
   }
 
   static whereTransactionReference(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('transaction_reference', '=', value)
 
@@ -1209,7 +1209,7 @@ export class TransactionModel {
   }
 
   static whereLoyaltyPointsEarned(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_earned', '=', value)
 
@@ -1217,7 +1217,7 @@ export class TransactionModel {
   }
 
   static whereLoyaltyPointsRedeemed(value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_redeemed', '=', value)
 
@@ -1239,7 +1239,7 @@ export class TransactionModel {
   }
 
   static whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1263,7 +1263,7 @@ export class TransactionModel {
   }
 
   static whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1283,7 +1283,7 @@ export class TransactionModel {
   }
 
   static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1303,7 +1303,7 @@ export class TransactionModel {
   }
 
   static whereNotIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1322,7 +1322,7 @@ export class TransactionModel {
   }
 
   static async latest(): Promise<TransactionType | undefined> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
@@ -1340,7 +1340,7 @@ export class TransactionModel {
   }
 
   static async oldest(): Promise<TransactionType | undefined> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
@@ -1361,7 +1361,7 @@ export class TransactionModel {
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof TransactionType
 
@@ -1392,7 +1392,7 @@ export class TransactionModel {
     condition: Partial<TransactionType>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof TransactionType
 
@@ -1477,7 +1477,7 @@ export class TransactionModel {
   }
 
   static with(relations: string[]): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.withRelations = relations
 
@@ -1522,7 +1522,7 @@ export class TransactionModel {
   }
 
   static orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1536,7 +1536,7 @@ export class TransactionModel {
   }
 
   static groupBy(column: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1550,7 +1550,7 @@ export class TransactionModel {
   }
 
   static having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1564,7 +1564,7 @@ export class TransactionModel {
   }
 
   static inRandomOrder(): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1578,7 +1578,7 @@ export class TransactionModel {
   }
 
   static orderByDesc(column: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1592,7 +1592,7 @@ export class TransactionModel {
   }
 
   static orderByAsc(column: keyof TransactionsTable): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1740,7 +1740,7 @@ export class TransactionModel {
   }
 
   static distinct(column: keyof TransactionType): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1756,7 +1756,7 @@ export class TransactionModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): TransactionModel {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

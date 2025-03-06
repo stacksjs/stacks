@@ -83,7 +83,7 @@ export class GiftCardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(giftcard: GiftCardJsonResponse | null) {
+  constructor(giftcard: GiftCardJsonResponse | undefined) {
     if (giftcard) {
       this.attributes = { ...giftcard }
       this.originalAttributes = { ...giftcard }
@@ -354,7 +354,7 @@ export class GiftCardModel {
   }
 
   static select(params: (keyof GiftCardType)[] | RawBuilder<string> | string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -386,7 +386,7 @@ export class GiftCardModel {
 
   // Method to find a GiftCard by ID
   static async find(id: number): Promise<GiftCardModel | undefined> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -446,13 +446,13 @@ export class GiftCardModel {
   }
 
   static async firstOrFail(): Promise<GiftCardModel | undefined> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<GiftCardModel[]> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const models = await DB.instance.selectFrom('gift_cards').selectAll().execute()
 
@@ -486,7 +486,7 @@ export class GiftCardModel {
   }
 
   static async findOrFail(id: number): Promise<GiftCardModel> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -494,7 +494,7 @@ export class GiftCardModel {
   async applyFindMany(ids: number[]): Promise<GiftCardModel[]> {
     let query = DB.instance.selectFrom('gift_cards').where('id', 'in', ids)
 
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     query = query.selectAll()
 
@@ -507,7 +507,7 @@ export class GiftCardModel {
   }
 
   static async findMany(ids: number[]): Promise<GiftCardModel[]> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -523,7 +523,7 @@ export class GiftCardModel {
   }
 
   static skip(count: number): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -561,7 +561,7 @@ export class GiftCardModel {
   }
 
   static async chunk(size: number, callback: (models: GiftCardModel[]) => Promise<void>): Promise<void> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -573,7 +573,7 @@ export class GiftCardModel {
   }
 
   static take(count: number): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -581,7 +581,7 @@ export class GiftCardModel {
   }
 
   static async pluck<K extends keyof GiftCardModel>(field: K): Promise<GiftCardModel[K][]> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -605,7 +605,7 @@ export class GiftCardModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -623,7 +623,7 @@ export class GiftCardModel {
   }
 
   static async max(field: keyof GiftCardModel): Promise<number> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -641,7 +641,7 @@ export class GiftCardModel {
   }
 
   static async min(field: keyof GiftCardModel): Promise<number> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -659,7 +659,7 @@ export class GiftCardModel {
   }
 
   static async avg(field: keyof GiftCardModel): Promise<number> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -677,7 +677,7 @@ export class GiftCardModel {
   }
 
   static async sum(field: keyof GiftCardModel): Promise<number> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -719,7 +719,7 @@ export class GiftCardModel {
   }
 
   static async get(): Promise<GiftCardModel[]> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyGet()
   }
@@ -737,7 +737,7 @@ export class GiftCardModel {
   }
 
   static has(relation: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -751,7 +751,7 @@ export class GiftCardModel {
   }
 
   static whereExists(callback: (qb: any) => any): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -833,7 +833,7 @@ export class GiftCardModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof GiftCardModel>) => void,
   ): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -857,7 +857,7 @@ export class GiftCardModel {
   }
 
   static doesntHave(relation: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -926,7 +926,7 @@ export class GiftCardModel {
     relation: string,
     callback: (query: SubqueryBuilder<GiftCardsTable>) => void,
   ): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -967,7 +967,7 @@ export class GiftCardModel {
 
   // Method to get all gift_cards
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<GiftCardResponse> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -1000,13 +1000,13 @@ export class GiftCardModel {
   }
 
   static async create(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return await instance.applyCreate(newGiftCard)
   }
 
   static async createMany(newGiftCard: NewGiftCard[]): Promise<void> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const valuesFiltered = newGiftCard.map((newGiftCard: NewGiftCard) => {
       const filteredValues = Object.fromEntries(
@@ -1040,7 +1040,7 @@ export class GiftCardModel {
 
   // Method to remove a GiftCard
   static async remove(id: number): Promise<any> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1074,7 +1074,7 @@ export class GiftCardModel {
   }
 
   static where<V = string>(column: keyof GiftCardsTable, ...args: [V] | [Operator, V]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1086,7 +1086,7 @@ export class GiftCardModel {
   }
 
   static whereColumn(first: keyof GiftCardsTable, operator: Operator, second: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1098,7 +1098,7 @@ export class GiftCardModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1109,7 +1109,7 @@ export class GiftCardModel {
   }
 
   static whereRef(column: keyof GiftCardsTable, ...args: string[]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1121,7 +1121,7 @@ export class GiftCardModel {
   }
 
   static whereRaw(sqlStatement: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1155,7 +1155,7 @@ export class GiftCardModel {
   }
 
   static orWhere(...conditions: [string, any][]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1171,7 +1171,7 @@ export class GiftCardModel {
     condition: boolean,
     callback: (query: GiftCardModel) => GiftCardModel,
   ): GiftCardModel {
-    let instance = new GiftCardModel(null)
+    let instance = new GiftCardModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1196,7 +1196,7 @@ export class GiftCardModel {
   }
 
   static whereNotNull(column: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1230,7 +1230,7 @@ export class GiftCardModel {
   }
 
   static whereNull(column: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1248,7 +1248,7 @@ export class GiftCardModel {
   }
 
   static whereCode(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
 
@@ -1256,7 +1256,7 @@ export class GiftCardModel {
   }
 
   static whereInitialBalance(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('initial_balance', '=', value)
 
@@ -1264,7 +1264,7 @@ export class GiftCardModel {
   }
 
   static whereCurrentBalance(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('current_balance', '=', value)
 
@@ -1272,7 +1272,7 @@ export class GiftCardModel {
   }
 
   static whereCurrency(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('currency', '=', value)
 
@@ -1280,7 +1280,7 @@ export class GiftCardModel {
   }
 
   static whereStatus(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
 
@@ -1288,7 +1288,7 @@ export class GiftCardModel {
   }
 
   static wherePurchaserId(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('purchaser_id', '=', value)
 
@@ -1296,7 +1296,7 @@ export class GiftCardModel {
   }
 
   static whereRecipientEmail(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('recipient_email', '=', value)
 
@@ -1304,7 +1304,7 @@ export class GiftCardModel {
   }
 
   static whereRecipientName(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('recipient_name', '=', value)
 
@@ -1312,7 +1312,7 @@ export class GiftCardModel {
   }
 
   static wherePersonalMessage(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('personal_message', '=', value)
 
@@ -1320,7 +1320,7 @@ export class GiftCardModel {
   }
 
   static whereIsDigital(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_digital', '=', value)
 
@@ -1328,7 +1328,7 @@ export class GiftCardModel {
   }
 
   static whereIsReloadable(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_reloadable', '=', value)
 
@@ -1336,7 +1336,7 @@ export class GiftCardModel {
   }
 
   static whereIsActive(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
 
@@ -1344,7 +1344,7 @@ export class GiftCardModel {
   }
 
   static whereExpiryDate(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('expiry_date', '=', value)
 
@@ -1352,7 +1352,7 @@ export class GiftCardModel {
   }
 
   static whereLastUsedDate(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('last_used_date', '=', value)
 
@@ -1360,7 +1360,7 @@ export class GiftCardModel {
   }
 
   static whereTemplateId(value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('template_id', '=', value)
 
@@ -1382,7 +1382,7 @@ export class GiftCardModel {
   }
 
   static whereIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1406,7 +1406,7 @@ export class GiftCardModel {
   }
 
   static whereBetween<V = number>(column: keyof GiftCardsTable, range: [V, V]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1426,7 +1426,7 @@ export class GiftCardModel {
   }
 
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1446,7 +1446,7 @@ export class GiftCardModel {
   }
 
   static whereNotIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1465,7 +1465,7 @@ export class GiftCardModel {
   }
 
   static async latest(): Promise<GiftCardType | undefined> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const model = await DB.instance.selectFrom('gift_cards')
       .selectAll()
@@ -1483,7 +1483,7 @@ export class GiftCardModel {
   }
 
   static async oldest(): Promise<GiftCardType | undefined> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const model = await DB.instance.selectFrom('gift_cards')
       .selectAll()
@@ -1504,7 +1504,7 @@ export class GiftCardModel {
     condition: Partial<GiftCardType>,
     newGiftCard: NewGiftCard,
   ): Promise<GiftCardModel> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof GiftCardType
 
@@ -1535,7 +1535,7 @@ export class GiftCardModel {
     condition: Partial<GiftCardType>,
     newGiftCard: NewGiftCard,
   ): Promise<GiftCardModel> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof GiftCardType
 
@@ -1620,7 +1620,7 @@ export class GiftCardModel {
   }
 
   static with(relations: string[]): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.withRelations = relations
 
@@ -1665,7 +1665,7 @@ export class GiftCardModel {
   }
 
   static orderBy(column: keyof GiftCardsTable, order: 'asc' | 'desc'): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1679,7 +1679,7 @@ export class GiftCardModel {
   }
 
   static groupBy(column: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1693,7 +1693,7 @@ export class GiftCardModel {
   }
 
   static having<V = string>(column: keyof GiftCardsTable, operator: Operator, value: V): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1707,7 +1707,7 @@ export class GiftCardModel {
   }
 
   static inRandomOrder(): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1721,7 +1721,7 @@ export class GiftCardModel {
   }
 
   static orderByDesc(column: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1735,7 +1735,7 @@ export class GiftCardModel {
   }
 
   static orderByAsc(column: keyof GiftCardsTable): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1884,7 +1884,7 @@ export class GiftCardModel {
   }
 
   static distinct(column: keyof GiftCardType): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1900,7 +1900,7 @@ export class GiftCardModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): GiftCardModel {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

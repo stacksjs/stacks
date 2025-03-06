@@ -58,7 +58,7 @@ export class SubscriberModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscriber: SubscriberJsonResponse | null) {
+  constructor(subscriber: SubscriberJsonResponse | undefined) {
     if (subscriber) {
       this.attributes = { ...subscriber }
       this.originalAttributes = { ...subscriber }
@@ -197,7 +197,7 @@ export class SubscriberModel {
   }
 
   static select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -229,7 +229,7 @@ export class SubscriberModel {
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -289,13 +289,13 @@ export class SubscriberModel {
   }
 
   static async firstOrFail(): Promise<SubscriberModel | undefined> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<SubscriberModel[]> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const models = await DB.instance.selectFrom('subscribers').selectAll().execute()
 
@@ -329,7 +329,7 @@ export class SubscriberModel {
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -337,7 +337,7 @@ export class SubscriberModel {
   async applyFindMany(ids: number[]): Promise<SubscriberModel[]> {
     let query = DB.instance.selectFrom('subscribers').where('id', 'in', ids)
 
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     query = query.selectAll()
 
@@ -350,7 +350,7 @@ export class SubscriberModel {
   }
 
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -366,7 +366,7 @@ export class SubscriberModel {
   }
 
   static skip(count: number): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -404,7 +404,7 @@ export class SubscriberModel {
   }
 
   static async chunk(size: number, callback: (models: SubscriberModel[]) => Promise<void>): Promise<void> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -416,7 +416,7 @@ export class SubscriberModel {
   }
 
   static take(count: number): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -424,7 +424,7 @@ export class SubscriberModel {
   }
 
   static async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -448,7 +448,7 @@ export class SubscriberModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -466,7 +466,7 @@ export class SubscriberModel {
   }
 
   static async max(field: keyof SubscriberModel): Promise<number> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -484,7 +484,7 @@ export class SubscriberModel {
   }
 
   static async min(field: keyof SubscriberModel): Promise<number> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -502,7 +502,7 @@ export class SubscriberModel {
   }
 
   static async avg(field: keyof SubscriberModel): Promise<number> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -520,7 +520,7 @@ export class SubscriberModel {
   }
 
   static async sum(field: keyof SubscriberModel): Promise<number> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -562,7 +562,7 @@ export class SubscriberModel {
   }
 
   static async get(): Promise<SubscriberModel[]> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyGet()
   }
@@ -580,7 +580,7 @@ export class SubscriberModel {
   }
 
   static has(relation: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -594,7 +594,7 @@ export class SubscriberModel {
   }
 
   static whereExists(callback: (qb: any) => any): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -676,7 +676,7 @@ export class SubscriberModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof SubscriberModel>) => void,
   ): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -700,7 +700,7 @@ export class SubscriberModel {
   }
 
   static doesntHave(relation: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -769,7 +769,7 @@ export class SubscriberModel {
     relation: string,
     callback: (query: SubqueryBuilder<SubscribersTable>) => void,
   ): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -810,7 +810,7 @@ export class SubscriberModel {
 
   // Method to get all subscribers
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<SubscriberResponse> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -838,13 +838,13 @@ export class SubscriberModel {
   }
 
   static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return await instance.applyCreate(newSubscriber)
   }
 
   static async createMany(newSubscriber: NewSubscriber[]): Promise<void> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const valuesFiltered = newSubscriber.map((newSubscriber: NewSubscriber) => {
       const filteredValues = Object.fromEntries(
@@ -900,7 +900,7 @@ export class SubscriberModel {
   }
 
   static where<V = string>(column: keyof SubscribersTable, ...args: [V] | [Operator, V]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -912,7 +912,7 @@ export class SubscriberModel {
   }
 
   static whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -924,7 +924,7 @@ export class SubscriberModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -935,7 +935,7 @@ export class SubscriberModel {
   }
 
   static whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -947,7 +947,7 @@ export class SubscriberModel {
   }
 
   static whereRaw(sqlStatement: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -981,7 +981,7 @@ export class SubscriberModel {
   }
 
   static orWhere(...conditions: [string, any][]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -997,7 +997,7 @@ export class SubscriberModel {
     condition: boolean,
     callback: (query: SubscriberModel) => SubscriberModel,
   ): SubscriberModel {
-    let instance = new SubscriberModel(null)
+    let instance = new SubscriberModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1022,7 +1022,7 @@ export class SubscriberModel {
   }
 
   static whereNotNull(column: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1056,7 +1056,7 @@ export class SubscriberModel {
   }
 
   static whereNull(column: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1074,7 +1074,7 @@ export class SubscriberModel {
   }
 
   static whereSubscribed(value: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('subscribed', '=', value)
 
@@ -1096,7 +1096,7 @@ export class SubscriberModel {
   }
 
   static whereIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1120,7 +1120,7 @@ export class SubscriberModel {
   }
 
   static whereBetween<V = number>(column: keyof SubscribersTable, range: [V, V]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1140,7 +1140,7 @@ export class SubscriberModel {
   }
 
   static whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1160,7 +1160,7 @@ export class SubscriberModel {
   }
 
   static whereNotIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1179,7 +1179,7 @@ export class SubscriberModel {
   }
 
   static async latest(): Promise<SubscriberType | undefined> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
@@ -1197,7 +1197,7 @@ export class SubscriberModel {
   }
 
   static async oldest(): Promise<SubscriberType | undefined> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
@@ -1218,7 +1218,7 @@ export class SubscriberModel {
     condition: Partial<SubscriberType>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriberType
 
@@ -1249,7 +1249,7 @@ export class SubscriberModel {
     condition: Partial<SubscriberType>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof SubscriberType
 
@@ -1334,7 +1334,7 @@ export class SubscriberModel {
   }
 
   static with(relations: string[]): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.withRelations = relations
 
@@ -1379,7 +1379,7 @@ export class SubscriberModel {
   }
 
   static orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1393,7 +1393,7 @@ export class SubscriberModel {
   }
 
   static groupBy(column: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1407,7 +1407,7 @@ export class SubscriberModel {
   }
 
   static having<V = string>(column: keyof SubscribersTable, operator: Operator, value: V): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1421,7 +1421,7 @@ export class SubscriberModel {
   }
 
   static inRandomOrder(): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1435,7 +1435,7 @@ export class SubscriberModel {
   }
 
   static orderByDesc(column: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1449,7 +1449,7 @@ export class SubscriberModel {
   }
 
   static orderByAsc(column: keyof SubscribersTable): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1563,7 +1563,7 @@ export class SubscriberModel {
   }
 
   static distinct(column: keyof SubscriberType): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1579,7 +1579,7 @@ export class SubscriberModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberModel {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

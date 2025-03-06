@@ -87,7 +87,7 @@ export class UserModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(user: UserJsonResponse | null) {
+  constructor(user: UserJsonResponse | undefined) {
     if (user) {
       this.attributes = { ...user }
       this.originalAttributes = { ...user }
@@ -308,7 +308,7 @@ export class UserModel {
   }
 
   static select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -340,7 +340,7 @@ export class UserModel {
 
   // Method to find a User by ID
   static async find(id: number): Promise<UserModel | undefined> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -400,13 +400,13 @@ export class UserModel {
   }
 
   static async firstOrFail(): Promise<UserModel | undefined> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const models = await DB.instance.selectFrom('users').selectAll().execute()
 
@@ -440,7 +440,7 @@ export class UserModel {
   }
 
   static async findOrFail(id: number): Promise<UserModel> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -448,7 +448,7 @@ export class UserModel {
   async applyFindMany(ids: number[]): Promise<UserModel[]> {
     let query = DB.instance.selectFrom('users').where('id', 'in', ids)
 
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     query = query.selectAll()
 
@@ -461,7 +461,7 @@ export class UserModel {
   }
 
   static async findMany(ids: number[]): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -477,7 +477,7 @@ export class UserModel {
   }
 
   static skip(count: number): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -515,7 +515,7 @@ export class UserModel {
   }
 
   static async chunk(size: number, callback: (models: UserModel[]) => Promise<void>): Promise<void> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -527,7 +527,7 @@ export class UserModel {
   }
 
   static take(count: number): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -535,7 +535,7 @@ export class UserModel {
   }
 
   static async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -559,7 +559,7 @@ export class UserModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -577,7 +577,7 @@ export class UserModel {
   }
 
   static async max(field: keyof UserModel): Promise<number> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -595,7 +595,7 @@ export class UserModel {
   }
 
   static async min(field: keyof UserModel): Promise<number> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -613,7 +613,7 @@ export class UserModel {
   }
 
   static async avg(field: keyof UserModel): Promise<number> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -631,7 +631,7 @@ export class UserModel {
   }
 
   static async sum(field: keyof UserModel): Promise<number> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -673,7 +673,7 @@ export class UserModel {
   }
 
   static async get(): Promise<UserModel[]> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyGet()
   }
@@ -691,7 +691,7 @@ export class UserModel {
   }
 
   static has(relation: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -705,7 +705,7 @@ export class UserModel {
   }
 
   static whereExists(callback: (qb: any) => any): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -787,7 +787,7 @@ export class UserModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof UserModel>) => void,
   ): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -811,7 +811,7 @@ export class UserModel {
   }
 
   static doesntHave(relation: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -880,7 +880,7 @@ export class UserModel {
     relation: string,
     callback: (query: SubqueryBuilder<UsersTable>) => void,
   ): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -921,7 +921,7 @@ export class UserModel {
 
   // Method to get all users
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<UserResponse> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -954,13 +954,13 @@ export class UserModel {
   }
 
   static async create(newUser: NewUser): Promise<UserModel> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return await instance.applyCreate(newUser)
   }
 
   static async createMany(newUser: NewUser[]): Promise<void> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const valuesFiltered = newUser.map((newUser: NewUser) => {
       const filteredValues = Object.fromEntries(
@@ -994,7 +994,7 @@ export class UserModel {
 
   // Method to remove a User
   static async remove(id: number): Promise<any> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1028,7 +1028,7 @@ export class UserModel {
   }
 
   static where<V = string>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1040,7 +1040,7 @@ export class UserModel {
   }
 
   static whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1052,7 +1052,7 @@ export class UserModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1063,7 +1063,7 @@ export class UserModel {
   }
 
   static whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1075,7 +1075,7 @@ export class UserModel {
   }
 
   static whereRaw(sqlStatement: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1109,7 +1109,7 @@ export class UserModel {
   }
 
   static orWhere(...conditions: [string, any][]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1125,7 +1125,7 @@ export class UserModel {
     condition: boolean,
     callback: (query: UserModel) => UserModel,
   ): UserModel {
-    let instance = new UserModel(null)
+    let instance = new UserModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1150,7 +1150,7 @@ export class UserModel {
   }
 
   static whereNotNull(column: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1184,7 +1184,7 @@ export class UserModel {
   }
 
   static whereNull(column: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1202,7 +1202,7 @@ export class UserModel {
   }
 
   static whereName(value: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -1210,7 +1210,7 @@ export class UserModel {
   }
 
   static whereEmail(value: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
 
@@ -1218,7 +1218,7 @@ export class UserModel {
   }
 
   static whereJobTitle(value: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('jobTitle', '=', value)
 
@@ -1226,7 +1226,7 @@ export class UserModel {
   }
 
   static wherePassword(value: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('password', '=', value)
 
@@ -1248,7 +1248,7 @@ export class UserModel {
   }
 
   static whereIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1272,7 +1272,7 @@ export class UserModel {
   }
 
   static whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1292,7 +1292,7 @@ export class UserModel {
   }
 
   static whereLike(column: keyof UsersTable, value: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1312,7 +1312,7 @@ export class UserModel {
   }
 
   static whereNotIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1331,7 +1331,7 @@ export class UserModel {
   }
 
   static async latest(): Promise<UserType | undefined> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const model = await DB.instance.selectFrom('users')
       .selectAll()
@@ -1349,7 +1349,7 @@ export class UserModel {
   }
 
   static async oldest(): Promise<UserType | undefined> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const model = await DB.instance.selectFrom('users')
       .selectAll()
@@ -1370,7 +1370,7 @@ export class UserModel {
     condition: Partial<UserType>,
     newUser: NewUser,
   ): Promise<UserModel> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof UserType
 
@@ -1401,7 +1401,7 @@ export class UserModel {
     condition: Partial<UserType>,
     newUser: NewUser,
   ): Promise<UserModel> {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof UserType
 
@@ -1486,7 +1486,7 @@ export class UserModel {
   }
 
   static with(relations: string[]): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.withRelations = relations
 
@@ -1531,7 +1531,7 @@ export class UserModel {
   }
 
   static orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1545,7 +1545,7 @@ export class UserModel {
   }
 
   static groupBy(column: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1559,7 +1559,7 @@ export class UserModel {
   }
 
   static having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1573,7 +1573,7 @@ export class UserModel {
   }
 
   static inRandomOrder(): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1587,7 +1587,7 @@ export class UserModel {
   }
 
   static orderByDesc(column: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1601,7 +1601,7 @@ export class UserModel {
   }
 
   static orderByAsc(column: keyof UsersTable): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1995,7 +1995,7 @@ export class UserModel {
   }
 
   static distinct(column: keyof UserType): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -2011,7 +2011,7 @@ export class UserModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): UserModel {
-    const instance = new UserModel(null)
+    const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

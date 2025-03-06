@@ -58,7 +58,7 @@ export class ReleaseModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(release: ReleaseJsonResponse | null) {
+  constructor(release: ReleaseJsonResponse | undefined) {
     if (release) {
       this.attributes = { ...release }
       this.originalAttributes = { ...release }
@@ -197,7 +197,7 @@ export class ReleaseModel {
   }
 
   static select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -229,7 +229,7 @@ export class ReleaseModel {
 
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -289,13 +289,13 @@ export class ReleaseModel {
   }
 
   static async firstOrFail(): Promise<ReleaseModel | undefined> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<ReleaseModel[]> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const models = await DB.instance.selectFrom('releases').selectAll().execute()
 
@@ -329,7 +329,7 @@ export class ReleaseModel {
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -337,7 +337,7 @@ export class ReleaseModel {
   async applyFindMany(ids: number[]): Promise<ReleaseModel[]> {
     let query = DB.instance.selectFrom('releases').where('id', 'in', ids)
 
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     query = query.selectAll()
 
@@ -350,7 +350,7 @@ export class ReleaseModel {
   }
 
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -366,7 +366,7 @@ export class ReleaseModel {
   }
 
   static skip(count: number): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -404,7 +404,7 @@ export class ReleaseModel {
   }
 
   static async chunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -416,7 +416,7 @@ export class ReleaseModel {
   }
 
   static take(count: number): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -424,7 +424,7 @@ export class ReleaseModel {
   }
 
   static async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -448,7 +448,7 @@ export class ReleaseModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -466,7 +466,7 @@ export class ReleaseModel {
   }
 
   static async max(field: keyof ReleaseModel): Promise<number> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -484,7 +484,7 @@ export class ReleaseModel {
   }
 
   static async min(field: keyof ReleaseModel): Promise<number> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -502,7 +502,7 @@ export class ReleaseModel {
   }
 
   static async avg(field: keyof ReleaseModel): Promise<number> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -520,7 +520,7 @@ export class ReleaseModel {
   }
 
   static async sum(field: keyof ReleaseModel): Promise<number> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -562,7 +562,7 @@ export class ReleaseModel {
   }
 
   static async get(): Promise<ReleaseModel[]> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyGet()
   }
@@ -580,7 +580,7 @@ export class ReleaseModel {
   }
 
   static has(relation: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -594,7 +594,7 @@ export class ReleaseModel {
   }
 
   static whereExists(callback: (qb: any) => any): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -676,7 +676,7 @@ export class ReleaseModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof ReleaseModel>) => void,
   ): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -700,7 +700,7 @@ export class ReleaseModel {
   }
 
   static doesntHave(relation: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -769,7 +769,7 @@ export class ReleaseModel {
     relation: string,
     callback: (query: SubqueryBuilder<ReleasesTable>) => void,
   ): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -810,7 +810,7 @@ export class ReleaseModel {
 
   // Method to get all releases
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ReleaseResponse> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -838,13 +838,13 @@ export class ReleaseModel {
   }
 
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return await instance.applyCreate(newRelease)
   }
 
   static async createMany(newRelease: NewRelease[]): Promise<void> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const valuesFiltered = newRelease.map((newRelease: NewRelease) => {
       const filteredValues = Object.fromEntries(
@@ -900,7 +900,7 @@ export class ReleaseModel {
   }
 
   static where<V = string>(column: keyof ReleasesTable, ...args: [V] | [Operator, V]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -912,7 +912,7 @@ export class ReleaseModel {
   }
 
   static whereColumn(first: keyof ReleasesTable, operator: Operator, second: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -924,7 +924,7 @@ export class ReleaseModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -935,7 +935,7 @@ export class ReleaseModel {
   }
 
   static whereRef(column: keyof ReleasesTable, ...args: string[]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -947,7 +947,7 @@ export class ReleaseModel {
   }
 
   static whereRaw(sqlStatement: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -981,7 +981,7 @@ export class ReleaseModel {
   }
 
   static orWhere(...conditions: [string, any][]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -997,7 +997,7 @@ export class ReleaseModel {
     condition: boolean,
     callback: (query: ReleaseModel) => ReleaseModel,
   ): ReleaseModel {
-    let instance = new ReleaseModel(null)
+    let instance = new ReleaseModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1022,7 +1022,7 @@ export class ReleaseModel {
   }
 
   static whereNotNull(column: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1056,7 +1056,7 @@ export class ReleaseModel {
   }
 
   static whereNull(column: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1074,7 +1074,7 @@ export class ReleaseModel {
   }
 
   static whereVersion(value: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('version', '=', value)
 
@@ -1096,7 +1096,7 @@ export class ReleaseModel {
   }
 
   static whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1120,7 +1120,7 @@ export class ReleaseModel {
   }
 
   static whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1140,7 +1140,7 @@ export class ReleaseModel {
   }
 
   static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1160,7 +1160,7 @@ export class ReleaseModel {
   }
 
   static whereNotIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1179,7 +1179,7 @@ export class ReleaseModel {
   }
 
   static async latest(): Promise<ReleaseType | undefined> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
@@ -1197,7 +1197,7 @@ export class ReleaseModel {
   }
 
   static async oldest(): Promise<ReleaseType | undefined> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
@@ -1218,7 +1218,7 @@ export class ReleaseModel {
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof ReleaseType
 
@@ -1249,7 +1249,7 @@ export class ReleaseModel {
     condition: Partial<ReleaseType>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof ReleaseType
 
@@ -1334,7 +1334,7 @@ export class ReleaseModel {
   }
 
   static with(relations: string[]): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.withRelations = relations
 
@@ -1379,7 +1379,7 @@ export class ReleaseModel {
   }
 
   static orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1393,7 +1393,7 @@ export class ReleaseModel {
   }
 
   static groupBy(column: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1407,7 +1407,7 @@ export class ReleaseModel {
   }
 
   static having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1421,7 +1421,7 @@ export class ReleaseModel {
   }
 
   static inRandomOrder(): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1435,7 +1435,7 @@ export class ReleaseModel {
   }
 
   static orderByDesc(column: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1449,7 +1449,7 @@ export class ReleaseModel {
   }
 
   static orderByAsc(column: keyof ReleasesTable): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1563,7 +1563,7 @@ export class ReleaseModel {
   }
 
   static distinct(column: keyof ReleaseType): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1579,7 +1579,7 @@ export class ReleaseModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

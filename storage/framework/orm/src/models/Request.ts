@@ -67,7 +67,7 @@ export class RequestModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(request: RequestJsonResponse | null) {
+  constructor(request: RequestJsonResponse | undefined) {
     if (request) {
       this.attributes = { ...request }
       this.originalAttributes = { ...request }
@@ -270,7 +270,7 @@ export class RequestModel {
   }
 
   static select(params: (keyof RequestType)[] | RawBuilder<string> | string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -302,7 +302,7 @@ export class RequestModel {
 
   // Method to find a Request by ID
   static async find(id: number): Promise<RequestModel | undefined> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -362,13 +362,13 @@ export class RequestModel {
   }
 
   static async firstOrFail(): Promise<RequestModel | undefined> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<RequestModel[]> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const models = await DB.instance.selectFrom('requests').selectAll().execute()
 
@@ -406,7 +406,7 @@ export class RequestModel {
   }
 
   static async findOrFail(id: number): Promise<RequestModel> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -414,7 +414,7 @@ export class RequestModel {
   async applyFindMany(ids: number[]): Promise<RequestModel[]> {
     let query = DB.instance.selectFrom('requests').where('id', 'in', ids)
 
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
@@ -431,7 +431,7 @@ export class RequestModel {
   }
 
   static async findMany(ids: number[]): Promise<RequestModel[]> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -447,7 +447,7 @@ export class RequestModel {
   }
 
   static skip(count: number): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -485,7 +485,7 @@ export class RequestModel {
   }
 
   static async chunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -497,7 +497,7 @@ export class RequestModel {
   }
 
   static take(count: number): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -505,7 +505,7 @@ export class RequestModel {
   }
 
   static async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -529,7 +529,7 @@ export class RequestModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -547,7 +547,7 @@ export class RequestModel {
   }
 
   static async max(field: keyof RequestModel): Promise<number> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -565,7 +565,7 @@ export class RequestModel {
   }
 
   static async min(field: keyof RequestModel): Promise<number> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -583,7 +583,7 @@ export class RequestModel {
   }
 
   static async avg(field: keyof RequestModel): Promise<number> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -601,7 +601,7 @@ export class RequestModel {
   }
 
   static async sum(field: keyof RequestModel): Promise<number> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -643,7 +643,7 @@ export class RequestModel {
   }
 
   static async get(): Promise<RequestModel[]> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyGet()
   }
@@ -661,7 +661,7 @@ export class RequestModel {
   }
 
   static has(relation: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -675,7 +675,7 @@ export class RequestModel {
   }
 
   static whereExists(callback: (qb: any) => any): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -757,7 +757,7 @@ export class RequestModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof RequestModel>) => void,
   ): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -781,7 +781,7 @@ export class RequestModel {
   }
 
   static doesntHave(relation: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -850,7 +850,7 @@ export class RequestModel {
     relation: string,
     callback: (query: SubqueryBuilder<RequestsTable>) => void,
   ): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -891,7 +891,7 @@ export class RequestModel {
 
   // Method to get all requests
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<RequestResponse> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -919,13 +919,13 @@ export class RequestModel {
   }
 
   static async create(newRequest: NewRequest): Promise<RequestModel> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return await instance.applyCreate(newRequest)
   }
 
   static async createMany(newRequest: NewRequest[]): Promise<void> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const valuesFiltered = newRequest.map((newRequest: NewRequest) => {
       const filteredValues = Object.fromEntries(
@@ -954,7 +954,7 @@ export class RequestModel {
 
   // Method to remove a Request
   static async remove(id: number): Promise<any> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     if (instance.softDeletes) {
       return await DB.instance.updateTable('requests')
@@ -992,7 +992,7 @@ export class RequestModel {
   }
 
   static where<V = string>(column: keyof RequestsTable, ...args: [V] | [Operator, V]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1004,7 +1004,7 @@ export class RequestModel {
   }
 
   static whereColumn(first: keyof RequestsTable, operator: Operator, second: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1016,7 +1016,7 @@ export class RequestModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1027,7 +1027,7 @@ export class RequestModel {
   }
 
   static whereRef(column: keyof RequestsTable, ...args: string[]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1039,7 +1039,7 @@ export class RequestModel {
   }
 
   static whereRaw(sqlStatement: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1073,7 +1073,7 @@ export class RequestModel {
   }
 
   static orWhere(...conditions: [string, any][]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1089,7 +1089,7 @@ export class RequestModel {
     condition: boolean,
     callback: (query: RequestModel) => RequestModel,
   ): RequestModel {
-    let instance = new RequestModel(null)
+    let instance = new RequestModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1114,7 +1114,7 @@ export class RequestModel {
   }
 
   static whereNotNull(column: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1148,7 +1148,7 @@ export class RequestModel {
   }
 
   static whereNull(column: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1166,7 +1166,7 @@ export class RequestModel {
   }
 
   static whereMethod(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('method', '=', value)
 
@@ -1174,7 +1174,7 @@ export class RequestModel {
   }
 
   static wherePath(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
 
@@ -1182,7 +1182,7 @@ export class RequestModel {
   }
 
   static whereStatusCode(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('status_code', '=', value)
 
@@ -1190,7 +1190,7 @@ export class RequestModel {
   }
 
   static whereDurationMs(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('duration_ms', '=', value)
 
@@ -1198,7 +1198,7 @@ export class RequestModel {
   }
 
   static whereIpAddress(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
 
@@ -1206,7 +1206,7 @@ export class RequestModel {
   }
 
   static whereMemoryUsage(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('memory_usage', '=', value)
 
@@ -1214,7 +1214,7 @@ export class RequestModel {
   }
 
   static whereUserAgent(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('user_agent', '=', value)
 
@@ -1222,7 +1222,7 @@ export class RequestModel {
   }
 
   static whereErrorMessage(value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('error_message', '=', value)
 
@@ -1244,7 +1244,7 @@ export class RequestModel {
   }
 
   static whereIn<V = number>(column: keyof RequestsTable, values: V[]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1268,7 +1268,7 @@ export class RequestModel {
   }
 
   static whereBetween<V = number>(column: keyof RequestsTable, range: [V, V]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1288,7 +1288,7 @@ export class RequestModel {
   }
 
   static whereLike(column: keyof RequestsTable, value: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1308,7 +1308,7 @@ export class RequestModel {
   }
 
   static whereNotIn<V = number>(column: keyof RequestsTable, values: V[]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1327,7 +1327,7 @@ export class RequestModel {
   }
 
   static async latest(): Promise<RequestType | undefined> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const model = await DB.instance.selectFrom('requests')
       .selectAll()
@@ -1345,7 +1345,7 @@ export class RequestModel {
   }
 
   static async oldest(): Promise<RequestType | undefined> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const model = await DB.instance.selectFrom('requests')
       .selectAll()
@@ -1366,7 +1366,7 @@ export class RequestModel {
     condition: Partial<RequestType>,
     newRequest: NewRequest,
   ): Promise<RequestModel> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof RequestType
 
@@ -1397,7 +1397,7 @@ export class RequestModel {
     condition: Partial<RequestType>,
     newRequest: NewRequest,
   ): Promise<RequestModel> {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof RequestType
 
@@ -1482,7 +1482,7 @@ export class RequestModel {
   }
 
   static with(relations: string[]): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.withRelations = relations
 
@@ -1527,7 +1527,7 @@ export class RequestModel {
   }
 
   static orderBy(column: keyof RequestsTable, order: 'asc' | 'desc'): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1541,7 +1541,7 @@ export class RequestModel {
   }
 
   static groupBy(column: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1555,7 +1555,7 @@ export class RequestModel {
   }
 
   static having<V = string>(column: keyof RequestsTable, operator: Operator, value: V): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1569,7 +1569,7 @@ export class RequestModel {
   }
 
   static inRandomOrder(): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1583,7 +1583,7 @@ export class RequestModel {
   }
 
   static orderByDesc(column: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1597,7 +1597,7 @@ export class RequestModel {
   }
 
   static orderByAsc(column: keyof RequestsTable): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1720,7 +1720,7 @@ export class RequestModel {
   }
 
   static distinct(column: keyof RequestType): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1736,7 +1736,7 @@ export class RequestModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): RequestModel {
-    const instance = new RequestModel(null)
+    const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

@@ -74,7 +74,7 @@ export class LoyaltyRewardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(loyaltyreward: LoyaltyRewardJsonResponse | null) {
+  constructor(loyaltyreward: LoyaltyRewardJsonResponse | undefined) {
     if (loyaltyreward) {
       this.attributes = { ...loyaltyreward }
       this.originalAttributes = { ...loyaltyreward }
@@ -293,7 +293,7 @@ export class LoyaltyRewardModel {
   }
 
   static select(params: (keyof LoyaltyRewardType)[] | RawBuilder<string> | string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -325,7 +325,7 @@ export class LoyaltyRewardModel {
 
   // Method to find a LoyaltyReward by ID
   static async find(id: number): Promise<LoyaltyRewardModel | undefined> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -385,13 +385,13 @@ export class LoyaltyRewardModel {
   }
 
   static async firstOrFail(): Promise<LoyaltyRewardModel | undefined> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<LoyaltyRewardModel[]> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const models = await DB.instance.selectFrom('loyalty_rewards').selectAll().execute()
 
@@ -425,7 +425,7 @@ export class LoyaltyRewardModel {
   }
 
   static async findOrFail(id: number): Promise<LoyaltyRewardModel> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -433,7 +433,7 @@ export class LoyaltyRewardModel {
   async applyFindMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
     let query = DB.instance.selectFrom('loyalty_rewards').where('id', 'in', ids)
 
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     query = query.selectAll()
 
@@ -446,7 +446,7 @@ export class LoyaltyRewardModel {
   }
 
   static async findMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -462,7 +462,7 @@ export class LoyaltyRewardModel {
   }
 
   static skip(count: number): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -500,7 +500,7 @@ export class LoyaltyRewardModel {
   }
 
   static async chunk(size: number, callback: (models: LoyaltyRewardModel[]) => Promise<void>): Promise<void> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -512,7 +512,7 @@ export class LoyaltyRewardModel {
   }
 
   static take(count: number): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -520,7 +520,7 @@ export class LoyaltyRewardModel {
   }
 
   static async pluck<K extends keyof LoyaltyRewardModel>(field: K): Promise<LoyaltyRewardModel[K][]> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -544,7 +544,7 @@ export class LoyaltyRewardModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -562,7 +562,7 @@ export class LoyaltyRewardModel {
   }
 
   static async max(field: keyof LoyaltyRewardModel): Promise<number> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -580,7 +580,7 @@ export class LoyaltyRewardModel {
   }
 
   static async min(field: keyof LoyaltyRewardModel): Promise<number> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -598,7 +598,7 @@ export class LoyaltyRewardModel {
   }
 
   static async avg(field: keyof LoyaltyRewardModel): Promise<number> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -616,7 +616,7 @@ export class LoyaltyRewardModel {
   }
 
   static async sum(field: keyof LoyaltyRewardModel): Promise<number> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -658,7 +658,7 @@ export class LoyaltyRewardModel {
   }
 
   static async get(): Promise<LoyaltyRewardModel[]> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyGet()
   }
@@ -676,7 +676,7 @@ export class LoyaltyRewardModel {
   }
 
   static has(relation: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -690,7 +690,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereExists(callback: (qb: any) => any): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -772,7 +772,7 @@ export class LoyaltyRewardModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof LoyaltyRewardModel>) => void,
   ): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -796,7 +796,7 @@ export class LoyaltyRewardModel {
   }
 
   static doesntHave(relation: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -865,7 +865,7 @@ export class LoyaltyRewardModel {
     relation: string,
     callback: (query: SubqueryBuilder<LoyaltyRewardsTable>) => void,
   ): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -906,7 +906,7 @@ export class LoyaltyRewardModel {
 
   // Method to get all loyalty_rewards
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<LoyaltyRewardResponse> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -939,13 +939,13 @@ export class LoyaltyRewardModel {
   }
 
   static async create(newLoyaltyReward: NewLoyaltyReward): Promise<LoyaltyRewardModel> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyCreate(newLoyaltyReward)
   }
 
   static async createMany(newLoyaltyReward: NewLoyaltyReward[]): Promise<void> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const valuesFiltered = newLoyaltyReward.map((newLoyaltyReward: NewLoyaltyReward) => {
       const filteredValues = Object.fromEntries(
@@ -979,7 +979,7 @@ export class LoyaltyRewardModel {
 
   // Method to remove a LoyaltyReward
   static async remove(id: number): Promise<any> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1013,7 +1013,7 @@ export class LoyaltyRewardModel {
   }
 
   static where<V = string>(column: keyof LoyaltyRewardsTable, ...args: [V] | [Operator, V]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1025,7 +1025,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereColumn(first: keyof LoyaltyRewardsTable, operator: Operator, second: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1037,7 +1037,7 @@ export class LoyaltyRewardModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1048,7 +1048,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereRef(column: keyof LoyaltyRewardsTable, ...args: string[]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1060,7 +1060,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereRaw(sqlStatement: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1094,7 +1094,7 @@ export class LoyaltyRewardModel {
   }
 
   static orWhere(...conditions: [string, any][]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1110,7 +1110,7 @@ export class LoyaltyRewardModel {
     condition: boolean,
     callback: (query: LoyaltyRewardModel) => LoyaltyRewardModel,
   ): LoyaltyRewardModel {
-    let instance = new LoyaltyRewardModel(null)
+    let instance = new LoyaltyRewardModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1135,7 +1135,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereNotNull(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1169,7 +1169,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereNull(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1187,7 +1187,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereName(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -1195,7 +1195,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereDescription(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
@@ -1203,7 +1203,7 @@ export class LoyaltyRewardModel {
   }
 
   static wherePointsRequired(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('points_required', '=', value)
 
@@ -1211,7 +1211,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereRewardType(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('reward_type', '=', value)
 
@@ -1219,7 +1219,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereDiscountPercentage(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('discount_percentage', '=', value)
 
@@ -1227,7 +1227,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereFreeProductId(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
 
@@ -1235,7 +1235,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereIsActive(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
 
@@ -1243,7 +1243,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereExpiryDays(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('expiry_days', '=', value)
 
@@ -1251,7 +1251,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereImageUrl(value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
 
@@ -1273,7 +1273,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereIn<V = number>(column: keyof LoyaltyRewardsTable, values: V[]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1297,7 +1297,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereBetween<V = number>(column: keyof LoyaltyRewardsTable, range: [V, V]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1317,7 +1317,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereLike(column: keyof LoyaltyRewardsTable, value: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1337,7 +1337,7 @@ export class LoyaltyRewardModel {
   }
 
   static whereNotIn<V = number>(column: keyof LoyaltyRewardsTable, values: V[]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1356,7 +1356,7 @@ export class LoyaltyRewardModel {
   }
 
   static async latest(): Promise<LoyaltyRewardType | undefined> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const model = await DB.instance.selectFrom('loyalty_rewards')
       .selectAll()
@@ -1374,7 +1374,7 @@ export class LoyaltyRewardModel {
   }
 
   static async oldest(): Promise<LoyaltyRewardType | undefined> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const model = await DB.instance.selectFrom('loyalty_rewards')
       .selectAll()
@@ -1395,7 +1395,7 @@ export class LoyaltyRewardModel {
     condition: Partial<LoyaltyRewardType>,
     newLoyaltyReward: NewLoyaltyReward,
   ): Promise<LoyaltyRewardModel> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof LoyaltyRewardType
 
@@ -1426,7 +1426,7 @@ export class LoyaltyRewardModel {
     condition: Partial<LoyaltyRewardType>,
     newLoyaltyReward: NewLoyaltyReward,
   ): Promise<LoyaltyRewardModel> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof LoyaltyRewardType
 
@@ -1511,7 +1511,7 @@ export class LoyaltyRewardModel {
   }
 
   static with(relations: string[]): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.withRelations = relations
 
@@ -1556,7 +1556,7 @@ export class LoyaltyRewardModel {
   }
 
   static orderBy(column: keyof LoyaltyRewardsTable, order: 'asc' | 'desc'): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1570,7 +1570,7 @@ export class LoyaltyRewardModel {
   }
 
   static groupBy(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1584,7 +1584,7 @@ export class LoyaltyRewardModel {
   }
 
   static having<V = string>(column: keyof LoyaltyRewardsTable, operator: Operator, value: V): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1598,7 +1598,7 @@ export class LoyaltyRewardModel {
   }
 
   static inRandomOrder(): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1612,7 +1612,7 @@ export class LoyaltyRewardModel {
   }
 
   static orderByDesc(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1626,7 +1626,7 @@ export class LoyaltyRewardModel {
   }
 
   static orderByAsc(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1773,7 +1773,7 @@ export class LoyaltyRewardModel {
   }
 
   static distinct(column: keyof LoyaltyRewardType): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1789,7 +1789,7 @@ export class LoyaltyRewardModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

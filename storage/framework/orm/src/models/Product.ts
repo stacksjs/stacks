@@ -75,7 +75,7 @@ export class ProductModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(product: ProductJsonResponse | null) {
+  constructor(product: ProductJsonResponse | undefined) {
     if (product) {
       this.attributes = { ...product }
       this.originalAttributes = { ...product }
@@ -302,7 +302,7 @@ export class ProductModel {
   }
 
   static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -334,7 +334,7 @@ export class ProductModel {
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -394,13 +394,13 @@ export class ProductModel {
   }
 
   static async firstOrFail(): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const models = await DB.instance.selectFrom('products').selectAll().execute()
 
@@ -434,7 +434,7 @@ export class ProductModel {
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -442,7 +442,7 @@ export class ProductModel {
   async applyFindMany(ids: number[]): Promise<ProductModel[]> {
     let query = DB.instance.selectFrom('products').where('id', 'in', ids)
 
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     query = query.selectAll()
 
@@ -455,7 +455,7 @@ export class ProductModel {
   }
 
   static async findMany(ids: number[]): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -471,7 +471,7 @@ export class ProductModel {
   }
 
   static skip(count: number): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -509,7 +509,7 @@ export class ProductModel {
   }
 
   static async chunk(size: number, callback: (models: ProductModel[]) => Promise<void>): Promise<void> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -521,7 +521,7 @@ export class ProductModel {
   }
 
   static take(count: number): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -529,7 +529,7 @@ export class ProductModel {
   }
 
   static async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -553,7 +553,7 @@ export class ProductModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -571,7 +571,7 @@ export class ProductModel {
   }
 
   static async max(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -589,7 +589,7 @@ export class ProductModel {
   }
 
   static async min(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -607,7 +607,7 @@ export class ProductModel {
   }
 
   static async avg(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -625,7 +625,7 @@ export class ProductModel {
   }
 
   static async sum(field: keyof ProductModel): Promise<number> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -667,7 +667,7 @@ export class ProductModel {
   }
 
   static async get(): Promise<ProductModel[]> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyGet()
   }
@@ -685,7 +685,7 @@ export class ProductModel {
   }
 
   static has(relation: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -699,7 +699,7 @@ export class ProductModel {
   }
 
   static whereExists(callback: (qb: any) => any): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -781,7 +781,7 @@ export class ProductModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof ProductModel>) => void,
   ): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -805,7 +805,7 @@ export class ProductModel {
   }
 
   static doesntHave(relation: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -874,7 +874,7 @@ export class ProductModel {
     relation: string,
     callback: (query: SubqueryBuilder<ProductsTable>) => void,
   ): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -915,7 +915,7 @@ export class ProductModel {
 
   // Method to get all products
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductResponse> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -948,13 +948,13 @@ export class ProductModel {
   }
 
   static async create(newProduct: NewProduct): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return await instance.applyCreate(newProduct)
   }
 
   static async createMany(newProduct: NewProduct[]): Promise<void> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const valuesFiltered = newProduct.map((newProduct: NewProduct) => {
       const filteredValues = Object.fromEntries(
@@ -988,7 +988,7 @@ export class ProductModel {
 
   // Method to remove a Product
   static async remove(id: number): Promise<any> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const model = await instance.find(Number(id))
 
@@ -1022,7 +1022,7 @@ export class ProductModel {
   }
 
   static where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -1034,7 +1034,7 @@ export class ProductModel {
   }
 
   static whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -1046,7 +1046,7 @@ export class ProductModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -1057,7 +1057,7 @@ export class ProductModel {
   }
 
   static whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -1069,7 +1069,7 @@ export class ProductModel {
   }
 
   static whereRaw(sqlStatement: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1103,7 +1103,7 @@ export class ProductModel {
   }
 
   static orWhere(...conditions: [string, any][]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1119,7 +1119,7 @@ export class ProductModel {
     condition: boolean,
     callback: (query: ProductModel) => ProductModel,
   ): ProductModel {
-    let instance = new ProductModel(null)
+    let instance = new ProductModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1144,7 +1144,7 @@ export class ProductModel {
   }
 
   static whereNotNull(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1178,7 +1178,7 @@ export class ProductModel {
   }
 
   static whereNull(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1196,7 +1196,7 @@ export class ProductModel {
   }
 
   static whereName(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
 
@@ -1204,7 +1204,7 @@ export class ProductModel {
   }
 
   static whereDescription(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
@@ -1212,7 +1212,7 @@ export class ProductModel {
   }
 
   static wherePrice(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
 
@@ -1220,7 +1220,7 @@ export class ProductModel {
   }
 
   static whereImageUrl(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
 
@@ -1228,7 +1228,7 @@ export class ProductModel {
   }
 
   static whereIsAvailable(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('is_available', '=', value)
 
@@ -1236,7 +1236,7 @@ export class ProductModel {
   }
 
   static whereInventoryCount(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('inventory_count', '=', value)
 
@@ -1244,7 +1244,7 @@ export class ProductModel {
   }
 
   static whereCategoryId(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('category_id', '=', value)
 
@@ -1252,7 +1252,7 @@ export class ProductModel {
   }
 
   static wherePreparationTime(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('preparation_time', '=', value)
 
@@ -1260,7 +1260,7 @@ export class ProductModel {
   }
 
   static whereAllergens(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('allergens', '=', value)
 
@@ -1268,7 +1268,7 @@ export class ProductModel {
   }
 
   static whereNutritionalInfo(value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('nutritional_info', '=', value)
 
@@ -1290,7 +1290,7 @@ export class ProductModel {
   }
 
   static whereIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1314,7 +1314,7 @@ export class ProductModel {
   }
 
   static whereBetween<V = number>(column: keyof ProductsTable, range: [V, V]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1334,7 +1334,7 @@ export class ProductModel {
   }
 
   static whereLike(column: keyof ProductsTable, value: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1354,7 +1354,7 @@ export class ProductModel {
   }
 
   static whereNotIn<V = number>(column: keyof ProductsTable, values: V[]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1373,7 +1373,7 @@ export class ProductModel {
   }
 
   static async latest(): Promise<ProductType | undefined> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const model = await DB.instance.selectFrom('products')
       .selectAll()
@@ -1391,7 +1391,7 @@ export class ProductModel {
   }
 
   static async oldest(): Promise<ProductType | undefined> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const model = await DB.instance.selectFrom('products')
       .selectAll()
@@ -1412,7 +1412,7 @@ export class ProductModel {
     condition: Partial<ProductType>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof ProductType
 
@@ -1443,7 +1443,7 @@ export class ProductModel {
     condition: Partial<ProductType>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof ProductType
 
@@ -1528,7 +1528,7 @@ export class ProductModel {
   }
 
   static with(relations: string[]): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.withRelations = relations
 
@@ -1573,7 +1573,7 @@ export class ProductModel {
   }
 
   static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1587,7 +1587,7 @@ export class ProductModel {
   }
 
   static groupBy(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1601,7 +1601,7 @@ export class ProductModel {
   }
 
   static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1615,7 +1615,7 @@ export class ProductModel {
   }
 
   static inRandomOrder(): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1629,7 +1629,7 @@ export class ProductModel {
   }
 
   static orderByDesc(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1643,7 +1643,7 @@ export class ProductModel {
   }
 
   static orderByAsc(column: keyof ProductsTable): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1792,7 +1792,7 @@ export class ProductModel {
   }
 
   static distinct(column: keyof ProductType): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1808,7 +1808,7 @@ export class ProductModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProductModel {
-    const instance = new ProductModel(null)
+    const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 

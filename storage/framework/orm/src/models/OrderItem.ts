@@ -71,7 +71,7 @@ export class OrderItemModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(orderitem: OrderItemJsonResponse | null) {
+  constructor(orderitem: OrderItemJsonResponse | undefined) {
     if (orderitem) {
       this.attributes = { ...orderitem }
       this.originalAttributes = { ...orderitem }
@@ -242,7 +242,7 @@ export class OrderItemModel {
   }
 
   static select(params: (keyof OrderItemType)[] | RawBuilder<string> | string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -274,7 +274,7 @@ export class OrderItemModel {
 
   // Method to find a OrderItem by ID
   static async find(id: number): Promise<OrderItemModel | undefined> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyFind(id)
   }
@@ -334,13 +334,13 @@ export class OrderItemModel {
   }
 
   static async firstOrFail(): Promise<OrderItemModel | undefined> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
   static async all(): Promise<OrderItemModel[]> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const models = await DB.instance.selectFrom('order_items').selectAll().execute()
 
@@ -374,7 +374,7 @@ export class OrderItemModel {
   }
 
   static async findOrFail(id: number): Promise<OrderItemModel> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
@@ -382,7 +382,7 @@ export class OrderItemModel {
   async applyFindMany(ids: number[]): Promise<OrderItemModel[]> {
     let query = DB.instance.selectFrom('order_items').where('id', 'in', ids)
 
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     query = query.selectAll()
 
@@ -395,7 +395,7 @@ export class OrderItemModel {
   }
 
   static async findMany(ids: number[]): Promise<OrderItemModel[]> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
@@ -411,7 +411,7 @@ export class OrderItemModel {
   }
 
   static skip(count: number): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
@@ -449,7 +449,7 @@ export class OrderItemModel {
   }
 
   static async chunk(size: number, callback: (models: OrderItemModel[]) => Promise<void>): Promise<void> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
@@ -461,7 +461,7 @@ export class OrderItemModel {
   }
 
   static take(count: number): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
@@ -469,7 +469,7 @@ export class OrderItemModel {
   }
 
   static async pluck<K extends keyof OrderItemModel>(field: K): Promise<OrderItemModel[K][]> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
@@ -493,7 +493,7 @@ export class OrderItemModel {
   }
 
   static async count(): Promise<number> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -511,7 +511,7 @@ export class OrderItemModel {
   }
 
   static async max(field: keyof OrderItemModel): Promise<number> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -529,7 +529,7 @@ export class OrderItemModel {
   }
 
   static async min(field: keyof OrderItemModel): Promise<number> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -547,7 +547,7 @@ export class OrderItemModel {
   }
 
   static async avg(field: keyof OrderItemModel): Promise<number> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -565,7 +565,7 @@ export class OrderItemModel {
   }
 
   static async sum(field: keyof OrderItemModel): Promise<number> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -607,7 +607,7 @@ export class OrderItemModel {
   }
 
   static async get(): Promise<OrderItemModel[]> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyGet()
   }
@@ -625,7 +625,7 @@ export class OrderItemModel {
   }
 
   static has(relation: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
@@ -639,7 +639,7 @@ export class OrderItemModel {
   }
 
   static whereExists(callback: (qb: any) => any): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -721,7 +721,7 @@ export class OrderItemModel {
     relation: string,
     callback: (query: SubqueryBuilder<keyof OrderItemModel>) => void,
   ): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
@@ -745,7 +745,7 @@ export class OrderItemModel {
   }
 
   static doesntHave(relation: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
@@ -814,7 +814,7 @@ export class OrderItemModel {
     relation: string,
     callback: (query: SubqueryBuilder<OrderItemsTable>) => void,
   ): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
@@ -855,7 +855,7 @@ export class OrderItemModel {
 
   // Method to get all order_items
   static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<OrderItemResponse> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyPaginate(options)
   }
@@ -883,13 +883,13 @@ export class OrderItemModel {
   }
 
   static async create(newOrderItem: NewOrderItem): Promise<OrderItemModel> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return await instance.applyCreate(newOrderItem)
   }
 
   static async createMany(newOrderItem: NewOrderItem[]): Promise<void> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const valuesFiltered = newOrderItem.map((newOrderItem: NewOrderItem) => {
       const filteredValues = Object.fromEntries(
@@ -945,7 +945,7 @@ export class OrderItemModel {
   }
 
   static where<V = string>(column: keyof OrderItemsTable, ...args: [V] | [Operator, V]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
@@ -957,7 +957,7 @@ export class OrderItemModel {
   }
 
   static whereColumn(first: keyof OrderItemsTable, operator: Operator, second: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
@@ -969,7 +969,7 @@ export class OrderItemModel {
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
@@ -980,7 +980,7 @@ export class OrderItemModel {
   }
 
   static whereRef(column: keyof OrderItemsTable, ...args: string[]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
@@ -992,7 +992,7 @@ export class OrderItemModel {
   }
 
   static whereRaw(sqlStatement: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
@@ -1026,7 +1026,7 @@ export class OrderItemModel {
   }
 
   static orWhere(...conditions: [string, any][]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
@@ -1042,7 +1042,7 @@ export class OrderItemModel {
     condition: boolean,
     callback: (query: OrderItemModel) => OrderItemModel,
   ): OrderItemModel {
-    let instance = new OrderItemModel(null)
+    let instance = new OrderItemModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1067,7 +1067,7 @@ export class OrderItemModel {
   }
 
   static whereNotNull(column: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1101,7 +1101,7 @@ export class OrderItemModel {
   }
 
   static whereNull(column: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1119,7 +1119,7 @@ export class OrderItemModel {
   }
 
   static whereQuantity(value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
@@ -1127,7 +1127,7 @@ export class OrderItemModel {
   }
 
   static wherePrice(value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
 
@@ -1135,7 +1135,7 @@ export class OrderItemModel {
   }
 
   static whereSpecialInstructions(value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
 
@@ -1157,7 +1157,7 @@ export class OrderItemModel {
   }
 
   static whereIn<V = number>(column: keyof OrderItemsTable, values: V[]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
@@ -1181,7 +1181,7 @@ export class OrderItemModel {
   }
 
   static whereBetween<V = number>(column: keyof OrderItemsTable, range: [V, V]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
@@ -1201,7 +1201,7 @@ export class OrderItemModel {
   }
 
   static whereLike(column: keyof OrderItemsTable, value: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
@@ -1221,7 +1221,7 @@ export class OrderItemModel {
   }
 
   static whereNotIn<V = number>(column: keyof OrderItemsTable, values: V[]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1240,7 +1240,7 @@ export class OrderItemModel {
   }
 
   static async latest(): Promise<OrderItemType | undefined> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const model = await DB.instance.selectFrom('order_items')
       .selectAll()
@@ -1258,7 +1258,7 @@ export class OrderItemModel {
   }
 
   static async oldest(): Promise<OrderItemType | undefined> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const model = await DB.instance.selectFrom('order_items')
       .selectAll()
@@ -1279,7 +1279,7 @@ export class OrderItemModel {
     condition: Partial<OrderItemType>,
     newOrderItem: NewOrderItem,
   ): Promise<OrderItemModel> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof OrderItemType
 
@@ -1310,7 +1310,7 @@ export class OrderItemModel {
     condition: Partial<OrderItemType>,
     newOrderItem: NewOrderItem,
   ): Promise<OrderItemModel> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     const key = Object.keys(condition)[0] as keyof OrderItemType
 
@@ -1395,7 +1395,7 @@ export class OrderItemModel {
   }
 
   static with(relations: string[]): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.withRelations = relations
 
@@ -1440,7 +1440,7 @@ export class OrderItemModel {
   }
 
   static orderBy(column: keyof OrderItemsTable, order: 'asc' | 'desc'): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
@@ -1454,7 +1454,7 @@ export class OrderItemModel {
   }
 
   static groupBy(column: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
@@ -1468,7 +1468,7 @@ export class OrderItemModel {
   }
 
   static having<V = string>(column: keyof OrderItemsTable, operator: Operator, value: V): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
@@ -1482,7 +1482,7 @@ export class OrderItemModel {
   }
 
   static inRandomOrder(): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
@@ -1496,7 +1496,7 @@ export class OrderItemModel {
   }
 
   static orderByDesc(column: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
@@ -1510,7 +1510,7 @@ export class OrderItemModel {
   }
 
   static orderByAsc(column: keyof OrderItemsTable): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
@@ -1652,7 +1652,7 @@ export class OrderItemModel {
   }
 
   static distinct(column: keyof OrderItemType): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1668,7 +1668,7 @@ export class OrderItemModel {
   }
 
   static join(table: string, firstCol: string, secondCol: string): OrderItemModel {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
