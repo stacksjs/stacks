@@ -13,13 +13,13 @@ export interface DeploymentsTable {
   id: number
   user_id?: number
   user?: UserModel
-  commit_sha?: string
-  commit_message?: string
-  branch?: string
-  status?: string
-  execution_time?: number
-  deploy_script?: string
-  terminal_output?: string
+  commit_sha: string
+  commit_message: string
+  branch: string
+  status: string
+  execution_time: number
+  deploy_script: string
+  terminal_output: string
   uuid?: string
 
   created_at?: Date

@@ -786,7 +786,7 @@ export async function generateModelString(
   for (const attribute of attributes) {
     const entity = mapEntity(attribute)
 
-    fieldString += ` ${snakeCase(attribute.field)}?: ${entity}\n     `
+    fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
     // declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
     getFields += `get ${snakeCase(attribute.field)}(): ${entity} | undefined {
       return this.attributes.${snakeCase(attribute.field)}

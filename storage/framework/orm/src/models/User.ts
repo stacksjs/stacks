@@ -30,10 +30,10 @@ export interface UsersTable {
   payment_methods?: PaymentMethodModel[] | undefined
   posts?: PostModel[] | undefined
   payment_transactions?: PaymentTransactionModel[] | undefined
-  name?: string
-  email?: string
-  job_title?: string
-  password?: string
+  name: string
+  email: string
+  job_title: string
+  password: string
   public_passkey?: string
   stripe_id?: string
   uuid?: string

@@ -7,7 +7,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
   id: number
-  email?: string
+  email: string
 
   created_at?: Date
 

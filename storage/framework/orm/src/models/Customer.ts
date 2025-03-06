@@ -17,13 +17,13 @@ export interface CustomersTable {
   orders?: OrderModel[] | undefined
   user_id?: number
   user?: UserModel
-  name?: string
-  email?: string
-  phone?: string
-  total_spent?: number
-  last_order?: string
-  status?: string | string[]
-  avatar?: string
+  name: string
+  email: string
+  phone: string
+  total_spent: number
+  last_order: string
+  status: string | string[]
+  avatar: string
   uuid?: string
 
   created_at?: Date

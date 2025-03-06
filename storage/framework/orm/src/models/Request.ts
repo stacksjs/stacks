@@ -7,14 +7,14 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface RequestsTable {
   id: number
-  method?: string | string[]
-  path?: string
-  status_code?: number
-  duration_ms?: number
-  ip_address?: string
-  memory_usage?: number
-  user_agent?: string
-  error_message?: string
+  method: string | string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
 
   created_at?: Date
 

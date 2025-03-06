@@ -14,13 +14,13 @@ export interface TransactionsTable {
   id: number
   order_id?: number
   order?: OrderModel
-  amount?: number
-  status?: string
-  payment_method?: string
-  payment_details?: string
-  transaction_reference?: string
-  loyalty_points_earned?: number
-  loyalty_points_redeemed?: number
+  amount: number
+  status: string
+  payment_method: string
+  payment_details: string
+  transaction_reference: string
+  loyalty_points_earned: number
+  loyalty_points_redeemed: number
   uuid?: string
 
   created_at?: Date

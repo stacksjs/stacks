@@ -19,11 +19,11 @@ export interface PaymentTransactionsTable {
   user?: UserModel
   payment_method_id?: number
   payment_method?: PaymentMethodModel
-  name?: string
-  description?: string
-  amount?: number
-  type?: string
-  provider_id?: string
+  name: string
+  description: string
+  amount: number
+  type: string
+  provider_id: string
   uuid?: string
 
   created_at?: Date

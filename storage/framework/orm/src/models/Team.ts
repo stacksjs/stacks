@@ -11,14 +11,14 @@ import User from './User'
 export interface TeamsTable {
   id: number
   personal_access_tokens?: AccessTokenModel[] | undefined
-  name?: string
-  company_name?: string
-  email?: string
-  billing_email?: string
-  status?: string
-  description?: string
-  path?: string
-  is_personal?: boolean
+  name: string
+  company_name: string
+  email: string
+  billing_email: string
+  status: string
+  description: string
+  path: string
+  is_personal: boolean
 
   created_at?: Date
 

@@ -7,7 +7,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
   id: number
-  version?: string
+  version: string
 
   created_at?: Date
 

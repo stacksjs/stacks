@@ -9,13 +9,13 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface LoyaltyPointsTable {
   id: number
-  wallet_id?: string
-  points?: number
-  source?: string
-  source_reference_id?: string
-  description?: string
-  expiry_date?: string
-  is_used?: boolean
+  wallet_id: string
+  points: number
+  source: string
+  source_reference_id: string
+  description: string
+  expiry_date: string
+  is_used: boolean
   uuid?: string
 
   created_at?: Date

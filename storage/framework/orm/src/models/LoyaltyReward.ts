@@ -14,15 +14,15 @@ export interface LoyaltyRewardsTable {
   id: number
   product_id?: number
   product?: ProductModel
-  name?: string
-  description?: string
-  points_required?: number
-  reward_type?: string
-  discount_percentage?: number
-  free_product_id?: string
-  is_active?: boolean
-  expiry_days?: number
-  image_url?: string
+  name: string
+  description: string
+  points_required: number
+  reward_type: string
+  discount_percentage: number
+  free_product_id: string
+  is_active: boolean
+  expiry_days: number
+  image_url: string
   uuid?: string
 
   created_at?: Date

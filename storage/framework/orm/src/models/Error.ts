@@ -7,11 +7,11 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
   id: number
-  type?: string
-  message?: string
-  stack?: string
-  status?: number
-  additional_info?: string
+  type: string
+  message: string
+  stack: string
+  status: number
+  additional_info: string
 
   created_at?: Date
 

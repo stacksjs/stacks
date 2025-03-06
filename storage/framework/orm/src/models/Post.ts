@@ -12,8 +12,8 @@ export interface PostsTable {
   id: number
   user_id?: number
   user?: UserModel
-  title?: string
-  body?: string
+  title: string
+  body: string
 
   created_at?: Date
 

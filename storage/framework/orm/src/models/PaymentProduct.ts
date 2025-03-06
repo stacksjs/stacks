@@ -8,13 +8,13 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
   id: number
-  name?: string
-  description?: number
-  key?: number
-  unit_price?: number
-  status?: string
-  image?: string
-  provider_id?: string
+  name: string
+  description: number
+  key: number
+  unit_price: number
+  status: string
+  image: string
+  provider_id: string
   uuid?: string
 
   created_at?: Date

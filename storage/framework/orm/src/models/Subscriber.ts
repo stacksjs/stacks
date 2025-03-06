@@ -7,7 +7,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscribersTable {
   id: number
-  subscribed?: boolean
+  subscribed: boolean
 
   created_at?: Date
 

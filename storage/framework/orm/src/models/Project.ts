@@ -7,10 +7,10 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
   id: number
-  name?: string
-  description?: string
-  url?: string
-  status?: string
+  name: string
+  description: string
+  url: string
+  status: string
 
   created_at?: Date
 

@@ -7,11 +7,11 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
   id: number
-  connection?: string
-  queue?: string
-  payload?: string
-  exception?: string
-  failed_at?: Date | string
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: Date | string
 
   created_at?: Date
 

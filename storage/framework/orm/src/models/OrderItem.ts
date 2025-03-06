@@ -18,9 +18,9 @@ export interface OrderItemsTable {
   order?: OrderModel
   product_id?: number
   product?: ProductModel
-  quantity?: number
-  price?: number
-  special_instructions?: string
+  quantity: number
+  price: number
+  special_instructions: string
 
   created_at?: Date
 
