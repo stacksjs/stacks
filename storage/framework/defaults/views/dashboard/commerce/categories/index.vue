@@ -367,7 +367,7 @@ const initialColors: Record<string, string> = {
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
                         <div v-if="category.featured" class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500"></div>
-                        <div v-else class="i-hugeicons-close-circle h-5 w-5 text-gray-400"></div>
+                        <div v-else class="i-hugeicons-cancel-circle h-5 w-5 text-gray-400"></div>
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 text-right">
                         {{ category.createdAt }}

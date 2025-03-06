@@ -1244,14 +1244,14 @@ watch(waitlistEntries, () => {
                 @click="bulkChangeStatus('Notified')"
                 class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
-                <div class="i-hugeicons-check-circle h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                 Mark as Notified
               </button>
               <button
                 @click="bulkChangeStatus('Purchased')"
                 class="inline-flex items-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
               >
-                <div class="i-hugeicons-shopping-cart h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-shopping-cart-01 h-4 w-4 mr-1"></div>
                 Mark as Purchased
               </button>
             </div>

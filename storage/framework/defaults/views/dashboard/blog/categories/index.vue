@@ -401,7 +401,7 @@ const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 
         <div v-if="hasSelectedCategories" class="mt-4 bg-blue-50 p-4 rounded-lg shadow-sm dark:bg-blue-900/20">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="i-hugeicons-check-circle h-5 w-5 text-blue-400 mr-2"></div>
+              <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-400 mr-2"></div>
               <span class="text-sm text-blue-800 dark:text-blue-300">{{ selectedCategoryIds.length }} categories selected</span>
             </div>
             <div class="flex space-x-2">

@@ -1316,14 +1316,14 @@ watch(waitlistEntries, () => {
                 @click="bulkChangeStatus('Seated')"
                 class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
-                <div class="i-hugeicons-check-circle h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                 Mark as Seated
               </button>
               <button
                 @click="bulkChangeStatus('No Show')"
                 class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
               >
-                <div class="i-hugeicons-close-circle h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-cancel-circle h-4 w-4 mr-1"></div>
                 Mark as No Show
               </button>
             </div>

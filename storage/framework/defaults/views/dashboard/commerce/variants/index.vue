@@ -393,7 +393,7 @@ function addVariantType(): void {
                             class="ml-1 text-blue-400 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-100"
                             @click="removeOption(index)"
                           >
-                            <div class="i-hugeicons-close-circle h-4 w-4"></div>
+                            <div class="i-hugeicons-cancel-circle h-4 w-4"></div>
                           </button>
                         </div>
                       </div>

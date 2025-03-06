@@ -674,7 +674,7 @@ const statsCards = [
                     <!-- Hits/Misses Stats -->
                     <div class="mt-3 flex items-center space-x-4 text-xs">
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-check-circle h-4 w-4 text-green-500" />
+                        <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 text-green-500" />
                         <span class="font-mono text-gray-500 dark:text-gray-400">{{ key.hits }} hits</span>
                       </div>
                       <div class="flex items-center space-x-1">

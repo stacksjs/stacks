@@ -322,7 +322,7 @@ const averageEngagement = '4.2%'
                     </div>
                     <div class="mt-2 flex space-x-2">
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
-                        <div class="i-hugeicons-check-circle h-4 w-4 mr-1"></div>
+                        <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                         Approve
                       </button>
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
