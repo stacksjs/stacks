@@ -437,6 +437,7 @@ function openEditEntryModal(entry: WaitlistEntry): void {
 
 function saveEntry(): void {
   const now = new Date()
+  const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
   const entry: WaitlistEntry = {
     id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
     name: entryName.value,
@@ -447,7 +448,7 @@ function saveEntry(): void {
     notificationPreference: entryNotificationPreference.value,
     notes: entryNotes.value || null,
     status: 'Waiting',
-    dateAdded: now.toISOString().split('T')[0],
+    dateAdded: formattedDate,
     notified: false,
     priority: entryPriority.value,
     lastNotified: null,
@@ -969,7 +970,7 @@ function updateCharts(): void {
     })
 
     chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`)
-    if (chart.data.datasets && chart.data.datasets.length > 0) {
+    if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = partySizeCounts
     }
     chart.update()
@@ -979,7 +980,7 @@ function updateCharts(): void {
     const chart = sourceChart as Chart<'doughnut'>
     const sourceLabels = sources.slice(1)
     chart.data.labels = sourceLabels
-    if (chart.data.datasets && chart.data.datasets.length > 0) {
+    if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = sourceLabels.map(source =>
         waitlistEntries.value.filter(entry =>
           entry.source ? entry.source === source : false
@@ -993,7 +994,7 @@ function updateCharts(): void {
     const chart = statusChart as Chart<'pie'>
     const statusLabels = statuses.slice(1)
     chart.data.labels = statusLabels
-    if (chart.data.datasets && chart.data.datasets.length > 0) {
+    if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = statusLabels.map(status =>
         waitlistEntries.value.filter(entry => entry.status === status).length
       )
@@ -1005,7 +1006,7 @@ function updateCharts(): void {
     const chart = trendChart as Chart<'line'>
     const dates = trendData.value.map(d => d.date)
     chart.data.labels = dates
-    if (chart.data.datasets && chart.data.datasets.length > 0) {
+    if (chart.data.datasets?.[0]) {
       chart.data.datasets[0].data = trendData.value.map(d => d.count)
     }
     chart.update()
