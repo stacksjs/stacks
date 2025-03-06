@@ -1,13 +1,14 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
+import DocsPlayground from './DocsPlayground.vue'
+import DialogCode from './DialogCode.md'
 
 const visible = ref(false)
 
 type Transition = 'fade' | 'slideInDown' | 'pop' | 'fadeInRightBig' | 'jackInTheBox' | 'slideInRight' | 'custom-transition'
 
 const currentTransition = ref<Transition>('fade')
-const transitionList = ref<Transition[]>(['fade', 'pop', 'fadeInRightBig', 'jackInTheBox', 'slideInDown', 'slideInRight', 'custom-transition'])
 
 function handleOpen(name: Transition) {
   currentTransition.value = name
@@ -22,47 +23,22 @@ function handleClose() {
 
 <template>
   <div class="max-w-4xl">
-    <!-- Basic Section -->
-    <div class="space-y-4 mb-12">
-      <div class="flex flex-col">
-        <h2 class="text-2xl font-semibold text-gray-900">Basic</h2>
-        <p class="text-gray-600 mt-1">Click the button below to show a basic dialog</p>
-      </div>
-
+    <DocsPlayground>
+      <div class="space-y-4 mb-12 flex flex-col items-center justify-center items-center h-[300px]">
       <button
         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
         @click="handleOpen('fade')"
       >
-        <div class="i-hugeicons-presentation-chart-line-20-solid mr-2 w-5 h-5" />
-        Show Dialog
+
+      <div class="mr-2 w-5 h-5" />
+        <i class="hgi hgi-stroke hgi-check " /> Show Dialog
       </button>
     </div>
 
-    <!-- Transition Dialog Section -->
-    <div class="space-y-6">
-      <div class="flex flex-col">
-        <h2 class="text-2xl font-semibold text-gray-900">Transition Dialog</h2>
-        <p class="text-gray-600 mt-1">Try different transition effects for the dialog</p>
-      </div>
-
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        <button
-          v-for="(trans, index) in transitionList"
-          :key="index"
-          class="relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2"
-          :class="{
-            'bg-indigo-50 text-indigo-700 border-2 border-indigo-200 hover:bg-indigo-100 focus:ring-indigo-500': currentTransition === trans,
-            'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 focus:ring-gray-500': currentTransition !== trans
-          }"
-          @click="handleOpen(trans)"
-        >
-          <span class="flex items-center justify-center gap-2">
-            <div v-if="currentTransition === trans" class="i-hugeicons-check-circle-20-solid w-5 h-5" />
-            {{ trans }}
-          </span>
-        </button>
-      </div>
-    </div>
+    <template #code>
+      <DialogCode />
+    </template>
+    </DocsPlayground>
 
     <!-- Dialog Component -->
     <transition name="fade" appear>
