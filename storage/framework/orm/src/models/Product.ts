@@ -321,7 +321,7 @@ export class ProductModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     cache.getOrSet(`product:${id}`, JSON.stringify(model))
 
@@ -340,7 +340,7 @@ export class ProductModel {
   }
 
   async first(): Promise<ProductModel | undefined> {
-    let model: ProductModel | undefined
+    let model: ProductJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -354,13 +354,13 @@ export class ProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
 
   static async first(): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(null)
+    const instance = new ProductJsonResponse(null)
 
     const model = await DB.instance.selectFrom('products')
       .selectAll()
@@ -368,7 +368,7 @@ export class ProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -384,7 +384,7 @@ export class ProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -424,7 +424,7 @@ export class ProductModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -1385,7 +1385,7 @@ export class ProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -1403,7 +1403,7 @@ export class ProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -1550,7 +1550,7 @@ export class ProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }
@@ -1561,7 +1561,7 @@ export class ProductModel {
     if (!model)
       return undefined
 
-    const data = new ProductModel(model as ProductType)
+    const data = new ProductModel(model)
 
     return data
   }

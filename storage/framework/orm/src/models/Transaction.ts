@@ -294,7 +294,7 @@ export class TransactionModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
 
@@ -313,7 +313,7 @@ export class TransactionModel {
   }
 
   async first(): Promise<TransactionModel | undefined> {
-    let model: TransactionModel | undefined
+    let model: TransactionJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -327,13 +327,13 @@ export class TransactionModel {
       await this.loadRelations(model)
     }
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
 
   static async first(): Promise<TransactionModel | undefined> {
-    const instance = new TransactionModel(null)
+    const instance = new TransactionJsonResponse(null)
 
     const model = await DB.instance.selectFrom('transactions')
       .selectAll()
@@ -341,7 +341,7 @@ export class TransactionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -357,7 +357,7 @@ export class TransactionModel {
       await this.loadRelations(model)
     }
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -397,7 +397,7 @@ export class TransactionModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -1334,7 +1334,7 @@ export class TransactionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -1352,7 +1352,7 @@ export class TransactionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -1499,7 +1499,7 @@ export class TransactionModel {
       await this.loadRelations(model)
     }
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }
@@ -1510,7 +1510,7 @@ export class TransactionModel {
     if (!model)
       return undefined
 
-    const data = new TransactionModel(model as TransactionType)
+    const data = new TransactionModel(model)
 
     return data
   }

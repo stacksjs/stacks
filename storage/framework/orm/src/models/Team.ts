@@ -287,7 +287,7 @@ export class TeamModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     cache.getOrSet(`team:${id}`, JSON.stringify(model))
 
@@ -306,7 +306,7 @@ export class TeamModel {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    let model: TeamModel | undefined
+    let model: TeamJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -320,13 +320,13 @@ export class TeamModel {
       await this.loadRelations(model)
     }
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
 
   static async first(): Promise<TeamModel | undefined> {
-    const instance = new TeamModel(null)
+    const instance = new TeamJsonResponse(null)
 
     const model = await DB.instance.selectFrom('teams')
       .selectAll()
@@ -334,7 +334,7 @@ export class TeamModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -350,7 +350,7 @@ export class TeamModel {
       await this.loadRelations(model)
     }
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -390,7 +390,7 @@ export class TeamModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -1318,7 +1318,7 @@ export class TeamModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -1336,7 +1336,7 @@ export class TeamModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -1483,7 +1483,7 @@ export class TeamModel {
       await this.loadRelations(model)
     }
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }
@@ -1494,7 +1494,7 @@ export class TeamModel {
     if (!model)
       return undefined
 
-    const data = new TeamModel(model as TeamType)
+    const data = new TeamModel(model)
 
     return data
   }

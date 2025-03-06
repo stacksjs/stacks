@@ -309,7 +309,7 @@ export class CustomerModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     cache.getOrSet(`customer:${id}`, JSON.stringify(model))
 
@@ -328,7 +328,7 @@ export class CustomerModel {
   }
 
   async first(): Promise<CustomerModel | undefined> {
-    let model: CustomerModel | undefined
+    let model: CustomerJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -342,13 +342,13 @@ export class CustomerModel {
       await this.loadRelations(model)
     }
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
 
   static async first(): Promise<CustomerModel | undefined> {
-    const instance = new CustomerModel(null)
+    const instance = new CustomerJsonResponse(null)
 
     const model = await DB.instance.selectFrom('customers')
       .selectAll()
@@ -356,7 +356,7 @@ export class CustomerModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -372,7 +372,7 @@ export class CustomerModel {
       await this.loadRelations(model)
     }
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -412,7 +412,7 @@ export class CustomerModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -1349,7 +1349,7 @@ export class CustomerModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -1367,7 +1367,7 @@ export class CustomerModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -1514,7 +1514,7 @@ export class CustomerModel {
       await this.loadRelations(model)
     }
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }
@@ -1525,7 +1525,7 @@ export class CustomerModel {
     if (!model)
       return undefined
 
-    const data = new CustomerModel(model as CustomerType)
+    const data = new CustomerModel(model)
 
     return data
   }

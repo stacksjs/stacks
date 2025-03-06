@@ -216,7 +216,7 @@ export class ReleaseModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     cache.getOrSet(`release:${id}`, JSON.stringify(model))
 
@@ -235,7 +235,7 @@ export class ReleaseModel {
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    let model: ReleaseModel | undefined
+    let model: ReleaseJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -249,13 +249,13 @@ export class ReleaseModel {
       await this.loadRelations(model)
     }
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
-    const instance = new ReleaseModel(null)
+    const instance = new ReleaseJsonResponse(null)
 
     const model = await DB.instance.selectFrom('releases')
       .selectAll()
@@ -263,7 +263,7 @@ export class ReleaseModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -279,7 +279,7 @@ export class ReleaseModel {
       await this.loadRelations(model)
     }
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -319,7 +319,7 @@ export class ReleaseModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -1191,7 +1191,7 @@ export class ReleaseModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -1209,7 +1209,7 @@ export class ReleaseModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -1356,7 +1356,7 @@ export class ReleaseModel {
       await this.loadRelations(model)
     }
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }
@@ -1367,7 +1367,7 @@ export class ReleaseModel {
     if (!model)
       return undefined
 
-    const data = new ReleaseModel(model as ReleaseType)
+    const data = new ReleaseModel(model)
 
     return data
   }

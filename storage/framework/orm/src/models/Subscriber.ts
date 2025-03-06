@@ -216,7 +216,7 @@ export class SubscriberModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
 
@@ -235,7 +235,7 @@ export class SubscriberModel {
   }
 
   async first(): Promise<SubscriberModel | undefined> {
-    let model: SubscriberModel | undefined
+    let model: SubscriberJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -249,13 +249,13 @@ export class SubscriberModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
 
   static async first(): Promise<SubscriberModel | undefined> {
-    const instance = new SubscriberModel(null)
+    const instance = new SubscriberJsonResponse(null)
 
     const model = await DB.instance.selectFrom('subscribers')
       .selectAll()
@@ -263,7 +263,7 @@ export class SubscriberModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -279,7 +279,7 @@ export class SubscriberModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -319,7 +319,7 @@ export class SubscriberModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -1191,7 +1191,7 @@ export class SubscriberModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -1209,7 +1209,7 @@ export class SubscriberModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -1356,7 +1356,7 @@ export class SubscriberModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }
@@ -1367,7 +1367,7 @@ export class SubscriberModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberModel(model as SubscriberType)
+    const data = new SubscriberModel(model)
 
     return data
   }

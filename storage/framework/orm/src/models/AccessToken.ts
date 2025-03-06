@@ -324,7 +324,7 @@ export class AccessTokenModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
 
@@ -343,7 +343,7 @@ export class AccessTokenModel {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    let model: AccessTokenModel | undefined
+    let model: AccessTokenJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -357,13 +357,13 @@ export class AccessTokenModel {
       await this.loadRelations(model)
     }
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenModel(null)
+    const instance = new AccessTokenJsonResponse(null)
 
     const model = await DB.instance.selectFrom('personal_access_tokens')
       .selectAll()
@@ -371,7 +371,7 @@ export class AccessTokenModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -387,7 +387,7 @@ export class AccessTokenModel {
       await this.loadRelations(model)
     }
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -427,7 +427,7 @@ export class AccessTokenModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -1371,7 +1371,7 @@ export class AccessTokenModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -1389,7 +1389,7 @@ export class AccessTokenModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -1536,7 +1536,7 @@ export class AccessTokenModel {
       await this.loadRelations(model)
     }
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }
@@ -1547,7 +1547,7 @@ export class AccessTokenModel {
     if (!model)
       return undefined
 
-    const data = new AccessTokenModel(model as AccessTokenType)
+    const data = new AccessTokenModel(model)
 
     return data
   }

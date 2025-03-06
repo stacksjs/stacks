@@ -320,7 +320,7 @@ export class SubscriptionModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
 
@@ -339,7 +339,7 @@ export class SubscriptionModel {
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    let model: SubscriptionModel | undefined
+    let model: SubscriptionJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -353,13 +353,13 @@ export class SubscriptionModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionModel(null)
+    const instance = new SubscriptionJsonResponse(null)
 
     const model = await DB.instance.selectFrom('subscriptions')
       .selectAll()
@@ -367,7 +367,7 @@ export class SubscriptionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -383,7 +383,7 @@ export class SubscriptionModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -423,7 +423,7 @@ export class SubscriptionModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -1371,7 +1371,7 @@ export class SubscriptionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -1389,7 +1389,7 @@ export class SubscriptionModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -1536,7 +1536,7 @@ export class SubscriptionModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }
@@ -1547,7 +1547,7 @@ export class SubscriptionModel {
     if (!model)
       return undefined
 
-    const data = new SubscriptionModel(model as SubscriptionType)
+    const data = new SubscriptionModel(model)
 
     return data
   }

@@ -243,7 +243,7 @@ export class ProjectModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     cache.getOrSet(`project:${id}`, JSON.stringify(model))
 
@@ -262,7 +262,7 @@ export class ProjectModel {
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    let model: ProjectModel | undefined
+    let model: ProjectJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -276,13 +276,13 @@ export class ProjectModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
 
   static async first(): Promise<ProjectModel | undefined> {
-    const instance = new ProjectModel(null)
+    const instance = new ProjectJsonResponse(null)
 
     const model = await DB.instance.selectFrom('projects')
       .selectAll()
@@ -290,7 +290,7 @@ export class ProjectModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -306,7 +306,7 @@ export class ProjectModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -346,7 +346,7 @@ export class ProjectModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -1242,7 +1242,7 @@ export class ProjectModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -1260,7 +1260,7 @@ export class ProjectModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -1407,7 +1407,7 @@ export class ProjectModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }
@@ -1418,7 +1418,7 @@ export class ProjectModel {
     if (!model)
       return undefined
 
-    const data = new ProjectModel(model as ProjectType)
+    const data = new ProjectModel(model)
 
     return data
   }

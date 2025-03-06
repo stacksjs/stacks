@@ -252,7 +252,7 @@ export class ErrorModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     cache.getOrSet(`error:${id}`, JSON.stringify(model))
 
@@ -271,7 +271,7 @@ export class ErrorModel {
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    let model: ErrorModel | undefined
+    let model: ErrorJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -285,13 +285,13 @@ export class ErrorModel {
       await this.loadRelations(model)
     }
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
 
   static async first(): Promise<ErrorModel | undefined> {
-    const instance = new ErrorModel(null)
+    const instance = new ErrorJsonResponse(null)
 
     const model = await DB.instance.selectFrom('errors')
       .selectAll()
@@ -299,7 +299,7 @@ export class ErrorModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -315,7 +315,7 @@ export class ErrorModel {
       await this.loadRelations(model)
     }
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -355,7 +355,7 @@ export class ErrorModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -1259,7 +1259,7 @@ export class ErrorModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -1277,7 +1277,7 @@ export class ErrorModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -1424,7 +1424,7 @@ export class ErrorModel {
       await this.loadRelations(model)
     }
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }
@@ -1435,7 +1435,7 @@ export class ErrorModel {
     if (!model)
       return undefined
 
-    const data = new ErrorModel(model as ErrorType)
+    const data = new ErrorModel(model)
 
     return data
   }

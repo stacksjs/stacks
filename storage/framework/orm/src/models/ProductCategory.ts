@@ -278,7 +278,7 @@ export class ProductCategoryModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     cache.getOrSet(`productcategory:${id}`, JSON.stringify(model))
 
@@ -297,7 +297,7 @@ export class ProductCategoryModel {
   }
 
   async first(): Promise<ProductCategoryModel | undefined> {
-    let model: ProductCategoryModel | undefined
+    let model: ProductCategoryJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -311,13 +311,13 @@ export class ProductCategoryModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
 
   static async first(): Promise<ProductCategoryModel | undefined> {
-    const instance = new ProductCategoryModel(null)
+    const instance = new ProductCategoryJsonResponse(null)
 
     const model = await DB.instance.selectFrom('product_categories')
       .selectAll()
@@ -325,7 +325,7 @@ export class ProductCategoryModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -341,7 +341,7 @@ export class ProductCategoryModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -381,7 +381,7 @@ export class ProductCategoryModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -1310,7 +1310,7 @@ export class ProductCategoryModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -1328,7 +1328,7 @@ export class ProductCategoryModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -1475,7 +1475,7 @@ export class ProductCategoryModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }
@@ -1486,7 +1486,7 @@ export class ProductCategoryModel {
     if (!model)
       return undefined
 
-    const data = new ProductCategoryModel(model as ProductCategoryType)
+    const data = new ProductCategoryModel(model)
 
     return data
   }

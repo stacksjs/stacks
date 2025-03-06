@@ -280,7 +280,7 @@ export class PaymentProductModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     cache.getOrSet(`paymentproduct:${id}`, JSON.stringify(model))
 
@@ -299,7 +299,7 @@ export class PaymentProductModel {
   }
 
   async first(): Promise<PaymentProductModel | undefined> {
-    let model: PaymentProductModel | undefined
+    let model: PaymentProductJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -313,13 +313,13 @@ export class PaymentProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
 
   static async first(): Promise<PaymentProductModel | undefined> {
-    const instance = new PaymentProductModel(null)
+    const instance = new PaymentProductJsonResponse(null)
 
     const model = await DB.instance.selectFrom('payment_products')
       .selectAll()
@@ -327,7 +327,7 @@ export class PaymentProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -343,7 +343,7 @@ export class PaymentProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -383,7 +383,7 @@ export class PaymentProductModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -1307,7 +1307,7 @@ export class PaymentProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -1325,7 +1325,7 @@ export class PaymentProductModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -1472,7 +1472,7 @@ export class PaymentProductModel {
       await this.loadRelations(model)
     }
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }
@@ -1483,7 +1483,7 @@ export class PaymentProductModel {
     if (!model)
       return undefined
 
-    const data = new PaymentProductModel(model as PaymentProductType)
+    const data = new PaymentProductModel(model)
 
     return data
   }

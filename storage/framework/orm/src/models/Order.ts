@@ -351,7 +351,7 @@ export class OrderModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     cache.getOrSet(`order:${id}`, JSON.stringify(model))
 
@@ -370,7 +370,7 @@ export class OrderModel {
   }
 
   async first(): Promise<OrderModel | undefined> {
-    let model: OrderModel | undefined
+    let model: OrderJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -384,13 +384,13 @@ export class OrderModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
 
   static async first(): Promise<OrderModel | undefined> {
-    const instance = new OrderModel(null)
+    const instance = new OrderJsonResponse(null)
 
     const model = await DB.instance.selectFrom('orders')
       .selectAll()
@@ -398,7 +398,7 @@ export class OrderModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -414,7 +414,7 @@ export class OrderModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -454,7 +454,7 @@ export class OrderModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -1423,7 +1423,7 @@ export class OrderModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -1441,7 +1441,7 @@ export class OrderModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -1588,7 +1588,7 @@ export class OrderModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }
@@ -1599,7 +1599,7 @@ export class OrderModel {
     if (!model)
       return undefined
 
-    const data = new OrderModel(model as OrderType)
+    const data = new OrderModel(model)
 
     return data
   }

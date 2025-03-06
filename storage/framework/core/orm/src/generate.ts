@@ -1103,7 +1103,7 @@ export async function generateModelString(
           this.mapCustomGetters(model)
           await this.loadRelations(model)
           
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
   
@@ -1136,13 +1136,13 @@ export async function generateModelString(
             await this.loadRelations(model)
           }
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }
         
         static async first(): Promise<${modelName}Model | undefined> {
-          const instance = new ${modelName}Model(null)
+          const instance = new ${modelName}JsonResponse(null)
 
           const model = await DB.instance.selectFrom('${tableName}')
             .selectAll()
@@ -1150,7 +1150,7 @@ export async function generateModelString(
 
           instance.mapCustomGetters(model)
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }
@@ -1166,7 +1166,7 @@ export async function generateModelString(
             await this.loadRelations(model)
           }
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }
@@ -1208,7 +1208,7 @@ export async function generateModelString(
           this.mapCustomGetters(model)
           await this.loadRelations(model)
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }
@@ -2088,7 +2088,7 @@ export async function generateModelString(
 
           instance.mapCustomGetters(model)
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
 
           return data
         }
@@ -2106,7 +2106,7 @@ export async function generateModelString(
 
           instance.mapCustomGetters(model)
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
 
           return data
         }
@@ -2250,7 +2250,7 @@ export async function generateModelString(
             await this.loadRelations(model)
           }
 
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }
@@ -2261,7 +2261,7 @@ export async function generateModelString(
           if (!model)
             return undefined
   
-          const data = new ${modelName}Model(model as ${modelName}Type)
+          const data = new ${modelName}Model(model)
   
           return data
         }

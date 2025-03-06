@@ -226,7 +226,7 @@ export class SubscriberEmailModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
 
@@ -245,7 +245,7 @@ export class SubscriberEmailModel {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    let model: SubscriberEmailModel | undefined
+    let model: SubscriberEmailJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -259,13 +259,13 @@ export class SubscriberEmailModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
 
   static async first(): Promise<SubscriberEmailModel | undefined> {
-    const instance = new SubscriberEmailModel(null)
+    const instance = new SubscriberEmailJsonResponse(null)
 
     const model = await DB.instance.selectFrom('subscriber_emails')
       .selectAll()
@@ -273,7 +273,7 @@ export class SubscriberEmailModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -289,7 +289,7 @@ export class SubscriberEmailModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -333,7 +333,7 @@ export class SubscriberEmailModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -1220,7 +1220,7 @@ export class SubscriberEmailModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -1238,7 +1238,7 @@ export class SubscriberEmailModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -1385,7 +1385,7 @@ export class SubscriberEmailModel {
       await this.loadRelations(model)
     }
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }
@@ -1396,7 +1396,7 @@ export class SubscriberEmailModel {
     if (!model)
       return undefined
 
-    const data = new SubscriberEmailModel(model as SubscriberEmailType)
+    const data = new SubscriberEmailModel(model)
 
     return data
   }

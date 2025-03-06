@@ -293,7 +293,7 @@ export class DeploymentModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
 
@@ -312,7 +312,7 @@ export class DeploymentModel {
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    let model: DeploymentModel | undefined
+    let model: DeploymentJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -326,13 +326,13 @@ export class DeploymentModel {
       await this.loadRelations(model)
     }
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentModel(null)
+    const instance = new DeploymentJsonResponse(null)
 
     const model = await DB.instance.selectFrom('deployments')
       .selectAll()
@@ -340,7 +340,7 @@ export class DeploymentModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -356,7 +356,7 @@ export class DeploymentModel {
       await this.loadRelations(model)
     }
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -396,7 +396,7 @@ export class DeploymentModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -1320,7 +1320,7 @@ export class DeploymentModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -1338,7 +1338,7 @@ export class DeploymentModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -1485,7 +1485,7 @@ export class DeploymentModel {
       await this.loadRelations(model)
     }
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }
@@ -1496,7 +1496,7 @@ export class DeploymentModel {
     if (!model)
       return undefined
 
-    const data = new DeploymentModel(model as DeploymentType)
+    const data = new DeploymentModel(model)
 
     return data
   }

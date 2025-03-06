@@ -261,7 +261,7 @@ export class OrderItemModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     cache.getOrSet(`orderitem:${id}`, JSON.stringify(model))
 
@@ -280,7 +280,7 @@ export class OrderItemModel {
   }
 
   async first(): Promise<OrderItemModel | undefined> {
-    let model: OrderItemModel | undefined
+    let model: OrderItemJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -294,13 +294,13 @@ export class OrderItemModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
 
   static async first(): Promise<OrderItemModel | undefined> {
-    const instance = new OrderItemModel(null)
+    const instance = new OrderItemJsonResponse(null)
 
     const model = await DB.instance.selectFrom('order_items')
       .selectAll()
@@ -308,7 +308,7 @@ export class OrderItemModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -324,7 +324,7 @@ export class OrderItemModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -364,7 +364,7 @@ export class OrderItemModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -1252,7 +1252,7 @@ export class OrderItemModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -1270,7 +1270,7 @@ export class OrderItemModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -1417,7 +1417,7 @@ export class OrderItemModel {
       await this.loadRelations(model)
     }
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }
@@ -1428,7 +1428,7 @@ export class OrderItemModel {
     if (!model)
       return undefined
 
-    const data = new OrderItemModel(model as OrderItemType)
+    const data = new OrderItemModel(model)
 
     return data
   }

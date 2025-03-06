@@ -238,7 +238,7 @@ export class PostModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     cache.getOrSet(`post:${id}`, JSON.stringify(model))
 
@@ -257,7 +257,7 @@ export class PostModel {
   }
 
   async first(): Promise<PostModel | undefined> {
-    let model: PostModel | undefined
+    let model: PostJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -271,13 +271,13 @@ export class PostModel {
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
 
   static async first(): Promise<PostModel | undefined> {
-    const instance = new PostModel(null)
+    const instance = new PostJsonResponse(null)
 
     const model = await DB.instance.selectFrom('posts')
       .selectAll()
@@ -285,7 +285,7 @@ export class PostModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -301,7 +301,7 @@ export class PostModel {
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -341,7 +341,7 @@ export class PostModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -1221,7 +1221,7 @@ export class PostModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -1239,7 +1239,7 @@ export class PostModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -1386,7 +1386,7 @@ export class PostModel {
       await this.loadRelations(model)
     }
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }
@@ -1397,7 +1397,7 @@ export class PostModel {
     if (!model)
       return undefined
 
-    const data = new PostModel(model as PostType)
+    const data = new PostModel(model)
 
     return data
   }

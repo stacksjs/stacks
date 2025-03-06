@@ -312,7 +312,7 @@ export class LoyaltyRewardModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     cache.getOrSet(`loyaltyreward:${id}`, JSON.stringify(model))
 
@@ -331,7 +331,7 @@ export class LoyaltyRewardModel {
   }
 
   async first(): Promise<LoyaltyRewardModel | undefined> {
-    let model: LoyaltyRewardModel | undefined
+    let model: LoyaltyRewardJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -345,13 +345,13 @@ export class LoyaltyRewardModel {
       await this.loadRelations(model)
     }
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
 
   static async first(): Promise<LoyaltyRewardModel | undefined> {
-    const instance = new LoyaltyRewardModel(null)
+    const instance = new LoyaltyRewardJsonResponse(null)
 
     const model = await DB.instance.selectFrom('loyalty_rewards')
       .selectAll()
@@ -359,7 +359,7 @@ export class LoyaltyRewardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -375,7 +375,7 @@ export class LoyaltyRewardModel {
       await this.loadRelations(model)
     }
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -415,7 +415,7 @@ export class LoyaltyRewardModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -1368,7 +1368,7 @@ export class LoyaltyRewardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -1386,7 +1386,7 @@ export class LoyaltyRewardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -1533,7 +1533,7 @@ export class LoyaltyRewardModel {
       await this.loadRelations(model)
     }
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }
@@ -1544,7 +1544,7 @@ export class LoyaltyRewardModel {
     if (!model)
       return undefined
 
-    const data = new LoyaltyRewardModel(model as LoyaltyRewardType)
+    const data = new LoyaltyRewardModel(model)
 
     return data
   }

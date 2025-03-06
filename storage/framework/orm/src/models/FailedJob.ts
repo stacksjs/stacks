@@ -252,7 +252,7 @@ export class FailedJobModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
 
@@ -271,7 +271,7 @@ export class FailedJobModel {
   }
 
   async first(): Promise<FailedJobModel | undefined> {
-    let model: FailedJobModel | undefined
+    let model: FailedJobJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -285,13 +285,13 @@ export class FailedJobModel {
       await this.loadRelations(model)
     }
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
 
   static async first(): Promise<FailedJobModel | undefined> {
-    const instance = new FailedJobModel(null)
+    const instance = new FailedJobJsonResponse(null)
 
     const model = await DB.instance.selectFrom('failed_jobs')
       .selectAll()
@@ -299,7 +299,7 @@ export class FailedJobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -315,7 +315,7 @@ export class FailedJobModel {
       await this.loadRelations(model)
     }
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -355,7 +355,7 @@ export class FailedJobModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -1259,7 +1259,7 @@ export class FailedJobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -1277,7 +1277,7 @@ export class FailedJobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -1424,7 +1424,7 @@ export class FailedJobModel {
       await this.loadRelations(model)
     }
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }
@@ -1435,7 +1435,7 @@ export class FailedJobModel {
     if (!model)
       return undefined
 
-    const data = new FailedJobModel(model as FailedJobType)
+    const data = new FailedJobModel(model)
 
     return data
   }

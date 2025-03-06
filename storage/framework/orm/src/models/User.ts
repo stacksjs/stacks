@@ -327,7 +327,7 @@ export class UserModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     cache.getOrSet(`user:${id}`, JSON.stringify(model))
 
@@ -346,7 +346,7 @@ export class UserModel {
   }
 
   async first(): Promise<UserModel | undefined> {
-    let model: UserModel | undefined
+    let model: UserJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -360,13 +360,13 @@ export class UserModel {
       await this.loadRelations(model)
     }
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
 
   static async first(): Promise<UserModel | undefined> {
-    const instance = new UserModel(null)
+    const instance = new UserJsonResponse(null)
 
     const model = await DB.instance.selectFrom('users')
       .selectAll()
@@ -374,7 +374,7 @@ export class UserModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -390,7 +390,7 @@ export class UserModel {
       await this.loadRelations(model)
     }
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -430,7 +430,7 @@ export class UserModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -1343,7 +1343,7 @@ export class UserModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -1361,7 +1361,7 @@ export class UserModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -1508,7 +1508,7 @@ export class UserModel {
       await this.loadRelations(model)
     }
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }
@@ -1519,7 +1519,7 @@ export class UserModel {
     if (!model)
       return undefined
 
-    const data = new UserModel(model as UserType)
+    const data = new UserModel(model)
 
     return data
   }

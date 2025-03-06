@@ -364,7 +364,7 @@ export class CouponModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     cache.getOrSet(`coupon:${id}`, JSON.stringify(model))
 
@@ -383,7 +383,7 @@ export class CouponModel {
   }
 
   async first(): Promise<CouponModel | undefined> {
-    let model: CouponModel | undefined
+    let model: CouponJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -397,13 +397,13 @@ export class CouponModel {
       await this.loadRelations(model)
     }
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
 
   static async first(): Promise<CouponModel | undefined> {
-    const instance = new CouponModel(null)
+    const instance = new CouponJsonResponse(null)
 
     const model = await DB.instance.selectFrom('coupons')
       .selectAll()
@@ -411,7 +411,7 @@ export class CouponModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -427,7 +427,7 @@ export class CouponModel {
       await this.loadRelations(model)
     }
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -467,7 +467,7 @@ export class CouponModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -1460,7 +1460,7 @@ export class CouponModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -1478,7 +1478,7 @@ export class CouponModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -1625,7 +1625,7 @@ export class CouponModel {
       await this.loadRelations(model)
     }
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }
@@ -1636,7 +1636,7 @@ export class CouponModel {
     if (!model)
       return undefined
 
-    const data = new CouponModel(model as CouponType)
+    const data = new CouponModel(model)
 
     return data
   }

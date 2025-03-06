@@ -289,7 +289,7 @@ export class RequestModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     cache.getOrSet(`request:${id}`, JSON.stringify(model))
 
@@ -308,7 +308,7 @@ export class RequestModel {
   }
 
   async first(): Promise<RequestModel | undefined> {
-    let model: RequestModel | undefined
+    let model: RequestJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -322,13 +322,13 @@ export class RequestModel {
       await this.loadRelations(model)
     }
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
 
   static async first(): Promise<RequestModel | undefined> {
-    const instance = new RequestModel(null)
+    const instance = new RequestJsonResponse(null)
 
     const model = await DB.instance.selectFrom('requests')
       .selectAll()
@@ -336,7 +336,7 @@ export class RequestModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -352,7 +352,7 @@ export class RequestModel {
       await this.loadRelations(model)
     }
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -396,7 +396,7 @@ export class RequestModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -1339,7 +1339,7 @@ export class RequestModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -1357,7 +1357,7 @@ export class RequestModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -1504,7 +1504,7 @@ export class RequestModel {
       await this.loadRelations(model)
     }
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }
@@ -1515,7 +1515,7 @@ export class RequestModel {
     if (!model)
       return undefined
 
-    const data = new RequestModel(model as RequestType)
+    const data = new RequestModel(model)
 
     return data
   }

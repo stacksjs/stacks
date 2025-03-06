@@ -252,7 +252,7 @@ export class JobModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     cache.getOrSet(`job:${id}`, JSON.stringify(model))
 
@@ -271,7 +271,7 @@ export class JobModel {
   }
 
   async first(): Promise<JobModel | undefined> {
-    let model: JobModel | undefined
+    let model: JobJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -285,13 +285,13 @@ export class JobModel {
       await this.loadRelations(model)
     }
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
 
   static async first(): Promise<JobModel | undefined> {
-    const instance = new JobModel(null)
+    const instance = new JobJsonResponse(null)
 
     const model = await DB.instance.selectFrom('jobs')
       .selectAll()
@@ -299,7 +299,7 @@ export class JobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -315,7 +315,7 @@ export class JobModel {
       await this.loadRelations(model)
     }
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -355,7 +355,7 @@ export class JobModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -1259,7 +1259,7 @@ export class JobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -1277,7 +1277,7 @@ export class JobModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -1424,7 +1424,7 @@ export class JobModel {
       await this.loadRelations(model)
     }
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }
@@ -1435,7 +1435,7 @@ export class JobModel {
     if (!model)
       return undefined
 
-    const data = new JobModel(model as JobType)
+    const data = new JobModel(model)
 
     return data
   }

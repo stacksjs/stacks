@@ -373,7 +373,7 @@ export class GiftCardModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     cache.getOrSet(`giftcard:${id}`, JSON.stringify(model))
 
@@ -392,7 +392,7 @@ export class GiftCardModel {
   }
 
   async first(): Promise<GiftCardModel | undefined> {
-    let model: GiftCardModel | undefined
+    let model: GiftCardJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -406,13 +406,13 @@ export class GiftCardModel {
       await this.loadRelations(model)
     }
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
 
   static async first(): Promise<GiftCardModel | undefined> {
-    const instance = new GiftCardModel(null)
+    const instance = new GiftCardJsonResponse(null)
 
     const model = await DB.instance.selectFrom('gift_cards')
       .selectAll()
@@ -420,7 +420,7 @@ export class GiftCardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -436,7 +436,7 @@ export class GiftCardModel {
       await this.loadRelations(model)
     }
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -476,7 +476,7 @@ export class GiftCardModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -1477,7 +1477,7 @@ export class GiftCardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -1495,7 +1495,7 @@ export class GiftCardModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -1642,7 +1642,7 @@ export class GiftCardModel {
       await this.loadRelations(model)
     }
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
@@ -1653,7 +1653,7 @@ export class GiftCardModel {
     if (!model)
       return undefined
 
-    const data = new GiftCardModel(model as GiftCardType)
+    const data = new GiftCardModel(model)
 
     return data
   }
