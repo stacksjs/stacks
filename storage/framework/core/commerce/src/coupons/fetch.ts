@@ -228,7 +228,7 @@ export async function fetchStats(): Promise<CouponStats> {
   // Upcoming coupons (active but not yet started)
   const upcomingCoupons = await db
     .selectFrom('coupons')
-    .where('is_active', '=', 1)
+    .where('is_active', '=', true)
     .where('start_date', '>', currentDate)
     .select(['id', 'code', 'discount_type', 'discount_value', 'start_date', 'end_date'])
     .orderBy('start_date', 'asc')

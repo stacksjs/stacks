@@ -125,6 +125,17 @@ export interface OrderTotals {
   total_amount: number
 }
 
+/**
+ * Represents statistics for a discount type
+ */
+export interface DiscountTypeCount {
+  discount_type: string | undefined
+  count: string | number | bigint
+}
+
+/**
+ * Represents comprehensive coupon statistics
+ */
 export interface CouponStats {
   /** Total number of coupons in the system */
   total: number
@@ -137,28 +148,20 @@ export interface CouponStats {
 
   /** List of most frequently used coupons */
   most_used: {
-    id: string
-    code: string
-    discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
-    discount_value: number
-    usage_count: number
+    id: number | undefined
+    code: string | undefined
+    discount_type: string | undefined
+    discount_value: number | undefined
+    usage_count: number | undefined
   }[]
 
   /** List of upcoming coupons that will be active soon */
   upcoming: {
-    id: string
-    code: string
-    discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
-    discount_value: number
-    start_date: string
-    end_date: string
+    id: number | undefined
+    code: string | undefined
+    discount_type: string | undefined
+    discount_value: number | undefined
+    start_date: string | undefined
+    end_date: string | undefined
   }[]
-}
-
-/**
- * Represents statistics for a discount type
- */
-export interface DiscountTypeCount {
-  discount_type: 'PERCENTAGE' | 'FIXED_AMOUNT' | 'FREE_ITEM'
-  count: number
 }
