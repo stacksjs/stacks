@@ -263,14 +263,14 @@ const averageEngagement = '4.2%'
                       </td>
                       <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <div class="flex items-center justify-end space-x-2">
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                             <div class="i-hugeicons-view h-5 w-5"></div>
                           </button>
-                          <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-license-draft h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                           </button>
-                          <button type="button" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                            <div class="i-hugeicons-trash-bin h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                            <div class="i-hugeicons-waste h-5 w-5"></div>
                           </button>
                         </div>
                       </td>
@@ -326,11 +326,11 @@ const averageEngagement = '4.2%'
                         Approve
                       </button>
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
-                        <div class="i-hugeicons-license-draft h-4 w-4 mr-1"></div>
+                        <div class="i-hugeicons-edit-01 h-4 w-4 mr-1"></div>
                         Reply
                       </button>
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
-                        <div class="i-hugeicons-trash-bin h-4 w-4 mr-1"></div>
+                        <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                         Delete
                       </button>
                     </div>
@@ -367,7 +367,7 @@ const averageEngagement = '4.2%'
                     </div>
                     <div class="mt-2 flex space-x-2">
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
-                        <div class="i-hugeicons-license-draft h-4 w-4 mr-1"></div>
+                        <div class="i-hugeicons-edit-01 h-4 w-4 mr-1"></div>
                         Edit
                       </button>
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">

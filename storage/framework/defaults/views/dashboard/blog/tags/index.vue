@@ -721,7 +721,7 @@ const paginationRange = computed(() => {
             @click="confirmDeleteSelected"
             class="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
           >
-            <div class="i-hugeicons-trash-bin h-4 w-4 mr-1.5"></div>
+            <div class="i-hugeicons-waste h-4 w-4 mr-1.5"></div>
             Delete Selected
           </button>
         </div>

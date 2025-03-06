@@ -364,7 +364,7 @@ function getStatusClass(status: string): string {
                             <div class="i-hugeicons-view h-5 w-5"></div>
                           </button>
                           <button type="button" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-license-draft h-5 w-5"></div>
+                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                           </button>
                         </div>
                       </td>

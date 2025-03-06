@@ -507,7 +507,7 @@ const previewTags = computed(() => {
                 Duplicate
               </button>
               <button type="button" class="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-                <div class="i-hugeicons-trash-bin h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                 Delete
               </button>
             </div>
