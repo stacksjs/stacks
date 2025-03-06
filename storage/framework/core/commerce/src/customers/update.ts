@@ -14,13 +14,25 @@ import { db } from '@stacksjs/database'
  */
 export async function update(id: number, request: CustomerRequestType): Promise<CustomerType | undefined> {
   try {
-    // Create the update data object by picking only defined properties from the request
-    const updateData: CustomerUpdate = Object.entries(request)
-      .filter(([_, value]) => value !== undefined)
-      .reduce((obj, [key, value]) => {
-        obj[key] = value
-        return obj
-      }, {} as CustomerUpdate)
+    // Create a single update data object directly from the request
+    const updateData: CustomerUpdate = {
+      name: request.get('name'),
+      email: request.get('email'),
+      phone: request.get('phone'),
+      orders: request.get<number>('orders'),
+      total_spent: request.get<number>('totalSpent'),
+      last_order: request.get('lastOrder'),
+      status: request.get('status'),
+      avatar: request.get('avatar'),
+      user_id: request.get<number>('user_id'),
+    }
+
+    // Remove undefined values
+    Object.keys(updateData).forEach((key) => {
+      if (updateData[key as keyof CustomerUpdate] === undefined) {
+        delete updateData[key as keyof CustomerUpdate]
+      }
+    })
 
     // Skip update if no fields are provided
     if (Object.keys(updateData).length === 0) {

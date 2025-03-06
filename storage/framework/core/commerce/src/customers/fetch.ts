@@ -22,32 +22,25 @@ export interface PaginatedCustomers {
   }
 }
 
-export interface CustomerStats {
-  total: number
-  active: number
-  inactive: number
-  topSpenders: Partial<CustomersTable>[]
-  recentCustomers: Partial<CustomersTable>[]
-}
-
 /**
- * Fetch all customers from the database
+ * Fetch a customer by ID
  */
-export async function fetchAll(): Promise<CustomersTable[]> {
+export async function fetchById(id: number): Promise<CustomersTable | undefined> {
   return await db
     .selectFrom('customers')
+    .where('id', '=', id)
     .selectAll()
-    .execute()
+    .executeTakeFirst()
 }
 
 /**
- * Fetch customers with pagination, sorting, and filtering options
+ * Fetch customers with simple pagination, sorting, and basic search
+ * A minimal implementation that works well while planning for Algolia/Meilisearch
  */
 export async function fetchPaginated(options: FetchCustomersOptions = {}): Promise<PaginatedCustomers> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
-  const offset = (page - 1) * limit
   const sortBy = options.sortBy || 'created_at'
   const sortOrder = options.sortOrder || 'desc'
 
@@ -55,44 +48,35 @@ export async function fetchPaginated(options: FetchCustomersOptions = {}): Promi
   let query = db.selectFrom('customers')
   let countQuery = db.selectFrom('customers')
 
-  // Apply search filter if provided
-  if (options.search) {
-    const searchTerm = `%${options.search}%`
-    const searchFilter = eb => eb.or([
-      eb('name', 'like', searchTerm),
-      eb('email', 'like', searchTerm),
-      eb('phone', 'like', searchTerm),
-    ])
-
-    query = query.where(searchFilter)
-    countQuery = countQuery.where(searchFilter)
+  // Simple name search if provided
+  if (options.search && options.search.trim()) {
+    const searchTerm = `%${options.search.trim()}%`
+    query = query.where('name', 'like', searchTerm)
+    countQuery = countQuery.where('name', 'like', searchTerm)
   }
 
-  // Apply status filter if provided and not 'all'
+  // Basic status filter
   if (options.status && options.status !== 'all') {
     query = query.where('status', '=', options.status)
     countQuery = countQuery.where('status', '=', options.status)
   }
 
-  // Get total count for pagination
+  // Get total count
   const countResult = await countQuery
     .select(eb => eb.fn.count('id').as('total'))
     .executeTakeFirst()
 
   const total = Number(countResult?.total || 0)
 
-  // Apply sorting
-  // Note: Ensure the column is valid to prevent SQL injection
-  const validColumns = ['name', 'email', 'orders', 'totalSpent', 'lastOrder', 'status', 'created_at', 'updated_at']
-  const validSortBy = validColumns.includes(sortBy) ? sortBy : 'created_at'
+  // Basic sorting
+  query = query.orderBy(sortBy, sortOrder)
 
-  query = query.orderBy(validSortBy, sortOrder)
-
-  // Apply pagination
-  query = query.limit(limit).offset(offset)
-
-  // Execute the query
-  const customers = await query.selectAll().execute()
+  // Basic pagination
+  const customers = await query
+    .selectAll()
+    .limit(limit)
+    .offset((page - 1) * limit)
+    .execute()
 
   // Calculate pagination info
   const totalPages = Math.ceil(total / limit)
@@ -107,60 +91,5 @@ export async function fetchPaginated(options: FetchCustomersOptions = {}): Promi
       hasNextPage: page < totalPages,
       hasPrevPage: page > 1,
     },
-  }
-}
-
-/**
- * Fetch a customer by ID
- */
-export async function fetchById(id: number): Promise<CustomersTable | undefined> {
-  return await db
-    .selectFrom('customers')
-    .where('id', '=', id)
-    .selectAll()
-    .executeTakeFirst()
-}
-
-/**
- * Get customer statistics
- */
-export async function fetchStats(): Promise<CustomerStats> {
-  const totalCustomers = await db
-    .selectFrom('customers')
-    .select(eb => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
-
-  const activeCustomers = await db
-    .selectFrom('customers')
-    .where('status', '=', 'Active')
-    .select(eb => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
-
-  const inactiveCustomers = await db
-    .selectFrom('customers')
-    .where('status', '=', 'Inactive')
-    .select(eb => eb.fn.count('id').as('count'))
-    .executeTakeFirst()
-
-  const topSpenders = await db
-    .selectFrom('customers')
-    .select(['id', 'name', 'email', 'total_spent'])
-    .orderBy('total_spent', 'desc')
-    .limit(5)
-    .execute()
-
-  const recentCustomers = await db
-    .selectFrom('customers')
-    .select(['id', 'name', 'email', 'created_at'])
-    .orderBy('created_at', 'desc')
-    .limit(5)
-    .execute()
-
-  return {
-    total: Number(totalCustomers?.count || 0),
-    active: Number(activeCustomers?.count || 0),
-    inactive: Number(inactiveCustomers?.count || 0),
-    topSpenders,
-    recentCustomers,
   }
 }
