@@ -434,7 +434,7 @@ function truncateText(text: string, maxLength: number): string {
                 @click="confirmDeleteSelected"
                 class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:bg-blue-gray-800 dark:text-red-400 dark:ring-red-500/30 dark:hover:bg-red-500/10"
               >
-                <div class="i-hugeicons-trash-03 h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                 Delete
               </button>
             </div>
@@ -559,7 +559,7 @@ function truncateText(text: string, maxLength: number): string {
                           class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                           title="Edit"
                         >
-                          <div class="i-hugeicons-pencil-01 h-5 w-5"></div>
+                          <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                           <span class="sr-only">Edit</span>
                         </button>
                         <button
@@ -567,7 +567,7 @@ function truncateText(text: string, maxLength: number): string {
                           class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                           title="Delete"
                         >
-                          <div class="i-hugeicons-trash-03 h-5 w-5"></div>
+                          <div class="i-hugeicons-waste h-5 w-5"></div>
                           <span class="sr-only">Delete</span>
                         </button>
                       </div>
@@ -665,7 +665,7 @@ function truncateText(text: string, maxLength: number): string {
           </div>
           <div class="sm:flex sm:items-start">
             <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-pencil-01 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+              <div class="i-hugeicons-edit-01 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
             </div>
             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Edit Comment</h3>
