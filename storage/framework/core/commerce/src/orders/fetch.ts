@@ -1,5 +1,4 @@
 import type {
-  OrderJsonResponse,
   OrderResponse,
   OrderStats,
   OrderType,
@@ -7,7 +6,6 @@ import type {
   StatusCount,
 } from '../../types'
 import { db } from '@stacksjs/database'
-import { handleError } from '@stacksjs/error-handling'
 
 export interface FetchOrdersOptions {
   page?: number
@@ -23,13 +21,27 @@ export interface FetchOrdersOptions {
 }
 
 /**
- * Fetch all orders from the database
+ * Fetch all orders from the database with their items
  */
 export async function fetchAll(): Promise<OrderType[]> {
-  return await db
+  const orders = await db
     .selectFrom('orders')
     .selectAll()
     .execute()
+
+  // Fetch items for each order
+  return await Promise.all(orders.map(async (order) => {
+    const items = await db
+      .selectFrom('order_items')
+      .where('order_id', '=', order.id)
+      .selectAll()
+      .execute()
+
+    return {
+      ...order,
+      items,
+    }
+  }))
 }
 
 /**
@@ -47,7 +59,7 @@ export async function fetchPaginated(options: FetchOrdersOptions = {}): Promise<
   // Apply search filter if provided
   if (options.search) {
     const searchTerm = `%${options.search}%`
-    const searchFilter = eb => eb.or([
+    const searchFilter = (eb: any) => eb.or([
       eb('id', 'like', searchTerm),
       eb('customer_id', '=', Number(options.search) || 0),
       eb('status', 'like', searchTerm),
@@ -56,18 +68,6 @@ export async function fetchPaginated(options: FetchOrdersOptions = {}): Promise<
 
     query = query.where(searchFilter)
     countQuery = countQuery.where(searchFilter)
-  }
-
-  // Apply status filter if provided
-  if (options.status) {
-    query = query.where('status', '=', options.status)
-    countQuery = countQuery.where('status', '=', options.status)
-  }
-
-  // Apply order type filter if provided
-  if (options.order_type) {
-    query = query.where('order_type', '=', options.order_type)
-    countQuery = countQuery.where('order_type', '=', options.order_type)
   }
 
   // Get total count for pagination
@@ -84,28 +84,25 @@ export async function fetchPaginated(options: FetchOrdersOptions = {}): Promise<
     .offset((page - 1) * limit)
     .execute()
 
-  // Parse order_items JSON if present
-  const ordersWithParsedItems = orders.map((order) => {
-    if (order.order_items && typeof order.order_items === 'string') {
-      try {
-        return {
-          ...order,
-          order_items: JSON.parse(order.order_items),
-        }
-      }
-      catch (e) {
-        handleError('Error', e)
-        return order
-      }
+  // Fetch items for each order
+  const ordersWithItems = await Promise.all(orders.map(async (order) => {
+    const items = await db
+      .selectFrom('order_items')
+      .where('order_id', '=', order.id)
+      .selectAll()
+      .execute()
+
+    return {
+      ...order,
+      items,
     }
-    return order
-  })
+  }))
 
   // Calculate pagination info
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: ordersWithParsedItems as OrderJsonResponse[],
+    data: ordersWithItems,
     paging: {
       total_records: total,
       page,
@@ -124,13 +121,6 @@ export async function fetchById(id: number): Promise<OrderType | undefined> {
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
-
-  if (order && order.order_items && typeof order.order_items === 'string') {
-    return {
-      ...order,
-      order_items: JSON.parse(order.order_items),
-    }
-  }
 
   return order
 }
@@ -179,13 +169,27 @@ export async function fetchStats(): Promise<OrderStats> {
     .groupBy('order_type')
     .execute() as OrderTypeCount[]
 
-  // Recent orders
-  const recentOrders = await db
+  // Recent orders with their items
+  const recentOrdersRaw = await db
     .selectFrom('orders')
     .selectAll()
     .orderBy('created_at', 'desc')
     .limit(5)
     .execute()
+
+  // Fetch items for each recent order
+  const recentOrders = await Promise.all(recentOrdersRaw.map(async (order) => {
+    const items = await db
+      .selectFrom('order_items')
+      .where('order_id', '=', order.id)
+      .selectAll()
+      .execute()
+
+    return {
+      ...order,
+      items,
+    }
+  }))
 
   // Total revenue
   const revenue = await db

@@ -1,23 +1,26 @@
 import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
-import type { UserModel } from './User'
+import type { CustomerModel } from './Customer'
+import type { OrderItemModel } from './OrderItem'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+
 import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Coupon from './Coupon'
 
-import User from './User'
+import Customer from './Customer'
 
 export interface OrdersTable {
   id?: number
-  user_id?: number
-  user?: UserModel
+  order_items?: OrderItemModel[] | undefined
+  customer_id?: number
+  customer?: CustomerModel
   coupon_id?: number
   coupon?: CouponModel
   status?: string
@@ -31,7 +34,6 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
-  order_items?: string
   uuid?: string
 
   created_at?: Date
@@ -70,7 +72,7 @@ interface QueryOptions {
 
 export class OrderModel {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
-  private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'order_items', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
+  private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
   private readonly guarded: Array<keyof OrderJsonResponse> = []
   protected attributes: Partial<OrderJsonResponse> = {}
   protected originalAttributes: Partial<OrderJsonResponse> = {}
@@ -148,12 +150,16 @@ export class OrderModel {
     }
   }
 
-  get user_id(): number | undefined {
-    return this.attributes.user_id
+  get order_items(): OrderItemModel[] | undefined {
+    return this.attributes.order_items
   }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
+  get customer_id(): number | undefined {
+    return this.attributes.customer_id
+  }
+
+  get customer(): CustomerModel | undefined {
+    return this.attributes.customer
   }
 
   get coupon_id(): number | undefined {
@@ -216,10 +222,6 @@ export class OrderModel {
     return this.attributes.applied_coupon_id
   }
 
-  get order_items(): string | undefined {
-    return this.attributes.order_items
-  }
-
   get created_at(): Date | undefined {
     return this.attributes.created_at
   }
@@ -274,10 +276,6 @@ export class OrderModel {
 
   set applied_coupon_id(value: string) {
     this.attributes.applied_coupon_id = value
-  }
-
-  set order_items(value: string) {
-    this.attributes.order_items = value
   }
 
   set updated_at(value: Date) {
@@ -1315,14 +1313,6 @@ export class OrderModel {
     return instance
   }
 
-  static whereOrderItems(value: string): OrderModel {
-    const instance = new OrderModel(null)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('order_items', '=', value)
-
-    return instance
-  }
-
   applyWhereIn<V>(column: keyof OrdersTable, values: V[]) {
     this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
 
@@ -1805,12 +1795,12 @@ export class OrderModel {
       .execute()
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
+  async customerBelong(): Promise<CustomerModel> {
+    if (this.customer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
+    const model = await Customer
+      .where('id', '=', this.customer_id)
       .first()
 
     if (!model)
@@ -1891,14 +1881,14 @@ export class OrderModel {
       special_instructions: this.special_instructions,
       estimated_delivery_time: this.estimated_delivery_time,
       applied_coupon_id: this.applied_coupon_id,
-      order_items: this.order_items,
 
       created_at: this.created_at,
 
       updated_at: this.updated_at,
 
-      user_id: this.user_id,
-      user: this.user,
+      order_items: this.order_items,
+      customer_id: this.customer_id,
+      customer: this.customer,
       coupon_id: this.coupon_id,
       coupon: this.coupon,
       ...this.customColumns,
@@ -2023,13 +2013,6 @@ export async function whereEstimatedDeliveryTime(value: string): Promise<OrderMo
 
 export async function whereAppliedCouponId(value: string): Promise<OrderModel[]> {
   const query = DB.instance.selectFrom('orders').where('applied_coupon_id', '=', value)
-  const results = await query.execute()
-
-  return results.map((modelItem: OrderModel) => new OrderModel(modelItem))
-}
-
-export async function whereOrderItems(value: string): Promise<OrderModel[]> {
-  const query = DB.instance.selectFrom('orders').where('order_items', '=', value)
   const results = await query.execute()
 
   return results.map((modelItem: OrderModel) => new OrderModel(modelItem))

@@ -79,23 +79,6 @@ export type OrderType = Selectable<OrdersTable>
 export type NewOrder = Insertable<OrdersTable>
 export type OrderUpdate = Updateable<OrdersTable>
 
-// Define a common request type for working with orders
-export interface OrderRequestType {
-  customer_id?: number
-  status?: string
-  total_amount?: number
-  tax_amount?: number
-  discount_amount?: number
-  delivery_fee?: number
-  tip_amount?: number
-  order_type?: string
-  delivery_address?: string
-  special_instructions?: string
-  estimated_delivery_time?: string
-  applied_coupon_id?: string
-  order_items?: string | OrderItem[]
-}
-
 // Define the structure of an order item
 export interface OrderItem {
   product_id: string
@@ -123,4 +106,21 @@ export interface OrderStats {
   by_type: OrderTypeCount[]
   recent: OrderType[]
   revenue: number
+}
+
+/**
+ * Represents a simplified order item structure with required properties for total calculation
+ */
+export interface OrderItemForCalculation {
+  price: number
+  quantity: number
+}
+
+/**
+ * Represents the totals calculated for an order
+ */
+export interface OrderTotals {
+  subtotal: number
+  tax_amount: number
+  total_amount: number
 }

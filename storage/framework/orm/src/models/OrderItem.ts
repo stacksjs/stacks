@@ -58,7 +58,7 @@ interface QueryOptions {
 
 export class OrderItemModel {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
-  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid']
+  private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes: Partial<OrderItemJsonResponse> = {}
   protected originalAttributes: Partial<OrderItemJsonResponse> = {}

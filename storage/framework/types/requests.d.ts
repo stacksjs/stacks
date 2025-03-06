@@ -227,6 +227,7 @@ interface RequestDataOrderItem {
   quantity: number
   price: number
   special_instructions: string
+  order_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -238,6 +239,7 @@ export interface OrderItemRequestType extends Request {
   quantity: number
   price: number
   special_instructions: string
+  order_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -477,7 +479,6 @@ interface RequestDataOrder {
   special_instructions: string
   estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number
@@ -500,7 +501,6 @@ export interface OrderRequestType extends Request {
   special_instructions: string
   estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number

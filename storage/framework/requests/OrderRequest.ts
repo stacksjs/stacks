@@ -24,7 +24,6 @@ interface RequestDataOrder {
   special_instructions: string
   estimated_delivery_time: string
   applied_coupon_id: string
-  order_items: string
   customer_id: number
   gift_card_id: number
   coupon_id: number
@@ -44,7 +43,6 @@ export class OrderRequest extends Request<RequestDataOrder> implements OrderRequ
   public special_instructions = ''
   public estimated_delivery_time = ''
   public applied_coupon_id = ''
-  public order_items = ''
   public customer_id = 0
   public gift_card_id = 0
   public coupon_id = 0
