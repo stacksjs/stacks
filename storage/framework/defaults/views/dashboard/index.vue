@@ -1,640 +1,288 @@
 <script lang="ts" setup>
+import { ref, computed } from 'vue'
+import { useHead } from '@vueuse/head'
+
 useHead({
-  title: 'Dashboard - Home',
+  title: 'Dashboard - Overview',
 })
+
+// Sample data for the dashboard
+const stats = [
+  { name: 'Total Users', value: '8,294', change: '+12.5%', trend: 'up' },
+  { name: 'Active Projects', value: '124', change: '+8.2%', trend: 'up' },
+  { name: 'Server Uptime', value: '99.98%', change: '+0.1%', trend: 'up' },
+  { name: 'Response Time', value: '42ms', change: '-3.7%', trend: 'down' },
+]
+
+const recentActivity = [
+  { id: 1, type: 'deployment', title: 'Production deployment successful', time: '10 minutes ago', status: 'success' },
+  { id: 2, type: 'blog', title: 'New blog post published', time: '1 hour ago', status: 'success' },
+  { id: 3, type: 'server', title: 'Server maintenance completed', time: '3 hours ago', status: 'success' },
+  { id: 4, type: 'error', title: 'API rate limit exceeded', time: '5 hours ago', status: 'error' },
+  { id: 5, type: 'commerce', title: 'New order received', time: '12 hours ago', status: 'success' },
+]
+
+const quickLinks = [
+  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-text', href: '/dashboard/blog', color: 'bg-blue-500' },
+  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-01', href: '/dashboard/commerce', color: 'bg-green-500' },
+  { name: 'Servers', description: 'Monitor server performance and status', icon: 'i-hugeicons-server-01', href: '/dashboard/servers', color: 'bg-purple-500' },
+  { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/dashboard/settings', color: 'bg-gray-500' },
+]
+
+const timeRange = ref('Last 7 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+
+// Sample data for system health
+const systemHealth = [
+  { name: 'API', status: 'healthy', latency: '38ms', uptime: '99.99%' },
+  { name: 'Database', status: 'healthy', latency: '45ms', uptime: '99.98%' },
+  { name: 'Storage', status: 'healthy', latency: '22ms', uptime: '100%' },
+  { name: 'Cache', status: 'healthy', latency: '12ms', uptime: '99.95%' },
+  { name: 'Queue', status: 'degraded', latency: '120ms', uptime: '99.90%' },
+]
+
+// Get status color based on health status
+function getStatusColor(status: string): string {
+  switch (status) {
+    case 'healthy':
+      return 'bg-green-400 dark:bg-green-500'
+    case 'degraded':
+      return 'bg-yellow-400 dark:bg-yellow-500'
+    case 'critical':
+      return 'bg-red-400 dark:bg-red-500'
+    default:
+      return 'bg-gray-400 dark:bg-gray-500'
+  }
+}
+
+// Get icon based on activity type
+function getActivityIcon(type: string): string {
+  switch (type) {
+    case 'deployment':
+      return 'i-hugeicons-rocket-02'
+    case 'blog':
+      return 'i-hugeicons-document-text'
+    case 'server':
+      return 'i-hugeicons-server-01'
+    case 'error':
+      return 'i-hugeicons-exclamation-triangle'
+    case 'commerce':
+      return 'i-hugeicons-shopping-cart-01'
+    default:
+      return 'i-hugeicons-information-circle'
+  }
+}
+
+// Get color based on activity status
+function getActivityColor(status: string): string {
+  switch (status) {
+    case 'success':
+      return 'text-green-500 dark:text-green-400 bg-green-100 dark:bg-green-900/20'
+    case 'error':
+      return 'text-red-500 dark:text-red-400 bg-red-100 dark:bg-red-900/20'
+    case 'warning':
+      return 'text-yellow-500 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/20'
+    default:
+      return 'text-blue-500 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/20'
+  }
+}
 </script>
 
 <template>
   <main>
     <div class="relative isolate overflow-hidden">
-      <!-- Stats -->
-      <div class="border-b border-b-gray-900/10 lg:border-t lg:border-t-gray-900/5">
-        <dl class="grid grid-cols-1 mx-auto lg:grid-cols-4 sm:grid-cols-2 lg:px-2 xl:px-0">
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-gray-900/5 px-4 py-6 lg:border-t-0 sm:px-6 xl:px-8">
-            <dt class="text-sm text-gray-500 font-medium leading-6 dark:text-gray-300">
-              Total Users
-            </dt>
-
-            <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
-              <span class="i-hugeicons-user-multiple h-5 w-5 mr-2 mb-1 text-gray-400"></span>
-              12,345
-            </dd>
-          </div>
-
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-gray-900/5 px-4 py-6 lg:border-l lg:border-t-0 sm:px-6 xl:px-8">
-            <dt class="text-sm text-gray-500 font-medium leading-6 dark:text-gray-300">
-              Total Deployments
-            </dt>
-
-            <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
-              <span class="i-hugeicons-rocket-01 h-5 w-5 mr-2 mb-1 text-gray-400"></span>
-              # 206
-            </dd>
-          </div>
-
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-gray-900/5 px-4 py-6 lg:border-t-0 sm:border-l sm:px-6 xl:px-8">
-            <dt class="text-sm text-gray-500 font-medium leading-6 dark:text-gray-300">
-              Total Downloads
-            </dt>
-
-            <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
-              <span class="i-hugeicons-download-04 h-5 w-5 mr-2 mb-1 text-gray-400"></span>
-              345,678
-            </dd>
-          </div>
-
-          <div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 border-t border-gray-900/5 px-4 py-6 lg:border-t-0 sm:border-l sm:px-6 xl:px-8">
-            <dt class="text-sm text-gray-500 font-medium leading-6 dark:text-gray-300">
-              Subscribers
-            </dt>
-
-            <dd class="w-full flex-none text-xl text-gray-900 font-medium leading-10 tracking-tight dark:text-gray-100">
-              <span class="i-hugeicons-user-group h-5 w-5 mr-2 mb-1 text-gray-400"></span>
-              45,678
-            </dd>
-          </div>
-        </dl>
-      </div>
-
-      <div
-        class="absolute left-0 top-full mt-96 origin-top-left translate-y-40 transform-gpu opacity-20 blur-3xl sm:left-1/2 -z-10 sm:translate-y-0 -rotate-90 sm:rotate-0 sm:transform-gpu sm:opacity-50 sm:-ml-96 sm:-mt-10"
-        aria-hidden="true"
-      >
-        <div
-          class="aspect-[1154/678] w-[72.125rem] from-[#4169E1] to-[#1E3A8A] bg-gradient-to-br"
-          style="clip-path: polygon(100% 38.5%, 82.6% 100%, 60.2% 37.7%, 52.4% 32.1%, 47.5% 41.8%, 45.2% 65.6%, 27.5% 23.4%, 0.1% 35.3%, 17.9% 0%, 27.7% 23.4%, 76.2% 2.5%, 74.2% 56%, 100% 38.5%)"
-        />
-      </div>
-    </div>
-
-    <div class="px-12">
-      <div class="mx-auto max-w-7xl pt-12">
-        <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
-              Models
-            </h2>
-          </div>
-
-          <ul
-            role="list"
-            class="grid grid-cols-1 mt-6 gap-x-6 gap-y-8 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8"
-          >
-            <router-link to="/models/users">
-              <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-                <div class="flex transform items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 duration-250 ease-in-out dark:bg-blue-gray-700 hover:bg-white">
-                  <div class="h-12 w-12 flex flex-none items-center justify-center rounded-lg bg-white object-cover ring-1 ring-gray-900/10">
-                    U
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    Users
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-700 font-medium ring-1 ring-slate-600/20 ring-inset">123.5k</span>
-                  </div>
-                </div>
-              </li>
-            </router-link>
-
-            <router-link to="/models/teams">
-              <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-                <div class="flex transform items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 duration-250 ease-in-out dark:bg-blue-gray-700 hover:bg-white">
-                  <div class="h-12 w-12 flex flex-none items-center justify-center rounded-lg bg-white object-cover ring-1 ring-gray-900/10">
-                    T
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    Teams
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-700 font-medium ring-1 ring-slate-600/20 ring-inset">912</span>
-                  </div>
-                </div>
-              </li>
-            </router-link>
-
-            <router-link to="/models/subscribers">
-              <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-                <div class="flex transform items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 duration-250 ease-in-out dark:bg-blue-gray-700 hover:bg-white">
-                  <div class="h-12 w-12 flex flex-none items-center justify-center rounded-lg bg-white object-cover ring-1 ring-gray-900/10">
-                    S
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    Subscribers
-                  </div>
-
-                  <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                    <span class="inline-flex items-center rounded-md bg-slate-50 px-2 py-1 text-xs text-slate-700 font-medium ring-1 ring-slate-600/20 ring-inset">4.6k</span>
-                  </div>
-                </div>
-              </li>
-            </router-link>
-          </ul>
-        </div>
-      </div>
-
-      <div class="mx-auto max-w-7xl flex flex-col py-16 lg:flex-row">
-        <!-- Recent Deployments -->
-        <div class="mx-auto flex-auto pr-24 lg:flex-1">
-          <div>
-            <h2 class="mx-auto max-w-2xl text-base text-gray-900 font-semibold leading-6 lg:mx-0 lg:max-w-none dark:text-gray-100 dark:text-gray-100">
-              Recent Deployments
-            </h2>
-          </div>
-          <ul
-            role="list"
-            class="pt-2 divide-y divide-gray-200 dark:divide-gray-600"
-          >
-            <li class="relative flex items-center py-4 space-x-4">
-              <div class="min-w-0 flex-auto">
-                <div class="flex items-center gap-x-3">
-                  <div class="flex-none rounded-full bg-green-400/10 p-1 text-green-400">
-                    <div class="h-2 w-2 animate-pulse rounded-full bg-current" />
-                  </div>
-                  <h2 class="min-w-0 text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <a
-                      href="#"
-                      class="flex gap-x-2"
-                    >
-                      <span class="truncate">stacksjs</span>
-                      <span class="text-gray-400">/</span>
-                      <span class="whitespace-nowrap">stacks</span>
-                      <span class="absolute inset-0" />
-                    </a>
-                  </h2>
-                </div>
-                <div class="mt-3 flex items-center gap-x-2.5 text-xs text-gray-400 leading-5">
-                  <p class="truncate">
-                    Deploys from GitHub
-                  </p>
-                  <svg
-                    viewBox="0 0 2 2"
-                    class="h-0.5 w-0.5 flex-none fill-gray-300"
-                  >
-                    <circle
-                      cx="1"
-                      cy="1"
-                      r="1"
-                    />
-                  </svg>
-                  <p class="whitespace-nowrap">
-                    Initiated 1m 32s ago
-                  </p>
-                </div>
-              </div>
-              <div class="flex-none rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-600 font-medium ring-1 ring-blue-600/30 ring-inset dark:bg-blue-gray-600 dark:text-blue-300">
-                Production
-              </div>
-
-              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
-            </li>
-
-            <li class="relative flex items-center py-4 space-x-4">
-              <div class="min-w-0 flex-auto">
-                <div class="flex items-center gap-x-3">
-                  <div class="flex-none rounded-full bg-red-300/10 p-1 text-red-500">
-                    <div class="h-2 w-2 rounded-full bg-current" />
-                  </div>
-                  <h2 class="min-w-0 text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <a
-                      href="#"
-                      class="flex gap-x-2"
-                    >
-                      <span class="truncate">stacksjs</span>
-                      <span class="text-gray-400">/</span>
-                      <span class="whitespace-nowrap">stacks</span>
-                      <span class="absolute inset-0" />
-                    </a>
-                  </h2>
-                </div>
-                <div class="mt-3 flex items-center gap-x-2.5 text-xs text-gray-400 leading-5">
-                  <p class="truncate">
-                    Deployed from GitHub
-                  </p>
-                  <svg
-                    viewBox="0 0 2 2"
-                    class="h-0.5 w-0.5 flex-none fill-gray-300"
-                  >
-                    <circle
-                      cx="1"
-                      cy="1"
-                      r="1"
-                    />
-                  </svg>
-                  <p class="whitespace-nowrap">
-                    Failed 9m ago
-                  </p>
-                </div>
-              </div>
-              <div class="flex-none rounded-full bg-gray-400/10 px-2 py-1 text-xs text-gray-600 font-medium ring-1 ring-gray-400/20 ring-inset dark:bg-blue-gray-600 dark:text-gray-300">
-                Staging
-              </div>
-
-              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
-            </li>
-
-            <li class="relative flex items-center py-4 space-x-4">
-              <div class="min-w-0 flex-auto">
-                <div class="flex items-center gap-x-3">
-                  <div class="flex-none rounded-full bg-gray-100/10 p-1 text-gray-500">
-                    <div class="h-2 w-2 rounded-full bg-current" />
-                  </div>
-                  <h2 class="min-w-0 text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                    <a
-                      href="#"
-                      class="flex gap-x-2"
-                    >
-                      <span class="truncate">stacksjs</span>
-                      <span class="text-gray-400">/</span>
-                      <span class="whitespace-nowrap">ow3.org</span>
-                      <span class="absolute inset-0" />
-                    </a>
-                  </h2>
-                </div>
-                <div class="mt-3 flex items-center gap-x-2.5 text-xs text-gray-400 leading-5">
-                  <p class="truncate">
-                    Deploys from GitHub
-                  </p>
-                  <svg
-                    viewBox="0 0 2 2"
-                    class="h-0.5 w-0.5 flex-none fill-gray-300"
-                  >
-                    <circle
-                      cx="1"
-                      cy="1"
-                      r="1"
-                    />
-                  </svg>
-                  <p class="whitespace-nowrap">
-                    Deployed 3h ago
-                  </p>
-                </div>
-              </div>
-              <div class="flex-none rounded-full bg-gray-500/10 px-2 py-1 text-xs text-gray-600 font-medium ring-1 ring-gray-600/20 ring-inset dark:bg-blue-gray-600 dark:text-gray-300">
-                Development
-              </div>
-
-              <div class="i-hugeicons-chevron-right-20-solid h-5 w-5 flex-none text-gray-400" />
-            </li>
-          </ul>
-        </div>
-
-        <!-- Recent Commits -->
-        <div class="mx-auto flex-auto lg:flex-1">
-          <div>
-            <h2 class="mx-auto max-w-2xl text-base text-gray-900 font-semibold leading-6 lg:mx-0 lg:max-w-none dark:text-gray-100 dark:text-gray-100">
-              Recent Commits
-            </h2>
-          </div>
-          <ul
-            role="list"
-            class="pt-2 divide-y divide-white/5"
-          >
-            <li class="py-4">
-              <div class="flex items-center gap-x-3">
-                <img
-                  src="https://avatars.githubusercontent.com/u/6228425"
-                  alt=""
-                  class="h-6 w-6 flex-none rounded-full bg-gray-200"
-                >
-                <h3 class="flex-auto truncate text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                  Chris Breuer
-                </h3>
-                <time
-                  datetime="2023-01-23T11:00"
-                  class="flex-none text-xs text-gray-600 dark:text-gray-300"
-                >1h</time>
-              </div>
-              <p class="mt-3 truncate text-sm text-gray-500">
-                Pushed to <span class="text-gray-400">stacks</span> (<span class="text-gray-400 font-mono">2d89f0c8</span> on <span class="text-gray-400">main</span>)
+      <div class="px-6 py-6 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl">
+          <!-- Page Header -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Dashboard</h1>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Welcome back! Here's an overview of your system.
               </p>
-            </li>
-            <li class="py-4">
-              <div class="flex items-center gap-x-3">
-                <img
-                  src="https://images.unsplash.com/photo-1517841905240-472988babdf9?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80"
-                  alt=""
-                  class="h-6 w-6 flex-none rounded-full bg-gray-800"
-                >
-                <h3 class="flex-auto truncate text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                  Zoltan
-                </h3>
-                <time
-                  datetime="2023-01-23T09:00"
-                  class="flex-none text-xs text-gray-600 dark:text-gray-300"
-                >3h</time>
-              </div>
-              <p class="mt-3 truncate text-sm text-gray-500">
-                Pushed to <span class="text-gray-400">stacks</span> (<span class="text-gray-400 font-mono">249df660</span> on <span class="text-gray-400">main</span>)
-              </p>
-            </li>
-            <li class="py-4">
-              <div class="flex items-center gap-x-3">
-                <img
-                  src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&amp;ixid=eyJhcHBfaWQiOjEyMDd9&amp;auto=format&amp;fit=facearea&amp;facepad=2&amp;w=256&amp;h=256&amp;q=80"
-                  alt=""
-                  class="h-6 w-6 flex-none rounded-full bg-gray-800"
-                >
-                <h3 class="flex-auto truncate text-sm text-gray-900 font-semibold leading-6 dark:text-gray-100">
-                  Freddy
-                </h3>
-                <time
-                  datetime="2023-01-23T00:00"
-                  class="flex-none text-xs text-gray-600 dark:text-gray-300"
-                >12h</time>
-              </div>
-              <p class="mt-3 truncate text-sm text-gray-500">
-                Pushed to <span class="text-gray-400">stacks</span> (<span class="text-gray-400 font-mono">11464223</span> on <span class="text-gray-400">main</span>)
-              </p>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Other Stacks -->
-      <div class="mx-auto max-w-7xl">
-        <div class="mx-auto max-w-2xl lg:mx-0 lg:max-w-none">
-          <div class="flex items-center justify-between">
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
-              Other Projects
-            </h2>
+            </div>
+            <div class="relative">
+              <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+                <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+              </select>
+            </div>
           </div>
-          <ul
-            role="list"
-            class="grid grid-cols-1 mt-6 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
-          >
-            <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
-                <img
-                  src="https://tailwindui.com/plus/img/logos/48x48/tuple.svg"
-                  alt="Tuple"
-                  class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
-                >
-                <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                  X App
-                </div>
 
-                <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                  <span class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs text-green-700 font-medium ring-1 ring-green-600/20 ring-inset">Active</span>
-                </div>
+          <!-- Stats -->
+          <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div v-for="(stat, index) in stats" :key="index" class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+              <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">{{ stat.name }}</dt>
+              <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ stat.value }}</dd>
+              <dd class="mt-2 flex items-center text-sm" :class="stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'">
+                <div :class="stat.trend === 'up' ? 'i-hugeicons-analytics-up' : 'i-hugeicons-analytics-down'" class="h-4 w-4 mr-1"></div>
+                <span>{{ stat.change }}</span>
+              </dd>
+            </div>
+          </dl>
 
-                <div class="relative ml-auto">
-                  <button
-                    id="options-menu-0-button"
-                    type="button"
-                    class="block p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                  >
-                    <span class="sr-only">Open options</span>
-
-                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
-                  </button>
-
-                  <!--
-                  Dropdown menu, show/hide based on menu state.
-
-                  Entering: "transition ease-out duration-100"
-                    From: "transform opacity-0 scale-95"
-                    To: "transform opacity-100 scale-100"
-                  Leaving: "transition ease-in duration-75"
-                    From: "transform opacity-100 scale-100"
-                    To: "transform opacity-0 scale-95"
-                -->
-                  <div
-                    class="absolute right-0 z-10 mt-0.5 hidden w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="options-menu-0-button"
-                    tabindex="-1"
-                  >
-                    <!-- Active: "bg-gray-50", Not Active: "" -->
-                    <a
-                      id="options-menu-0-item-0"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >View<span class="sr-only">, Tuple</span></a>
-                    <a
-                      id="options-menu-0-item-1"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >Edit<span class="sr-only">, Tuple</span></a>
+          <!-- Quick Links -->
+          <div class="mt-8">
+            <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Quick Links</h2>
+            <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <div v-for="link in quickLinks" :key="link.name" class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
+                <div class="p-5">
+                  <div class="flex items-center">
+                    <div :class="[link.color, 'flex-shrink-0 rounded-md p-3']">
+                      <div :class="[link.icon, 'h-6 w-6 text-white']"></div>
+                    </div>
+                    <div class="ml-5 w-0 flex-1">
+                      <dl>
+                        <dt class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ link.name }}</dt>
+                        <dd class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                          {{ link.description }}
+                        </dd>
+                      </dl>
+                    </div>
+                    <div class="flex-shrink-0 self-center">
+                      <div class="i-hugeicons-arrow-right h-5 w-5 text-gray-400"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </li>
-            <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
-                <img
-                  src="https://tailwindui.com/plus/img/logos/48x48/savvycal.svg"
-                  alt="SavvyCal"
-                  class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
-                >
-                <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                  Y App
-                </div>
-                <div class="relative ml-auto">
-                  <button
-                    id="options-menu-1-button"
-                    type="button"
-                    class="block p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                  >
-                    <span class="sr-only">Open options</span>
-                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
-                  </button>
+            </div>
+          </div>
 
-                  <!--
-                  Dropdown menu, show/hide based on menu state.
+          <!-- System Health and Recent Activity -->
+          <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+            <!-- System Health -->
+            <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+              <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">System Health</h3>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-700">
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <li v-for="service in systemHealth" :key="service.name" class="px-4 py-4 sm:px-6">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center">
+                        <div class="flex h-3 w-3 items-center">
+                          <span :class="[getStatusColor(service.status), 'h-2.5 w-2.5 rounded-full']" aria-hidden="true"></span>
+                        </div>
+                        <p class="ml-3 text-sm font-medium text-gray-900 dark:text-white">{{ service.name }}</p>
+                      </div>
+                      <div class="flex items-center gap-4">
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          <span class="font-medium">{{ service.latency }}</span>
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                          <span class="font-medium">{{ service.uptime }}</span>
+                        </div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                          <span :class="{
+                            'text-green-600 dark:text-green-400': service.status === 'healthy',
+                            'text-yellow-600 dark:text-yellow-400': service.status === 'degraded',
+                            'text-red-600 dark:text-red-400': service.status === 'critical'
+                          }">{{ service.status }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
 
-                  Entering: "transition ease-out duration-100"
-                    From: "transform opacity-0 scale-95"
-                    To: "transform opacity-100 scale-100"
-                  Leaving: "transition ease-in duration-75"
-                    From: "transform opacity-100 scale-100"
-                    To: "transform opacity-0 scale-95"
-                -->
-                  <div
-                    class="absolute right-0 z-10 mt-0.5 hidden w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="options-menu-1-button"
-                    tabindex="-1"
-                  >
-                    <!-- Active: "bg-gray-50", Not Active: "" -->
-                    <a
-                      id="options-menu-1-item-0"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >View<span class="sr-only">, SavvyCal</span></a>
-                    <a
-                      id="options-menu-1-item-1"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >Edit<span class="sr-only">, SavvyCal</span></a>
+            <!-- Recent Activity -->
+            <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+              <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Activity</h3>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-700">
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <li v-for="activity in recentActivity" :key="activity.id" class="px-4 py-4 sm:px-6">
+                    <div class="flex items-center space-x-4">
+                      <div :class="[getActivityColor(activity.status), 'flex-shrink-0 rounded-md p-2']">
+                        <div :class="[getActivityIcon(activity.type), 'h-5 w-5']"></div>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="truncate text-sm font-medium text-gray-900 dark:text-white">{{ activity.title }}</p>
+                        <p class="truncate text-sm text-gray-500 dark:text-gray-400">{{ activity.time }}</p>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-4 sm:px-6">
+                <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                  View all activity
+                  <span aria-hidden="true"> &rarr;</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resources and Documentation -->
+          <div class="mt-8">
+            <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+              <div class="px-4 py-5 sm:p-6">
+                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Resources & Documentation</h3>
+                <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div class="rounded-md bg-blue-50 dark:bg-blue-900/20 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <div class="i-hugeicons-book-open h-5 w-5 text-blue-600 dark:text-blue-400"></div>
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Documentation</h3>
+                        <p class="mt-2 text-sm text-blue-700 dark:text-blue-200">
+                          Comprehensive guides and API references for developers.
+                        </p>
+                        <p class="mt-3">
+                          <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                            View documentation
+                            <span aria-hidden="true"> &rarr;</span>
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="rounded-md bg-green-50 dark:bg-green-900/20 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <div class="i-hugeicons-video-camera h-5 w-5 text-green-600 dark:text-green-400"></div>
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Video Tutorials</h3>
+                        <p class="mt-2 text-sm text-green-700 dark:text-green-200">
+                          Step-by-step video guides for common tasks and features.
+                        </p>
+                        <p class="mt-3">
+                          <a href="#" class="text-sm font-medium text-green-600 hover:text-green-500 dark:text-green-400 dark:hover:text-green-300">
+                            Watch tutorials
+                            <span aria-hidden="true"> &rarr;</span>
+                          </a>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="rounded-md bg-purple-50 dark:bg-purple-900/20 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <div class="i-hugeicons-users-01 h-5 w-5 text-purple-600 dark:text-purple-400"></div>
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-purple-800 dark:text-purple-300">Community</h3>
+                        <p class="mt-2 text-sm text-purple-700 dark:text-purple-200">
+                          Join our community forums for support and discussions.
+                        </p>
+                        <p class="mt-3">
+                          <a href="#" class="text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400 dark:hover:text-purple-300">
+                            Join community
+                            <span aria-hidden="true"> &rarr;</span>
+                          </a>
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </li>
-            <li class="overflow-hidden border border-gray-200 rounded-xl dark:border-gray-600">
-              <div class="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6 dark:bg-blue-gray-700">
-                <img
-                  src="https://tailwindui.com/plus/img/logos/48x48/reform.svg"
-                  alt="Reform"
-                  class="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
-                >
-                <div class="text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">
-                  Z App
-                </div>
-                <div class="relative ml-auto">
-                  <button
-                    id="options-menu-2-button"
-                    type="button"
-                    class="block p-2.5 text-gray-400 -m-2.5 hover:text-blue-gray-500"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                  >
-                    <span class="sr-only">Open options</span>
-                    <div class="i-hugeicons-ellipsis-horizontal h-5 w-5" />
-                  </button>
-
-                  <!--
-                  Dropdown menu, show/hide based on menu state.
-
-                  Entering: "transition ease-out duration-100"
-                    From: "transform opacity-0 scale-95"
-                    To: "transform opacity-100 scale-100"
-                  Leaving: "transition ease-in duration-75"
-                    From: "transform opacity-100 scale-100"
-                    To: "transform opacity-0 scale-95"
-                -->
-                  <div
-                    class="absolute right-0 z-10 mt-0.5 hidden w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="options-menu-2-button"
-                    tabindex="-1"
-                  >
-                    <!-- Active: "bg-gray-50", Not Active: "" -->
-                    <a
-                      id="options-menu-2-item-0"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >View<span class="sr-only">, Reform</span></a>
-                    <a
-                      id="options-menu-2-item-1"
-                      href="#"
-                      class="block px-3 py-1 text-sm text-gray-900 leading-6"
-                      role="menuitem"
-                      tabindex="-1"
-                    >Edit<span class="sr-only">, Reform</span></a>
-                  </div>
-                </div>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <Alert
-      v-if="false"
-      type="warning"
-      title="Warning!"
-      description="Are you sure you want to delete this event?"
-      confirmation-text="Confirm"
-      abort-text="Cancel"
-    />
-
-    <BaseModal
-      v-if="false"
-    >
-      <template #modal-body>
-        <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
-          <button
-            type="button"
-            class="rounded-md text-gray-400 dark:text-gray-200 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark-hover:text-gray-100"
-          >
-            <span class="sr-only">Close</span>
-            <!-- Heroicon name: outline/x-mark -->
-            <svg
-              class="h-6 w-6"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="1.5"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        <div class="sm:flex sm:items-start">
-          <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-            <h3
-              id="modal-title"
-              class="text-lg text-gray-900 font-medium leading-6 dark:text-gray-100"
-            >
-              Search Engine Instance
-            </h3>
-            <div class="mt-2">
-              <p
-                id="subtitle"
-                class="mb-2 text-xs text-green-800 dark:text-green-600"
-              >
-                baseUrl
-              </p>
-
-              <a
-                id="title"
-                target="_new"
-                href="#"
-                class="text-lg text-blue-800 dark:text-blue-400"
-              >
-
-                test title
-              </a>
-
-              <p
-                id="title"
-                class="mt-2 text-sm text-gray-800 dark:text-gray-200"
-              >
-                test desc
-              </p>
             </div>
           </div>
         </div>
-      </template>
-
-      <template #modal-actions>
-        <button
-          type="button"
-          class="secondary-button"
-        >
-          Close
-        </button>
-      </template>
-    </BaseModal>
+      </div>
+    </div>
   </main>
 </template>
