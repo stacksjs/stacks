@@ -243,16 +243,10 @@ const sectionContent: Record<string, SectionContent> = {
   },
   analytics: {
     items: [
+      { to: '/analytics/web', icon: 'i-hugeicons-global', text: 'Web' },
       { to: '/analytics/blog', icon: 'i-hugeicons-document-validation', text: 'Blog' },
-      {
-        to: '#analytics-commerce',
-        icon: 'i-hugeicons-shopping-cart-01',
-        text: 'Commerce',
-        children: [
-          { to: '/analytics/commerce/web', text: 'Web' },
-          { to: '/analytics/commerce/sales', text: 'Sales' }
-        ]
-      },
+      { to: '/analytics/commerce/web', icon: 'i-hugeicons-shopping-cart-02', text: 'Commerce' },
+      { to: '/analytics/commerce/sales', icon: 'i-hugeicons-sale-tag-01', text: 'Sales' },
       { to: '/analytics/marketing', icon: 'i-hugeicons-megaphone-01', text: 'Marketing' },
     ]
   },

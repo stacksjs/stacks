@@ -24,7 +24,7 @@ const recentActivity = [
 
 const quickLinks = [
   { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/dashboard/blog', color: 'bg-blue-500' },
-  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-01', href: '/dashboard/commerce', color: 'bg-green-500' },
+  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-02', href: '/dashboard/commerce', color: 'bg-green-500' },
   { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-ai-cloud', href: '/dashboard/servers', color: 'bg-purple-500' },
   { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/dashboard/settings', color: 'bg-gray-500' },
 ]
@@ -67,7 +67,7 @@ function getActivityIcon(type: string): string {
     case 'error':
       return 'i-hugeicons-alert-02'
     case 'commerce':
-      return 'i-hugeicons-shopping-cart-01'
+      return 'i-hugeicons-shopping-cart-02'
     default:
       return 'i-hugeicons-information-circle'
   }

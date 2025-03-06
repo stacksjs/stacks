@@ -1077,7 +1077,7 @@ watch(waitlistEntries, () => {
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Purchased</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ purchasedEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
-              <div class="i-hugeicons-shopping-cart-01 h-4 w-4 mr-1"></div>
+              <div class="i-hugeicons-shopping-cart-02 h-4 w-4 mr-1"></div>
               <span>Completed purchases</span>
             </dd>
           </div>
@@ -1251,7 +1251,7 @@ watch(waitlistEntries, () => {
                 @click="bulkChangeStatus('Purchased')"
                 class="inline-flex items-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
               >
-                <div class="i-hugeicons-shopping-cart-01 h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-shopping-cart-02 h-4 w-4 mr-1"></div>
                 Mark as Purchased
               </button>
             </div>
@@ -1356,7 +1356,7 @@ watch(waitlistEntries, () => {
                       @click="markAsPurchased(entry.id)"
                       class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                     >
-                      <div class="i-hugeicons-shopping-cart-01 h-5 w-5"></div>
+                      <div class="i-hugeicons-shopping-cart-02 h-5 w-5"></div>
                       <span class="sr-only">Purchase</span>
                     </button>
                   </div>
