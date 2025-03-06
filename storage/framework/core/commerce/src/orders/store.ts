@@ -11,7 +11,7 @@ import { db } from '@stacksjs/database'
  */
 export async function store(request: OrderRequestType): Promise<OrderType | undefined> {
   // Validate the request data
-  request.validate()
+  await request.validate()
 
   try {
     // Prepare order data

@@ -9,6 +9,8 @@ import { db } from '@stacksjs/database'
  * @returns The newly created customer record
  */
 export async function store(request: CustomerRequestType): Promise<CustomersTable | undefined> {
+  await request.validate()
+
   const customerData: NewCustomer = {
     name: request.get('name'),
     email: request.get('email'),

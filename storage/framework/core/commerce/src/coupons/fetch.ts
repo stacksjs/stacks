@@ -1,6 +1,6 @@
 import type { CouponJsonResponse, CouponsTable } from '../../../../orm/src/models/Coupon'
-import { db } from '@stacksjs/database'
 import type { CouponStats } from '../../types'
+import { db } from '@stacksjs/database'
 
 export interface FetchCouponsOptions {
   page?: number
