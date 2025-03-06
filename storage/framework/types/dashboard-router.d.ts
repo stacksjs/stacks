@@ -22,6 +22,7 @@ declare module 'vue-router/auto-routes' {
     '/access-tokens/': RouteRecordInfo<'/access-tokens/', '/access-tokens', Record<never, never>, Record<never, never>>,
     '/actions/': RouteRecordInfo<'/actions/', '/actions', Record<never, never>, Record<never, never>>,
     '/blog/': RouteRecordInfo<'/blog/', '/blog', Record<never, never>, Record<never, never>>,
+    '/blog/authors/': RouteRecordInfo<'/blog/authors/', '/blog/authors', Record<never, never>, Record<never, never>>,
     '/blog/categories/': RouteRecordInfo<'/blog/categories/', '/blog/categories', Record<never, never>, Record<never, never>>,
     '/blog/comments/': RouteRecordInfo<'/blog/comments/', '/blog/comments', Record<never, never>, Record<never, never>>,
     '/blog/posts/': RouteRecordInfo<'/blog/posts/', '/blog/posts', Record<never, never>, Record<never, never>>,
