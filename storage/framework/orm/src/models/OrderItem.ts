@@ -13,7 +13,7 @@ import Order from './Order'
 import Product from './Product'
 
 export interface OrderItemsTable {
-  id?: number
+  id: number
   order_id?: number
   order?: OrderModel
   product_id?: number
@@ -71,7 +71,7 @@ export class OrderItemModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(orderitem: Partial<OrderItemType> | null) {
+  constructor(orderitem: OrderItemJsonResponse | null) {
     if (orderitem) {
       this.attributes = { ...orderitem }
       this.originalAttributes = { ...orderitem }

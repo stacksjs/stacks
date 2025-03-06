@@ -10,7 +10,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface SubscriptionsTable {
-  id?: number
+  id: number
   user_id?: number
   user?: UserModel
   type?: string
@@ -74,7 +74,7 @@ export class SubscriptionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscription: Partial<SubscriptionType> | null) {
+  constructor(subscription: SubscriptionJsonResponse | null) {
     if (subscription) {
       this.attributes = { ...subscription }
       this.originalAttributes = { ...subscription }

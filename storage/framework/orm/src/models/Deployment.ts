@@ -10,7 +10,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface DeploymentsTable {
-  id?: number
+  id: number
   user_id?: number
   user?: UserModel
   commit_sha?: string
@@ -71,7 +71,7 @@ export class DeploymentModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(deployment: Partial<DeploymentType> | null) {
+  constructor(deployment: DeploymentJsonResponse | null) {
     if (deployment) {
       this.attributes = { ...deployment }
       this.originalAttributes = { ...deployment }

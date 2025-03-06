@@ -13,7 +13,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import Product from './Product'
 
 export interface CouponsTable {
-  id?: number
+  id: number
   orders?: OrderModel[] | undefined
   product_id?: number
   product?: ProductModel
@@ -82,7 +82,7 @@ export class CouponModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(coupon: Partial<CouponType> | null) {
+  constructor(coupon: CouponJsonResponse | null) {
     if (coupon) {
       this.attributes = { ...coupon }
       this.originalAttributes = { ...coupon }

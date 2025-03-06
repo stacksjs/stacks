@@ -12,7 +12,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface PaymentMethodsTable {
-  id?: number
+  id: number
   payment_transactions?: PaymentTransactionModel[] | undefined
   user_id?: number
   user?: UserModel
@@ -74,7 +74,7 @@ export class PaymentMethodModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymentmethod: Partial<PaymentMethodType> | null) {
+  constructor(paymentmethod: PaymentMethodJsonResponse | null) {
     if (paymentmethod) {
       this.attributes = { ...paymentmethod }
       this.originalAttributes = { ...paymentmethod }

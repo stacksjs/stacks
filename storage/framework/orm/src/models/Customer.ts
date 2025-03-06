@@ -13,7 +13,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface CustomersTable {
-  id?: number
+  id: number
   orders?: OrderModel[] | undefined
   user_id?: number
   user?: UserModel
@@ -75,7 +75,7 @@ export class CustomerModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(customer: Partial<CustomerType> | null) {
+  constructor(customer: CustomerJsonResponse | null) {
     if (customer) {
       this.attributes = { ...customer }
       this.originalAttributes = { ...customer }

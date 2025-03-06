@@ -915,7 +915,7 @@ export async function generateModelString(
       ${relationImports}
   
       export interface ${formattedTableName}Table {
-        id?: number
+        id: number
        ${fieldString}
       }
   
@@ -962,7 +962,7 @@ export async function generateModelString(
         private hasSaved: boolean
         private customColumns: Record<string, unknown> = {}
        
-        constructor(${formattedModelName}: Partial<${modelName}Type> | null) {
+        constructor(${formattedModelName}: ${modelName}JsonResponse | null) {
           if (${formattedModelName}) {
 
             this.attributes = { ...${formattedModelName} }
@@ -1122,7 +1122,7 @@ export async function generateModelString(
         }
 
         async first(): Promise<${modelName}Model | undefined> {
-          let model: ${modelName}Model | undefined
+          let model: ${modelName}JsonResponse | undefined
 
           if (this.hasSelect) {
             model = await this.selectFromQuery.executeTakeFirst()

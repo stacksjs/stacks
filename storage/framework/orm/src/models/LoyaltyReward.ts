@@ -11,7 +11,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import Product from './Product'
 
 export interface LoyaltyRewardsTable {
-  id?: number
+  id: number
   product_id?: number
   product?: ProductModel
   name?: string
@@ -74,7 +74,7 @@ export class LoyaltyRewardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(loyaltyreward: Partial<LoyaltyRewardType> | null) {
+  constructor(loyaltyreward: LoyaltyRewardJsonResponse | null) {
     if (loyaltyreward) {
       this.attributes = { ...loyaltyreward }
       this.originalAttributes = { ...loyaltyreward }

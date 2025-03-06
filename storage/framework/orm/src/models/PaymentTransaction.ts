@@ -14,7 +14,7 @@ import PaymentMethod from './PaymentMethod'
 import User from './User'
 
 export interface PaymentTransactionsTable {
-  id?: number
+  id: number
   user_id?: number
   user?: UserModel
   payment_method_id?: number
@@ -75,7 +75,7 @@ export class PaymentTransactionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymenttransaction: Partial<PaymentTransactionType> | null) {
+  constructor(paymenttransaction: PaymentTransactionJsonResponse | null) {
     if (paymenttransaction) {
       this.attributes = { ...paymenttransaction }
       this.originalAttributes = { ...paymenttransaction }

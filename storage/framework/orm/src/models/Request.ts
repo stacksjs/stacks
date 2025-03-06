@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface RequestsTable {
-  id?: number
+  id: number
   method?: string | string[]
   path?: string
   status_code?: number
@@ -67,7 +67,7 @@ export class RequestModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(request: Partial<RequestType> | null) {
+  constructor(request: RequestJsonResponse | null) {
     if (request) {
       this.attributes = { ...request }
       this.originalAttributes = { ...request }

@@ -8,7 +8,7 @@ import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface LoyaltyPointsTable {
-  id?: number
+  id: number
   wallet_id?: string
   points?: number
   source?: string
@@ -67,7 +67,7 @@ export class LoyaltyPointModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(loyaltypoint: Partial<LoyaltyPointType> | null) {
+  constructor(loyaltypoint: LoyaltyPointJsonResponse | null) {
     if (loyaltypoint) {
       this.attributes = { ...loyaltypoint }
       this.originalAttributes = { ...loyaltypoint }

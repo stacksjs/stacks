@@ -13,7 +13,7 @@ import Team from './Team'
 import User from './User'
 
 export interface PersonalAccessTokensTable {
-  id?: number
+  id: number
   team_id?: number
   team?: TeamModel
   user_id?: number
@@ -78,7 +78,7 @@ export class AccessTokenModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(accesstoken: Partial<AccessTokenType> | null) {
+  constructor(accesstoken: AccessTokenJsonResponse | null) {
     if (accesstoken) {
       this.attributes = { ...accesstoken }
       this.originalAttributes = { ...accesstoken }

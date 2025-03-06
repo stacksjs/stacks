@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscribersTable {
-  id?: number
+  id: number
   subscribed?: boolean
 
   created_at?: Date
@@ -58,7 +58,7 @@ export class SubscriberModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscriber: Partial<SubscriberType> | null) {
+  constructor(subscriber: SubscriberJsonResponse | null) {
     if (subscriber) {
       this.attributes = { ...subscriber }
       this.originalAttributes = { ...subscriber }

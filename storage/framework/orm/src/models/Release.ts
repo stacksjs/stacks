@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
-  id?: number
+  id: number
   version?: string
 
   created_at?: Date
@@ -58,7 +58,7 @@ export class ReleaseModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(release: Partial<ReleaseType> | null) {
+  constructor(release: ReleaseJsonResponse | null) {
     if (release) {
       this.attributes = { ...release }
       this.originalAttributes = { ...release }

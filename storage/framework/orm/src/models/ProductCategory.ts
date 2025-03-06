@@ -9,7 +9,7 @@ import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductCategoriesTable {
-  id?: number
+  id: number
   products?: ProductModel[] | undefined
   name?: string
   description?: string
@@ -68,7 +68,7 @@ export class ProductCategoryModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(productcategory: Partial<ProductCategoryType> | null) {
+  constructor(productcategory: ProductCategoryJsonResponse | null) {
     if (productcategory) {
       this.attributes = { ...productcategory }
       this.originalAttributes = { ...productcategory }

@@ -13,7 +13,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface GiftCardsTable {
-  id?: number
+  id: number
   orders?: OrderModel[] | undefined
   user_id?: number
   user?: UserModel
@@ -83,7 +83,7 @@ export class GiftCardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(giftcard: Partial<GiftCardType> | null) {
+  constructor(giftcard: GiftCardJsonResponse | null) {
     if (giftcard) {
       this.attributes = { ...giftcard }
       this.originalAttributes = { ...giftcard }

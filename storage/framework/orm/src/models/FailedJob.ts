@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
-  id?: number
+  id: number
   connection?: string
   queue?: string
   payload?: string
@@ -62,7 +62,7 @@ export class FailedJobModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(failedjob: Partial<FailedJobType> | null) {
+  constructor(failedjob: FailedJobJsonResponse | null) {
     if (failedjob) {
       this.attributes = { ...failedjob }
       this.originalAttributes = { ...failedjob }

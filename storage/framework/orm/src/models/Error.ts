@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
-  id?: number
+  id: number
   type?: string
   message?: string
   stack?: string
@@ -62,7 +62,7 @@ export class ErrorModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(error: Partial<ErrorType> | null) {
+  constructor(error: ErrorJsonResponse | null) {
     if (error) {
       this.attributes = { ...error }
       this.originalAttributes = { ...error }

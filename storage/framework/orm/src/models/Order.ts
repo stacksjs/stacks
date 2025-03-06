@@ -17,7 +17,7 @@ import Coupon from './Coupon'
 import Customer from './Customer'
 
 export interface OrdersTable {
-  id?: number
+  id: number
   order_items?: OrderItemModel[] | undefined
   customer_id?: number
   customer?: CustomerModel
@@ -85,7 +85,7 @@ export class OrderModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(order: Partial<OrderType> | null) {
+  constructor(order: OrderJsonResponse | null) {
     if (order) {
       this.attributes = { ...order }
       this.originalAttributes = { ...order }

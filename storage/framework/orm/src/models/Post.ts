@@ -9,7 +9,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface PostsTable {
-  id?: number
+  id: number
   user_id?: number
   user?: UserModel
   title?: string
@@ -64,7 +64,7 @@ export class PostModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(post: Partial<PostType> | null) {
+  constructor(post: PostJsonResponse | null) {
     if (post) {
       this.attributes = { ...post }
       this.originalAttributes = { ...post }

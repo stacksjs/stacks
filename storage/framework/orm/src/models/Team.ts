@@ -9,7 +9,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface TeamsTable {
-  id?: number
+  id: number
   personal_access_tokens?: AccessTokenModel[] | undefined
   name?: string
   company_name?: string
@@ -69,7 +69,7 @@ export class TeamModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(team: Partial<TeamType> | null) {
+  constructor(team: TeamJsonResponse | null) {
     if (team) {
       this.attributes = { ...team }
       this.originalAttributes = { ...team }

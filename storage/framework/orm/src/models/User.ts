@@ -24,7 +24,7 @@ import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaym
 import Team from './Team'
 
 export interface UsersTable {
-  id?: number
+  id: number
   deployments?: DeploymentModel[] | undefined
   subscriptions?: SubscriptionModel[] | undefined
   payment_methods?: PaymentMethodModel[] | undefined
@@ -87,7 +87,7 @@ export class UserModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(user: Partial<UserType> | null) {
+  constructor(user: UserJsonResponse | null) {
     if (user) {
       this.attributes = { ...user }
       this.originalAttributes = { ...user }

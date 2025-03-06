@@ -11,7 +11,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import ProductCategory from './ProductCategory'
 
 export interface ProductsTable {
-  id?: number
+  id: number
   product_category_id?: number
   product_category?: ProductCategoryModel
   name?: string
@@ -75,7 +75,7 @@ export class ProductModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(product: Partial<ProductType> | null) {
+  constructor(product: ProductJsonResponse | null) {
     if (product) {
       this.attributes = { ...product }
       this.originalAttributes = { ...product }

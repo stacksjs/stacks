@@ -11,7 +11,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import Order from './Order'
 
 export interface TransactionsTable {
-  id?: number
+  id: number
   order_id?: number
   order?: OrderModel
   amount?: number
@@ -72,7 +72,7 @@ export class TransactionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(transaction: Partial<TransactionType> | null) {
+  constructor(transaction: TransactionJsonResponse | null) {
     if (transaction) {
       this.attributes = { ...transaction }
       this.originalAttributes = { ...transaction }

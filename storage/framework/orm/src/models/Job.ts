@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface JobsTable {
-  id?: number
+  id: number
   queue?: string
   payload?: string
   attempts?: number
@@ -62,7 +62,7 @@ export class JobModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(job: Partial<JobType> | null) {
+  constructor(job: JobJsonResponse | null) {
     if (job) {
       this.attributes = { ...job }
       this.originalAttributes = { ...job }

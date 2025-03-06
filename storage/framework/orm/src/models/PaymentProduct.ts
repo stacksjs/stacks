@@ -7,7 +7,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
-  id?: number
+  id: number
   name?: string
   description?: number
   key?: number
@@ -66,7 +66,7 @@ export class PaymentProductModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymentproduct: Partial<PaymentProductType> | null) {
+  constructor(paymentproduct: PaymentProductJsonResponse | null) {
     if (paymentproduct) {
       this.attributes = { ...paymentproduct }
       this.originalAttributes = { ...paymentproduct }

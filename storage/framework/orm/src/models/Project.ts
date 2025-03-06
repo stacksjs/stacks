@@ -6,7 +6,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
-  id?: number
+  id: number
   name?: string
   description?: string
   url?: string
@@ -61,7 +61,7 @@ export class ProjectModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(project: Partial<ProjectType> | null) {
+  constructor(project: ProjectJsonResponse | null) {
     if (project) {
       this.attributes = { ...project }
       this.originalAttributes = { ...project }
