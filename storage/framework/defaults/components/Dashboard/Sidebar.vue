@@ -50,7 +50,8 @@ const sections = useLocalStorage<Sections>('sidebar-sections', {
   data: true,
   commerce: true,
   marketing: true,
-  management: true
+  management: true,
+  analytics: true
 })
 
 // Add separate state for nested items
@@ -59,11 +60,12 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
   '#queue': false,
   '#commerce': false,
   '#commerce-products': false,
-  '#social-posts': false
+  '#social-posts': false,
+  '#analytics': false
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'blog', 'app', 'data', 'commerce', 'marketing', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'blog', 'app', 'data', 'commerce', 'marketing', 'analytics', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -164,8 +166,7 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/blog/tags', icon: 'i-hugeicons-tag-01', text: 'Tags' },
       { to: '/blog/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
       { to: '/blog/authors', icon: 'i-hugeicons-user-edit-01', text: 'Authors' },
-      { to: '/blog/seo', icon: 'i-hugeicons-seo', text: 'SEO' },
-      { to: '/blog/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
+      { to: '/blog/seo', icon: 'i-hugeicons-seo', text: 'SEO' }
     ]
   },
   app: {
@@ -218,8 +219,7 @@ const sectionContent: Record<string, SectionContent> = {
           { to: '/commerce/waitlist/restaurant', icon: 'i-hugeicons-restaurant', text: 'Restaurant' }
         ]
       },
-      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' },
-      { to: '/commerce/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' }
+      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' }
     ]
   },
   data: {
@@ -236,8 +236,14 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/marketing/social-posts', icon: 'i-hugeicons-time-schedule', text: 'Social Posts' },
       { to: '/marketing/campaigns', icon: 'i-hugeicons-rocket-01', text: 'Campaigns' },
       { to: '/marketing/reviews', icon: 'i-hugeicons-star', text: 'Reviews' },
-      { to: '/marketing/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' },
       { to: '/marketing/settings', icon: 'i-hugeicons-settings-02', text: 'Settings' }
+    ]
+  },
+  analytics: {
+    items: [
+      { to: '/blog/analytics', icon: 'i-hugeicons-document-validation', text: 'Blog' },
+      { to: '/commerce/analytics', icon: 'i-hugeicons-shopping-cart-01', text: 'Commerce' },
+      { to: '/marketing/analytics', icon: 'i-hugeicons-megaphone-01', text: 'Marketing' },
     ]
   },
   management: {

@@ -34,12 +34,14 @@ interface PageData {
   entries: number
   visitors: number
   views: number
+  percentage: number
 }
 
 interface ReferrerData {
   name: string
   visitors: number
   views: number
+  percentage: number
 }
 
 interface DeviceData {
@@ -57,6 +59,7 @@ interface BrowserData {
 interface CountryData {
   name: string
   visitors: number
+  percentage: number
   flag: string
 }
 
@@ -77,10 +80,6 @@ const comparisonType = ref('no-comparison')
 const customStartDate = ref('')
 const customEndDate = ref('')
 const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
-
-// Search functionality
-const searchQuery = ref('')
-const isSearching = ref(false)
 
 // Analytics overview data
 const analyticsOverview = ref({
@@ -193,33 +192,47 @@ const chartConfig = reactive({
   }
 })
 
-// Pages data
+// Pages data - removed duplicates and added unique paths
 const pagesData = ref<PageData[]>([
-  { path: '/', entries: 1800, visitors: 1800, views: 2100 },
-  { path: '/', entries: 113, visitors: 113, views: 139 },
-  { path: '/', entries: 51, visitors: 51, views: 77 },
-  { path: '/', entries: 42, visitors: 42, views: 51 },
-  { path: '/', entries: 37, visitors: 37, views: 60 },
-  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45 },
-  { path: '/', entries: 16, visitors: 17, views: 202 },
-  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22 },
-  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13 },
-  { path: '/team', entries: 9, visitors: 10, views: 15 }
+  { path: '/', entries: 1800, visitors: 1800, views: 2100, percentage: 0 },
+  { path: '/blog', entries: 113, visitors: 113, views: 139, percentage: 0 },
+  { path: '/about', entries: 51, visitors: 51, views: 77, percentage: 0 },
+  { path: '/contact', entries: 42, visitors: 42, views: 51, percentage: 0 },
+  { path: '/products', entries: 37, visitors: 37, views: 60, percentage: 0 },
+  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45, percentage: 0 },
+  { path: '/docs', entries: 16, visitors: 17, views: 202, percentage: 0 },
+  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22, percentage: 0 },
+  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13, percentage: 0 },
+  { path: '/team', entries: 9, visitors: 10, views: 15, percentage: 0 }
 ])
+
+// Calculate percentages for pages based on views
+const totalPageViews = computed(() => pagesData.value.reduce((sum, page) => sum + page.views, 0))
+// Update percentages
+pagesData.value.forEach(page => {
+  page.percentage = Math.round((page.views / totalPageViews.value) * 100)
+})
 
 // Referrers data
 const referrersData = ref<ReferrerData[]>([
-  { name: 'Direct / Unknown', visitors: 1400, views: 2100 },
-  { name: 'X/Twitter', visitors: 545, views: 580 },
-  { name: 'Google', visitors: 46, views: 50 },
-  { name: 'stacksjs.org', visitors: 45, views: 63 },
-  { name: 'stacksjs.netlify.app', visitors: 38, views: 60 },
-  { name: 'github.com', visitors: 34, views: 47 },
-  { name: 'DuckDuckGo', visitors: 32, views: 35 },
-  { name: 'Bing', visitors: 22, views: 24 },
-  { name: 'Baidu', visitors: 8, views: 8 },
-  { name: 'npmjs.com', visitors: 7, views: 7 }
+  { name: 'Direct / Unknown', visitors: 1400, views: 2100, percentage: 0 },
+  { name: 'X/Twitter', visitors: 545, views: 580, percentage: 0 },
+  { name: 'Google', visitors: 46, views: 50, percentage: 0 },
+  { name: 'stacksjs.org', visitors: 45, views: 63, percentage: 0 },
+  { name: 'stacksjs.netlify.app', visitors: 38, views: 60, percentage: 0 },
+  { name: 'github.com', visitors: 34, views: 47, percentage: 0 },
+  { name: 'DuckDuckGo', visitors: 32, views: 35, percentage: 0 },
+  { name: 'Bing', visitors: 22, views: 24, percentage: 0 },
+  { name: 'Baidu', visitors: 8, views: 8, percentage: 0 },
+  { name: 'npmjs.com', visitors: 7, views: 7, percentage: 0 }
 ])
+
+// Calculate percentages for referrers based on views
+const totalReferrerViews = computed(() => referrersData.value.reduce((sum, referrer) => sum + referrer.views, 0))
+// Update percentages
+referrersData.value.forEach(referrer => {
+  referrer.percentage = Math.round((referrer.views / totalReferrerViews.value) * 100)
+})
 
 // Device data
 const deviceData = ref<DeviceData[]>([
@@ -239,12 +252,19 @@ const browserData = ref<BrowserData[]>([
 
 // Countries data with flag emojis
 const countriesData = ref<CountryData[]>([
-  { name: 'United States of America', visitors: 768, flag: '🇺🇸' },
-  { name: 'Germany', visitors: 140, flag: '🇩🇪' },
-  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧' },
-  { name: 'India', visitors: 83, flag: '🇮🇳' },
-  { name: 'Indonesia', visitors: 80, flag: '🇮🇩' }
+  { name: 'United States of America', visitors: 768, flag: '🇺🇸', percentage: 0 },
+  { name: 'Germany', visitors: 140, flag: '🇩🇪', percentage: 0 },
+  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧', percentage: 0 },
+  { name: 'India', visitors: 83, flag: '🇮🇳', percentage: 0 },
+  { name: 'Indonesia', visitors: 80, flag: '🇮🇩', percentage: 0 }
 ])
+
+// Calculate percentages for countries based on visitors
+const totalCountryVisitors = computed(() => countriesData.value.reduce((sum, country) => sum + country.visitors, 0))
+// Update percentages
+countriesData.value.forEach(country => {
+  country.percentage = Math.round((country.visitors / totalCountryVisitors.value) * 100)
+})
 
 // Format numbers with commas
 function formatNumber(number: number): string {
@@ -257,45 +277,6 @@ function getPercentageColorClass(percentage: number): string {
   if (percentage >= 40) return 'text-yellow-600 dark:text-yellow-400'
   return 'text-red-600 dark:text-red-400'
 }
-
-// Search functionality
-function toggleSearch(): void {
-  isSearching.value = !isSearching.value
-  if (!isSearching.value) {
-    searchQuery.value = ''
-  }
-}
-
-// Filter data based on search query
-const filteredPagesData = computed(() => {
-  if (!searchQuery.value) return pagesData.value
-  const query = searchQuery.value.toLowerCase()
-  return pagesData.value.filter(page => page.path.toLowerCase().includes(query))
-})
-
-const filteredReferrersData = computed(() => {
-  if (!searchQuery.value) return referrersData.value
-  const query = searchQuery.value.toLowerCase()
-  return referrersData.value.filter(referrer => referrer.name.toLowerCase().includes(query))
-})
-
-const filteredDeviceData = computed(() => {
-  if (!searchQuery.value) return deviceData.value
-  const query = searchQuery.value.toLowerCase()
-  return deviceData.value.filter(device => device.name.toLowerCase().includes(query))
-})
-
-const filteredBrowserData = computed(() => {
-  if (!searchQuery.value) return browserData.value
-  const query = searchQuery.value.toLowerCase()
-  return browserData.value.filter(browser => browser.name.toLowerCase().includes(query))
-})
-
-const filteredCountriesData = computed(() => {
-  if (!searchQuery.value) return countriesData.value
-  const query = searchQuery.value.toLowerCase()
-  return countriesData.value.filter(country => country.name.toLowerCase().includes(query))
-})
 
 // Mock function to update data when date range changes
 function updateDataForDateRange(): void {
@@ -400,42 +381,12 @@ onMounted(() => {
 
         <!-- Traffic Chart -->
         <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
-          <!-- Global search input (shown when isSearching is true) -->
-          <div v-if="isSearching" class="mb-4">
-            <div class="relative">
-              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
-              </div>
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
-                placeholder="Search across all analytics data..."
-                autofocus
-              />
-              <button
-                @click="toggleSearch"
-                class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-              >
-                <div class="i-hugeicons-cancel-circle h-5 w-5"></div>
-              </button>
-            </div>
-          </div>
-
-          <!-- Chart header with search toggle -->
-          <div v-else class="flex justify-between items-center mb-4">
-            <div>
-              <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Traffic Overview</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Daily page views and unique visitors
-              </p>
-            </div>
-            <button
-              @click="toggleSearch"
-              class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-            >
-              <div class="i-hugeicons-search-01 h-5 w-5"></div>
-            </button>
+          <!-- Chart header -->
+          <div class="mb-4">
+            <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Traffic Overview</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Daily page views and unique visitors
+            </p>
           </div>
 
           <!-- Chart.js canvas -->
@@ -448,19 +399,8 @@ onMounted(() => {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Pages and Entries Table -->
           <div>
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">Pages</h3>
-              <div class="flex space-x-2">
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <div class="i-hugeicons-list h-5 w-5"></div>
-                </button>
-                <button
-                  @click="toggleSearch"
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
-                </button>
-              </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -479,21 +419,28 @@ onMounted(() => {
                     <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                       Views
                     </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(page, index) in filteredPagesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(page, index) in pagesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {{ page.path }}
+                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: page.percentage + '%' }"></div>
+                      <span class="relative z-10">{{ page.path }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ page.entries }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ page.entries }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ page.visitors }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ page.visitors }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ page.views }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ page.views }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ page.percentage }}%</span>
                     </td>
                   </tr>
                 </tbody>
@@ -509,19 +456,8 @@ onMounted(() => {
 
           <!-- Referrers Table -->
           <div>
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">Referrers</h3>
-              <div class="flex space-x-2">
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <div class="i-hugeicons-list h-5 w-5"></div>
-                </button>
-                <button
-                  @click="toggleSearch"
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
-                </button>
-              </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -537,18 +473,25 @@ onMounted(() => {
                     <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                       Views
                     </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(referrer, index) in filteredReferrersData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(referrer, index) in referrersData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {{ referrer.name }}
+                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="{ width: referrer.percentage + '%' }"></div>
+                      <span class="relative z-10">{{ referrer.name }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ referrer.visitors }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ referrer.visitors }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ referrer.views }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ referrer.views }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ referrer.percentage }}%</span>
                     </td>
                   </tr>
                 </tbody>
@@ -567,19 +510,8 @@ onMounted(() => {
         <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Device Types -->
           <div>
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">Device Types</h3>
-              <div class="flex space-x-2">
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <div class="i-hugeicons-list h-5 w-5"></div>
-                </button>
-                <button
-                  @click="toggleSearch"
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
-                </button>
-              </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -592,15 +524,22 @@ onMounted(() => {
                     <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                       Visitors
                     </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(device, index) in filteredDeviceData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(device, index) in deviceData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {{ device.name }}
+                      <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: device.percentage + '%' }"></div>
+                      <span class="relative z-10">{{ device.name }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ device.visitors }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ device.visitors }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ device.percentage }}%</span>
                     </td>
                   </tr>
                 </tbody>
@@ -616,19 +555,8 @@ onMounted(() => {
 
           <!-- Browsers -->
           <div>
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">Browsers</h3>
-              <div class="flex space-x-2">
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <div class="i-hugeicons-list h-5 w-5"></div>
-                </button>
-                <button
-                  @click="toggleSearch"
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
-                </button>
-              </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -641,15 +569,22 @@ onMounted(() => {
                     <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                       Visitors
                     </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(browser, index) in filteredBrowserData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(browser, index) in browserData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {{ browser.name }}
+                      <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" :style="{ width: browser.percentage + '%' }"></div>
+                      <span class="relative z-10">{{ browser.name }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ browser.visitors }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ browser.visitors }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ browser.percentage }}%</span>
                     </td>
                   </tr>
                 </tbody>
@@ -665,19 +600,8 @@ onMounted(() => {
 
           <!-- Countries -->
           <div>
-            <div class="mb-4 flex items-center justify-between">
+            <div class="mb-4">
               <h3 class="text-lg font-medium text-gray-900 dark:text-white">Countries</h3>
-              <div class="flex space-x-2">
-                <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                  <div class="i-hugeicons-list h-5 w-5"></div>
-                </button>
-                <button
-                  @click="toggleSearch"
-                  class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                >
-                  <div class="i-hugeicons-search-01 h-5 w-5"></div>
-                </button>
-              </div>
             </div>
 
             <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
@@ -690,16 +614,22 @@ onMounted(() => {
                     <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                       Visitors
                     </th>
+                    <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                      %
+                    </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="(country, index) in filteredCountriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+                  <tr v-for="(country, index) in countriesData" :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      <span class="mr-2">{{ country.flag }}</span>
-                      {{ country.name }}
+                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="{ width: country.percentage + '%' }"></div>
+                      <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                      {{ country.visitors }}
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ country.visitors }}</span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                      <span class="relative z-10">{{ country.percentage }}%</span>
                     </td>
                   </tr>
                 </tbody>
