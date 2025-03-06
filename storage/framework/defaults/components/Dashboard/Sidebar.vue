@@ -178,7 +178,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   app: {
     items: [
-      { to: '/deployments', icon: 'i-hugeicons-rocket', text: 'Deployments' },
+      { to: '/deployments', icon: 'i-hugeicons-rocket-01', text: 'Deployments' },
       { to: '/requests', icon: 'i-hugeicons-api', text: 'Requests' },
       { to: '/realtime', icon: 'i-hugeicons-link-03', text: 'Realtime' },
       { to: '/actions', icon: 'i-hugeicons-function-of-x', text: 'Actions' },
@@ -242,7 +242,7 @@ const sectionContent: Record<string, SectionContent> = {
     items: [
       { to: '/marketing', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/marketing/social-posts', icon: 'i-hugeicons-time-schedule', text: 'Social Posts' },
-      { to: '/marketing/campaigns', icon: 'i-hugeicons-rocket-01', text: 'Campaigns' },
+      { to: '/marketing/campaigns', icon: 'i-hugeicons-rocket-01-01', text: 'Campaigns' },
       { to: '/marketing/reviews', icon: 'i-hugeicons-star', text: 'Reviews' },
       { to: '/marketing/analytics', icon: 'i-hugeicons-analytics-01', text: 'Analytics' },
       { to: '/marketing/settings', icon: 'i-hugeicons-settings-02', text: 'Settings' }
