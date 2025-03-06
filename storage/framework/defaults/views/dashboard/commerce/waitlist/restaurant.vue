@@ -14,13 +14,22 @@ interface WaitlistEntry {
   name: string
   email: string
   phone: string | null
-  product: string
-  source: string
+  partySize: number
+  estimatedWaitMinutes: number
+  quotedWaitMinutes: number
+  queuePosition: number
+  notificationPreference: 'sms' | 'email' | 'both'
+  notes: string | null
   status: string
   dateAdded: string
-  notes: string | null
   notified: boolean
   priority: number
+  lastNotified: string | null
+  tablePreference: string | null
+  specialRequests: string | null
+  checkInTime: string
+  estimatedSeatingTime: string | null
+  actualSeatingTime: string | null
 }
 
 // Define product type for dropdown
@@ -32,10 +41,76 @@ interface Product {
 }
 
 // Available statuses
-const statuses = ['all', 'Pending', 'Notified', 'Converted', 'Expired']
+const statuses = ['all', 'Waiting', 'Seated', 'Cancelled', 'No Show']
 
 // Available sources
 const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
+
+// Notification preferences
+const notificationPreferences = ['sms', 'email', 'both']
+
+// Table preferences
+const tablePreferences = ['No Preference', 'Indoor', 'Outdoor', 'Bar', 'Booth', 'Private']
+
+// Calculate estimated wait time based on party size and current queue
+function calculateEstimatedWait(partySize: number): number {
+  const baseWait = 15 // Base wait time in minutes
+  const queueFactor = waitlistEntries.value.filter(e => e.status === 'Waiting').length * 5
+  const partySizeFactor = Math.ceil(partySize / 2) * 5
+  return baseWait + queueFactor + partySizeFactor
+}
+
+// Update queue positions
+function updateQueuePositions(): void {
+  const waitingEntries = waitlistEntries.value
+    .filter(e => e.status === 'Waiting')
+    .sort((a, b) => new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime())
+
+  waitingEntries.forEach((entry, index) => {
+    entry.queuePosition = index + 1
+    entry.estimatedWaitMinutes = calculateEstimatedWait(entry.partySize)
+    entry.estimatedSeatingTime = new Date(
+      new Date(entry.checkInTime).getTime() + entry.estimatedWaitMinutes * 60000
+    ).toISOString()
+  })
+}
+
+// Send SMS notification
+async function sendSMSNotification(entry: WaitlistEntry, message: string): Promise<void> {
+  // In a real app, this would integrate with Twilio or similar service
+  console.log(`Sending SMS to ${entry.phone}: ${message}`)
+}
+
+// Send notification based on preference
+async function notifyCustomer(entry: WaitlistEntry, message: string): Promise<void> {
+  if (entry.notificationPreference === 'sms' || entry.notificationPreference === 'both') {
+    await sendSMSNotification(entry, message)
+  }
+  if (entry.notificationPreference === 'email' || entry.notificationPreference === 'both') {
+    // Send email notification
+    console.log(`Sending email to ${entry.email}: ${message}`)
+  }
+  entry.lastNotified = new Date().toISOString()
+  entry.notified = true
+}
+
+// Calculate wait time statistics
+const waitTimeStats = computed(() => {
+  const completedEntries = waitlistEntries.value.filter(e => e.status === 'Seated' && e.actualSeatingTime)
+  if (completedEntries.length === 0) return null
+
+  const waitTimes = completedEntries.map(entry => {
+    const checkIn = new Date(entry.checkInTime).getTime()
+    const seating = new Date(entry.actualSeatingTime!).getTime()
+    return (seating - checkIn) / 60000 // Convert to minutes
+  })
+
+  return {
+    averageWait: Math.round(waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length),
+    maxWait: Math.round(Math.max(...waitTimes)),
+    minWait: Math.round(Math.min(...waitTimes))
+  }
+})
 
 // Sample waitlist data
 const waitlistEntries = ref<WaitlistEntry[]>([
@@ -44,104 +119,176 @@ const waitlistEntries = ref<WaitlistEntry[]>([
     name: 'John Smith',
     email: 'john.smith@example.com',
     phone: '+1 (555) 123-4567',
-    product: 'Truffle Mushroom Pasta',
-    source: 'Website',
-    status: 'Pending',
+    partySize: 4,
+    estimatedWaitMinutes: 25,
+    quotedWaitMinutes: 30,
+    queuePosition: 1,
+    notificationPreference: 'sms',
+    notes: 'Birthday celebration',
+    status: 'Waiting',
     dateAdded: '2024-01-10',
-    notes: 'Interested in being notified as soon as the product is available',
     notified: false,
-    priority: 2
+    priority: 2,
+    lastNotified: null,
+    tablePreference: 'Booth',
+    specialRequests: 'High chair needed',
+    checkInTime: new Date().toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   },
   {
     id: 2,
     name: 'Emily Johnson',
     email: 'emily.j@example.com',
     phone: '+1 (555) 987-6543',
-    product: 'Matcha Green Tea Latte',
-    source: 'Mobile App',
-    status: 'Pending',
-    dateAdded: '2024-01-12',
+    partySize: 2,
+    estimatedWaitMinutes: 15,
+    quotedWaitMinutes: 18,
+    queuePosition: 2,
+    notificationPreference: 'email',
     notes: null,
+    status: 'Waiting',
+    dateAdded: '2024-01-12',
     notified: false,
-    priority: 1
+    priority: 1,
+    lastNotified: null,
+    tablePreference: null,
+    specialRequests: null,
+    checkInTime: new Date().toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   },
   {
     id: 3,
     name: 'Michael Brown',
     email: 'michael.b@example.com',
     phone: null,
-    product: 'Truffle Mushroom Pasta',
-    source: 'In-Store',
-    status: 'Notified',
-    dateAdded: '2024-01-15',
+    partySize: 3,
+    estimatedWaitMinutes: 20,
+    quotedWaitMinutes: 24,
+    queuePosition: 3,
+    notificationPreference: 'both',
     notes: 'VIP customer, notify immediately when available',
+    status: 'Seated',
+    dateAdded: '2024-01-15',
     notified: true,
-    priority: 3
+    priority: 3,
+    lastNotified: '2024-01-15T12:30:00',
+    tablePreference: 'Indoor',
+    specialRequests: null,
+    checkInTime: '2024-01-15T12:00:00',
+    estimatedSeatingTime: '2024-01-15T12:30:00',
+    actualSeatingTime: '2024-01-15T12:30:00'
   },
   {
     id: 4,
     name: 'Sarah Wilson',
     email: 'sarah.w@example.com',
     phone: '+1 (555) 456-7890',
-    product: 'Avocado Toast',
-    source: 'Website',
-    status: 'Pending',
-    dateAdded: '2024-01-18',
+    partySize: 2,
+    estimatedWaitMinutes: 10,
+    quotedWaitMinutes: 12,
+    queuePosition: 4,
+    notificationPreference: 'sms',
     notes: 'Wants to be notified when back in stock',
+    status: 'Waiting',
+    dateAdded: '2024-01-18',
     notified: false,
-    priority: 2
+    priority: 2,
+    lastNotified: null,
+    tablePreference: null,
+    specialRequests: null,
+    checkInTime: new Date().toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   },
   {
     id: 5,
     name: 'David Lee',
     email: 'david.l@example.com',
     phone: '+1 (555) 234-5678',
-    product: 'Truffle Mushroom Pasta',
-    source: 'Social Media',
-    status: 'Notified',
-    dateAdded: '2024-01-20',
+    partySize: 3,
+    estimatedWaitMinutes: 18,
+    quotedWaitMinutes: 21,
+    queuePosition: 5,
+    notificationPreference: 'email',
     notes: 'Requested notification via SMS',
+    status: 'Seated',
+    dateAdded: '2024-01-20',
     notified: true,
-    priority: 2
+    priority: 2,
+    lastNotified: '2024-01-20T12:30:00',
+    tablePreference: 'Bar',
+    specialRequests: 'No onions please',
+    checkInTime: '2024-01-20T12:00:00',
+    estimatedSeatingTime: '2024-01-20T12:30:00',
+    actualSeatingTime: '2024-01-20T12:30:00'
   },
   {
     id: 6,
     name: 'Jennifer Martinez',
     email: 'jennifer.m@example.com',
     phone: null,
-    product: 'Matcha Green Tea Latte',
-    source: 'Email Campaign',
-    status: 'Pending',
-    dateAdded: '2024-01-22',
+    partySize: 2,
+    estimatedWaitMinutes: 12,
+    quotedWaitMinutes: 14,
+    queuePosition: 6,
+    notificationPreference: 'both',
     notes: null,
+    status: 'Waiting',
+    dateAdded: '2024-01-22',
     notified: false,
-    priority: 1
+    priority: 1,
+    lastNotified: null,
+    tablePreference: null,
+    specialRequests: null,
+    checkInTime: new Date().toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   },
   {
     id: 7,
     name: 'Robert Taylor',
     email: 'robert.t@example.com',
     phone: '+1 (555) 876-5432',
-    product: 'Truffle Mushroom Pasta',
-    source: 'Website',
-    status: 'Pending',
-    dateAdded: '2024-01-25',
+    partySize: 4,
+    estimatedWaitMinutes: 25,
+    quotedWaitMinutes: 30,
+    queuePosition: 7,
+    notificationPreference: 'sms',
     notes: 'Wants to purchase multiple units when available',
+    status: 'Waiting',
+    dateAdded: '2024-01-25',
     notified: false,
-    priority: 3
+    priority: 3,
+    lastNotified: null,
+    tablePreference: 'Booth',
+    specialRequests: null,
+    checkInTime: new Date().toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   },
   {
     id: 8,
     name: 'Lisa Anderson',
     email: 'lisa.a@example.com',
     phone: '+1 (555) 345-6789',
-    product: 'Matcha Green Tea Latte',
-    source: 'Mobile App',
-    status: 'Notified',
-    dateAdded: '2024-01-28',
+    partySize: 2,
+    estimatedWaitMinutes: 10,
+    quotedWaitMinutes: 12,
+    queuePosition: 8,
+    notificationPreference: 'email',
     notes: null,
+    status: 'Seated',
+    dateAdded: '2024-01-28',
     notified: true,
-    priority: 2
+    priority: 2,
+    lastNotified: '2024-01-28T12:30:00',
+    tablePreference: 'Indoor',
+    specialRequests: null,
+    checkInTime: '2024-01-28T12:00:00',
+    estimatedSeatingTime: '2024-01-28T12:30:00',
+    actualSeatingTime: '2024-01-28T12:30:00'
   }
 ])
 
@@ -150,8 +297,8 @@ const products = computed<Product[]>(() => {
   const productMap = new Map<string, number>()
 
   waitlistEntries.value.forEach(entry => {
-    const count = productMap.get(entry.product) || 0
-    productMap.set(entry.product, count + 1)
+    const count = productMap.get(entry.name) || 0
+    productMap.set(entry.name, count + 1)
   })
 
   return Array.from(productMap.entries()).map(([name, count], index) => ({
@@ -162,98 +309,122 @@ const products = computed<Product[]>(() => {
   }))
 })
 
-// Filter and sort options
+// Search and filter refs
 const searchQuery = ref('')
-const sortBy = ref('dateAdded')
-const sortOrder = ref('desc')
-const productFilter = ref('all')
 const statusFilter = ref('all')
-const sourceFilter = ref('all')
-const viewMode = useLocalStorage('waitlist-view-mode', 'list') // Default to list view and save in localStorage
+const partySizeFilter = ref('all')
+const tablePreferenceFilter = ref('all')
 
-// Filtered and sorted entries
+// Filter functions
 const filteredEntries = computed(() => {
-  return waitlistEntries.value
-    .filter(entry => {
-      // Apply search filter
-      const matchesSearch =
-        entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        entry.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-        (entry.notes && entry.notes.toLowerCase().includes(searchQuery.value.toLowerCase()))
+  return waitlistEntries.value.filter(entry => {
+    // Apply search filter
+    const matchesSearch = searchQuery.value === '' ||
+      entry.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      (entry.phone && entry.phone.includes(searchQuery.value)) ||
+      entry.email.toLowerCase().includes(searchQuery.value.toLowerCase())
 
-      // Apply product filter
-      const matchesProduct = productFilter.value === 'all' || entry.product === productFilter.value
-
-      // Apply status filter
-      const matchesStatus = statusFilter.value === 'all' || entry.status === statusFilter.value
-
-      // Apply source filter
-      const matchesSource = sourceFilter.value === 'all' || entry.source === sourceFilter.value
-
-      return matchesSearch && matchesProduct && matchesStatus && matchesSource
-    })
-    .sort((a, b) => {
-      // Apply sorting
-      let comparison = 0
-      if (sortBy.value === 'dateAdded') {
-        comparison = new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
-      } else if (sortBy.value === 'name') {
-        comparison = a.name.localeCompare(b.name)
-      } else if (sortBy.value === 'priority') {
-        comparison = b.priority - a.priority
+    // Apply party size filter
+    let matchesPartySize = true
+    if (partySizeFilter.value !== 'all') {
+      const [minStr, maxStr] = partySizeFilter.value.split('-')
+      if (!minStr) return false
+      const min = parseInt(minStr)
+      if (maxStr) {
+        const max = parseInt(maxStr)
+        matchesPartySize = entry.partySize >= min && entry.partySize <= max
+      } else {
+        // For "7+" case
+        matchesPartySize = entry.partySize >= min
       }
+    }
 
-      return sortOrder.value === 'asc' ? comparison : -comparison
-    })
+    // Apply status filter
+    const matchesStatus = statusFilter.value === 'all' || entry.status === statusFilter.value
+
+    // Apply table preference filter
+    const matchesTablePreference = tablePreferenceFilter.value === 'all' ||
+      (entry.tablePreference && entry.tablePreference === tablePreferenceFilter.value)
+
+    return matchesSearch && matchesPartySize && matchesStatus && matchesTablePreference
+  })
 })
 
-// Pagination
-const currentPage = ref(1)
-const itemsPerPage = ref(10)
-const totalPages = computed(() => Math.ceil(filteredEntries.value.length / itemsPerPage.value))
+// Sort refs and functions
+const sortBy = ref<'name' | 'checkInTime' | 'estimatedWaitMinutes'>('checkInTime')
+const sortOrder = ref<'asc' | 'desc'>('asc')
 
-const paginatedEntries = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredEntries.value.slice(start, end)
-})
-
-function changePage(page: number): void {
-  currentPage.value = page
-}
-
-function previousPage(): void {
-  if (currentPage.value > 1) {
-    currentPage.value--
+function toggleSort(field: 'name' | 'checkInTime' | 'estimatedWaitMinutes') {
+  if (sortBy.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy.value = field
+    sortOrder.value = 'asc'
   }
 }
 
-function nextPage(): void {
+// Sort entries
+const sortedEntries = computed(() => {
+  return [...filteredEntries.value].sort((a, b) => {
+    if (sortBy.value === 'name') {
+      return sortOrder.value === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    }
+    if (sortBy.value === 'checkInTime') {
+      return sortOrder.value === 'asc'
+        ? new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime()
+        : new Date(b.checkInTime).getTime() - new Date(a.checkInTime).getTime()
+    }
+    if (sortBy.value === 'estimatedWaitMinutes') {
+      return sortOrder.value === 'asc'
+        ? a.estimatedWaitMinutes - b.estimatedWaitMinutes
+        : b.estimatedWaitMinutes - a.estimatedWaitMinutes
+    }
+    return 0
+  })
+})
+
+// Pagination
+const itemsPerPage = 10
+const currentPage = ref(1)
+
+const paginatedEntries = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return sortedEntries.value.slice(start, end)
+})
+
+const totalPages = computed(() => Math.ceil(sortedEntries.value.length / itemsPerPage))
+
+function nextPage() {
   if (currentPage.value < totalPages.value) {
     currentPage.value++
   }
 }
 
-// Toggle sort order
-function toggleSort(column: string): void {
-  if (sortBy.value === column) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy.value = column
-    sortOrder.value = 'desc'
+function prevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--
+  }
+}
+
+function goToPage(page: number) {
+  if (page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
   }
 }
 
 // Get status badge class
 function getStatusClass(status: string): string {
   switch (status) {
-    case 'Pending':
+    case 'Waiting':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'Notified':
+    case 'Seated':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Converted':
-      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
-    case 'Expired':
+    case 'Cancelled':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+    case 'No Show':
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
     default:
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
@@ -281,17 +452,19 @@ const currentEntry = ref<WaitlistEntry | null>(null)
 
 // Calculate statistics
 const totalEntries = computed(() => waitlistEntries.value.length)
-const pendingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Pending').length)
-const notifiedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Notified').length)
-const convertedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Converted').length)
+const waitingEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Waiting').length)
+const seatedEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Seated').length)
+const cancelledEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'Cancelled').length)
+const noShowEntries = computed(() => waitlistEntries.value.filter(e => e.status === 'No Show').length)
 
 // Form state for entry fields
 const entryName = ref('')
 const entryEmail = ref('')
 const entryPhone = ref<string | null>('')
-const entryProduct = ref('')
-const entrySource = ref('Website')
-const entryStatus = ref('Pending')
+const entryPartySize = ref(2)
+const entryNotificationPreference = ref<'sms' | 'email' | 'both'>('sms')
+const entryTablePreference = ref<string | null>(null)
+const entrySpecialRequests = ref<string | null>(null)
 const entryNotes = ref<string | null>('')
 const entryPriority = ref(1)
 
@@ -303,9 +476,10 @@ function openAddEntryModal(): void {
   entryName.value = ''
   entryEmail.value = ''
   entryPhone.value = ''
-  entryProduct.value = ''
-  entrySource.value = 'Website'
-  entryStatus.value = 'Pending'
+  entryPartySize.value = 2
+  entryNotificationPreference.value = 'sms'
+  entryTablePreference.value = null
+  entrySpecialRequests.value = null
   entryNotes.value = ''
   entryPriority.value = 1
 
@@ -320,9 +494,10 @@ function openEditEntryModal(entry: WaitlistEntry): void {
   entryName.value = entry.name
   entryEmail.value = entry.email
   entryPhone.value = entry.phone
-  entryProduct.value = entry.product
-  entrySource.value = entry.source
-  entryStatus.value = entry.status
+  entryPartySize.value = entry.partySize
+  entryNotificationPreference.value = entry.notificationPreference
+  entryTablePreference.value = entry.tablePreference
+  entrySpecialRequests.value = entry.specialRequests
   entryNotes.value = entry.notes
   entryPriority.value = entry.priority
 
@@ -330,19 +505,28 @@ function openEditEntryModal(entry: WaitlistEntry): void {
 }
 
 function saveEntry(): void {
-  // Create entry object from form fields
+  const now = new Date()
   const entry: WaitlistEntry = {
     id: isEditMode.value && currentEntry.value ? currentEntry.value.id : Math.max(0, ...waitlistEntries.value.map(e => e.id)) + 1,
     name: entryName.value,
     email: entryEmail.value,
     phone: entryPhone.value,
-    product: entryProduct.value,
-    source: entrySource.value,
-    status: entryStatus.value,
-    dateAdded: isEditMode.value && currentEntry.value ? currentEntry.value.dateAdded : new Date().toISOString().split('T')[0] || '',
+    partySize: entryPartySize.value,
+    estimatedWaitMinutes: calculateEstimatedWait(entryPartySize.value),
+    quotedWaitMinutes: Math.ceil(calculateEstimatedWait(entryPartySize.value) * 1.2), // Pad quote by 20%
+    queuePosition: waitlistEntries.value.filter(e => e.status === 'Waiting').length + 1,
+    notificationPreference: entryNotificationPreference.value,
     notes: entryNotes.value,
-    notified: isEditMode.value && currentEntry.value ? currentEntry.value.notified : false,
-    priority: entryPriority.value
+    status: 'Waiting',
+    dateAdded: now.toISOString().split('T')[0],
+    notified: false,
+    priority: entryPriority.value,
+    lastNotified: null,
+    tablePreference: entryTablePreference.value,
+    specialRequests: entrySpecialRequests.value,
+    checkInTime: now.toISOString(),
+    estimatedSeatingTime: null,
+    actualSeatingTime: null
   }
 
   if (isEditMode.value && currentEntry.value) {
@@ -355,6 +539,12 @@ function saveEntry(): void {
     // Add new entry
     waitlistEntries.value.push(entry)
   }
+
+  // Update queue positions and wait times
+  updateQueuePositions()
+
+  // Send initial notification
+  notifyCustomer(entry, `Thanks for joining the waitlist! Your estimated wait time is ${entry.quotedWaitMinutes} minutes. We'll notify you when your table is almost ready.`)
 
   showEntryModal.value = false
 }
@@ -369,20 +559,22 @@ function deleteEntry(entryId: number): void {
   }
 }
 
-// Function to mark an entry as notified
-function markAsNotified(id: number): void {
-  const entry = waitlistEntries.value.find(e => e.id === id)
+// Function to mark an entry as seated
+function markAsSeated(entryId: number): void {
+  const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
-    entry.notified = true
-    // In a real app, this would trigger an email or notification to the customer
+    entry.status = 'Seated'
+    entry.actualSeatingTime = new Date().toISOString()
+    updateQueuePositions()
   }
 }
 
-// Function to mark an entry as converted
-function markAsConverted(entryId: number): void {
+// Function to mark an entry as no-show
+function markAsNoShow(entryId: number): void {
   const entry = waitlistEntries.value.find(e => e.id === entryId)
   if (entry) {
-    entry.status = 'Converted'
+    entry.status = 'No Show'
+    updateQueuePositions()
   }
 }
 
@@ -435,7 +627,7 @@ function sendNotifications(): void {
   waitlistEntries.value.forEach(entry => {
     if (selectedEntries.value.includes(entry.id)) {
       entry.notified = true
-      entry.status = 'Notified'
+      entry.status = 'Seated'
     }
   })
 
@@ -464,7 +656,7 @@ function bulkChangeStatus(status: string): void {
   waitlistEntries.value.forEach(entry => {
     if (selectedEntries.value.includes(entry.id)) {
       entry.status = status
-      if (status === 'Notified') {
+      if (status === 'Seated') {
         entry.notified = true
       }
     }
@@ -611,8 +803,14 @@ function initProductChart() {
   const ctx = productChartRef.value.getContext('2d')
   if (!ctx) return
 
-  const productData = products.value.map(p => p.count)
-  const productLabels = products.value.map(p => p.name)
+  const partySizes = [1, 2, 3, 4, 5, 6, '7+']
+  const partySizeCounts = partySizes.map(size => {
+    if (size === '7+') {
+      return waitlistEntries.value.filter(entry => entry.partySize >= 7).length
+    }
+    return waitlistEntries.value.filter(entry => entry.partySize === size).length
+  })
+
   const gradient = ctx.createLinearGradient(0, 0, 0, 400)
   gradient.addColorStop(0, chartColors.blue.fill)
   gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)')
@@ -620,10 +818,10 @@ function initProductChart() {
   productChart = new Chart(ctx, {
     type: 'bar',
     data: {
-      labels: productLabels,
+      labels: partySizes.map(size => `${size} ${size === 1 ? 'person' : 'people'}`),
       datasets: [{
-        label: 'Number of Waitlist Entries',
-        data: productData,
+        label: 'Number of Parties',
+        data: partySizeCounts,
         backgroundColor: gradient,
         borderColor: chartColors.blue.stroke,
         borderWidth: 2,
@@ -653,17 +851,19 @@ function initSourceChart() {
   const ctx = sourceChartRef.value.getContext('2d')
   if (!ctx) return
 
-  const sourceLabels = sources.slice(1)
-  const sourceData = sourceLabels.map(source =>
-    waitlistEntries.value.filter(entry => entry.source === source).length
+  const preferenceLabels = tablePreferences.slice(1)
+  const preferenceCounts = preferenceLabels.map(preference =>
+    waitlistEntries.value.filter(entry =>
+      entry.tablePreference ? entry.tablePreference === preference : false
+    ).length
   )
 
   sourceChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: sourceLabels,
+      labels: preferenceLabels,
       datasets: [{
-        data: sourceData,
+        data: preferenceCounts,
         backgroundColor: [
           chartColors.blue.fill,
           chartColors.green.fill,
@@ -832,20 +1032,30 @@ function initStatusChart() {
 function updateCharts(): void {
   if (productChart && productChart.data) {
     const chart = productChart as Chart<'bar'>
-    chart.data.labels = products.value.map(p => p.name)
+    const partySizes = [1, 2, 3, 4, 5, 6, '7+']
+    const partySizeCounts = partySizes.map(size => {
+      if (size === '7+') {
+        return waitlistEntries.value.filter(entry => entry.partySize >= 7).length
+      }
+      return waitlistEntries.value.filter(entry => entry.partySize === size).length
+    })
+
+    chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'person' : 'people'}`)
     if (chart.data.datasets && chart.data.datasets.length > 0) {
-      chart.data.datasets[0].data = products.value.map(p => p.count)
+      chart.data.datasets[0].data = partySizeCounts
     }
     chart.update()
   }
 
   if (sourceChart && sourceChart.data) {
     const chart = sourceChart as Chart<'doughnut'>
-    const sourceLabels = sources.slice(1)
-    chart.data.labels = sourceLabels
+    const preferenceLabels = tablePreferences.slice(1)
+    chart.data.labels = preferenceLabels
     if (chart.data.datasets && chart.data.datasets.length > 0) {
-      chart.data.datasets[0].data = sourceLabels.map((source: string) =>
-        waitlistEntries.value.filter(entry => entry.source === source).length
+      chart.data.datasets[0].data = preferenceLabels.map(preference =>
+        waitlistEntries.value.filter(entry =>
+          entry.tablePreference ? entry.tablePreference === preference : false
+        ).length
       )
     }
     chart.update()
@@ -856,9 +1066,19 @@ function updateCharts(): void {
     const statusLabels = statuses.slice(1)
     chart.data.labels = statusLabels
     if (chart.data.datasets && chart.data.datasets.length > 0) {
-      chart.data.datasets[0].data = statusLabels.map((status: string) =>
+      chart.data.datasets[0].data = statusLabels.map(status =>
         waitlistEntries.value.filter(entry => entry.status === status).length
       )
+    }
+    chart.update()
+  }
+
+  if (trendChart && trendChart.data) {
+    const chart = trendChart as Chart<'line'>
+    const dates = trendData.value.map(d => d.date)
+    chart.data.labels = dates
+    if (chart.data.datasets && chart.data.datasets.length > 0) {
+      chart.data.datasets[0].data = trendData.value.map(d => d.count)
     }
     chart.update()
   }
@@ -866,6 +1086,7 @@ function updateCharts(): void {
 
 // Watch for changes in waitlist entries to update charts
 watch(waitlistEntries, () => {
+  updateQueuePositions()
   updateCharts()
 }, { deep: true })
 </script>
@@ -905,60 +1126,72 @@ watch(waitlistEntries, () => {
         <!-- Stats Cards -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Entries</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalEntries }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
-              <span>{{ Math.round((totalEntries / 100) * 100) }}% total growth</span>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Current Wait</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
+              {{ waitTimeStats?.averageWait || 0 }}min
             </dd>
-          </div>
-
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Pending</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ pendingEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
               <div class="i-hugeicons-hourglass h-4 w-4 mr-1"></div>
-              <span>Awaiting notification</span>
+              <span>{{ waitingEntries }} parties waiting</span>
             </dd>
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Notified</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ notifiedEntries }}</dd>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seated Today</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ seatedEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
-              <span>Ready to convert</span>
+              <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
+              <span>Tables turned</span>
             </dd>
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">No Shows</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ noShowEntries }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+              <div class="i-hugeicons-cancel-circle h-4 w-4 mr-1"></div>
+              <span>Missed reservations</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seating Rate</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
-              {{ Math.round((convertedEntries / (totalEntries || 1)) * 100) }}%
+              {{ Math.round((seatedEntries / (totalEntries || 1)) * 100) }}%
             </dd>
             <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
-              <div class="i-hugeicons-shopping-cart-01 h-4 w-4 mr-1"></div>
-              <span>{{ convertedEntries }} converted</span>
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ seatedEntries }} parties seated</span>
             </dd>
           </div>
         </dl>
 
         <!-- Charts -->
         <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <!-- Product Interest Chart -->
+          <!-- Wait Time Trend Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Product Interest</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Wait Time Trend</h3>
+              <div class="mt-2 h-80">
+                <canvas ref="trendChartRef"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Party Size Distribution Chart -->
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Party Sizes</h3>
               <div class="mt-2 h-80">
                 <canvas ref="productChartRef"></canvas>
               </div>
             </div>
           </div>
 
-          <!-- Source Distribution Chart -->
+          <!-- Table Preference Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Customer Sources</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Table Preferences</h3>
               <div class="mt-2 h-80">
                 <canvas ref="sourceChartRef"></canvas>
               </div>
@@ -968,19 +1201,9 @@ watch(waitlistEntries, () => {
           <!-- Status Distribution Chart -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Status Overview</h3>
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Current Status</h3>
               <div class="mt-2 h-80">
                 <canvas ref="statusChartRef"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Trend Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">30-Day Trend</h3>
-              <div class="mt-2 h-80">
-                <canvas ref="trendChartRef"></canvas>
               </div>
             </div>
           </div>
@@ -1001,15 +1224,16 @@ watch(waitlistEntries, () => {
           </div>
 
           <div class="flex flex-col sm:flex-row gap-4">
-            <!-- Product filter -->
+            <!-- Party Size filter -->
             <select
-              v-model="productFilter"
+              v-model="partySizeFilter"
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <option value="all">All Products</option>
-              <option v-for="product in products" :key="product.id" :value="product.name">
-                {{ product.name }} ({{ product.count }})
-              </option>
+              <option value="all">All Party Sizes</option>
+              <option value="1-2">1-2 People</option>
+              <option value="3-4">3-4 People</option>
+              <option value="5-6">5-6 People</option>
+              <option value="7+">7+ People</option>
             </select>
 
             <!-- Status filter -->
@@ -1023,14 +1247,14 @@ watch(waitlistEntries, () => {
               </option>
             </select>
 
-            <!-- Source filter -->
+            <!-- Table Preference filter -->
             <select
-              v-model="sourceFilter"
+              v-model="tablePreferenceFilter"
               class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
             >
-              <option value="all">All Sources</option>
-              <option v-for="source in sources.slice(1)" :key="source" :value="source">
-                {{ source }}
+              <option value="all">All Table Types</option>
+              <option v-for="preference in tablePreferences.slice(1)" :key="preference" :value="preference">
+                {{ preference }}
               </option>
             </select>
           </div>
@@ -1051,23 +1275,23 @@ watch(waitlistEntries, () => {
             </span>
           </button>
           <button
-            @click="toggleSort('dateAdded')"
+            @click="toggleSort('checkInTime')"
             class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'checkInTime' }"
           >
-            Date Added
-            <span v-if="sortBy === 'dateAdded'" class="ml-1">
+            Check-in Time
+            <span v-if="sortBy === 'checkInTime'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
               <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
             </span>
           </button>
           <button
-            @click="toggleSort('priority')"
+            @click="toggleSort('estimatedWaitMinutes')"
             class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'priority' }"
+            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'estimatedWaitMinutes' }"
           >
-            Priority
-            <span v-if="sortBy === 'priority'" class="ml-1">
+            Wait Time
+            <span v-if="sortBy === 'estimatedWaitMinutes'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
               <div v-else class="i-hugeicons-arrow-down-01 h-4 w-4"></div>
             </span>
@@ -1078,7 +1302,7 @@ watch(waitlistEntries, () => {
         <div v-if="selectedEntries.length > 0" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ selectedEntries.length }} entries selected</span>
+              <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ selectedEntries.length }} parties selected</span>
             </div>
             <div class="flex space-x-3">
               <button
@@ -1086,27 +1310,27 @@ watch(waitlistEntries, () => {
                 class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
               >
                 <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
-                Notify Selected
+                Send Updates
               </button>
               <button
-                @click="bulkChangeStatus('Converted')"
-                class="inline-flex items-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
+                @click="bulkChangeStatus('Seated')"
+                class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
                 <div class="i-hugeicons-check-circle h-4 w-4 mr-1"></div>
-                Mark as Converted
+                Mark as Seated
               </button>
               <button
-                @click="bulkDelete"
+                @click="bulkChangeStatus('No Show')"
                 class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
               >
-                <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
-                Delete Selected
+                <div class="i-hugeicons-close-circle h-4 w-4 mr-1"></div>
+                Mark as No Show
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Waitlist table with selection checkboxes -->
+        <!-- Waitlist table -->
         <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-blue-gray-900">
@@ -1120,22 +1344,22 @@ watch(waitlistEntries, () => {
                   />
                 </th>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
-                  Name
+                  Party Details
                 </th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Product
+                  Wait Time
                 </th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
                   Status
                 </th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Date Added
+                  Check-in Time
                 </th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Source
+                  Table Preference
                 </th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-                  Priority
+                  Queue Position
                 </th>
                 <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                   <span class="sr-only">Actions</span>
@@ -1145,7 +1369,7 @@ watch(waitlistEntries, () => {
             <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
               <tr v-if="paginatedEntries.length === 0" class="text-center">
                 <td colspan="8" class="py-10 text-gray-500 dark:text-gray-400">
-                  No waitlist entries found. Add your first entry to get started.
+                  No parties currently on the waitlist.
                 </td>
               </tr>
               <tr v-for="entry in paginatedEntries" :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
@@ -1160,13 +1384,20 @@ watch(waitlistEntries, () => {
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
                     <div>
-                      <div class="font-medium text-gray-900 dark:text-white">{{ entry.name }}</div>
-                      <div class="text-gray-500 dark:text-gray-400">{{ entry.email }}</div>
+                      <div class="font-medium text-gray-900 dark:text-white">
+                        {{ entry.name }} ({{ entry.partySize }} {{ entry.partySize === 1 ? 'person' : 'people' }})
+                      </div>
+                      <div class="text-gray-500 dark:text-gray-400">
+                        {{ entry.phone || entry.email }}
+                      </div>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  {{ entry.product }}
+                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                  <div class="font-medium text-gray-900 dark:text-white">
+                    {{ entry.estimatedWaitMinutes }} min
+                  </div>
+                  <div class="text-gray-500 dark:text-gray-400">Quoted: {{ entry.quotedWaitMinutes }} min</div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
                   <span :class="getStatusClass(entry.status)" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
@@ -1174,15 +1405,14 @@ watch(waitlistEntries, () => {
                   </span>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  {{ entry.dateAdded }}
+                  {{ new Date(entry.checkInTime).toLocaleTimeString() }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  {{ entry.source }}
+                  {{ entry.tablePreference || 'No Preference' }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <span :class="getPriorityClass(entry.priority)" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
-                    {{ entry.priority === 3 ? 'High' : entry.priority === 2 ? 'Medium' : 'Low' }}
-                  </span>
+                  <span v-if="entry.status === 'Waiting'" class="font-medium text-gray-900 dark:text-white">#{{ entry.queuePosition }}</span>
+                  <span v-else class="text-gray-500 dark:text-gray-400">-</span>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div class="flex justify-end space-x-2">
@@ -1194,19 +1424,20 @@ watch(waitlistEntries, () => {
                       <span class="sr-only">Edit</span>
                     </button>
                     <button
-                      v-if="!entry.notified && entry.status !== 'Converted'"
-                      @click="markAsNotified(entry.id)"
+                      v-if="entry.status === 'Waiting'"
+                      @click="markAsSeated(entry.id)"
                       class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
                     >
-                      <div class="i-hugeicons-notification-square h-5 w-5"></div>
-                      <span class="sr-only">Notify</span>
+                      <div class="i-hugeicons-checkmark-circle-02 h-5 w-5"></div>
+                      <span class="sr-only">Seat</span>
                     </button>
                     <button
-                      @click="deleteEntry(entry.id)"
+                      v-if="entry.status === 'Waiting'"
+                      @click="markAsNoShow(entry.id)"
                       class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     >
-                      <div class="i-hugeicons-waste h-5 w-5"></div>
-                      <span class="sr-only">Delete</span>
+                      <div class="i-hugeicons-cancel-circle h-5 w-5"></div>
+                      <span class="sr-only">No Show</span>
                     </button>
                   </div>
                 </td>
@@ -1219,7 +1450,7 @@ watch(waitlistEntries, () => {
         <div class="mt-5 flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
-              @click="changePage(currentPage - 1)"
+              @click="prevPage"
               :disabled="currentPage === 1"
               :class="[
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
@@ -1229,7 +1460,7 @@ watch(waitlistEntries, () => {
               Previous
             </button>
             <button
-              @click="changePage(currentPage + 1)"
+              @click="nextPage"
               :disabled="currentPage === totalPages"
               :class="[
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
@@ -1250,7 +1481,7 @@ watch(waitlistEntries, () => {
             <div>
               <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
-                  @click="changePage(currentPage - 1)"
+                  @click="goToPage(currentPage - 1)"
                   :disabled="currentPage === 1"
                   :class="[
                     currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
@@ -1263,7 +1494,7 @@ watch(waitlistEntries, () => {
                 <button
                   v-for="page in totalPages"
                   :key="page"
-                  @click="changePage(page)"
+                  @click="goToPage(page)"
                   :class="[
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
@@ -1274,7 +1505,7 @@ watch(waitlistEntries, () => {
                   {{ page }}
                 </button>
                 <button
-                  @click="changePage(currentPage + 1)"
+                  @click="goToPage(currentPage + 1)"
                   :disabled="currentPage === totalPages"
                   :class="[
                     currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
@@ -1359,73 +1590,69 @@ watch(waitlistEntries, () => {
                   </div>
                 </div>
 
-                <!-- Product field -->
+                <!-- Party Size field -->
                 <div class="sm:col-span-3">
-                  <label for="product" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Product
+                  <label for="partySize" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Party Size
                   </label>
                   <div class="mt-1">
                     <input
-                      id="product"
-                      v-model="entryProduct"
-                      type="text"
-                      required
+                      id="partySize"
+                      v-model="entryPartySize"
+                      type="number"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
                     />
                   </div>
                 </div>
 
-                <!-- Source field -->
+                <!-- Notification Preference field -->
                 <div class="sm:col-span-3">
-                  <label for="source" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Source
+                  <label for="notificationPreference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Notification Preference
                   </label>
                   <div class="mt-1">
                     <select
-                      id="source"
-                      v-model="entrySource"
+                      id="notificationPreference"
+                      v-model="entryNotificationPreference"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
                     >
-                      <option v-for="source in sources" :key="source" :value="source">
-                        {{ source }}
+                      <option v-for="preference in notificationPreferences" :key="preference" :value="preference">
+                        {{ preference }}
                       </option>
                     </select>
                   </div>
                 </div>
 
-                <!-- Status field -->
+                <!-- Table Preference field -->
                 <div class="sm:col-span-3">
-                  <label for="status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Status
+                  <label for="tablePreference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Table Preference
                   </label>
                   <div class="mt-1">
                     <select
-                      id="status"
-                      v-model="entryStatus"
+                      id="tablePreference"
+                      v-model="entryTablePreference"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
                     >
-                      <option v-for="status in statuses" :key="status" :value="status">
-                        {{ status }}
+                      <option v-for="preference in tablePreferences" :key="preference" :value="preference">
+                        {{ preference }}
                       </option>
                     </select>
                   </div>
                 </div>
 
-                <!-- Priority field -->
-                <div class="sm:col-span-3">
-                  <label for="priority" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Priority
+                <!-- Special Requests field -->
+                <div class="sm:col-span-6">
+                  <label for="specialRequests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Special Requests (optional)
                   </label>
                   <div class="mt-1">
-                    <select
-                      id="priority"
-                      v-model="entryPriority"
+                    <textarea
+                      id="specialRequests"
+                      v-model="entrySpecialRequests"
+                      rows="3"
                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
-                    >
-                      <option :value="1">Low</option>
-                      <option :value="2">Medium</option>
-                      <option :value="3">High</option>
-                    </select>
+                    ></textarea>
                   </div>
                 </div>
 
