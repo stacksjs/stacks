@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import Order from './Order'
 
 export interface TransactionsTable {
-  id: number
+  id: Generated<number>
   order_id: number
   order?: OrderModel
   amount: number

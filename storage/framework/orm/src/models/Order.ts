@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
@@ -17,7 +17,7 @@ import Coupon from './Coupon'
 import Customer from './Customer'
 
 export interface OrdersTable {
-  id: number
+  id: Generated<number>
   order_items: OrderItemModel[] | []
   customer_id: number
   customer?: CustomerModel

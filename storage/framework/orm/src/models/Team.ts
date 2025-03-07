@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
@@ -9,7 +9,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface TeamsTable {
-  id: number
+  id: Generated<number>
   personal_access_tokens: AccessTokenModel[] | []
   name: string
   company_name: string

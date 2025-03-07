@@ -905,7 +905,7 @@ export async function generateModelString(
       ${relationImports}
   
       export interface ${formattedTableName}Table {
-        id: number
+        id: Generated<number>
        ${fieldString}
       }
   

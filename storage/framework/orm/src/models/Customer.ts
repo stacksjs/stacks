@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { OrderModel } from './Order'
 import type { UserModel } from './User'
@@ -13,7 +13,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface CustomersTable {
-  id: number
+  id: Generated<number>
   orders: OrderModel[] | []
   user_id: number
   user?: UserModel

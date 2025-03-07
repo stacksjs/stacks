@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { PaymentMethodModel } from './PaymentMethod'
 import type { UserModel } from './User'
@@ -14,7 +14,7 @@ import PaymentMethod from './PaymentMethod'
 import User from './User'
 
 export interface PaymentTransactionsTable {
-  id: number
+  id: Generated<number>
   user_id: number
   user?: UserModel
   payment_method_id: number

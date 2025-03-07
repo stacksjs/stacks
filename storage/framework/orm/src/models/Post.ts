@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
@@ -9,7 +9,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import User from './User'
 
 export interface PostsTable {
-  id: number
+  id: Generated<number>
   user_id: number
   user?: UserModel
   title: string

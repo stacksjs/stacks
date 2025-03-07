@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { ProductCategoryModel } from './ProductCategory'
 import { randomUUIDv7 } from 'bun'
@@ -11,7 +11,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 import ProductCategory from './ProductCategory'
 
 export interface ProductsTable {
-  id: number
+  id: Generated<number>
   product_category_id: number
   product_category?: ProductCategoryModel
   name: string

@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -24,7 +24,7 @@ import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaym
 import Team from './Team'
 
 export interface UsersTable {
-  id: number
+  id: Generated<number>
   deployments: DeploymentModel[] | []
   subscriptions: SubscriptionModel[] | []
   payment_methods: PaymentMethodModel[] | []

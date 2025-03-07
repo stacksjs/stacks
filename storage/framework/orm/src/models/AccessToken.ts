@@ -1,4 +1,4 @@
-import type { Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { TeamModel } from './Team'
 import type { UserModel } from './User'
@@ -13,7 +13,7 @@ import Team from './Team'
 import User from './User'
 
 export interface PersonalAccessTokensTable {
-  id: number
+  id: Generated<number>
   team_id: number
   team?: TeamModel
   user_id: number
