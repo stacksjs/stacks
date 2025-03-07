@@ -30,3 +30,8 @@ export {
 export {
   store,
 } from './store'
+
+// Export functions from update.ts
+export {
+  update,
+} from './update'
