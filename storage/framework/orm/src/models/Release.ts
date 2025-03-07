@@ -30,12 +30,12 @@ export interface ReleaseJsonResponse extends Omit<Selectable<ReleasesTable>, 'pa
   [key: string]: any
 }
 
-export type ReleaseType = Selectable<ReleasesTable>
+export type ReleaseJsonResponse = Selectable<ReleasesTable>
 export type NewRelease = Partial<Insertable<ReleasesTable>>
 export type ReleaseUpdate = Updateable<ReleasesTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ReleaseType, order: SortDirection }
+interface SortOptions { column: ReleaseJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -177,7 +177,7 @@ export class ReleaseModel {
     }, {})
   }
 
-  isDirty(column?: keyof ReleaseType): boolean {
+  isDirty(column?: keyof ReleaseJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -189,15 +189,15 @@ export class ReleaseModel {
     })
   }
 
-  isClean(column?: keyof ReleaseType): boolean {
+  isClean(column?: keyof ReleaseJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ReleaseType): boolean {
+  wasChanged(column?: keyof ReleaseJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
+  select(params: (keyof ReleaseJsonResponse)[] | RawBuilder<string> | string): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -205,7 +205,7 @@ export class ReleaseModel {
     return this
   }
 
-  static select(params: (keyof ReleaseType)[] | RawBuilder<string> | string): ReleaseModel {
+  static select(params: (keyof ReleaseJsonResponse)[] | RawBuilder<string> | string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -310,7 +310,7 @@ export class ReleaseModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ReleaseType) => {
+    const data = await Promise.all(models.map(async (model: ReleaseJsonResponse) => {
       return new ReleaseModel(model)
     }))
 
@@ -1232,12 +1232,12 @@ export class ReleaseModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<ReleaseType>,
+    condition: Partial<ReleaseJsonResponse>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
     const instance = new ReleaseModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ReleaseType
+    const key = Object.keys(condition)[0] as keyof ReleaseJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1255,7 +1255,7 @@ export class ReleaseModel {
       instance.mapCustomGetters(existingRelease)
       await instance.loadRelations(existingRelease)
 
-      return new ReleaseModel(existingRelease as ReleaseType)
+      return new ReleaseModel(existingRelease as ReleaseJsonResponse)
     }
     else {
       return await instance.create(newRelease)
@@ -1263,12 +1263,12 @@ export class ReleaseModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<ReleaseType>,
+    condition: Partial<ReleaseJsonResponse>,
     newRelease: NewRelease,
   ): Promise<ReleaseModel> {
     const instance = new ReleaseModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ReleaseType
+    const key = Object.keys(condition)[0] as keyof ReleaseJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1301,7 +1301,7 @@ export class ReleaseModel {
 
       instance.hasSaved = true
 
-      return new ReleaseModel(updatedRelease as ReleaseType)
+      return new ReleaseModel(updatedRelease as ReleaseJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1537,7 +1537,7 @@ export class ReleaseModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ReleaseType>): ReleaseModel {
+  fill(data: Partial<ReleaseJsonResponse>): ReleaseModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1552,7 +1552,7 @@ export class ReleaseModel {
     return this
   }
 
-  forceFill(data: Partial<ReleaseType>): ReleaseModel {
+  forceFill(data: Partial<ReleaseJsonResponse>): ReleaseModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1571,7 +1571,7 @@ export class ReleaseModel {
       .execute()
   }
 
-  distinct(column: keyof ReleaseType): ReleaseModel {
+  distinct(column: keyof ReleaseJsonResponse): ReleaseModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1579,7 +1579,7 @@ export class ReleaseModel {
     return this
   }
 
-  static distinct(column: keyof ReleaseType): ReleaseModel {
+  static distinct(column: keyof ReleaseJsonResponse): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

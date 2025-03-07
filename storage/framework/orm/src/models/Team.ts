@@ -40,12 +40,12 @@ export interface TeamJsonResponse extends Omit<Selectable<TeamsTable>, 'password
   [key: string]: any
 }
 
-export type TeamType = Selectable<TeamsTable>
+export type TeamJsonResponse = Selectable<TeamsTable>
 export type NewTeam = Partial<Insertable<TeamsTable>>
 export type TeamUpdate = Updateable<TeamsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: TeamType, order: SortDirection }
+interface SortOptions { column: TeamJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -239,7 +239,7 @@ export class TeamModel {
     }, {})
   }
 
-  isDirty(column?: keyof TeamType): boolean {
+  isDirty(column?: keyof TeamJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -251,15 +251,15 @@ export class TeamModel {
     })
   }
 
-  isClean(column?: keyof TeamType): boolean {
+  isClean(column?: keyof TeamJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof TeamType): boolean {
+  wasChanged(column?: keyof TeamJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
+  select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -267,7 +267,7 @@ export class TeamModel {
     return this
   }
 
-  static select(params: (keyof TeamType)[] | RawBuilder<string> | string): TeamModel {
+  static select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
     const instance = new TeamModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -372,7 +372,7 @@ export class TeamModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: TeamType) => {
+    const data = await Promise.all(models.map(async (model: TeamJsonResponse) => {
       return new TeamModel(model)
     }))
 
@@ -1342,12 +1342,12 @@ export class TeamModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<TeamType>,
+    condition: Partial<TeamJsonResponse>,
     newTeam: NewTeam,
   ): Promise<TeamModel> {
     const instance = new TeamModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof TeamType
+    const key = Object.keys(condition)[0] as keyof TeamJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1365,7 +1365,7 @@ export class TeamModel {
       instance.mapCustomGetters(existingTeam)
       await instance.loadRelations(existingTeam)
 
-      return new TeamModel(existingTeam as TeamType)
+      return new TeamModel(existingTeam as TeamJsonResponse)
     }
     else {
       return await instance.create(newTeam)
@@ -1373,12 +1373,12 @@ export class TeamModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<TeamType>,
+    condition: Partial<TeamJsonResponse>,
     newTeam: NewTeam,
   ): Promise<TeamModel> {
     const instance = new TeamModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof TeamType
+    const key = Object.keys(condition)[0] as keyof TeamJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1411,7 +1411,7 @@ export class TeamModel {
 
       instance.hasSaved = true
 
-      return new TeamModel(updatedTeam as TeamType)
+      return new TeamModel(updatedTeam as TeamJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1647,7 +1647,7 @@ export class TeamModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<TeamType>): TeamModel {
+  fill(data: Partial<TeamJsonResponse>): TeamModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1662,7 +1662,7 @@ export class TeamModel {
     return this
   }
 
-  forceFill(data: Partial<TeamType>): TeamModel {
+  forceFill(data: Partial<TeamJsonResponse>): TeamModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1700,7 +1700,7 @@ export class TeamModel {
     return relationResults
   }
 
-  distinct(column: keyof TeamType): TeamModel {
+  distinct(column: keyof TeamJsonResponse): TeamModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1708,7 +1708,7 @@ export class TeamModel {
     return this
   }
 
-  static distinct(column: keyof TeamType): TeamModel {
+  static distinct(column: keyof TeamJsonResponse): TeamModel {
     const instance = new TeamModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

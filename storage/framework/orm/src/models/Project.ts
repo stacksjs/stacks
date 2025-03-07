@@ -32,12 +32,12 @@ export interface ProjectJsonResponse extends Omit<Selectable<ProjectsTable>, 'pa
   [key: string]: any
 }
 
-export type ProjectType = Selectable<ProjectsTable>
+export type ProjectJsonResponse = Selectable<ProjectsTable>
 export type NewProject = Partial<Insertable<ProjectsTable>>
 export type ProjectUpdate = Updateable<ProjectsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProjectType, order: SortDirection }
+interface SortOptions { column: ProjectJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -195,7 +195,7 @@ export class ProjectModel {
     }, {})
   }
 
-  isDirty(column?: keyof ProjectType): boolean {
+  isDirty(column?: keyof ProjectJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -207,15 +207,15 @@ export class ProjectModel {
     })
   }
 
-  isClean(column?: keyof ProjectType): boolean {
+  isClean(column?: keyof ProjectJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ProjectType): boolean {
+  wasChanged(column?: keyof ProjectJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
+  select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -223,7 +223,7 @@ export class ProjectModel {
     return this
   }
 
-  static select(params: (keyof ProjectType)[] | RawBuilder<string> | string): ProjectModel {
+  static select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
     const instance = new ProjectModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -328,7 +328,7 @@ export class ProjectModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ProjectType) => {
+    const data = await Promise.all(models.map(async (model: ProjectJsonResponse) => {
       return new ProjectModel(model)
     }))
 
@@ -1266,12 +1266,12 @@ export class ProjectModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<ProjectType>,
+    condition: Partial<ProjectJsonResponse>,
     newProject: NewProject,
   ): Promise<ProjectModel> {
     const instance = new ProjectModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProjectType
+    const key = Object.keys(condition)[0] as keyof ProjectJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1289,7 +1289,7 @@ export class ProjectModel {
       instance.mapCustomGetters(existingProject)
       await instance.loadRelations(existingProject)
 
-      return new ProjectModel(existingProject as ProjectType)
+      return new ProjectModel(existingProject as ProjectJsonResponse)
     }
     else {
       return await instance.create(newProject)
@@ -1297,12 +1297,12 @@ export class ProjectModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<ProjectType>,
+    condition: Partial<ProjectJsonResponse>,
     newProject: NewProject,
   ): Promise<ProjectModel> {
     const instance = new ProjectModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProjectType
+    const key = Object.keys(condition)[0] as keyof ProjectJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1335,7 +1335,7 @@ export class ProjectModel {
 
       instance.hasSaved = true
 
-      return new ProjectModel(updatedProject as ProjectType)
+      return new ProjectModel(updatedProject as ProjectJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1571,7 +1571,7 @@ export class ProjectModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ProjectType>): ProjectModel {
+  fill(data: Partial<ProjectJsonResponse>): ProjectModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1586,7 +1586,7 @@ export class ProjectModel {
     return this
   }
 
-  forceFill(data: Partial<ProjectType>): ProjectModel {
+  forceFill(data: Partial<ProjectJsonResponse>): ProjectModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1605,7 +1605,7 @@ export class ProjectModel {
       .execute()
   }
 
-  distinct(column: keyof ProjectType): ProjectModel {
+  distinct(column: keyof ProjectJsonResponse): ProjectModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1613,7 +1613,7 @@ export class ProjectModel {
     return this
   }
 
-  static distinct(column: keyof ProjectType): ProjectModel {
+  static distinct(column: keyof ProjectJsonResponse): ProjectModel {
     const instance = new ProjectModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

@@ -45,12 +45,12 @@ export interface PaymentMethodJsonResponse extends Omit<Selectable<PaymentMethod
   [key: string]: any
 }
 
-export type PaymentMethodType = Selectable<PaymentMethodsTable>
+export type PaymentMethodJsonResponse = Selectable<PaymentMethodsTable>
 export type NewPaymentMethod = Partial<Insertable<PaymentMethodsTable>>
 export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PaymentMethodType, order: SortDirection }
+interface SortOptions { column: PaymentMethodJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -252,7 +252,7 @@ export class PaymentMethodModel {
     }, {})
   }
 
-  isDirty(column?: keyof PaymentMethodType): boolean {
+  isDirty(column?: keyof PaymentMethodJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -264,15 +264,15 @@ export class PaymentMethodModel {
     })
   }
 
-  isClean(column?: keyof PaymentMethodType): boolean {
+  isClean(column?: keyof PaymentMethodJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof PaymentMethodType): boolean {
+  wasChanged(column?: keyof PaymentMethodJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
+  select(params: (keyof PaymentMethodJsonResponse)[] | RawBuilder<string> | string): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -280,7 +280,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  static select(params: (keyof PaymentMethodType)[] | RawBuilder<string> | string): PaymentMethodModel {
+  static select(params: (keyof PaymentMethodJsonResponse)[] | RawBuilder<string> | string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -385,7 +385,7 @@ export class PaymentMethodModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: PaymentMethodType) => {
+    const data = await Promise.all(models.map(async (model: PaymentMethodJsonResponse) => {
       return new PaymentMethodModel(model)
     }))
 
@@ -1351,12 +1351,12 @@ export class PaymentMethodModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<PaymentMethodType>,
+    condition: Partial<PaymentMethodJsonResponse>,
     newPaymentMethod: NewPaymentMethod,
   ): Promise<PaymentMethodModel> {
     const instance = new PaymentMethodModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentMethodType
+    const key = Object.keys(condition)[0] as keyof PaymentMethodJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1374,7 +1374,7 @@ export class PaymentMethodModel {
       instance.mapCustomGetters(existingPaymentMethod)
       await instance.loadRelations(existingPaymentMethod)
 
-      return new PaymentMethodModel(existingPaymentMethod as PaymentMethodType)
+      return new PaymentMethodModel(existingPaymentMethod as PaymentMethodJsonResponse)
     }
     else {
       return await instance.create(newPaymentMethod)
@@ -1382,12 +1382,12 @@ export class PaymentMethodModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<PaymentMethodType>,
+    condition: Partial<PaymentMethodJsonResponse>,
     newPaymentMethod: NewPaymentMethod,
   ): Promise<PaymentMethodModel> {
     const instance = new PaymentMethodModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentMethodType
+    const key = Object.keys(condition)[0] as keyof PaymentMethodJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1420,7 +1420,7 @@ export class PaymentMethodModel {
 
       instance.hasSaved = true
 
-      return new PaymentMethodModel(updatedPaymentMethod as PaymentMethodType)
+      return new PaymentMethodModel(updatedPaymentMethod as PaymentMethodJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1656,7 +1656,7 @@ export class PaymentMethodModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<PaymentMethodType>): PaymentMethodModel {
+  fill(data: Partial<PaymentMethodJsonResponse>): PaymentMethodModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1671,7 +1671,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  forceFill(data: Partial<PaymentMethodType>): PaymentMethodModel {
+  forceFill(data: Partial<PaymentMethodJsonResponse>): PaymentMethodModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1704,7 +1704,7 @@ export class PaymentMethodModel {
     return model
   }
 
-  distinct(column: keyof PaymentMethodType): PaymentMethodModel {
+  distinct(column: keyof PaymentMethodJsonResponse): PaymentMethodModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1712,7 +1712,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  static distinct(column: keyof PaymentMethodType): PaymentMethodModel {
+  static distinct(column: keyof PaymentMethodJsonResponse): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

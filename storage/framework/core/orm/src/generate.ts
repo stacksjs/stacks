@@ -923,12 +923,12 @@ export async function generateModelString(
         [key: string]: any
       }
         
-      export type ${modelName}Type = Selectable<${formattedTableName}Table>
+      export type ${modelName}JsonResponse = Selectable<${formattedTableName}Table>
       export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
   
       type SortDirection = 'asc' | 'desc'
-      interface SortOptions { column: ${modelName}Type, order: SortDirection }
+      interface SortOptions { column: ${modelName}JsonResponse, order: SortDirection }
       // Define a type for the options parameter
       interface QueryOptions {
         sort?: SortOptions
@@ -1045,7 +1045,7 @@ export async function generateModelString(
           }, {})
         }
 
-        isDirty(column?: keyof ${modelName}Type): boolean {
+        isDirty(column?: keyof ${modelName}JsonResponse): boolean {
           if (column) {
             return this.attributes[column] !== this.originalAttributes[column]
           }
@@ -1057,15 +1057,15 @@ export async function generateModelString(
           })
         }
 
-        isClean(column?: keyof ${modelName}Type): boolean {
+        isClean(column?: keyof ${modelName}JsonResponse): boolean {
           return !this.isDirty(column)
         }
 
-        wasChanged(column?: keyof ${modelName}Type): boolean {
+        wasChanged(column?: keyof ${modelName}JsonResponse): boolean {
           return this.hasSaved && this.isDirty(column)
         }
   
-        select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
+        select(params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.select(params)
 
           this.hasSelect = true
@@ -1073,7 +1073,7 @@ export async function generateModelString(
           return this
         }
 
-        static select(params: (keyof ${modelName}Type)[] | RawBuilder<string> | string): ${modelName}Model {
+        static select(params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   
           // Initialize a query with the table name and selected fields
@@ -1178,7 +1178,7 @@ export async function generateModelString(
 
           instance.mapCustomGetters(models)
 
-          const data = await Promise.all(models.map(async (model: ${modelName}Type) => {
+          const data = await Promise.all(models.map(async (model: ${modelName}JsonResponse) => {
             return new ${modelName}Model(model)
           }))
   
@@ -2102,12 +2102,12 @@ export async function generateModelString(
         }
   
         static async firstOrCreate(
-          condition: Partial<${modelName}Type>,
+          condition: Partial<${modelName}JsonResponse>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
           const instance = new ${modelName}Model(undefined)
 
-          const key = Object.keys(condition)[0] as keyof ${modelName}Type
+          const key = Object.keys(condition)[0] as keyof ${modelName}JsonResponse
   
           if (!key) {
             throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -2125,7 +2125,7 @@ export async function generateModelString(
             instance.mapCustomGetters(existing${modelName})
             await instance.loadRelations(existing${modelName})
             
-            return new ${modelName}Model(existing${modelName} as ${modelName}Type)
+            return new ${modelName}Model(existing${modelName} as ${modelName}JsonResponse)
           }
           else {
             return await instance.create(new${modelName})
@@ -2133,12 +2133,12 @@ export async function generateModelString(
         }
   
         static async updateOrCreate(
-          condition: Partial<${modelName}Type>,
+          condition: Partial<${modelName}JsonResponse>,
           new${modelName}: New${modelName},
         ): Promise<${modelName}Model> {
           const instance = new ${modelName}Model(undefined)
 
-          const key = Object.keys(condition)[0] as keyof ${modelName}Type
+          const key = Object.keys(condition)[0] as keyof ${modelName}JsonResponse
   
           if (!key) {
             throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -2171,7 +2171,7 @@ export async function generateModelString(
   
             instance.hasSaved = true
 
-            return new ${modelName}Model(updated${modelName} as ${modelName}Type)
+            return new ${modelName}Model(updated${modelName} as ${modelName}JsonResponse)
           } else {
             // If not found, create a new record
             return await instance.create(new${modelName})
@@ -2409,7 +2409,7 @@ export async function generateModelString(
           this.hasSaved = true
         }
 
-        fill(data: Partial<${modelName}Type>): ${modelName}Model {
+        fill(data: Partial<${modelName}JsonResponse>): ${modelName}Model {
           const filteredValues = Object.fromEntries(
             Object.entries(data).filter(([key]) => 
               !this.guarded.includes(key) && this.fillable.includes(key)
@@ -2424,7 +2424,7 @@ export async function generateModelString(
           return this
         }
 
-        forceFill(data: Partial<${modelName}Type>): ${modelName}Model {
+        forceFill(data: Partial<${modelName}JsonResponse>): ${modelName}Model {
           this.attributes = {
             ...this.attributes,
             ...data
@@ -2455,7 +2455,7 @@ export async function generateModelString(
 
         ${likeableStatements}
   
-        distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        distinct(column: keyof ${modelName}JsonResponse): ${modelName}Model {
           this.selectFromQuery = this.selectFromQuery.select(column).distinct()
   
           this.hasSelect = true
@@ -2463,7 +2463,7 @@ export async function generateModelString(
           return this
         }
   
-        static distinct(column: keyof ${modelName}Type): ${modelName}Model {
+        static distinct(column: keyof ${modelName}JsonResponse): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   
           instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

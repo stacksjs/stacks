@@ -54,12 +54,12 @@ export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, '
   [key: string]: any
 }
 
-export type GiftCardType = Selectable<GiftCardsTable>
+export type GiftCardJsonResponse = Selectable<GiftCardsTable>
 export type NewGiftCard = Partial<Insertable<GiftCardsTable>>
 export type GiftCardUpdate = Updateable<GiftCardsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: GiftCardType, order: SortDirection }
+interface SortOptions { column: GiftCardJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -325,7 +325,7 @@ export class GiftCardModel {
     }, {})
   }
 
-  isDirty(column?: keyof GiftCardType): boolean {
+  isDirty(column?: keyof GiftCardJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -337,15 +337,15 @@ export class GiftCardModel {
     })
   }
 
-  isClean(column?: keyof GiftCardType): boolean {
+  isClean(column?: keyof GiftCardJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof GiftCardType): boolean {
+  wasChanged(column?: keyof GiftCardJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof GiftCardType)[] | RawBuilder<string> | string): GiftCardModel {
+  select(params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string): GiftCardModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -353,7 +353,7 @@ export class GiftCardModel {
     return this
   }
 
-  static select(params: (keyof GiftCardType)[] | RawBuilder<string> | string): GiftCardModel {
+  static select(params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -458,7 +458,7 @@ export class GiftCardModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: GiftCardType) => {
+    const data = await Promise.all(models.map(async (model: GiftCardJsonResponse) => {
       return new GiftCardModel(model)
     }))
 
@@ -1501,12 +1501,12 @@ export class GiftCardModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<GiftCardType>,
+    condition: Partial<GiftCardJsonResponse>,
     newGiftCard: NewGiftCard,
   ): Promise<GiftCardModel> {
     const instance = new GiftCardModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof GiftCardType
+    const key = Object.keys(condition)[0] as keyof GiftCardJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1524,7 +1524,7 @@ export class GiftCardModel {
       instance.mapCustomGetters(existingGiftCard)
       await instance.loadRelations(existingGiftCard)
 
-      return new GiftCardModel(existingGiftCard as GiftCardType)
+      return new GiftCardModel(existingGiftCard as GiftCardJsonResponse)
     }
     else {
       return await instance.create(newGiftCard)
@@ -1532,12 +1532,12 @@ export class GiftCardModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<GiftCardType>,
+    condition: Partial<GiftCardJsonResponse>,
     newGiftCard: NewGiftCard,
   ): Promise<GiftCardModel> {
     const instance = new GiftCardModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof GiftCardType
+    const key = Object.keys(condition)[0] as keyof GiftCardJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1570,7 +1570,7 @@ export class GiftCardModel {
 
       instance.hasSaved = true
 
-      return new GiftCardModel(updatedGiftCard as GiftCardType)
+      return new GiftCardModel(updatedGiftCard as GiftCardJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1812,7 +1812,7 @@ export class GiftCardModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<GiftCardType>): GiftCardModel {
+  fill(data: Partial<GiftCardJsonResponse>): GiftCardModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1827,7 +1827,7 @@ export class GiftCardModel {
     return this
   }
 
-  forceFill(data: Partial<GiftCardType>): GiftCardModel {
+  forceFill(data: Partial<GiftCardJsonResponse>): GiftCardModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1875,7 +1875,7 @@ export class GiftCardModel {
     }
   }
 
-  distinct(column: keyof GiftCardType): GiftCardModel {
+  distinct(column: keyof GiftCardJsonResponse): GiftCardModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1883,7 +1883,7 @@ export class GiftCardModel {
     return this
   }
 
-  static distinct(column: keyof GiftCardType): GiftCardModel {
+  static distinct(column: keyof GiftCardJsonResponse): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

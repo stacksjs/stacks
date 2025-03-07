@@ -43,12 +43,12 @@ export interface TransactionJsonResponse extends Omit<Selectable<TransactionsTab
   [key: string]: any
 }
 
-export type TransactionType = Selectable<TransactionsTable>
+export type TransactionJsonResponse = Selectable<TransactionsTable>
 export type NewTransaction = Partial<Insertable<TransactionsTable>>
 export type TransactionUpdate = Updateable<TransactionsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: TransactionType, order: SortDirection }
+interface SortOptions { column: TransactionJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -246,7 +246,7 @@ export class TransactionModel {
     }, {})
   }
 
-  isDirty(column?: keyof TransactionType): boolean {
+  isDirty(column?: keyof TransactionJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -258,15 +258,15 @@ export class TransactionModel {
     })
   }
 
-  isClean(column?: keyof TransactionType): boolean {
+  isClean(column?: keyof TransactionJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof TransactionType): boolean {
+  wasChanged(column?: keyof TransactionJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
+  select(params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -274,7 +274,7 @@ export class TransactionModel {
     return this
   }
 
-  static select(params: (keyof TransactionType)[] | RawBuilder<string> | string): TransactionModel {
+  static select(params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string): TransactionModel {
     const instance = new TransactionModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -379,7 +379,7 @@ export class TransactionModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: TransactionType) => {
+    const data = await Promise.all(models.map(async (model: TransactionJsonResponse) => {
       return new TransactionModel(model)
     }))
 
@@ -1358,12 +1358,12 @@ export class TransactionModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<TransactionType>,
+    condition: Partial<TransactionJsonResponse>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
     const instance = new TransactionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof TransactionType
+    const key = Object.keys(condition)[0] as keyof TransactionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1381,7 +1381,7 @@ export class TransactionModel {
       instance.mapCustomGetters(existingTransaction)
       await instance.loadRelations(existingTransaction)
 
-      return new TransactionModel(existingTransaction as TransactionType)
+      return new TransactionModel(existingTransaction as TransactionJsonResponse)
     }
     else {
       return await instance.create(newTransaction)
@@ -1389,12 +1389,12 @@ export class TransactionModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<TransactionType>,
+    condition: Partial<TransactionJsonResponse>,
     newTransaction: NewTransaction,
   ): Promise<TransactionModel> {
     const instance = new TransactionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof TransactionType
+    const key = Object.keys(condition)[0] as keyof TransactionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1427,7 +1427,7 @@ export class TransactionModel {
 
       instance.hasSaved = true
 
-      return new TransactionModel(updatedTransaction as TransactionType)
+      return new TransactionModel(updatedTransaction as TransactionJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1669,7 +1669,7 @@ export class TransactionModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<TransactionType>): TransactionModel {
+  fill(data: Partial<TransactionJsonResponse>): TransactionModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1684,7 +1684,7 @@ export class TransactionModel {
     return this
   }
 
-  forceFill(data: Partial<TransactionType>): TransactionModel {
+  forceFill(data: Partial<TransactionJsonResponse>): TransactionModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1731,7 +1731,7 @@ export class TransactionModel {
     }
   }
 
-  distinct(column: keyof TransactionType): TransactionModel {
+  distinct(column: keyof TransactionJsonResponse): TransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1739,7 +1739,7 @@ export class TransactionModel {
     return this
   }
 
-  static distinct(column: keyof TransactionType): TransactionModel {
+  static distinct(column: keyof TransactionJsonResponse): TransactionModel {
     const instance = new TransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

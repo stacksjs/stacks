@@ -45,12 +45,12 @@ export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyReward
   [key: string]: any
 }
 
-export type LoyaltyRewardType = Selectable<LoyaltyRewardsTable>
+export type LoyaltyRewardJsonResponse = Selectable<LoyaltyRewardsTable>
 export type NewLoyaltyReward = Partial<Insertable<LoyaltyRewardsTable>>
 export type LoyaltyRewardUpdate = Updateable<LoyaltyRewardsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: LoyaltyRewardType, order: SortDirection }
+interface SortOptions { column: LoyaltyRewardJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -264,7 +264,7 @@ export class LoyaltyRewardModel {
     }, {})
   }
 
-  isDirty(column?: keyof LoyaltyRewardType): boolean {
+  isDirty(column?: keyof LoyaltyRewardJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -276,15 +276,15 @@ export class LoyaltyRewardModel {
     })
   }
 
-  isClean(column?: keyof LoyaltyRewardType): boolean {
+  isClean(column?: keyof LoyaltyRewardJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof LoyaltyRewardType): boolean {
+  wasChanged(column?: keyof LoyaltyRewardJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof LoyaltyRewardType)[] | RawBuilder<string> | string): LoyaltyRewardModel {
+  select(params: (keyof LoyaltyRewardJsonResponse)[] | RawBuilder<string> | string): LoyaltyRewardModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -292,7 +292,7 @@ export class LoyaltyRewardModel {
     return this
   }
 
-  static select(params: (keyof LoyaltyRewardType)[] | RawBuilder<string> | string): LoyaltyRewardModel {
+  static select(params: (keyof LoyaltyRewardJsonResponse)[] | RawBuilder<string> | string): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -397,7 +397,7 @@ export class LoyaltyRewardModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: LoyaltyRewardType) => {
+    const data = await Promise.all(models.map(async (model: LoyaltyRewardJsonResponse) => {
       return new LoyaltyRewardModel(model)
     }))
 
@@ -1392,12 +1392,12 @@ export class LoyaltyRewardModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<LoyaltyRewardType>,
+    condition: Partial<LoyaltyRewardJsonResponse>,
     newLoyaltyReward: NewLoyaltyReward,
   ): Promise<LoyaltyRewardModel> {
     const instance = new LoyaltyRewardModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof LoyaltyRewardType
+    const key = Object.keys(condition)[0] as keyof LoyaltyRewardJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1415,7 +1415,7 @@ export class LoyaltyRewardModel {
       instance.mapCustomGetters(existingLoyaltyReward)
       await instance.loadRelations(existingLoyaltyReward)
 
-      return new LoyaltyRewardModel(existingLoyaltyReward as LoyaltyRewardType)
+      return new LoyaltyRewardModel(existingLoyaltyReward as LoyaltyRewardJsonResponse)
     }
     else {
       return await instance.create(newLoyaltyReward)
@@ -1423,12 +1423,12 @@ export class LoyaltyRewardModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<LoyaltyRewardType>,
+    condition: Partial<LoyaltyRewardJsonResponse>,
     newLoyaltyReward: NewLoyaltyReward,
   ): Promise<LoyaltyRewardModel> {
     const instance = new LoyaltyRewardModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof LoyaltyRewardType
+    const key = Object.keys(condition)[0] as keyof LoyaltyRewardJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1461,7 +1461,7 @@ export class LoyaltyRewardModel {
 
       instance.hasSaved = true
 
-      return new LoyaltyRewardModel(updatedLoyaltyReward as LoyaltyRewardType)
+      return new LoyaltyRewardModel(updatedLoyaltyReward as LoyaltyRewardJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1703,7 +1703,7 @@ export class LoyaltyRewardModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<LoyaltyRewardType>): LoyaltyRewardModel {
+  fill(data: Partial<LoyaltyRewardJsonResponse>): LoyaltyRewardModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1718,7 +1718,7 @@ export class LoyaltyRewardModel {
     return this
   }
 
-  forceFill(data: Partial<LoyaltyRewardType>): LoyaltyRewardModel {
+  forceFill(data: Partial<LoyaltyRewardJsonResponse>): LoyaltyRewardModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1764,7 +1764,7 @@ export class LoyaltyRewardModel {
     }
   }
 
-  distinct(column: keyof LoyaltyRewardType): LoyaltyRewardModel {
+  distinct(column: keyof LoyaltyRewardJsonResponse): LoyaltyRewardModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1772,7 +1772,7 @@ export class LoyaltyRewardModel {
     return this
   }
 
-  static distinct(column: keyof LoyaltyRewardType): LoyaltyRewardModel {
+  static distinct(column: keyof LoyaltyRewardJsonResponse): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

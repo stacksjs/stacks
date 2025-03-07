@@ -33,12 +33,12 @@ export interface JobJsonResponse extends Omit<Selectable<JobsTable>, 'password'>
   [key: string]: any
 }
 
-export type JobType = Selectable<JobsTable>
+export type JobJsonResponse = Selectable<JobsTable>
 export type NewJob = Partial<Insertable<JobsTable>>
 export type JobUpdate = Updateable<JobsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: JobType, order: SortDirection }
+interface SortOptions { column: JobJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -204,7 +204,7 @@ export class JobModel {
     }, {})
   }
 
-  isDirty(column?: keyof JobType): boolean {
+  isDirty(column?: keyof JobJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -216,15 +216,15 @@ export class JobModel {
     })
   }
 
-  isClean(column?: keyof JobType): boolean {
+  isClean(column?: keyof JobJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof JobType): boolean {
+  wasChanged(column?: keyof JobJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
+  select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -232,7 +232,7 @@ export class JobModel {
     return this
   }
 
-  static select(params: (keyof JobType)[] | RawBuilder<string> | string): JobModel {
+  static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
     const instance = new JobModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -337,7 +337,7 @@ export class JobModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: JobType) => {
+    const data = await Promise.all(models.map(async (model: JobJsonResponse) => {
       return new JobModel(model)
     }))
 
@@ -1283,12 +1283,12 @@ export class JobModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<JobType>,
+    condition: Partial<JobJsonResponse>,
     newJob: NewJob,
   ): Promise<JobModel> {
     const instance = new JobModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof JobType
+    const key = Object.keys(condition)[0] as keyof JobJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1306,7 +1306,7 @@ export class JobModel {
       instance.mapCustomGetters(existingJob)
       await instance.loadRelations(existingJob)
 
-      return new JobModel(existingJob as JobType)
+      return new JobModel(existingJob as JobJsonResponse)
     }
     else {
       return await instance.create(newJob)
@@ -1314,12 +1314,12 @@ export class JobModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<JobType>,
+    condition: Partial<JobJsonResponse>,
     newJob: NewJob,
   ): Promise<JobModel> {
     const instance = new JobModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof JobType
+    const key = Object.keys(condition)[0] as keyof JobJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1352,7 +1352,7 @@ export class JobModel {
 
       instance.hasSaved = true
 
-      return new JobModel(updatedJob as JobType)
+      return new JobModel(updatedJob as JobJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1588,7 +1588,7 @@ export class JobModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<JobType>): JobModel {
+  fill(data: Partial<JobJsonResponse>): JobModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1603,7 +1603,7 @@ export class JobModel {
     return this
   }
 
-  forceFill(data: Partial<JobType>): JobModel {
+  forceFill(data: Partial<JobJsonResponse>): JobModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1622,7 +1622,7 @@ export class JobModel {
       .execute()
   }
 
-  distinct(column: keyof JobType): JobModel {
+  distinct(column: keyof JobJsonResponse): JobModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1630,7 +1630,7 @@ export class JobModel {
     return this
   }
 
-  static distinct(column: keyof JobType): JobModel {
+  static distinct(column: keyof JobJsonResponse): JobModel {
     const instance = new JobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

@@ -56,12 +56,12 @@ export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'passwo
   [key: string]: any
 }
 
-export type OrderType = Selectable<OrdersTable>
+export type OrderJsonResponse = Selectable<OrdersTable>
 export type NewOrder = Partial<Insertable<OrdersTable>>
 export type OrderUpdate = Updateable<OrdersTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: OrderType, order: SortDirection }
+interface SortOptions { column: OrderJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -303,7 +303,7 @@ export class OrderModel {
     }, {})
   }
 
-  isDirty(column?: keyof OrderType): boolean {
+  isDirty(column?: keyof OrderJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -315,15 +315,15 @@ export class OrderModel {
     })
   }
 
-  isClean(column?: keyof OrderType): boolean {
+  isClean(column?: keyof OrderJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof OrderType): boolean {
+  wasChanged(column?: keyof OrderJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof OrderType)[] | RawBuilder<string> | string): OrderModel {
+  select(params: (keyof OrderJsonResponse)[] | RawBuilder<string> | string): OrderModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -331,7 +331,7 @@ export class OrderModel {
     return this
   }
 
-  static select(params: (keyof OrderType)[] | RawBuilder<string> | string): OrderModel {
+  static select(params: (keyof OrderJsonResponse)[] | RawBuilder<string> | string): OrderModel {
     const instance = new OrderModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -436,7 +436,7 @@ export class OrderModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: OrderType) => {
+    const data = await Promise.all(models.map(async (model: OrderJsonResponse) => {
       return new OrderModel(model)
     }))
 
@@ -1447,12 +1447,12 @@ export class OrderModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<OrderType>,
+    condition: Partial<OrderJsonResponse>,
     newOrder: NewOrder,
   ): Promise<OrderModel> {
     const instance = new OrderModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof OrderType
+    const key = Object.keys(condition)[0] as keyof OrderJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1470,7 +1470,7 @@ export class OrderModel {
       instance.mapCustomGetters(existingOrder)
       await instance.loadRelations(existingOrder)
 
-      return new OrderModel(existingOrder as OrderType)
+      return new OrderModel(existingOrder as OrderJsonResponse)
     }
     else {
       return await instance.create(newOrder)
@@ -1478,12 +1478,12 @@ export class OrderModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<OrderType>,
+    condition: Partial<OrderJsonResponse>,
     newOrder: NewOrder,
   ): Promise<OrderModel> {
     const instance = new OrderModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof OrderType
+    const key = Object.keys(condition)[0] as keyof OrderJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1516,7 +1516,7 @@ export class OrderModel {
 
       instance.hasSaved = true
 
-      return new OrderModel(updatedOrder as OrderType)
+      return new OrderModel(updatedOrder as OrderJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1758,7 +1758,7 @@ export class OrderModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<OrderType>): OrderModel {
+  fill(data: Partial<OrderJsonResponse>): OrderModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1773,7 +1773,7 @@ export class OrderModel {
     return this
   }
 
-  forceFill(data: Partial<OrderType>): OrderModel {
+  forceFill(data: Partial<OrderJsonResponse>): OrderModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1834,7 +1834,7 @@ export class OrderModel {
     }
   }
 
-  distinct(column: keyof OrderType): OrderModel {
+  distinct(column: keyof OrderJsonResponse): OrderModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1842,7 +1842,7 @@ export class OrderModel {
     return this
   }
 
-  static distinct(column: keyof OrderType): OrderModel {
+  static distinct(column: keyof OrderJsonResponse): OrderModel {
     const instance = new OrderModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

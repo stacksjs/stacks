@@ -29,12 +29,12 @@ export interface SubscriberJsonResponse extends Omit<Selectable<SubscribersTable
   [key: string]: any
 }
 
-export type SubscriberType = Selectable<SubscribersTable>
+export type SubscriberJsonResponse = Selectable<SubscribersTable>
 export type NewSubscriber = Partial<Insertable<SubscribersTable>>
 export type SubscriberUpdate = Updateable<SubscribersTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: SubscriberType, order: SortDirection }
+interface SortOptions { column: SubscriberJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -168,7 +168,7 @@ export class SubscriberModel {
     }, {})
   }
 
-  isDirty(column?: keyof SubscriberType): boolean {
+  isDirty(column?: keyof SubscriberJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -180,15 +180,15 @@ export class SubscriberModel {
     })
   }
 
-  isClean(column?: keyof SubscriberType): boolean {
+  isClean(column?: keyof SubscriberJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof SubscriberType): boolean {
+  wasChanged(column?: keyof SubscriberJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
+  select(params: (keyof SubscriberJsonResponse)[] | RawBuilder<string> | string): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -196,7 +196,7 @@ export class SubscriberModel {
     return this
   }
 
-  static select(params: (keyof SubscriberType)[] | RawBuilder<string> | string): SubscriberModel {
+  static select(params: (keyof SubscriberJsonResponse)[] | RawBuilder<string> | string): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -301,7 +301,7 @@ export class SubscriberModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: SubscriberType) => {
+    const data = await Promise.all(models.map(async (model: SubscriberJsonResponse) => {
       return new SubscriberModel(model)
     }))
 
@@ -1215,12 +1215,12 @@ export class SubscriberModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<SubscriberType>,
+    condition: Partial<SubscriberJsonResponse>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
     const instance = new SubscriberModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof SubscriberType
+    const key = Object.keys(condition)[0] as keyof SubscriberJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1238,7 +1238,7 @@ export class SubscriberModel {
       instance.mapCustomGetters(existingSubscriber)
       await instance.loadRelations(existingSubscriber)
 
-      return new SubscriberModel(existingSubscriber as SubscriberType)
+      return new SubscriberModel(existingSubscriber as SubscriberJsonResponse)
     }
     else {
       return await instance.create(newSubscriber)
@@ -1246,12 +1246,12 @@ export class SubscriberModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<SubscriberType>,
+    condition: Partial<SubscriberJsonResponse>,
     newSubscriber: NewSubscriber,
   ): Promise<SubscriberModel> {
     const instance = new SubscriberModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof SubscriberType
+    const key = Object.keys(condition)[0] as keyof SubscriberJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1284,7 +1284,7 @@ export class SubscriberModel {
 
       instance.hasSaved = true
 
-      return new SubscriberModel(updatedSubscriber as SubscriberType)
+      return new SubscriberModel(updatedSubscriber as SubscriberJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1520,7 +1520,7 @@ export class SubscriberModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<SubscriberType>): SubscriberModel {
+  fill(data: Partial<SubscriberJsonResponse>): SubscriberModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1535,7 +1535,7 @@ export class SubscriberModel {
     return this
   }
 
-  forceFill(data: Partial<SubscriberType>): SubscriberModel {
+  forceFill(data: Partial<SubscriberJsonResponse>): SubscriberModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1554,7 +1554,7 @@ export class SubscriberModel {
       .execute()
   }
 
-  distinct(column: keyof SubscriberType): SubscriberModel {
+  distinct(column: keyof SubscriberJsonResponse): SubscriberModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1562,7 +1562,7 @@ export class SubscriberModel {
     return this
   }
 
-  static distinct(column: keyof SubscriberType): SubscriberModel {
+  static distinct(column: keyof SubscriberJsonResponse): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

@@ -35,12 +35,12 @@ export interface PostJsonResponse extends Omit<Selectable<PostsTable>, 'password
   [key: string]: any
 }
 
-export type PostType = Selectable<PostsTable>
+export type PostJsonResponse = Selectable<PostsTable>
 export type NewPost = Partial<Insertable<PostsTable>>
 export type PostUpdate = Updateable<PostsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PostType, order: SortDirection }
+interface SortOptions { column: PostJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -190,7 +190,7 @@ export class PostModel {
     }, {})
   }
 
-  isDirty(column?: keyof PostType): boolean {
+  isDirty(column?: keyof PostJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -202,15 +202,15 @@ export class PostModel {
     })
   }
 
-  isClean(column?: keyof PostType): boolean {
+  isClean(column?: keyof PostJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof PostType): boolean {
+  wasChanged(column?: keyof PostJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
+  select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -218,7 +218,7 @@ export class PostModel {
     return this
   }
 
-  static select(params: (keyof PostType)[] | RawBuilder<string> | string): PostModel {
+  static select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     const instance = new PostModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -323,7 +323,7 @@ export class PostModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: PostType) => {
+    const data = await Promise.all(models.map(async (model: PostJsonResponse) => {
       return new PostModel(model)
     }))
 
@@ -1245,12 +1245,12 @@ export class PostModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<PostType>,
+    condition: Partial<PostJsonResponse>,
     newPost: NewPost,
   ): Promise<PostModel> {
     const instance = new PostModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PostType
+    const key = Object.keys(condition)[0] as keyof PostJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1268,7 +1268,7 @@ export class PostModel {
       instance.mapCustomGetters(existingPost)
       await instance.loadRelations(existingPost)
 
-      return new PostModel(existingPost as PostType)
+      return new PostModel(existingPost as PostJsonResponse)
     }
     else {
       return await instance.create(newPost)
@@ -1276,12 +1276,12 @@ export class PostModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<PostType>,
+    condition: Partial<PostJsonResponse>,
     newPost: NewPost,
   ): Promise<PostModel> {
     const instance = new PostModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PostType
+    const key = Object.keys(condition)[0] as keyof PostJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1314,7 +1314,7 @@ export class PostModel {
 
       instance.hasSaved = true
 
-      return new PostModel(updatedPost as PostType)
+      return new PostModel(updatedPost as PostJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1550,7 +1550,7 @@ export class PostModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<PostType>): PostModel {
+  fill(data: Partial<PostJsonResponse>): PostModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1565,7 +1565,7 @@ export class PostModel {
     return this
   }
 
-  forceFill(data: Partial<PostType>): PostModel {
+  forceFill(data: Partial<PostJsonResponse>): PostModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1598,7 +1598,7 @@ export class PostModel {
     return model
   }
 
-  distinct(column: keyof PostType): PostModel {
+  distinct(column: keyof PostJsonResponse): PostModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1606,7 +1606,7 @@ export class PostModel {
     return this
   }
 
-  static distinct(column: keyof PostType): PostModel {
+  static distinct(column: keyof PostJsonResponse): PostModel {
     const instance = new PostModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

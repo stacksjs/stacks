@@ -46,12 +46,12 @@ export interface CustomerJsonResponse extends Omit<Selectable<CustomersTable>, '
   [key: string]: any
 }
 
-export type CustomerType = Selectable<CustomersTable>
+export type CustomerJsonResponse = Selectable<CustomersTable>
 export type NewCustomer = Partial<Insertable<CustomersTable>>
 export type CustomerUpdate = Updateable<CustomersTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: CustomerType, order: SortDirection }
+interface SortOptions { column: CustomerJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -261,7 +261,7 @@ export class CustomerModel {
     }, {})
   }
 
-  isDirty(column?: keyof CustomerType): boolean {
+  isDirty(column?: keyof CustomerJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -273,15 +273,15 @@ export class CustomerModel {
     })
   }
 
-  isClean(column?: keyof CustomerType): boolean {
+  isClean(column?: keyof CustomerJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof CustomerType): boolean {
+  wasChanged(column?: keyof CustomerJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof CustomerType)[] | RawBuilder<string> | string): CustomerModel {
+  select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -289,7 +289,7 @@ export class CustomerModel {
     return this
   }
 
-  static select(params: (keyof CustomerType)[] | RawBuilder<string> | string): CustomerModel {
+  static select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -394,7 +394,7 @@ export class CustomerModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: CustomerType) => {
+    const data = await Promise.all(models.map(async (model: CustomerJsonResponse) => {
       return new CustomerModel(model)
     }))
 
@@ -1373,12 +1373,12 @@ export class CustomerModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<CustomerType>,
+    condition: Partial<CustomerJsonResponse>,
     newCustomer: NewCustomer,
   ): Promise<CustomerModel> {
     const instance = new CustomerModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof CustomerType
+    const key = Object.keys(condition)[0] as keyof CustomerJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1396,7 +1396,7 @@ export class CustomerModel {
       instance.mapCustomGetters(existingCustomer)
       await instance.loadRelations(existingCustomer)
 
-      return new CustomerModel(existingCustomer as CustomerType)
+      return new CustomerModel(existingCustomer as CustomerJsonResponse)
     }
     else {
       return await instance.create(newCustomer)
@@ -1404,12 +1404,12 @@ export class CustomerModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<CustomerType>,
+    condition: Partial<CustomerJsonResponse>,
     newCustomer: NewCustomer,
   ): Promise<CustomerModel> {
     const instance = new CustomerModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof CustomerType
+    const key = Object.keys(condition)[0] as keyof CustomerJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1442,7 +1442,7 @@ export class CustomerModel {
 
       instance.hasSaved = true
 
-      return new CustomerModel(updatedCustomer as CustomerType)
+      return new CustomerModel(updatedCustomer as CustomerJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1684,7 +1684,7 @@ export class CustomerModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<CustomerType>): CustomerModel {
+  fill(data: Partial<CustomerJsonResponse>): CustomerModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1699,7 +1699,7 @@ export class CustomerModel {
     return this
   }
 
-  forceFill(data: Partial<CustomerType>): CustomerModel {
+  forceFill(data: Partial<CustomerJsonResponse>): CustomerModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1745,7 +1745,7 @@ export class CustomerModel {
     }
   }
 
-  distinct(column: keyof CustomerType): CustomerModel {
+  distinct(column: keyof CustomerJsonResponse): CustomerModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1753,7 +1753,7 @@ export class CustomerModel {
     return this
   }
 
-  static distinct(column: keyof CustomerType): CustomerModel {
+  static distinct(column: keyof CustomerJsonResponse): CustomerModel {
     const instance = new CustomerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

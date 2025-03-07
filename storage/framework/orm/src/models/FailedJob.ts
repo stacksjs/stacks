@@ -33,12 +33,12 @@ export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobsTable>,
   [key: string]: any
 }
 
-export type FailedJobType = Selectable<FailedJobsTable>
+export type FailedJobJsonResponse = Selectable<FailedJobsTable>
 export type NewFailedJob = Partial<Insertable<FailedJobsTable>>
 export type FailedJobUpdate = Updateable<FailedJobsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: FailedJobType, order: SortDirection }
+interface SortOptions { column: FailedJobJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -204,7 +204,7 @@ export class FailedJobModel {
     }, {})
   }
 
-  isDirty(column?: keyof FailedJobType): boolean {
+  isDirty(column?: keyof FailedJobJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -216,15 +216,15 @@ export class FailedJobModel {
     })
   }
 
-  isClean(column?: keyof FailedJobType): boolean {
+  isClean(column?: keyof FailedJobJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof FailedJobType): boolean {
+  wasChanged(column?: keyof FailedJobJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
+  select(params: (keyof FailedJobJsonResponse)[] | RawBuilder<string> | string): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -232,7 +232,7 @@ export class FailedJobModel {
     return this
   }
 
-  static select(params: (keyof FailedJobType)[] | RawBuilder<string> | string): FailedJobModel {
+  static select(params: (keyof FailedJobJsonResponse)[] | RawBuilder<string> | string): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -337,7 +337,7 @@ export class FailedJobModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: FailedJobType) => {
+    const data = await Promise.all(models.map(async (model: FailedJobJsonResponse) => {
       return new FailedJobModel(model)
     }))
 
@@ -1283,12 +1283,12 @@ export class FailedJobModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<FailedJobType>,
+    condition: Partial<FailedJobJsonResponse>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
     const instance = new FailedJobModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof FailedJobType
+    const key = Object.keys(condition)[0] as keyof FailedJobJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1306,7 +1306,7 @@ export class FailedJobModel {
       instance.mapCustomGetters(existingFailedJob)
       await instance.loadRelations(existingFailedJob)
 
-      return new FailedJobModel(existingFailedJob as FailedJobType)
+      return new FailedJobModel(existingFailedJob as FailedJobJsonResponse)
     }
     else {
       return await instance.create(newFailedJob)
@@ -1314,12 +1314,12 @@ export class FailedJobModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<FailedJobType>,
+    condition: Partial<FailedJobJsonResponse>,
     newFailedJob: NewFailedJob,
   ): Promise<FailedJobModel> {
     const instance = new FailedJobModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof FailedJobType
+    const key = Object.keys(condition)[0] as keyof FailedJobJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1352,7 +1352,7 @@ export class FailedJobModel {
 
       instance.hasSaved = true
 
-      return new FailedJobModel(updatedFailedJob as FailedJobType)
+      return new FailedJobModel(updatedFailedJob as FailedJobJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1588,7 +1588,7 @@ export class FailedJobModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<FailedJobType>): FailedJobModel {
+  fill(data: Partial<FailedJobJsonResponse>): FailedJobModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1603,7 +1603,7 @@ export class FailedJobModel {
     return this
   }
 
-  forceFill(data: Partial<FailedJobType>): FailedJobModel {
+  forceFill(data: Partial<FailedJobJsonResponse>): FailedJobModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1622,7 +1622,7 @@ export class FailedJobModel {
       .execute()
   }
 
-  distinct(column: keyof FailedJobType): FailedJobModel {
+  distinct(column: keyof FailedJobJsonResponse): FailedJobModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1630,7 +1630,7 @@ export class FailedJobModel {
     return this
   }
 
-  static distinct(column: keyof FailedJobType): FailedJobModel {
+  static distinct(column: keyof FailedJobJsonResponse): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

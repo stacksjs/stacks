@@ -37,12 +37,12 @@ export interface PaymentProductJsonResponse extends Omit<Selectable<PaymentProdu
   [key: string]: any
 }
 
-export type PaymentProductType = Selectable<PaymentProductsTable>
+export type PaymentProductJsonResponse = Selectable<PaymentProductsTable>
 export type NewPaymentProduct = Partial<Insertable<PaymentProductsTable>>
 export type PaymentProductUpdate = Updateable<PaymentProductsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PaymentProductType, order: SortDirection }
+interface SortOptions { column: PaymentProductJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -232,7 +232,7 @@ export class PaymentProductModel {
     }, {})
   }
 
-  isDirty(column?: keyof PaymentProductType): boolean {
+  isDirty(column?: keyof PaymentProductJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -244,15 +244,15 @@ export class PaymentProductModel {
     })
   }
 
-  isClean(column?: keyof PaymentProductType): boolean {
+  isClean(column?: keyof PaymentProductJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof PaymentProductType): boolean {
+  wasChanged(column?: keyof PaymentProductJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PaymentProductType)[] | RawBuilder<string> | string): PaymentProductModel {
+  select(params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string): PaymentProductModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -260,7 +260,7 @@ export class PaymentProductModel {
     return this
   }
 
-  static select(params: (keyof PaymentProductType)[] | RawBuilder<string> | string): PaymentProductModel {
+  static select(params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -365,7 +365,7 @@ export class PaymentProductModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: PaymentProductType) => {
+    const data = await Promise.all(models.map(async (model: PaymentProductJsonResponse) => {
       return new PaymentProductModel(model)
     }))
 
@@ -1331,12 +1331,12 @@ export class PaymentProductModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<PaymentProductType>,
+    condition: Partial<PaymentProductJsonResponse>,
     newPaymentProduct: NewPaymentProduct,
   ): Promise<PaymentProductModel> {
     const instance = new PaymentProductModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentProductType
+    const key = Object.keys(condition)[0] as keyof PaymentProductJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1354,7 +1354,7 @@ export class PaymentProductModel {
       instance.mapCustomGetters(existingPaymentProduct)
       await instance.loadRelations(existingPaymentProduct)
 
-      return new PaymentProductModel(existingPaymentProduct as PaymentProductType)
+      return new PaymentProductModel(existingPaymentProduct as PaymentProductJsonResponse)
     }
     else {
       return await instance.create(newPaymentProduct)
@@ -1362,12 +1362,12 @@ export class PaymentProductModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<PaymentProductType>,
+    condition: Partial<PaymentProductJsonResponse>,
     newPaymentProduct: NewPaymentProduct,
   ): Promise<PaymentProductModel> {
     const instance = new PaymentProductModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentProductType
+    const key = Object.keys(condition)[0] as keyof PaymentProductJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1400,7 +1400,7 @@ export class PaymentProductModel {
 
       instance.hasSaved = true
 
-      return new PaymentProductModel(updatedPaymentProduct as PaymentProductType)
+      return new PaymentProductModel(updatedPaymentProduct as PaymentProductJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1636,7 +1636,7 @@ export class PaymentProductModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<PaymentProductType>): PaymentProductModel {
+  fill(data: Partial<PaymentProductJsonResponse>): PaymentProductModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1651,7 +1651,7 @@ export class PaymentProductModel {
     return this
   }
 
-  forceFill(data: Partial<PaymentProductType>): PaymentProductModel {
+  forceFill(data: Partial<PaymentProductJsonResponse>): PaymentProductModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1670,7 +1670,7 @@ export class PaymentProductModel {
       .execute()
   }
 
-  distinct(column: keyof PaymentProductType): PaymentProductModel {
+  distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1678,7 +1678,7 @@ export class PaymentProductModel {
     return this
   }
 
-  static distinct(column: keyof PaymentProductType): PaymentProductModel {
+  static distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

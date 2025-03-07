@@ -58,12 +58,12 @@ export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password
   [key: string]: any
 }
 
-export type UserType = Selectable<UsersTable>
+export type UserJsonResponse = Selectable<UsersTable>
 export type NewUser = Partial<Insertable<UsersTable>>
 export type UserUpdate = Updateable<UsersTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: UserType, order: SortDirection }
+interface SortOptions { column: UserJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -279,7 +279,7 @@ export class UserModel {
     }, {})
   }
 
-  isDirty(column?: keyof UserType): boolean {
+  isDirty(column?: keyof UserJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -291,15 +291,15 @@ export class UserModel {
     })
   }
 
-  isClean(column?: keyof UserType): boolean {
+  isClean(column?: keyof UserJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof UserType): boolean {
+  wasChanged(column?: keyof UserJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
+  select(params: (keyof UserJsonResponse)[] | RawBuilder<string> | string): UserModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -307,7 +307,7 @@ export class UserModel {
     return this
   }
 
-  static select(params: (keyof UserType)[] | RawBuilder<string> | string): UserModel {
+  static select(params: (keyof UserJsonResponse)[] | RawBuilder<string> | string): UserModel {
     const instance = new UserModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -412,7 +412,7 @@ export class UserModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: UserType) => {
+    const data = await Promise.all(models.map(async (model: UserJsonResponse) => {
       return new UserModel(model)
     }))
 
@@ -1367,12 +1367,12 @@ export class UserModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<UserType>,
+    condition: Partial<UserJsonResponse>,
     newUser: NewUser,
   ): Promise<UserModel> {
     const instance = new UserModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof UserType
+    const key = Object.keys(condition)[0] as keyof UserJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1390,7 +1390,7 @@ export class UserModel {
       instance.mapCustomGetters(existingUser)
       await instance.loadRelations(existingUser)
 
-      return new UserModel(existingUser as UserType)
+      return new UserModel(existingUser as UserJsonResponse)
     }
     else {
       return await instance.create(newUser)
@@ -1398,12 +1398,12 @@ export class UserModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<UserType>,
+    condition: Partial<UserJsonResponse>,
     newUser: NewUser,
   ): Promise<UserModel> {
     const instance = new UserModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof UserType
+    const key = Object.keys(condition)[0] as keyof UserJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1436,7 +1436,7 @@ export class UserModel {
 
       instance.hasSaved = true
 
-      return new UserModel(updatedUser as UserType)
+      return new UserModel(updatedUser as UserJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1678,7 +1678,7 @@ export class UserModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<UserType>): UserModel {
+  fill(data: Partial<UserJsonResponse>): UserModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1693,7 +1693,7 @@ export class UserModel {
     return this
   }
 
-  forceFill(data: Partial<UserType>): UserModel {
+  forceFill(data: Partial<UserJsonResponse>): UserModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1986,7 +1986,7 @@ export class UserModel {
     return await manageCheckout.create(this, mergedOptions)
   }
 
-  distinct(column: keyof UserType): UserModel {
+  distinct(column: keyof UserJsonResponse): UserModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1994,7 +1994,7 @@ export class UserModel {
     return this
   }
 
-  static distinct(column: keyof UserType): UserModel {
+  static distinct(column: keyof UserJsonResponse): UserModel {
     const instance = new UserModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

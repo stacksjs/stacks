@@ -53,12 +53,12 @@ export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'pass
   [key: string]: any
 }
 
-export type CouponType = Selectable<CouponsTable>
+export type CouponJsonResponse = Selectable<CouponsTable>
 export type NewCoupon = Partial<Insertable<CouponsTable>>
 export type CouponUpdate = Updateable<CouponsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: CouponType, order: SortDirection }
+interface SortOptions { column: CouponJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -316,7 +316,7 @@ export class CouponModel {
     }, {})
   }
 
-  isDirty(column?: keyof CouponType): boolean {
+  isDirty(column?: keyof CouponJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -328,15 +328,15 @@ export class CouponModel {
     })
   }
 
-  isClean(column?: keyof CouponType): boolean {
+  isClean(column?: keyof CouponJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof CouponType): boolean {
+  wasChanged(column?: keyof CouponJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof CouponType)[] | RawBuilder<string> | string): CouponModel {
+  select(params: (keyof CouponJsonResponse)[] | RawBuilder<string> | string): CouponModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -344,7 +344,7 @@ export class CouponModel {
     return this
   }
 
-  static select(params: (keyof CouponType)[] | RawBuilder<string> | string): CouponModel {
+  static select(params: (keyof CouponJsonResponse)[] | RawBuilder<string> | string): CouponModel {
     const instance = new CouponModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -449,7 +449,7 @@ export class CouponModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: CouponType) => {
+    const data = await Promise.all(models.map(async (model: CouponJsonResponse) => {
       return new CouponModel(model)
     }))
 
@@ -1484,12 +1484,12 @@ export class CouponModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<CouponType>,
+    condition: Partial<CouponJsonResponse>,
     newCoupon: NewCoupon,
   ): Promise<CouponModel> {
     const instance = new CouponModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof CouponType
+    const key = Object.keys(condition)[0] as keyof CouponJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1507,7 +1507,7 @@ export class CouponModel {
       instance.mapCustomGetters(existingCoupon)
       await instance.loadRelations(existingCoupon)
 
-      return new CouponModel(existingCoupon as CouponType)
+      return new CouponModel(existingCoupon as CouponJsonResponse)
     }
     else {
       return await instance.create(newCoupon)
@@ -1515,12 +1515,12 @@ export class CouponModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<CouponType>,
+    condition: Partial<CouponJsonResponse>,
     newCoupon: NewCoupon,
   ): Promise<CouponModel> {
     const instance = new CouponModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof CouponType
+    const key = Object.keys(condition)[0] as keyof CouponJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1553,7 +1553,7 @@ export class CouponModel {
 
       instance.hasSaved = true
 
-      return new CouponModel(updatedCoupon as CouponType)
+      return new CouponModel(updatedCoupon as CouponJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1795,7 +1795,7 @@ export class CouponModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<CouponType>): CouponModel {
+  fill(data: Partial<CouponJsonResponse>): CouponModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1810,7 +1810,7 @@ export class CouponModel {
     return this
   }
 
-  forceFill(data: Partial<CouponType>): CouponModel {
+  forceFill(data: Partial<CouponJsonResponse>): CouponModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1858,7 +1858,7 @@ export class CouponModel {
     }
   }
 
-  distinct(column: keyof CouponType): CouponModel {
+  distinct(column: keyof CouponJsonResponse): CouponModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1866,7 +1866,7 @@ export class CouponModel {
     return this
   }
 
-  static distinct(column: keyof CouponType): CouponModel {
+  static distinct(column: keyof CouponJsonResponse): CouponModel {
     const instance = new CouponModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

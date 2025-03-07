@@ -49,12 +49,12 @@ export interface AccessTokenJsonResponse extends Omit<Selectable<PersonalAccessT
   [key: string]: any
 }
 
-export type AccessTokenType = Selectable<PersonalAccessTokensTable>
+export type AccessTokenJsonResponse = Selectable<PersonalAccessTokensTable>
 export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: AccessTokenType, order: SortDirection }
+interface SortOptions { column: AccessTokenJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -276,7 +276,7 @@ export class AccessTokenModel {
     }, {})
   }
 
-  isDirty(column?: keyof AccessTokenType): boolean {
+  isDirty(column?: keyof AccessTokenJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -288,15 +288,15 @@ export class AccessTokenModel {
     })
   }
 
-  isClean(column?: keyof AccessTokenType): boolean {
+  isClean(column?: keyof AccessTokenJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof AccessTokenType): boolean {
+  wasChanged(column?: keyof AccessTokenJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
+  select(params: (keyof AccessTokenJsonResponse)[] | RawBuilder<string> | string): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -304,7 +304,7 @@ export class AccessTokenModel {
     return this
   }
 
-  static select(params: (keyof AccessTokenType)[] | RawBuilder<string> | string): AccessTokenModel {
+  static select(params: (keyof AccessTokenJsonResponse)[] | RawBuilder<string> | string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -409,7 +409,7 @@ export class AccessTokenModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: AccessTokenType) => {
+    const data = await Promise.all(models.map(async (model: AccessTokenJsonResponse) => {
       return new AccessTokenModel(model)
     }))
 
@@ -1395,12 +1395,12 @@ export class AccessTokenModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<AccessTokenType>,
+    condition: Partial<AccessTokenJsonResponse>,
     newAccessToken: NewAccessToken,
   ): Promise<AccessTokenModel> {
     const instance = new AccessTokenModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof AccessTokenType
+    const key = Object.keys(condition)[0] as keyof AccessTokenJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1418,7 +1418,7 @@ export class AccessTokenModel {
       instance.mapCustomGetters(existingAccessToken)
       await instance.loadRelations(existingAccessToken)
 
-      return new AccessTokenModel(existingAccessToken as AccessTokenType)
+      return new AccessTokenModel(existingAccessToken as AccessTokenJsonResponse)
     }
     else {
       return await instance.create(newAccessToken)
@@ -1426,12 +1426,12 @@ export class AccessTokenModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<AccessTokenType>,
+    condition: Partial<AccessTokenJsonResponse>,
     newAccessToken: NewAccessToken,
   ): Promise<AccessTokenModel> {
     const instance = new AccessTokenModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof AccessTokenType
+    const key = Object.keys(condition)[0] as keyof AccessTokenJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1464,7 +1464,7 @@ export class AccessTokenModel {
 
       instance.hasSaved = true
 
-      return new AccessTokenModel(updatedAccessToken as AccessTokenType)
+      return new AccessTokenModel(updatedAccessToken as AccessTokenJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1700,7 +1700,7 @@ export class AccessTokenModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<AccessTokenType>): AccessTokenModel {
+  fill(data: Partial<AccessTokenJsonResponse>): AccessTokenModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1715,7 +1715,7 @@ export class AccessTokenModel {
     return this
   }
 
-  forceFill(data: Partial<AccessTokenType>): AccessTokenModel {
+  forceFill(data: Partial<AccessTokenJsonResponse>): AccessTokenModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1762,7 +1762,7 @@ export class AccessTokenModel {
     return model
   }
 
-  distinct(column: keyof AccessTokenType): AccessTokenModel {
+  distinct(column: keyof AccessTokenJsonResponse): AccessTokenModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1770,7 +1770,7 @@ export class AccessTokenModel {
     return this
   }
 
-  static distinct(column: keyof AccessTokenType): AccessTokenModel {
+  static distinct(column: keyof AccessTokenJsonResponse): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

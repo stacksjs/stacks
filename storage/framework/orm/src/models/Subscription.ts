@@ -45,12 +45,12 @@ export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionsT
   [key: string]: any
 }
 
-export type SubscriptionType = Selectable<SubscriptionsTable>
+export type SubscriptionJsonResponse = Selectable<SubscriptionsTable>
 export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: SubscriptionType, order: SortDirection }
+interface SortOptions { column: SubscriptionJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -272,7 +272,7 @@ export class SubscriptionModel {
     }, {})
   }
 
-  isDirty(column?: keyof SubscriptionType): boolean {
+  isDirty(column?: keyof SubscriptionJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -284,15 +284,15 @@ export class SubscriptionModel {
     })
   }
 
-  isClean(column?: keyof SubscriptionType): boolean {
+  isClean(column?: keyof SubscriptionJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof SubscriptionType): boolean {
+  wasChanged(column?: keyof SubscriptionJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
+  select(params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -300,7 +300,7 @@ export class SubscriptionModel {
     return this
   }
 
-  static select(params: (keyof SubscriptionType)[] | RawBuilder<string> | string): SubscriptionModel {
+  static select(params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -405,7 +405,7 @@ export class SubscriptionModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: SubscriptionType) => {
+    const data = await Promise.all(models.map(async (model: SubscriptionJsonResponse) => {
       return new SubscriptionModel(model)
     }))
 
@@ -1395,12 +1395,12 @@ export class SubscriptionModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<SubscriptionType>,
+    condition: Partial<SubscriptionJsonResponse>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
     const instance = new SubscriptionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof SubscriptionType
+    const key = Object.keys(condition)[0] as keyof SubscriptionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1418,7 +1418,7 @@ export class SubscriptionModel {
       instance.mapCustomGetters(existingSubscription)
       await instance.loadRelations(existingSubscription)
 
-      return new SubscriptionModel(existingSubscription as SubscriptionType)
+      return new SubscriptionModel(existingSubscription as SubscriptionJsonResponse)
     }
     else {
       return await instance.create(newSubscription)
@@ -1426,12 +1426,12 @@ export class SubscriptionModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<SubscriptionType>,
+    condition: Partial<SubscriptionJsonResponse>,
     newSubscription: NewSubscription,
   ): Promise<SubscriptionModel> {
     const instance = new SubscriptionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof SubscriptionType
+    const key = Object.keys(condition)[0] as keyof SubscriptionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1464,7 +1464,7 @@ export class SubscriptionModel {
 
       instance.hasSaved = true
 
-      return new SubscriptionModel(updatedSubscription as SubscriptionType)
+      return new SubscriptionModel(updatedSubscription as SubscriptionJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1700,7 +1700,7 @@ export class SubscriptionModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<SubscriptionType>): SubscriptionModel {
+  fill(data: Partial<SubscriptionJsonResponse>): SubscriptionModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1715,7 +1715,7 @@ export class SubscriptionModel {
     return this
   }
 
-  forceFill(data: Partial<SubscriptionType>): SubscriptionModel {
+  forceFill(data: Partial<SubscriptionJsonResponse>): SubscriptionModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1748,7 +1748,7 @@ export class SubscriptionModel {
     return model
   }
 
-  distinct(column: keyof SubscriptionType): SubscriptionModel {
+  distinct(column: keyof SubscriptionJsonResponse): SubscriptionModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1756,7 +1756,7 @@ export class SubscriptionModel {
     return this
   }
 
-  static distinct(column: keyof SubscriptionType): SubscriptionModel {
+  static distinct(column: keyof SubscriptionJsonResponse): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

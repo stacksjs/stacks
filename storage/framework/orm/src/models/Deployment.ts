@@ -42,12 +42,12 @@ export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable
   [key: string]: any
 }
 
-export type DeploymentType = Selectable<DeploymentsTable>
+export type DeploymentJsonResponse = Selectable<DeploymentsTable>
 export type NewDeployment = Partial<Insertable<DeploymentsTable>>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: DeploymentType, order: SortDirection }
+interface SortOptions { column: DeploymentJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -245,7 +245,7 @@ export class DeploymentModel {
     }, {})
   }
 
-  isDirty(column?: keyof DeploymentType): boolean {
+  isDirty(column?: keyof DeploymentJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -257,15 +257,15 @@ export class DeploymentModel {
     })
   }
 
-  isClean(column?: keyof DeploymentType): boolean {
+  isClean(column?: keyof DeploymentJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof DeploymentType): boolean {
+  wasChanged(column?: keyof DeploymentJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
+  select(params: (keyof DeploymentJsonResponse)[] | RawBuilder<string> | string): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -273,7 +273,7 @@ export class DeploymentModel {
     return this
   }
 
-  static select(params: (keyof DeploymentType)[] | RawBuilder<string> | string): DeploymentModel {
+  static select(params: (keyof DeploymentJsonResponse)[] | RawBuilder<string> | string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -378,7 +378,7 @@ export class DeploymentModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: DeploymentType) => {
+    const data = await Promise.all(models.map(async (model: DeploymentJsonResponse) => {
       return new DeploymentModel(model)
     }))
 
@@ -1344,12 +1344,12 @@ export class DeploymentModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<DeploymentType>,
+    condition: Partial<DeploymentJsonResponse>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
     const instance = new DeploymentModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof DeploymentType
+    const key = Object.keys(condition)[0] as keyof DeploymentJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1367,7 +1367,7 @@ export class DeploymentModel {
       instance.mapCustomGetters(existingDeployment)
       await instance.loadRelations(existingDeployment)
 
-      return new DeploymentModel(existingDeployment as DeploymentType)
+      return new DeploymentModel(existingDeployment as DeploymentJsonResponse)
     }
     else {
       return await instance.create(newDeployment)
@@ -1375,12 +1375,12 @@ export class DeploymentModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<DeploymentType>,
+    condition: Partial<DeploymentJsonResponse>,
     newDeployment: NewDeployment,
   ): Promise<DeploymentModel> {
     const instance = new DeploymentModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof DeploymentType
+    const key = Object.keys(condition)[0] as keyof DeploymentJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1413,7 +1413,7 @@ export class DeploymentModel {
 
       instance.hasSaved = true
 
-      return new DeploymentModel(updatedDeployment as DeploymentType)
+      return new DeploymentModel(updatedDeployment as DeploymentJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1649,7 +1649,7 @@ export class DeploymentModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<DeploymentType>): DeploymentModel {
+  fill(data: Partial<DeploymentJsonResponse>): DeploymentModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1664,7 +1664,7 @@ export class DeploymentModel {
     return this
   }
 
-  forceFill(data: Partial<DeploymentType>): DeploymentModel {
+  forceFill(data: Partial<DeploymentJsonResponse>): DeploymentModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1697,7 +1697,7 @@ export class DeploymentModel {
     return model
   }
 
-  distinct(column: keyof DeploymentType): DeploymentModel {
+  distinct(column: keyof DeploymentJsonResponse): DeploymentModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1705,7 +1705,7 @@ export class DeploymentModel {
     return this
   }
 
-  static distinct(column: keyof DeploymentType): DeploymentModel {
+  static distinct(column: keyof DeploymentJsonResponse): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

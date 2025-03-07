@@ -46,12 +46,12 @@ export interface PaymentTransactionJsonResponse extends Omit<Selectable<PaymentT
   [key: string]: any
 }
 
-export type PaymentTransactionType = Selectable<PaymentTransactionsTable>
+export type PaymentTransactionJsonResponse = Selectable<PaymentTransactionsTable>
 export type NewPaymentTransaction = Partial<Insertable<PaymentTransactionsTable>>
 export type PaymentTransactionUpdate = Updateable<PaymentTransactionsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PaymentTransactionType, order: SortDirection }
+interface SortOptions { column: PaymentTransactionJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -241,7 +241,7 @@ export class PaymentTransactionModel {
     }, {})
   }
 
-  isDirty(column?: keyof PaymentTransactionType): boolean {
+  isDirty(column?: keyof PaymentTransactionJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -253,15 +253,15 @@ export class PaymentTransactionModel {
     })
   }
 
-  isClean(column?: keyof PaymentTransactionType): boolean {
+  isClean(column?: keyof PaymentTransactionJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof PaymentTransactionType): boolean {
+  wasChanged(column?: keyof PaymentTransactionJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PaymentTransactionType)[] | RawBuilder<string> | string): PaymentTransactionModel {
+  select(params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -269,7 +269,7 @@ export class PaymentTransactionModel {
     return this
   }
 
-  static select(params: (keyof PaymentTransactionType)[] | RawBuilder<string> | string): PaymentTransactionModel {
+  static select(params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -374,7 +374,7 @@ export class PaymentTransactionModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: PaymentTransactionType) => {
+    const data = await Promise.all(models.map(async (model: PaymentTransactionJsonResponse) => {
       return new PaymentTransactionModel(model)
     }))
 
@@ -1324,12 +1324,12 @@ export class PaymentTransactionModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<PaymentTransactionType>,
+    condition: Partial<PaymentTransactionJsonResponse>,
     newPaymentTransaction: NewPaymentTransaction,
   ): Promise<PaymentTransactionModel> {
     const instance = new PaymentTransactionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentTransactionType
+    const key = Object.keys(condition)[0] as keyof PaymentTransactionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1347,7 +1347,7 @@ export class PaymentTransactionModel {
       instance.mapCustomGetters(existingPaymentTransaction)
       await instance.loadRelations(existingPaymentTransaction)
 
-      return new PaymentTransactionModel(existingPaymentTransaction as PaymentTransactionType)
+      return new PaymentTransactionModel(existingPaymentTransaction as PaymentTransactionJsonResponse)
     }
     else {
       return await instance.create(newPaymentTransaction)
@@ -1355,12 +1355,12 @@ export class PaymentTransactionModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<PaymentTransactionType>,
+    condition: Partial<PaymentTransactionJsonResponse>,
     newPaymentTransaction: NewPaymentTransaction,
   ): Promise<PaymentTransactionModel> {
     const instance = new PaymentTransactionModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof PaymentTransactionType
+    const key = Object.keys(condition)[0] as keyof PaymentTransactionJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1393,7 +1393,7 @@ export class PaymentTransactionModel {
 
       instance.hasSaved = true
 
-      return new PaymentTransactionModel(updatedPaymentTransaction as PaymentTransactionType)
+      return new PaymentTransactionModel(updatedPaymentTransaction as PaymentTransactionJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1629,7 +1629,7 @@ export class PaymentTransactionModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<PaymentTransactionType>): PaymentTransactionModel {
+  fill(data: Partial<PaymentTransactionJsonResponse>): PaymentTransactionModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1644,7 +1644,7 @@ export class PaymentTransactionModel {
     return this
   }
 
-  forceFill(data: Partial<PaymentTransactionType>): PaymentTransactionModel {
+  forceFill(data: Partial<PaymentTransactionJsonResponse>): PaymentTransactionModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1691,7 +1691,7 @@ export class PaymentTransactionModel {
     return model
   }
 
-  distinct(column: keyof PaymentTransactionType): PaymentTransactionModel {
+  distinct(column: keyof PaymentTransactionJsonResponse): PaymentTransactionModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1699,7 +1699,7 @@ export class PaymentTransactionModel {
     return this
   }
 
-  static distinct(column: keyof PaymentTransactionType): PaymentTransactionModel {
+  static distinct(column: keyof PaymentTransactionJsonResponse): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

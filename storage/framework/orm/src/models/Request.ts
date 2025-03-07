@@ -38,12 +38,12 @@ export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'pa
   [key: string]: any
 }
 
-export type RequestType = Selectable<RequestsTable>
+export type RequestJsonResponse = Selectable<RequestsTable>
 export type NewRequest = Partial<Insertable<RequestsTable>>
 export type RequestUpdate = Updateable<RequestsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: RequestType, order: SortDirection }
+interface SortOptions { column: RequestJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -241,7 +241,7 @@ export class RequestModel {
     }, {})
   }
 
-  isDirty(column?: keyof RequestType): boolean {
+  isDirty(column?: keyof RequestJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -253,15 +253,15 @@ export class RequestModel {
     })
   }
 
-  isClean(column?: keyof RequestType): boolean {
+  isClean(column?: keyof RequestJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof RequestType): boolean {
+  wasChanged(column?: keyof RequestJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof RequestType)[] | RawBuilder<string> | string): RequestModel {
+  select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -269,7 +269,7 @@ export class RequestModel {
     return this
   }
 
-  static select(params: (keyof RequestType)[] | RawBuilder<string> | string): RequestModel {
+  static select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
     const instance = new RequestModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -374,7 +374,7 @@ export class RequestModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: RequestType) => {
+    const data = await Promise.all(models.map(async (model: RequestJsonResponse) => {
       return new RequestModel(model)
     }))
 
@@ -1363,12 +1363,12 @@ export class RequestModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<RequestType>,
+    condition: Partial<RequestJsonResponse>,
     newRequest: NewRequest,
   ): Promise<RequestModel> {
     const instance = new RequestModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof RequestType
+    const key = Object.keys(condition)[0] as keyof RequestJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1386,7 +1386,7 @@ export class RequestModel {
       instance.mapCustomGetters(existingRequest)
       await instance.loadRelations(existingRequest)
 
-      return new RequestModel(existingRequest as RequestType)
+      return new RequestModel(existingRequest as RequestJsonResponse)
     }
     else {
       return await instance.create(newRequest)
@@ -1394,12 +1394,12 @@ export class RequestModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<RequestType>,
+    condition: Partial<RequestJsonResponse>,
     newRequest: NewRequest,
   ): Promise<RequestModel> {
     const instance = new RequestModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof RequestType
+    const key = Object.keys(condition)[0] as keyof RequestJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1432,7 +1432,7 @@ export class RequestModel {
 
       instance.hasSaved = true
 
-      return new RequestModel(updatedRequest as RequestType)
+      return new RequestModel(updatedRequest as RequestJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1668,7 +1668,7 @@ export class RequestModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<RequestType>): RequestModel {
+  fill(data: Partial<RequestJsonResponse>): RequestModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1683,7 +1683,7 @@ export class RequestModel {
     return this
   }
 
-  forceFill(data: Partial<RequestType>): RequestModel {
+  forceFill(data: Partial<RequestJsonResponse>): RequestModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1711,7 +1711,7 @@ export class RequestModel {
       .execute()
   }
 
-  distinct(column: keyof RequestType): RequestModel {
+  distinct(column: keyof RequestJsonResponse): RequestModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1719,7 +1719,7 @@ export class RequestModel {
     return this
   }
 
-  static distinct(column: keyof RequestType): RequestModel {
+  static distinct(column: keyof RequestJsonResponse): RequestModel {
     const instance = new RequestModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

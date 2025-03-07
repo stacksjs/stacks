@@ -33,12 +33,12 @@ export interface ErrorJsonResponse extends Omit<Selectable<ErrorsTable>, 'passwo
   [key: string]: any
 }
 
-export type ErrorType = Selectable<ErrorsTable>
+export type ErrorJsonResponse = Selectable<ErrorsTable>
 export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ErrorType, order: SortDirection }
+interface SortOptions { column: ErrorJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -204,7 +204,7 @@ export class ErrorModel {
     }, {})
   }
 
-  isDirty(column?: keyof ErrorType): boolean {
+  isDirty(column?: keyof ErrorJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -216,15 +216,15 @@ export class ErrorModel {
     })
   }
 
-  isClean(column?: keyof ErrorType): boolean {
+  isClean(column?: keyof ErrorJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ErrorType): boolean {
+  wasChanged(column?: keyof ErrorJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
+  select(params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -232,7 +232,7 @@ export class ErrorModel {
     return this
   }
 
-  static select(params: (keyof ErrorType)[] | RawBuilder<string> | string): ErrorModel {
+  static select(params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string): ErrorModel {
     const instance = new ErrorModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -337,7 +337,7 @@ export class ErrorModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ErrorType) => {
+    const data = await Promise.all(models.map(async (model: ErrorJsonResponse) => {
       return new ErrorModel(model)
     }))
 
@@ -1283,12 +1283,12 @@ export class ErrorModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<ErrorType>,
+    condition: Partial<ErrorJsonResponse>,
     newError: NewError,
   ): Promise<ErrorModel> {
     const instance = new ErrorModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ErrorType
+    const key = Object.keys(condition)[0] as keyof ErrorJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1306,7 +1306,7 @@ export class ErrorModel {
       instance.mapCustomGetters(existingError)
       await instance.loadRelations(existingError)
 
-      return new ErrorModel(existingError as ErrorType)
+      return new ErrorModel(existingError as ErrorJsonResponse)
     }
     else {
       return await instance.create(newError)
@@ -1314,12 +1314,12 @@ export class ErrorModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<ErrorType>,
+    condition: Partial<ErrorJsonResponse>,
     newError: NewError,
   ): Promise<ErrorModel> {
     const instance = new ErrorModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ErrorType
+    const key = Object.keys(condition)[0] as keyof ErrorJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1352,7 +1352,7 @@ export class ErrorModel {
 
       instance.hasSaved = true
 
-      return new ErrorModel(updatedError as ErrorType)
+      return new ErrorModel(updatedError as ErrorJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1588,7 +1588,7 @@ export class ErrorModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ErrorType>): ErrorModel {
+  fill(data: Partial<ErrorJsonResponse>): ErrorModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1603,7 +1603,7 @@ export class ErrorModel {
     return this
   }
 
-  forceFill(data: Partial<ErrorType>): ErrorModel {
+  forceFill(data: Partial<ErrorJsonResponse>): ErrorModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1622,7 +1622,7 @@ export class ErrorModel {
       .execute()
   }
 
-  distinct(column: keyof ErrorType): ErrorModel {
+  distinct(column: keyof ErrorJsonResponse): ErrorModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1630,7 +1630,7 @@ export class ErrorModel {
     return this
   }
 
-  static distinct(column: keyof ErrorType): ErrorModel {
+  static distinct(column: keyof ErrorJsonResponse): ErrorModel {
     const instance = new ErrorModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

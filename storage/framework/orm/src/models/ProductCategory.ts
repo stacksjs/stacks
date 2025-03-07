@@ -39,12 +39,12 @@ export interface ProductCategoryJsonResponse extends Omit<Selectable<ProductCate
   [key: string]: any
 }
 
-export type ProductCategoryType = Selectable<ProductCategoriesTable>
+export type ProductCategoryJsonResponse = Selectable<ProductCategoriesTable>
 export type NewProductCategory = Partial<Insertable<ProductCategoriesTable>>
 export type ProductCategoryUpdate = Updateable<ProductCategoriesTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductCategoryType, order: SortDirection }
+interface SortOptions { column: ProductCategoryJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -230,7 +230,7 @@ export class ProductCategoryModel {
     }, {})
   }
 
-  isDirty(column?: keyof ProductCategoryType): boolean {
+  isDirty(column?: keyof ProductCategoryJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -242,15 +242,15 @@ export class ProductCategoryModel {
     })
   }
 
-  isClean(column?: keyof ProductCategoryType): boolean {
+  isClean(column?: keyof ProductCategoryJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ProductCategoryType): boolean {
+  wasChanged(column?: keyof ProductCategoryJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductCategoryType)[] | RawBuilder<string> | string): ProductCategoryModel {
+  select(params: (keyof ProductCategoryJsonResponse)[] | RawBuilder<string> | string): ProductCategoryModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -258,7 +258,7 @@ export class ProductCategoryModel {
     return this
   }
 
-  static select(params: (keyof ProductCategoryType)[] | RawBuilder<string> | string): ProductCategoryModel {
+  static select(params: (keyof ProductCategoryJsonResponse)[] | RawBuilder<string> | string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -363,7 +363,7 @@ export class ProductCategoryModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ProductCategoryType) => {
+    const data = await Promise.all(models.map(async (model: ProductCategoryJsonResponse) => {
       return new ProductCategoryModel(model)
     }))
 
@@ -1334,12 +1334,12 @@ export class ProductCategoryModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<ProductCategoryType>,
+    condition: Partial<ProductCategoryJsonResponse>,
     newProductCategory: NewProductCategory,
   ): Promise<ProductCategoryModel> {
     const instance = new ProductCategoryModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductCategoryType
+    const key = Object.keys(condition)[0] as keyof ProductCategoryJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1357,7 +1357,7 @@ export class ProductCategoryModel {
       instance.mapCustomGetters(existingProductCategory)
       await instance.loadRelations(existingProductCategory)
 
-      return new ProductCategoryModel(existingProductCategory as ProductCategoryType)
+      return new ProductCategoryModel(existingProductCategory as ProductCategoryJsonResponse)
     }
     else {
       return await instance.create(newProductCategory)
@@ -1365,12 +1365,12 @@ export class ProductCategoryModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<ProductCategoryType>,
+    condition: Partial<ProductCategoryJsonResponse>,
     newProductCategory: NewProductCategory,
   ): Promise<ProductCategoryModel> {
     const instance = new ProductCategoryModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductCategoryType
+    const key = Object.keys(condition)[0] as keyof ProductCategoryJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1403,7 +1403,7 @@ export class ProductCategoryModel {
 
       instance.hasSaved = true
 
-      return new ProductCategoryModel(updatedProductCategory as ProductCategoryType)
+      return new ProductCategoryModel(updatedProductCategory as ProductCategoryJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1645,7 +1645,7 @@ export class ProductCategoryModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ProductCategoryType>): ProductCategoryModel {
+  fill(data: Partial<ProductCategoryJsonResponse>): ProductCategoryModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1660,7 +1660,7 @@ export class ProductCategoryModel {
     return this
   }
 
-  forceFill(data: Partial<ProductCategoryType>): ProductCategoryModel {
+  forceFill(data: Partial<ProductCategoryJsonResponse>): ProductCategoryModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1693,7 +1693,7 @@ export class ProductCategoryModel {
     }
   }
 
-  distinct(column: keyof ProductCategoryType): ProductCategoryModel {
+  distinct(column: keyof ProductCategoryJsonResponse): ProductCategoryModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1701,7 +1701,7 @@ export class ProductCategoryModel {
     return this
   }
 
-  static distinct(column: keyof ProductCategoryType): ProductCategoryModel {
+  static distinct(column: keyof ProductCategoryJsonResponse): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()

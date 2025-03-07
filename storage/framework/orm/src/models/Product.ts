@@ -46,12 +46,12 @@ export interface ProductJsonResponse extends Omit<Selectable<ProductsTable>, 'pa
   [key: string]: any
 }
 
-export type ProductType = Selectable<ProductsTable>
+export type ProductJsonResponse = Selectable<ProductsTable>
 export type NewProduct = Partial<Insertable<ProductsTable>>
 export type ProductUpdate = Updateable<ProductsTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductType, order: SortDirection }
+interface SortOptions { column: ProductJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -273,7 +273,7 @@ export class ProductModel {
     }, {})
   }
 
-  isDirty(column?: keyof ProductType): boolean {
+  isDirty(column?: keyof ProductJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -285,15 +285,15 @@ export class ProductModel {
     })
   }
 
-  isClean(column?: keyof ProductType): boolean {
+  isClean(column?: keyof ProductJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ProductType): boolean {
+  wasChanged(column?: keyof ProductJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
+  select(params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string): ProductModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -301,7 +301,7 @@ export class ProductModel {
     return this
   }
 
-  static select(params: (keyof ProductType)[] | RawBuilder<string> | string): ProductModel {
+  static select(params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string): ProductModel {
     const instance = new ProductModel(undefined)
 
     // Initialize a query with the table name and selected fields
@@ -406,7 +406,7 @@ export class ProductModel {
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ProductType) => {
+    const data = await Promise.all(models.map(async (model: ProductJsonResponse) => {
       return new ProductModel(model)
     }))
 
@@ -1409,12 +1409,12 @@ export class ProductModel {
   }
 
   static async firstOrCreate(
-    condition: Partial<ProductType>,
+    condition: Partial<ProductJsonResponse>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
     const instance = new ProductModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductType
+    const key = Object.keys(condition)[0] as keyof ProductJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1432,7 +1432,7 @@ export class ProductModel {
       instance.mapCustomGetters(existingProduct)
       await instance.loadRelations(existingProduct)
 
-      return new ProductModel(existingProduct as ProductType)
+      return new ProductModel(existingProduct as ProductJsonResponse)
     }
     else {
       return await instance.create(newProduct)
@@ -1440,12 +1440,12 @@ export class ProductModel {
   }
 
   static async updateOrCreate(
-    condition: Partial<ProductType>,
+    condition: Partial<ProductJsonResponse>,
     newProduct: NewProduct,
   ): Promise<ProductModel> {
     const instance = new ProductModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductType
+    const key = Object.keys(condition)[0] as keyof ProductJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1478,7 +1478,7 @@ export class ProductModel {
 
       instance.hasSaved = true
 
-      return new ProductModel(updatedProduct as ProductType)
+      return new ProductModel(updatedProduct as ProductJsonResponse)
     }
     else {
       // If not found, create a new record
@@ -1720,7 +1720,7 @@ export class ProductModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ProductType>): ProductModel {
+  fill(data: Partial<ProductJsonResponse>): ProductModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
@@ -1735,7 +1735,7 @@ export class ProductModel {
     return this
   }
 
-  forceFill(data: Partial<ProductType>): ProductModel {
+  forceFill(data: Partial<ProductJsonResponse>): ProductModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1783,7 +1783,7 @@ export class ProductModel {
     }
   }
 
-  distinct(column: keyof ProductType): ProductModel {
+  distinct(column: keyof ProductJsonResponse): ProductModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1791,7 +1791,7 @@ export class ProductModel {
     return this
   }
 
-  static distinct(column: keyof ProductType): ProductModel {
+  static distinct(column: keyof ProductJsonResponse): ProductModel {
     const instance = new ProductModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
