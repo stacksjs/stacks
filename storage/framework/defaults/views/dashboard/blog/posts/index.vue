@@ -1,10 +1,168 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar, Doughnut } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Blog Posts',
 })
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Doughnut chart options (no scales)
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom' as const,
+    },
+  },
+}
+
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Sample data - in a real app, this would be calculated from actual post data
+  const viewsData = [2500, 3200, 2800, 3600, 4100, 3800, 4500, 5200, 5800, 5400, 6200, 6800]
+  const postsData = [4, 6, 5, 7, 8, 6, 9, 10, 12, 9, 11, 14]
+  const commentsData = [35, 42, 38, 45, 52, 48, 56, 62, 68, 58, 72, 78]
+
+  // Views chart data
+  const viewsChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Post Views',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: viewsData,
+      },
+    ],
+  }
+
+  // Posts and comments chart data
+  const postsCommentsChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Posts Published',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: postsData,
+      },
+      {
+        label: 'Comments',
+        backgroundColor: 'rgba(245, 158, 11, 0.8)',
+        borderColor: 'rgba(245, 158, 11, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: commentsData,
+      },
+    ],
+  }
+
+  // Category distribution chart data
+  const categoryCounts: Record<string, number> = {}
+
+  posts.value.forEach(post => {
+    if (post.category) {
+      categoryCounts[post.category] = (categoryCounts[post.category] || 0) + 1
+    }
+  })
+
+  const categoryLabels = Object.keys(categoryCounts)
+  const categoryData = Object.values(categoryCounts)
+  const backgroundColors = [
+    'rgba(59, 130, 246, 0.8)',
+    'rgba(16, 185, 129, 0.8)',
+    'rgba(245, 158, 11, 0.8)',
+    'rgba(239, 68, 68, 0.8)',
+    'rgba(139, 92, 246, 0.8)',
+    'rgba(236, 72, 153, 0.8)',
+  ]
+
+  const categoryChartData = {
+    labels: categoryLabels,
+    datasets: [
+      {
+        data: categoryData,
+        backgroundColor: backgroundColors.slice(0, categoryLabels.length),
+        borderWidth: 0,
+      },
+    ],
+  }
+
+  return {
+    viewsChartData,
+    postsCommentsChartData,
+    categoryChartData,
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Sample posts data
 const posts = ref([
@@ -417,6 +575,75 @@ const previewTags = computed(() => {
   if (!newPost.value.tags) return []
   return newPost.value.tags.split(',').map(tag => tag.trim()).filter(tag => tag)
 })
+
+// Computed blog post statistics
+const blogStats = computed(() => {
+  // Count posts by status
+  const publishedPosts = posts.value.filter(post => post.status === 'Published').length
+  const draftPosts = posts.value.filter(post => post.status === 'Draft').length
+  const scheduledPosts = posts.value.filter(post => post.status === 'Scheduled').length
+  const archivedPosts = posts.value.filter(post => post.status === 'Archived').length
+
+  // Calculate total views and comments
+  const totalViews = posts.value.reduce((sum, post) => sum + post.views, 0)
+  const totalComments = posts.value.reduce((sum, post) => sum + post.comments, 0)
+
+  // Calculate average views and comments per post
+  const publishedPostsCount = Math.max(1, publishedPosts) // Avoid division by zero
+  const avgViewsPerPost = Math.round(totalViews / publishedPostsCount)
+  const avgCommentsPerPost = (totalComments / publishedPostsCount).toFixed(1)
+
+  // Find most popular post
+  let mostPopularPost = posts.value[0] || { title: 'None', views: 0 }
+
+  for (const post of posts.value) {
+    if (post.views > mostPopularPost.views) {
+      mostPopularPost = post
+    }
+  }
+
+  // Find most commented post
+  let mostCommentedPost = posts.value[0] || { title: 'None', comments: 0 }
+
+  for (const post of posts.value) {
+    if (post.comments > mostCommentedPost.comments) {
+      mostCommentedPost = post
+    }
+  }
+
+  // Count posts by author
+  const authorCounts: Record<string, number> = {}
+
+  posts.value.forEach(post => {
+    if (post.author) {
+      authorCounts[post.author] = (authorCounts[post.author] || 0) + 1
+    }
+  })
+
+  // Find top author
+  let topAuthor = { name: 'None', count: 0 }
+
+  for (const [author, count] of Object.entries(authorCounts)) {
+    if (count > topAuthor.count) {
+      topAuthor = { name: author, count }
+    }
+  }
+
+  return {
+    totalPosts: posts.value.length,
+    publishedPosts,
+    draftPosts,
+    scheduledPosts,
+    archivedPosts,
+    totalViews,
+    totalComments,
+    avgViewsPerPost,
+    avgCommentsPerPost,
+    mostPopularPost,
+    mostCommentedPost,
+    topAuthor
+  }
+})
 </script>
 
 <template>
@@ -442,8 +669,89 @@ const previewTags = computed(() => {
           </div>
         </div>
 
+        <!-- Time range selector -->
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Overview of your blog performance
+          </p>
+          <div class="relative">
+            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Posts</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ blogStats.totalPosts }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <span>{{ blogStats.publishedPosts }} published, {{ blogStats.draftPosts }} drafts</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Views</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ blogStats.totalViews.toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ blogStats.avgViewsPerPost.toLocaleString() }} avg per post</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Comments</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ blogStats.totalComments }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ blogStats.avgCommentsPerPost }} avg per post</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Top Author</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ blogStats.topAuthor.name }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <span>{{ blogStats.topAuthor.count }} posts</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 lg:col-span-2">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Post Views</h3>
+              <div class="mt-2 h-80">
+                <Line :data="monthlyChartData.viewsChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Category Distribution</h3>
+              <div class="mt-2 h-80">
+                <Doughnut :data="monthlyChartData.categoryChartData" :options="doughnutChartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-1">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Posts & Comments</h3>
+              <div class="mt-2 h-80">
+                <Bar :data="monthlyChartData.postsCommentsChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -535,6 +843,12 @@ const previewTags = computed(() => {
 
         <!-- Posts table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Posts</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all blog posts including title, author, views, and status.
+            </p>
+          </div>
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
