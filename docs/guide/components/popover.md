@@ -163,8 +163,8 @@ The popover component follows WAI-ARIA guidelines and includes the following fea
 The popover component includes full TypeScript support:
 
 ```ts
-import { ref } from 'vue'
 import type { PopoverSlotProps } from '@stacksjs/popover'
+import { ref } from 'vue'
 
 const panelOpen = ref<boolean>(false)
 ```

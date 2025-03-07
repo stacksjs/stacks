@@ -14,16 +14,16 @@ import User from './User'
 
 export interface CustomersTable {
   id: number
-  orders?: OrderModel[] | undefined
-  user_id?: number
+  orders: OrderModel[] | []
+  user_id: number
   user?: UserModel
   name: string
   email: string
   phone: string
-  total_spent: number
-  last_order: string
+  total_spent?: number
+  last_order?: string
   status: string | string[]
-  avatar: string
+  avatar?: string
   uuid?: string
 
   created_at?: Date

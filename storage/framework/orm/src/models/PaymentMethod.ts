@@ -13,16 +13,16 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id: number
-  payment_transactions?: PaymentTransactionModel[] | undefined
-  user_id?: number
+  payment_transactions: PaymentTransactionModel[] | []
+  user_id: number
   user?: UserModel
   type: string
   last_four: number
   brand: string
   exp_month: number
   exp_year: number
-  is_default: boolean
-  provider_id: string
+  is_default?: boolean
+  provider_id?: string
   uuid?: string
 
   created_at?: Date

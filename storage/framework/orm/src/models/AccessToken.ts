@@ -14,20 +14,20 @@ import User from './User'
 
 export interface PersonalAccessTokensTable {
   id: number
-  team_id?: number
+  team_id: number
   team?: TeamModel
-  user_id?: number
+  user_id: number
   user?: UserModel
   name: string
   token: string
   plain_text_token: string
   abilities: string | string[]
-  last_used_at: Date | string
-  expires_at: Date | string
-  revoked_at: Date | string
-  ip_address: string
-  device_name: string
-  is_single_use: boolean
+  last_used_at?: Date | string
+  expires_at?: Date | string
+  revoked_at?: Date | string
+  ip_address?: string
+  device_name?: string
+  is_single_use?: boolean
 
   created_at?: Date
 

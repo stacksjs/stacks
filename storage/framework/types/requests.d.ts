@@ -166,6 +166,7 @@ export interface DeploymentRequestType extends Request {
 
 interface RequestDataRelease {
   id: number
+  name: string
   version: string
   created_at?: Date
   updated_at?: Date
@@ -175,6 +176,7 @@ export interface ReleaseRequestType extends Request {
   get: <T = string>(key: string, defaultValue?: T) => T | undefined
   all: () => RequestDataRelease
   id: number
+  name: string
   version: string
   created_at?: Date
   updated_at?: Date

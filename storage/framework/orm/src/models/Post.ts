@@ -10,7 +10,7 @@ import User from './User'
 
 export interface PostsTable {
   id: number
-  user_id?: number
+  user_id: number
   user?: UserModel
   title: string
   body: string

@@ -1,4 +1,5 @@
 import type {
+  Attribute,
   Attributes,
   AttributesElements,
   BaseBelongsToMany,
@@ -915,23 +916,26 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
     match = regex.exec(code)
   }
 
-  const input: ModelElement[] = fieldKeys.map((field, index) => {
-    const fieldExist = fields[field]
+  const input = fieldKeys.map((field, index) => {
+    const fieldExist: Attribute = fields[field]
     let defaultValue = null
     let uniqueValue = false
+    let requiredValue = false
 
     if (fieldExist) {
       defaultValue = fieldExist || null
       uniqueValue = fieldExist.unique || false
+      requiredValue = fieldExist.required || false
     }
 
     return {
       field,
       default: defaultValue,
       unique: uniqueValue,
+      required: requiredValue,
       fieldArray: parseRule(rules[index] ?? ''),
     }
-  })
+  }) as ModelElement[]
 
   return input
 }

@@ -18,22 +18,22 @@ import Customer from './Customer'
 
 export interface OrdersTable {
   id: number
-  order_items?: OrderItemModel[] | undefined
-  customer_id?: number
+  order_items: OrderItemModel[] | []
+  customer_id: number
   customer?: CustomerModel
-  coupon_id?: number
+  coupon_id: number
   coupon?: CouponModel
   status: string
   total_amount: number
-  tax_amount: number
-  discount_amount: number
-  delivery_fee: number
-  tip_amount: number
+  tax_amount?: number
+  discount_amount?: number
+  delivery_fee?: number
+  tip_amount?: number
   order_type: string
-  delivery_address: string
-  special_instructions: string
-  estimated_delivery_time: string
-  applied_coupon_id: string
+  delivery_address?: string
+  special_instructions?: string
+  estimated_delivery_time?: string
+  applied_coupon_id?: string
   uuid?: string
 
   created_at?: Date

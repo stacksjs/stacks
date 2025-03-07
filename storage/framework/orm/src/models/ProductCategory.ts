@@ -10,12 +10,12 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductCategoriesTable {
   id: number
-  products?: ProductModel[] | undefined
+  products: ProductModel[] | []
   name: string
-  description: string
-  image_url: string
-  is_active: boolean
-  parent_category_id: string
+  description?: string
+  image_url?: string
+  is_active?: boolean
+  parent_category_id?: string
   display_order: number
   uuid?: string
 

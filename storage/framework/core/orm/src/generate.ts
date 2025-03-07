@@ -234,8 +234,7 @@ export async function generateModelString(
         return this.attributes.${snakeCase(relationName)}
       }\n\n`
 
-      // constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
-      fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model[] | undefined\n`
+      fieldString += `${snakeCase(relationName)}: ${modelRelation}Model[] | []\n`
 
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
     }
@@ -244,7 +243,7 @@ export async function generateModelString(
       const morphName = relation.relationName || `${formattedModelName}able`
 
       // Add field to the model for relationship access
-      fieldString += `${snakeCase(morphName)}?: ${modelRelation}Model | undefined\n`
+      fieldString += `${snakeCase(morphName)}: ${modelRelation}Model | undefined\n`
 
       // Add getter for the relationship
       getFields += `get ${snakeCase(morphName)}():${modelRelation}Model | undefined {
@@ -276,7 +275,7 @@ export async function generateModelString(
       const morphName = relation.relationName || `${formattedModelName}able`
 
       // Add field to the model for relationship access
-      fieldString += `${snakeCase(morphName)}?: ${modelRelation}Model[] | undefined\n`
+      fieldString += `${snakeCase(morphName)}: ${modelRelation}Model[] | undefined\n`
 
       // Add getter for the relationship
       getFields += `get ${snakeCase(morphName)}():${modelRelation}Model[] | undefined {
@@ -315,23 +314,18 @@ export async function generateModelString(
     if (relationType === 'belongsType' && !relationCount) {
       const relationName = camelCase(relation.relationName || formattedModelRelation)
 
-      fieldString += ` ${relation.modelKey}?: number \n`
-      // declareFields += `public ${relation.modelKey}: number | undefined \n   `
+      fieldString += ` ${relation.modelKey}: number \n`
 
       getFields += `get ${relation.modelKey}(): number | undefined {
         return this.attributes.${relation.modelKey}
       }\n\n`
 
-      // constructorFields += `this.${relation.modelKey} = ${formattedModelName}?.${relation.modelKey}\n   `
       jsonRelations += `${relation.modelKey}: this.${relation.modelKey},\n   `
-
-      // declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model | undefined\n`
 
       getFields += `get ${snakeCase(relationName)}(): ${modelRelation}Model | undefined {
         return this.attributes.${snakeCase(relationName)}
       }\n\n`
 
-      // constructorFields += `this.${snakeCase(relationName)} = ${formattedModelName}?.${snakeCase(relationName)}\n`
       fieldString += `${snakeCase(relationName)}?: ${modelRelation}Model\n`
 
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
@@ -786,8 +780,9 @@ export async function generateModelString(
   for (const attribute of attributes) {
     const entity = mapEntity(attribute)
 
-    fieldString += ` ${snakeCase(attribute.field)}: ${entity}\n     `
-    // declareFields += `public ${snakeCase(attribute.field)}: ${entity} | undefined \n   `
+    const optionalIndicator = attribute.required === false ? '?' : ''
+
+    fieldString += ` ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n     `
     getFields += `get ${snakeCase(attribute.field)}(): ${entity} | undefined {
       return this.attributes.${snakeCase(attribute.field)}
     }\n\n`
@@ -795,7 +790,7 @@ export async function generateModelString(
     setFields += `set ${snakeCase(attribute.field)}(value: ${entity}) {
       this.attributes.${snakeCase(attribute.field)} = value
     }\n\n`
-    // constructorFields += `this.${snakeCase(attribute.field)} = ${formattedModelName}?.${snakeCase(attribute.field)}\n   `
+
     jsonFields += `${snakeCase(attribute.field)}: this.${snakeCase(attribute.field)},\n   `
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
@@ -815,11 +810,6 @@ export async function generateModelString(
   }
 
   if (useTimestamps) {
-    // declareFields += `
-    //     public created_at: Date | undefined
-    //     public updated_at: Date | undefined
-    //   `
-
     getFields += `get created_at(): Date | undefined {
       return this.attributes.created_at
     }

@@ -157,8 +157,8 @@ The dialog component follows WAI-ARIA guidelines and includes the following feat
 The dialog component includes full TypeScript support:
 
 ```ts
-import { ref } from 'vue'
 import type { DialogProps } from '@stacksjs/dialog'
+import { ref } from 'vue'
 
 const visible = ref<boolean>(false)
 ```

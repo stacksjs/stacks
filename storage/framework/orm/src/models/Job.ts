@@ -9,9 +9,9 @@ export interface JobsTable {
   id: number
   queue: string
   payload: string
-  attempts: number
-  available_at: number
-  reserved_at: Date | string
+  attempts?: number
+  available_at?: number
+  reserved_at?: Date | string
 
   created_at?: Date
 

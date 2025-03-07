@@ -7,6 +7,7 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
   id: number
+  name: string
   version: string
 
   created_at?: Date
@@ -127,6 +128,10 @@ export class ReleaseModel {
     return this.attributes.id
   }
 
+  get name(): string | undefined {
+    return this.attributes.name
+  }
+
   get version(): string | undefined {
     return this.attributes.version
   }
@@ -137,6 +142,10 @@ export class ReleaseModel {
 
   get updated_at(): Date | undefined {
     return this.attributes.updated_at
+  }
+
+  set name(value: string) {
+    this.attributes.name = value
   }
 
   set version(value: string) {
@@ -1073,6 +1082,14 @@ export class ReleaseModel {
     return instance
   }
 
+  static whereName(value: string): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
   static whereVersion(value: string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
@@ -1590,6 +1607,7 @@ export class ReleaseModel {
     const output: Partial<ReleaseJsonResponse> = {
 
       id: this.id,
+      name: this.name,
       version: this.version,
 
       created_at: this.created_at,
@@ -1644,6 +1662,13 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('releases')
     .where('id', '=', id)
     .execute()
+}
+
+export async function whereName(value: string): Promise<ReleaseModel[]> {
+  const query = DB.instance.selectFrom('releases').where('name', '=', value)
+  const results: ReleaseJsonResponse = await query.execute()
+
+  return results.map((modelItem: ReleaseJsonResponse) => new ReleaseModel(modelItem))
 }
 
 export async function whereVersion(value: string): Promise<ReleaseModel[]> {

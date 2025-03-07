@@ -11,18 +11,18 @@ import User from './User'
 
 export interface SubscriptionsTable {
   id: number
-  user_id?: number
+  user_id: number
   user?: UserModel
   type: string
   provider_id: string
   provider_status: string
-  unit_price: number
+  unit_price?: number
   provider_type: string
-  provider_price_id: string
-  quantity: number
-  trial_ends_at: string
-  ends_at: string
-  last_used_at: string
+  provider_price_id?: string
+  quantity?: number
+  trial_ends_at?: string
+  ends_at?: string
+  last_used_at?: string
   uuid?: string
 
   created_at?: Date

@@ -11,7 +11,7 @@ export interface FailedJobsTable {
   queue: string
   payload: string
   exception: string
-  failed_at: Date | string
+  failed_at?: Date | string
 
   created_at?: Date
 

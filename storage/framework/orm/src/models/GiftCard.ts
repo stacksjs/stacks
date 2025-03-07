@@ -14,24 +14,24 @@ import User from './User'
 
 export interface GiftCardsTable {
   id: number
-  orders?: OrderModel[] | undefined
-  user_id?: number
+  orders: OrderModel[] | []
+  user_id: number
   user?: UserModel
   code: string
   initial_balance: number
   current_balance: number
-  currency: string
+  currency?: string
   status: string
-  purchaser_id: string
-  recipient_email: string
-  recipient_name: string
-  personal_message: string
-  is_digital: boolean
-  is_reloadable: boolean
-  is_active: boolean
-  expiry_date: string
-  last_used_date: string
-  template_id: string
+  purchaser_id?: string
+  recipient_email?: string
+  recipient_name?: string
+  personal_message?: string
+  is_digital?: boolean
+  is_reloadable?: boolean
+  is_active?: boolean
+  expiry_date?: string
+  last_used_date?: string
+  template_id?: string
   uuid?: string
 
   created_at?: Date

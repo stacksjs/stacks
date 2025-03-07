@@ -11,7 +11,7 @@ import User from './User'
 
 export interface DeploymentsTable {
   id: number
-  user_id?: number
+  user_id: number
   user?: UserModel
   commit_sha: string
   commit_message: string

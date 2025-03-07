@@ -12,18 +12,18 @@ import ProductCategory from './ProductCategory'
 
 export interface ProductsTable {
   id: number
-  product_category_id?: number
+  product_category_id: number
   product_category?: ProductCategoryModel
   name: string
-  description: string
+  description?: string
   price: number
-  image_url: string
-  is_available: boolean
-  inventory_count: number
+  image_url?: string
+  is_available?: boolean
+  inventory_count?: number
   category_id: string
   preparation_time: number
-  allergens: string
-  nutritional_info: string
+  allergens?: string
+  nutritional_info?: string
   uuid?: string
 
   created_at?: Date

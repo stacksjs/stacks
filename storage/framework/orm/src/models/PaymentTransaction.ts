@@ -15,15 +15,15 @@ import User from './User'
 
 export interface PaymentTransactionsTable {
   id: number
-  user_id?: number
+  user_id: number
   user?: UserModel
-  payment_method_id?: number
+  payment_method_id: number
   payment_method?: PaymentMethodModel
   name: string
-  description: string
+  description?: string
   amount: number
   type: string
-  provider_id: string
+  provider_id?: string
   uuid?: string
 
   created_at?: Date

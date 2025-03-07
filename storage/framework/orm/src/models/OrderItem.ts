@@ -14,13 +14,13 @@ import Product from './Product'
 
 export interface OrderItemsTable {
   id: number
-  order_id?: number
+  order_id: number
   order?: OrderModel
-  product_id?: number
+  product_id: number
   product?: ProductModel
   quantity: number
   price: number
-  special_instructions: string
+  special_instructions?: string
 
   created_at?: Date
 

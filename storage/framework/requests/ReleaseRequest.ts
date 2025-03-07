@@ -13,12 +13,14 @@ interface CustomAttributes {
 }
 interface RequestDataRelease {
   id: number
+  name: string
   version: string
   created_at?: Date
   updated_at?: Date
 }
 export class ReleaseRequest extends Request<RequestDataRelease> implements ReleaseRequestType {
   public id = 1
+  public name = ''
   public version = ''
   public created_at = new Date()
   public updated_at = new Date()

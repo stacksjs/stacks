@@ -9,9 +9,9 @@ export interface ErrorsTable {
   id: number
   type: string
   message: string
-  stack: string
+  stack?: string
   status: number
-  additional_info: string
+  additional_info?: string
 
   created_at?: Date
 
