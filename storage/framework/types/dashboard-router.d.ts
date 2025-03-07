@@ -74,6 +74,7 @@ declare module 'vue-router/auto-routes' {
     '/dns/': RouteRecordInfo<'/dns/', '/dns', Record<never, never>, Record<never, never>>,
     '/environment/': RouteRecordInfo<'/environment/', '/environment', Record<never, never>, Record<never, never>>,
     '/errors/': RouteRecordInfo<'/errors/', '/errors', Record<never, never>, Record<never, never>>,
+    '/file-manager/': RouteRecordInfo<'/file-manager/', '/file-manager', Record<never, never>, Record<never, never>>,
     '/functions/': RouteRecordInfo<'/functions/', '/functions', Record<never, never>, Record<never, never>>,
     '/health/': RouteRecordInfo<'/health/', '/health', Record<never, never>, Record<never, never>>,
     '/inbox/': RouteRecordInfo<'/inbox/', '/inbox', Record<never, never>, Record<never, never>>,
