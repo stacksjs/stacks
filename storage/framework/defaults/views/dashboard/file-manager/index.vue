@@ -632,7 +632,7 @@ function deleteSelectedItems() {
               <button
                 class="w-full flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white"
               >
-                <div class="i-hugeicons-share-02 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
+                <div class="i-hugeicons-share-01 h-5 w-5 mr-3 text-gray-400 dark:text-gray-500"></div>
                 Shared
                 <span class="ml-auto bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 py-0.5 px-2 rounded-full text-xs">
                   {{ sharedItems.length }}
@@ -700,7 +700,7 @@ function deleteSelectedItems() {
               @click="showSidePanel = !showSidePanel"
               class="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700"
             >
-              <div class="i-hugeicons-menu-hamburger h-5 w-5"></div>
+              <div class="i-hugeicons-menu-01 h-5 w-5"></div>
             </button>
 
             <!-- Search -->
@@ -815,7 +815,7 @@ function deleteSelectedItems() {
         <div class="flex-1 overflow-auto p-4 bg-gray-50 dark:bg-gray-900">
           <!-- Empty state -->
           <div v-if="filteredItems.length === 0" class="flex flex-col items-center justify-center h-full text-center">
-            <div class="i-hugeicons-folder-empty h-16 w-16 text-gray-400 dark:text-gray-600"></div>
+            <div class="i-hugeicons-folder-02 h-16 w-16 text-gray-400 dark:text-gray-600"></div>
             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No items</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
               {{ searchQuery ? 'No items match your search.' : 'This folder is empty.' }}
@@ -880,7 +880,7 @@ function deleteSelectedItems() {
                     item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-gray-500'
                   ]"
                 >
-                  <div class="i-hugeicons-star-01 h-4 w-4"></div>
+                  <div class="i-hugeicons-star h-4 w-4"></div>
                 </button>
                 <button
                   @click.stop="toggleShare(item)"
@@ -889,7 +889,7 @@ function deleteSelectedItems() {
                     item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-gray-500'
                   ]"
                 >
-                  <div class="i-hugeicons-share-02 h-4 w-4"></div>
+                  <div class="i-hugeicons-share-01 h-4 w-4"></div>
                 </button>
               </div>
             </div>
@@ -951,14 +951,14 @@ function deleteSelectedItems() {
                         class="text-gray-400 hover:text-yellow-500"
                         :class="{ 'text-yellow-500': item.starred }"
                       >
-                        <div class="i-hugeicons-star-01 h-5 w-5"></div>
+                        <div class="i-hugeicons-star h-5 w-5"></div>
                       </button>
                       <button
                         @click.stop="toggleShare(item)"
                         class="text-gray-400 hover:text-indigo-500"
                         :class="{ 'text-indigo-500': item.shared }"
                       >
-                        <div class="i-hugeicons-share-02 h-5 w-5"></div>
+                        <div class="i-hugeicons-share-01 h-5 w-5"></div>
                       </button>
                       <button
                         @click.stop="selectedItems = [item]; showDeleteConfirmation = true"
@@ -1097,7 +1097,7 @@ function deleteSelectedItems() {
         <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
           <div class="sm:flex sm:items-start">
             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
-              <div class="i-hugeicons-exclamation-triangle h-6 w-6 text-red-600 dark:text-red-400"></div>
+              <div class="i-hugeicons-alert-02 h-6 w-6 text-red-600 dark:text-red-400"></div>
             </div>
             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
               <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
