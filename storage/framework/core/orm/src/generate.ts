@@ -919,7 +919,7 @@ export async function generateModelString(
         next_cursor: number | null
       }
 
-      export interface ${modelName}JsonResponse extends Omit<${formattedTableName}Table, 'password'> {
+      export interface ${modelName}JsonResponse extends Omit<Selectable<${formattedTableName}Table>, 'password'> {
         [key: string]: any
       }
         

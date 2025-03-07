@@ -26,7 +26,7 @@ export interface ReleaseResponse {
   next_cursor: number | null
 }
 
-export interface ReleaseJsonResponse extends Omit<ReleasesTable, 'password'> {
+export interface ReleaseJsonResponse extends Omit<Selectable<ReleasesTable>, 'password'> {
   [key: string]: any
 }
 

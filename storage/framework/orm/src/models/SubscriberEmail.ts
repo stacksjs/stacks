@@ -27,7 +27,7 @@ export interface SubscriberEmailResponse {
   next_cursor: number | null
 }
 
-export interface SubscriberEmailJsonResponse extends Omit<SubscriberEmailsTable, 'password'> {
+export interface SubscriberEmailJsonResponse extends Omit<Selectable<SubscriberEmailsTable>, 'password'> {
   [key: string]: any
 }
 

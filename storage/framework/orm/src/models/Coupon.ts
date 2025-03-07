@@ -49,7 +49,7 @@ export interface CouponResponse {
   next_cursor: number | null
 }
 
-export interface CouponJsonResponse extends Omit<CouponsTable, 'password'> {
+export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'password'> {
   [key: string]: any
 }
 

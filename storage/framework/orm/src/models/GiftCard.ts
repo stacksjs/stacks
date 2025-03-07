@@ -50,7 +50,7 @@ export interface GiftCardResponse {
   next_cursor: number | null
 }
 
-export interface GiftCardJsonResponse extends Omit<GiftCardsTable, 'password'> {
+export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, 'password'> {
   [key: string]: any
 }
 

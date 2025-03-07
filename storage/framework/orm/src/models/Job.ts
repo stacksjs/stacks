@@ -29,7 +29,7 @@ export interface JobResponse {
   next_cursor: number | null
 }
 
-export interface JobJsonResponse extends Omit<JobsTable, 'password'> {
+export interface JobJsonResponse extends Omit<Selectable<JobsTable>, 'password'> {
   [key: string]: any
 }
 

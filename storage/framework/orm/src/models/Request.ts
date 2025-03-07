@@ -34,7 +34,7 @@ export interface RequestResponse {
   next_cursor: number | null
 }
 
-export interface RequestJsonResponse extends Omit<RequestsTable, 'password'> {
+export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'password'> {
   [key: string]: any
 }
 

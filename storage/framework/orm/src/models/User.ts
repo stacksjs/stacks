@@ -54,7 +54,7 @@ export interface UserResponse {
   next_cursor: number | null
 }
 
-export interface UserJsonResponse extends Omit<UsersTable, 'password'> {
+export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password'> {
   [key: string]: any
 }
 

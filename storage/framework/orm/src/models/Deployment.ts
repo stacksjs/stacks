@@ -38,7 +38,7 @@ export interface DeploymentResponse {
   next_cursor: number | null
 }
 
-export interface DeploymentJsonResponse extends Omit<DeploymentsTable, 'password'> {
+export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable>, 'password'> {
   [key: string]: any
 }
 

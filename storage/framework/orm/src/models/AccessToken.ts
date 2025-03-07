@@ -45,7 +45,7 @@ export interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export interface AccessTokenJsonResponse extends Omit<PersonalAccessTokensTable, 'password'> {
+export interface AccessTokenJsonResponse extends Omit<Selectable<PersonalAccessTokensTable>, 'password'> {
   [key: string]: any
 }
 

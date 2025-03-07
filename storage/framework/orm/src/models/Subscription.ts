@@ -41,7 +41,7 @@ export interface SubscriptionResponse {
   next_cursor: number | null
 }
 
-export interface SubscriptionJsonResponse extends Omit<SubscriptionsTable, 'password'> {
+export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionsTable>, 'password'> {
   [key: string]: any
 }
 

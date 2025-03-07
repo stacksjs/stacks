@@ -52,7 +52,7 @@ export interface OrderResponse {
   next_cursor: number | null
 }
 
-export interface OrderJsonResponse extends Omit<OrdersTable, 'password'> {
+export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'password'> {
   [key: string]: any
 }
 

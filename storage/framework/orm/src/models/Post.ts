@@ -31,7 +31,7 @@ export interface PostResponse {
   next_cursor: number | null
 }
 
-export interface PostJsonResponse extends Omit<PostsTable, 'password'> {
+export interface PostJsonResponse extends Omit<Selectable<PostsTable>, 'password'> {
   [key: string]: any
 }
 

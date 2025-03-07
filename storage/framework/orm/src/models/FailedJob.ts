@@ -29,7 +29,7 @@ export interface FailedJobResponse {
   next_cursor: number | null
 }
 
-export interface FailedJobJsonResponse extends Omit<FailedJobsTable, 'password'> {
+export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobsTable>, 'password'> {
   [key: string]: any
 }
 

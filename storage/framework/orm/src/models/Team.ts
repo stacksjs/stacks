@@ -36,7 +36,7 @@ export interface TeamResponse {
   next_cursor: number | null
 }
 
-export interface TeamJsonResponse extends Omit<TeamsTable, 'password'> {
+export interface TeamJsonResponse extends Omit<Selectable<TeamsTable>, 'password'> {
   [key: string]: any
 }
 

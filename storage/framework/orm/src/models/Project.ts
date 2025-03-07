@@ -28,7 +28,7 @@ export interface ProjectResponse {
   next_cursor: number | null
 }
 
-export interface ProjectJsonResponse extends Omit<ProjectsTable, 'password'> {
+export interface ProjectJsonResponse extends Omit<Selectable<ProjectsTable>, 'password'> {
   [key: string]: any
 }
 

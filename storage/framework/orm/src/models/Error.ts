@@ -29,7 +29,7 @@ export interface ErrorResponse {
   next_cursor: number | null
 }
 
-export interface ErrorJsonResponse extends Omit<ErrorsTable, 'password'> {
+export interface ErrorJsonResponse extends Omit<Selectable<ErrorsTable>, 'password'> {
   [key: string]: any
 }
 

@@ -42,7 +42,7 @@ export interface PaymentTransactionResponse {
   next_cursor: number | null
 }
 
-export interface PaymentTransactionJsonResponse extends Omit<PaymentTransactionsTable, 'password'> {
+export interface PaymentTransactionJsonResponse extends Omit<Selectable<PaymentTransactionsTable>, 'password'> {
   [key: string]: any
 }
 

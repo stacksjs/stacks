@@ -41,7 +41,7 @@ export interface LoyaltyRewardResponse {
   next_cursor: number | null
 }
 
-export interface LoyaltyRewardJsonResponse extends Omit<LoyaltyRewardsTable, 'password'> {
+export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyRewardsTable>, 'password'> {
   [key: string]: any
 }
 

@@ -38,7 +38,7 @@ export interface OrderItemResponse {
   next_cursor: number | null
 }
 
-export interface OrderItemJsonResponse extends Omit<OrderItemsTable, 'password'> {
+export interface OrderItemJsonResponse extends Omit<Selectable<OrderItemsTable>, 'password'> {
   [key: string]: any
 }
 

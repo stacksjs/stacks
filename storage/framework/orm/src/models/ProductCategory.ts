@@ -35,7 +35,7 @@ export interface ProductCategoryResponse {
   next_cursor: number | null
 }
 
-export interface ProductCategoryJsonResponse extends Omit<ProductCategoriesTable, 'password'> {
+export interface ProductCategoryJsonResponse extends Omit<Selectable<ProductCategoriesTable>, 'password'> {
   [key: string]: any
 }
 
