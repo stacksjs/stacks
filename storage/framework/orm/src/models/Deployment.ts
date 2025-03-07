@@ -28,7 +28,7 @@ export interface DeploymentsTable {
 
 }
 
-interface DeploymentResponse {
+export interface DeploymentResponse {
   data: DeploymentJsonResponse[]
   paging: {
     total_records: number

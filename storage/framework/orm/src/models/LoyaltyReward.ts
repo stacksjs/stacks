@@ -31,7 +31,7 @@ export interface LoyaltyRewardsTable {
 
 }
 
-interface LoyaltyRewardResponse {
+export interface LoyaltyRewardResponse {
   data: LoyaltyRewardJsonResponse[]
   paging: {
     total_records: number

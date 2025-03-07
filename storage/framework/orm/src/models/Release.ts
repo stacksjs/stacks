@@ -16,7 +16,7 @@ export interface ReleasesTable {
 
 }
 
-interface ReleaseResponse {
+export interface ReleaseResponse {
   data: ReleaseJsonResponse[]
   paging: {
     total_records: number

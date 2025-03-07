@@ -21,7 +21,7 @@ export interface PostsTable {
 
 }
 
-interface PostResponse {
+export interface PostResponse {
   data: PostJsonResponse[]
   paging: {
     total_records: number

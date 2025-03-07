@@ -35,7 +35,7 @@ export interface PersonalAccessTokensTable {
 
 }
 
-interface AccessTokenResponse {
+export interface AccessTokenResponse {
   data: AccessTokenJsonResponse[]
   paging: {
     total_records: number

@@ -19,7 +19,7 @@ export interface JobsTable {
 
 }
 
-interface JobResponse {
+export interface JobResponse {
   data: JobJsonResponse[]
   paging: {
     total_records: number

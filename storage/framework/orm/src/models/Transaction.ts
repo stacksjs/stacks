@@ -29,7 +29,7 @@ export interface TransactionsTable {
 
 }
 
-interface TransactionResponse {
+export interface TransactionResponse {
   data: TransactionJsonResponse[]
   paging: {
     total_records: number

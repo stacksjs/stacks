@@ -31,7 +31,7 @@ export interface SubscriptionsTable {
 
 }
 
-interface SubscriptionResponse {
+export interface SubscriptionResponse {
   data: SubscriptionJsonResponse[]
   paging: {
     total_records: number

@@ -909,7 +909,7 @@ export async function generateModelString(
        ${fieldString}
       }
   
-      interface ${modelName}Response {
+      export interface ${modelName}Response {
         data: ${modelName}JsonResponse[]
         paging: {
           total_records: number

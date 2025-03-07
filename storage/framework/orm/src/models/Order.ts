@@ -42,7 +42,7 @@ export interface OrdersTable {
 
 }
 
-interface OrderResponse {
+export interface OrderResponse {
   data: OrderJsonResponse[]
   paging: {
     total_records: number

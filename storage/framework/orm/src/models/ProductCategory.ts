@@ -25,7 +25,7 @@ export interface ProductCategoriesTable {
 
 }
 
-interface ProductCategoryResponse {
+export interface ProductCategoryResponse {
   data: ProductCategoryJsonResponse[]
   paging: {
     total_records: number

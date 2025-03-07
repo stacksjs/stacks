@@ -32,7 +32,7 @@ export interface ProductsTable {
 
 }
 
-interface ProductResponse {
+export interface ProductResponse {
   data: ProductJsonResponse[]
   paging: {
     total_records: number

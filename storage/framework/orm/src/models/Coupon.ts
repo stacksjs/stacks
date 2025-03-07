@@ -39,7 +39,7 @@ export interface CouponsTable {
 
 }
 
-interface CouponResponse {
+export interface CouponResponse {
   data: CouponJsonResponse[]
   paging: {
     total_records: number

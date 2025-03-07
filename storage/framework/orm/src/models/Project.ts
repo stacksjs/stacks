@@ -18,7 +18,7 @@ export interface ProjectsTable {
 
 }
 
-interface ProjectResponse {
+export interface ProjectResponse {
   data: ProjectJsonResponse[]
   paging: {
     total_records: number

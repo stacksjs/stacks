@@ -19,7 +19,7 @@ export interface FailedJobsTable {
 
 }
 
-interface FailedJobResponse {
+export interface FailedJobResponse {
   data: FailedJobJsonResponse[]
   paging: {
     total_records: number

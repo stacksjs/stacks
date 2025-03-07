@@ -26,7 +26,7 @@ export interface TeamsTable {
 
 }
 
-interface TeamResponse {
+export interface TeamResponse {
   data: TeamJsonResponse[]
   paging: {
     total_records: number

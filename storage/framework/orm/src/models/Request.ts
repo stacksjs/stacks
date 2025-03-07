@@ -24,7 +24,7 @@ export interface RequestsTable {
 
 }
 
-interface RequestResponse {
+export interface RequestResponse {
   data: RequestJsonResponse[]
   paging: {
     total_records: number

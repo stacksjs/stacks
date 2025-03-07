@@ -23,7 +23,7 @@ export interface PaymentProductsTable {
 
 }
 
-interface PaymentProductResponse {
+export interface PaymentProductResponse {
   data: PaymentProductJsonResponse[]
   paging: {
     total_records: number

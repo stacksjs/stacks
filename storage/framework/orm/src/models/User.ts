@@ -44,7 +44,7 @@ export interface UsersTable {
 
 }
 
-interface UserResponse {
+export interface UserResponse {
   data: UserJsonResponse[]
   paging: {
     total_records: number

@@ -19,7 +19,7 @@ export interface ErrorsTable {
 
 }
 
-interface ErrorResponse {
+export interface ErrorResponse {
   data: ErrorJsonResponse[]
   paging: {
     total_records: number

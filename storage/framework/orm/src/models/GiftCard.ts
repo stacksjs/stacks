@@ -40,7 +40,7 @@ export interface GiftCardsTable {
 
 }
 
-interface GiftCardResponse {
+export interface GiftCardResponse {
   data: GiftCardJsonResponse[]
   paging: {
     total_records: number

@@ -17,7 +17,7 @@ export interface SubscriberEmailsTable {
 
 }
 
-interface SubscriberEmailResponse {
+export interface SubscriberEmailResponse {
   data: SubscriberEmailJsonResponse[]
   paging: {
     total_records: number
