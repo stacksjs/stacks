@@ -55,8 +55,8 @@ export class LoyaltyPointModel {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
   private readonly guarded: Array<keyof LoyaltyPointJsonResponse> = []
-  protected attributes: Partial<LoyaltyPointJsonResponse> = {}
-  protected originalAttributes: Partial<LoyaltyPointJsonResponse> = {}
+  protected attributes = {} as LoyaltyPointJsonResponse
+  protected originalAttributes = {} as LoyaltyPointJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -139,15 +139,15 @@ export class LoyaltyPointModel {
     return this.attributes.uuid
   }
 
-  get wallet_id(): string | undefined {
+  get wallet_id(): string {
     return this.attributes.wallet_id
   }
 
-  get points(): number | undefined {
+  get points(): number {
     return this.attributes.points
   }
 
-  get source(): string | undefined {
+  get source(): string {
     return this.attributes.source
   }
 

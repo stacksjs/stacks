@@ -781,9 +781,10 @@ export async function generateModelString(
     const entity = mapEntity(attribute)
 
     const optionalIndicator = attribute.required === false ? '?' : ''
+    const undefinedIndicator = attribute.required === false ? ' | undefined' : ''
 
     fieldString += ` ${snakeCase(attribute.field)}${optionalIndicator}: ${entity}\n     `
-    getFields += `get ${snakeCase(attribute.field)}(): ${entity} | undefined {
+    getFields += `get ${snakeCase(attribute.field)}(): ${entity}${undefinedIndicator} {
       return this.attributes.${snakeCase(attribute.field)}
     }\n\n`
 
@@ -940,8 +941,8 @@ export async function generateModelString(
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
-        protected attributes: Partial<${modelName}JsonResponse> = {}
-        protected originalAttributes: Partial<${modelName}JsonResponse> = {}
+        protected attributes = {} as ${modelName}JsonResponse
+        protected originalAttributes = {} as ${modelName}JsonResponse
         ${privateSoftDeletes}
         protected selectFromQuery: any
         protected withRelations: string[]

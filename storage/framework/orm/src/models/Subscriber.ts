@@ -46,8 +46,8 @@ export class SubscriberModel {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
-  protected attributes: Partial<SubscriberJsonResponse> = {}
-  protected originalAttributes: Partial<SubscriberJsonResponse> = {}
+  protected attributes = {} as SubscriberJsonResponse
+  protected originalAttributes = {} as SubscriberJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -126,7 +126,7 @@ export class SubscriberModel {
     return this.attributes.id
   }
 
-  get subscribed(): boolean | undefined {
+  get subscribed(): boolean {
     return this.attributes.subscribed
   }
 

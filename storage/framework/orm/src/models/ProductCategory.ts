@@ -56,8 +56,8 @@ export class ProductCategoryModel {
   private readonly hidden: Array<keyof ProductCategoryJsonResponse> = []
   private readonly fillable: Array<keyof ProductCategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof ProductCategoryJsonResponse> = []
-  protected attributes: Partial<ProductCategoryJsonResponse> = {}
-  protected originalAttributes: Partial<ProductCategoryJsonResponse> = {}
+  protected attributes = {} as ProductCategoryJsonResponse
+  protected originalAttributes = {} as ProductCategoryJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -144,7 +144,7 @@ export class ProductCategoryModel {
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
@@ -164,7 +164,7 @@ export class ProductCategoryModel {
     return this.attributes.parent_category_id
   }
 
-  get display_order(): number | undefined {
+  get display_order(): number {
     return this.attributes.display_order
   }
 

@@ -73,8 +73,8 @@ export class OrderModel {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
   private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
   private readonly guarded: Array<keyof OrderJsonResponse> = []
-  protected attributes: Partial<OrderJsonResponse> = {}
-  protected originalAttributes: Partial<OrderJsonResponse> = {}
+  protected attributes = {} as OrderJsonResponse
+  protected originalAttributes = {} as OrderJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -177,11 +177,11 @@ export class OrderModel {
     return this.attributes.uuid
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 
-  get total_amount(): number | undefined {
+  get total_amount(): number {
     return this.attributes.total_amount
   }
 
@@ -201,7 +201,7 @@ export class OrderModel {
     return this.attributes.tip_amount
   }
 
-  get order_type(): string | undefined {
+  get order_type(): string {
     return this.attributes.order_type
   }
 

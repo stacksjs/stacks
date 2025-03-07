@@ -50,8 +50,8 @@ export class FailedJobModel {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
-  protected attributes: Partial<FailedJobJsonResponse> = {}
-  protected originalAttributes: Partial<FailedJobJsonResponse> = {}
+  protected attributes = {} as FailedJobJsonResponse
+  protected originalAttributes = {} as FailedJobJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -130,19 +130,19 @@ export class FailedJobModel {
     return this.attributes.id
   }
 
-  get connection(): string | undefined {
+  get connection(): string {
     return this.attributes.connection
   }
 
-  get queue(): string | undefined {
+  get queue(): string {
     return this.attributes.queue
   }
 
-  get payload(): string | undefined {
+  get payload(): string {
     return this.attributes.payload
   }
 
-  get exception(): string | undefined {
+  get exception(): string {
     return this.attributes.exception
   }
 

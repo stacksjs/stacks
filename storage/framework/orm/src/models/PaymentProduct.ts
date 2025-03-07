@@ -54,8 +54,8 @@ export class PaymentProductModel {
   private readonly hidden: Array<keyof PaymentProductJsonResponse> = []
   private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []
-  protected attributes: Partial<PaymentProductJsonResponse> = {}
-  protected originalAttributes: Partial<PaymentProductJsonResponse> = {}
+  protected attributes = {} as PaymentProductJsonResponse
+  protected originalAttributes = {} as PaymentProductJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -138,7 +138,7 @@ export class PaymentProductModel {
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
@@ -146,7 +146,7 @@ export class PaymentProductModel {
     return this.attributes.description
   }
 
-  get key(): number | undefined {
+  get key(): number {
     return this.attributes.key
   }
 

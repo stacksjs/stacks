@@ -63,8 +63,8 @@ export class CustomerModel {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
-  protected attributes: Partial<CustomerJsonResponse> = {}
-  protected originalAttributes: Partial<CustomerJsonResponse> = {}
+  protected attributes = {} as CustomerJsonResponse
+  protected originalAttributes = {} as CustomerJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -167,15 +167,15 @@ export class CustomerModel {
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
-  get email(): string | undefined {
+  get email(): string {
     return this.attributes.email
   }
 
-  get phone(): string | undefined {
+  get phone(): string {
     return this.attributes.phone
   }
 
@@ -187,7 +187,7 @@ export class CustomerModel {
     return this.attributes.last_order
   }
 
-  get status(): string | string[] | undefined {
+  get status(): string | string[] {
     return this.attributes.status
   }
 

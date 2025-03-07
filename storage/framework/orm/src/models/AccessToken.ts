@@ -66,8 +66,8 @@ export class AccessTokenModel {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
-  protected attributes: Partial<AccessTokenJsonResponse> = {}
-  protected originalAttributes: Partial<AccessTokenJsonResponse> = {}
+  protected attributes = {} as AccessTokenJsonResponse
+  protected originalAttributes = {} as AccessTokenJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -162,19 +162,19 @@ export class AccessTokenModel {
     return this.attributes.id
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
-  get token(): string | undefined {
+  get token(): string {
     return this.attributes.token
   }
 
-  get plain_text_token(): string | undefined {
+  get plain_text_token(): string {
     return this.attributes.plain_text_token
   }
 
-  get abilities(): string | string[] | undefined {
+  get abilities(): string | string[] {
     return this.attributes.abilities
   }
 

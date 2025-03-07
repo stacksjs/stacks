@@ -59,8 +59,8 @@ export class DeploymentModel {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DeploymentJsonResponse> = []
-  protected attributes: Partial<DeploymentJsonResponse> = {}
-  protected originalAttributes: Partial<DeploymentJsonResponse> = {}
+  protected attributes = {} as DeploymentJsonResponse
+  protected originalAttributes = {} as DeploymentJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -151,31 +151,31 @@ export class DeploymentModel {
     return this.attributes.uuid
   }
 
-  get commit_sha(): string | undefined {
+  get commit_sha(): string {
     return this.attributes.commit_sha
   }
 
-  get commit_message(): string | undefined {
+  get commit_message(): string {
     return this.attributes.commit_message
   }
 
-  get branch(): string | undefined {
+  get branch(): string {
     return this.attributes.branch
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 
-  get execution_time(): number | undefined {
+  get execution_time(): number {
     return this.attributes.execution_time
   }
 
-  get deploy_script(): string | undefined {
+  get deploy_script(): string {
     return this.attributes.deploy_script
   }
 
-  get terminal_output(): string | undefined {
+  get terminal_output(): string {
     return this.attributes.terminal_output
   }
 

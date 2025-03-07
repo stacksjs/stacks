@@ -60,8 +60,8 @@ export class TransactionModel {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
-  protected attributes: Partial<TransactionJsonResponse> = {}
-  protected originalAttributes: Partial<TransactionJsonResponse> = {}
+  protected attributes = {} as TransactionJsonResponse
+  protected originalAttributes = {} as TransactionJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -152,15 +152,15 @@ export class TransactionModel {
     return this.attributes.uuid
   }
 
-  get amount(): number | undefined {
+  get amount(): number {
     return this.attributes.amount
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 
-  get payment_method(): string | undefined {
+  get payment_method(): string {
     return this.attributes.payment_method
   }
 

@@ -48,8 +48,8 @@ export class SubscriberEmailModel {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
-  protected attributes: Partial<SubscriberEmailJsonResponse> = {}
-  protected originalAttributes: Partial<SubscriberEmailJsonResponse> = {}
+  protected attributes = {} as SubscriberEmailJsonResponse
+  protected originalAttributes = {} as SubscriberEmailJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -128,7 +128,7 @@ export class SubscriberEmailModel {
     return this.attributes.id
   }
 
-  get email(): string | undefined {
+  get email(): string {
     return this.attributes.email
   }
 

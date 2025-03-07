@@ -59,8 +59,8 @@ export class OrderItemModel {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
   private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
-  protected attributes: Partial<OrderItemJsonResponse> = {}
-  protected originalAttributes: Partial<OrderItemJsonResponse> = {}
+  protected attributes = {} as OrderItemJsonResponse
+  protected originalAttributes = {} as OrderItemJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -155,11 +155,11 @@ export class OrderItemModel {
     return this.attributes.id
   }
 
-  get quantity(): number | undefined {
+  get quantity(): number {
     return this.attributes.quantity
   }
 
-  get price(): number | undefined {
+  get price(): number {
     return this.attributes.price
   }
 

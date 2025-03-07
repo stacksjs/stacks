@@ -57,8 +57,8 @@ export class TeamModel {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
-  protected attributes: Partial<TeamJsonResponse> = {}
-  protected originalAttributes: Partial<TeamJsonResponse> = {}
+  protected attributes = {} as TeamJsonResponse
+  protected originalAttributes = {} as TeamJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -141,35 +141,35 @@ export class TeamModel {
     return this.attributes.id
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
-  get company_name(): string | undefined {
+  get company_name(): string {
     return this.attributes.company_name
   }
 
-  get email(): string | undefined {
+  get email(): string {
     return this.attributes.email
   }
 
-  get billing_email(): string | undefined {
+  get billing_email(): string {
     return this.attributes.billing_email
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 
-  get description(): string | undefined {
+  get description(): string {
     return this.attributes.description
   }
 
-  get path(): string | undefined {
+  get path(): string {
     return this.attributes.path
   }
 
-  get is_personal(): boolean | undefined {
+  get is_personal(): boolean {
     return this.attributes.is_personal
   }
 

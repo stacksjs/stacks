@@ -49,8 +49,8 @@ export class ProjectModel {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
-  protected attributes: Partial<ProjectJsonResponse> = {}
-  protected originalAttributes: Partial<ProjectJsonResponse> = {}
+  protected attributes = {} as ProjectJsonResponse
+  protected originalAttributes = {} as ProjectJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -129,19 +129,19 @@ export class ProjectModel {
     return this.attributes.id
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
-  get description(): string | undefined {
+  get description(): string {
     return this.attributes.description
   }
 
-  get url(): string | undefined {
+  get url(): string {
     return this.attributes.url
   }
 
-  get status(): string | undefined {
+  get status(): string {
     return this.attributes.status
   }
 

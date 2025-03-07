@@ -55,8 +55,8 @@ export class RequestModel {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []
-  protected attributes: Partial<RequestJsonResponse> = {}
-  protected originalAttributes: Partial<RequestJsonResponse> = {}
+  protected attributes = {} as RequestJsonResponse
+  protected originalAttributes = {} as RequestJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
   protected withRelations: string[]

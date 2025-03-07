@@ -52,8 +52,8 @@ export class PostModel {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
-  protected attributes: Partial<PostJsonResponse> = {}
-  protected originalAttributes: Partial<PostJsonResponse> = {}
+  protected attributes = {} as PostJsonResponse
+  protected originalAttributes = {} as PostJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -140,11 +140,11 @@ export class PostModel {
     return this.attributes.id
   }
 
-  get title(): string | undefined {
+  get title(): string {
     return this.attributes.title
   }
 
-  get body(): string | undefined {
+  get body(): string {
     return this.attributes.body
   }
 

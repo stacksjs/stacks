@@ -62,8 +62,8 @@ export class SubscriptionModel {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
-  protected attributes: Partial<SubscriptionJsonResponse> = {}
-  protected originalAttributes: Partial<SubscriptionJsonResponse> = {}
+  protected attributes = {} as SubscriptionJsonResponse
+  protected originalAttributes = {} as SubscriptionJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -154,15 +154,15 @@ export class SubscriptionModel {
     return this.attributes.uuid
   }
 
-  get type(): string | undefined {
+  get type(): string {
     return this.attributes.type
   }
 
-  get provider_id(): string | undefined {
+  get provider_id(): string {
     return this.attributes.provider_id
   }
 
-  get provider_status(): string | undefined {
+  get provider_status(): string {
     return this.attributes.provider_status
   }
 
@@ -170,7 +170,7 @@ export class SubscriptionModel {
     return this.attributes.unit_price
   }
 
-  get provider_type(): string | undefined {
+  get provider_type(): string {
     return this.attributes.provider_type
   }
 

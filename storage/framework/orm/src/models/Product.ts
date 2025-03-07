@@ -63,8 +63,8 @@ export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'product_category_id']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
-  protected attributes: Partial<ProductJsonResponse> = {}
-  protected originalAttributes: Partial<ProductJsonResponse> = {}
+  protected attributes = {} as ProductJsonResponse
+  protected originalAttributes = {} as ProductJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -155,7 +155,7 @@ export class ProductModel {
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
@@ -163,7 +163,7 @@ export class ProductModel {
     return this.attributes.description
   }
 
-  get price(): number | undefined {
+  get price(): number {
     return this.attributes.price
   }
 
@@ -179,11 +179,11 @@ export class ProductModel {
     return this.attributes.inventory_count
   }
 
-  get category_id(): string | undefined {
+  get category_id(): string {
     return this.attributes.category_id
   }
 
-  get preparation_time(): number | undefined {
+  get preparation_time(): number {
     return this.attributes.preparation_time
   }
 

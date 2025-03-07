@@ -62,8 +62,8 @@ export class LoyaltyRewardModel {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyRewardJsonResponse> = ['name', 'description', 'points_required', 'reward_type', 'discount_percentage', 'free_product_id', 'is_active', 'expiry_days', 'image_url', 'uuid']
   private readonly guarded: Array<keyof LoyaltyRewardJsonResponse> = []
-  protected attributes: Partial<LoyaltyRewardJsonResponse> = {}
-  protected originalAttributes: Partial<LoyaltyRewardJsonResponse> = {}
+  protected attributes = {} as LoyaltyRewardJsonResponse
+  protected originalAttributes = {} as LoyaltyRewardJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -154,7 +154,7 @@ export class LoyaltyRewardModel {
     return this.attributes.uuid
   }
 
-  get name(): string | undefined {
+  get name(): string {
     return this.attributes.name
   }
 
@@ -162,11 +162,11 @@ export class LoyaltyRewardModel {
     return this.attributes.description
   }
 
-  get points_required(): number | undefined {
+  get points_required(): number {
     return this.attributes.points_required
   }
 
-  get reward_type(): string | undefined {
+  get reward_type(): string {
     return this.attributes.reward_type
   }
 

@@ -62,8 +62,8 @@ export class PaymentMethodModel {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PaymentMethodJsonResponse> = []
-  protected attributes: Partial<PaymentMethodJsonResponse> = {}
-  protected originalAttributes: Partial<PaymentMethodJsonResponse> = {}
+  protected attributes = {} as PaymentMethodJsonResponse
+  protected originalAttributes = {} as PaymentMethodJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -158,23 +158,23 @@ export class PaymentMethodModel {
     return this.attributes.uuid
   }
 
-  get type(): string | undefined {
+  get type(): string {
     return this.attributes.type
   }
 
-  get last_four(): number | undefined {
+  get last_four(): number {
     return this.attributes.last_four
   }
 
-  get brand(): string | undefined {
+  get brand(): string {
     return this.attributes.brand
   }
 
-  get exp_month(): number | undefined {
+  get exp_month(): number {
     return this.attributes.exp_month
   }
 
-  get exp_year(): number | undefined {
+  get exp_year(): number {
     return this.attributes.exp_year
   }
 

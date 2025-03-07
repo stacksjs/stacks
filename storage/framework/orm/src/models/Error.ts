@@ -50,8 +50,8 @@ export class ErrorModel {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
-  protected attributes: Partial<ErrorJsonResponse> = {}
-  protected originalAttributes: Partial<ErrorJsonResponse> = {}
+  protected attributes = {} as ErrorJsonResponse
+  protected originalAttributes = {} as ErrorJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -130,11 +130,11 @@ export class ErrorModel {
     return this.attributes.id
   }
 
-  get type(): string | undefined {
+  get type(): string {
     return this.attributes.type
   }
 
-  get message(): string | undefined {
+  get message(): string {
     return this.attributes.message
   }
 
@@ -142,7 +142,7 @@ export class ErrorModel {
     return this.attributes.stack
   }
 
-  get status(): number | undefined {
+  get status(): number {
     return this.attributes.status
   }
 

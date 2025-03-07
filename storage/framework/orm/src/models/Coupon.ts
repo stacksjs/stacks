@@ -70,8 +70,8 @@ export class CouponModel {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
-  protected attributes: Partial<CouponJsonResponse> = {}
-  protected originalAttributes: Partial<CouponJsonResponse> = {}
+  protected attributes = {} as CouponJsonResponse
+  protected originalAttributes = {} as CouponJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -166,7 +166,7 @@ export class CouponModel {
     return this.attributes.uuid
   }
 
-  get code(): string | undefined {
+  get code(): string {
     return this.attributes.code
   }
 
@@ -174,11 +174,11 @@ export class CouponModel {
     return this.attributes.description
   }
 
-  get discount_type(): string | undefined {
+  get discount_type(): string {
     return this.attributes.discount_type
   }
 
-  get discount_value(): number | undefined {
+  get discount_value(): number {
     return this.attributes.discount_value
   }
 
@@ -206,11 +206,11 @@ export class CouponModel {
     return this.attributes.usage_count
   }
 
-  get start_date(): string | undefined {
+  get start_date(): string {
     return this.attributes.start_date
   }
 
-  get end_date(): string | undefined {
+  get end_date(): string {
     return this.attributes.end_date
   }
 

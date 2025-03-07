@@ -50,8 +50,8 @@ export class JobModel {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
-  protected attributes: Partial<JobJsonResponse> = {}
-  protected originalAttributes: Partial<JobJsonResponse> = {}
+  protected attributes = {} as JobJsonResponse
+  protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -130,11 +130,11 @@ export class JobModel {
     return this.attributes.id
   }
 
-  get queue(): string | undefined {
+  get queue(): string {
     return this.attributes.queue
   }
 
-  get payload(): string | undefined {
+  get payload(): string {
     return this.attributes.payload
   }
 
