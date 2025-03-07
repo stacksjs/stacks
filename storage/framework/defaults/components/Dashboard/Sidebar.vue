@@ -409,6 +409,12 @@ const isChildRouteActive = (item: SidebarItem) => {
                     Home
                   </RouterLink>
                 </li>
+                <li>
+                  <RouterLink to="/file-manager" class="group sidebar-links">
+                    <div class="i-hugeicons-apple-finder h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
+                    File Manager
+                  </RouterLink>
+                </li>
               </ul>
             </li>
 

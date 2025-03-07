@@ -1,13 +1,116 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Commerce Coupons',
 })
 
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Sample data - in a real app, this would be calculated from actual usage data
+  const redemptionsData = [120, 145, 132, 160, 185, 170, 210, 230, 245, 220, 260, 280]
+  const discountData = [2500, 3200, 2800, 3600, 4100, 3800, 4500, 5200, 5800, 5400, 6200, 6800]
+
+  // Coupon usage chart data
+  const couponUsageData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Coupon Redemptions',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: redemptionsData,
+      },
+    ],
+  }
+
+  // Discount amount chart data
+  const discountAmountData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Discount Amount',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: discountData,
+      },
+    ],
+  }
+
+  return {
+    couponUsageData,
+    discountAmountData
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+
 // Sample coupons data
-const coupons = ref([
+const coupons = ref<Coupon[]>([
   {
     id: 1,
     code: 'WELCOME20',
@@ -79,6 +182,37 @@ const statusFilter = ref('all')
 // Available statuses
 const statuses = ['all', 'Active', 'Expired', 'Scheduled']
 
+// Computed coupon statistics
+const couponStats = computed(() => {
+  const activeCoupons = coupons.value.filter(c => c.status === 'Active').length
+  const totalRedemptions = coupons.value.reduce((sum, c) => sum + c.usedCount, 0)
+
+  // Calculate total discount amount (simplified calculation)
+  const totalDiscountAmount = coupons.value.reduce((sum, c) => {
+    const avgOrderValue = 100 // Assuming $100 average order value
+    let discountPerUse = 0
+
+    if (c.type === 'Percentage') {
+      discountPerUse = avgOrderValue * (c.value / 100)
+    } else {
+      discountPerUse = c.value
+    }
+
+    return sum + (discountPerUse * c.usedCount)
+  }, 0)
+
+  const avgDiscountPerOrder = totalRedemptions > 0
+    ? (totalDiscountAmount / totalRedemptions).toFixed(2)
+    : '0.00'
+
+  return {
+    activeCoupons,
+    totalRedemptions,
+    totalDiscountAmount: totalDiscountAmount.toFixed(0),
+    avgDiscountPerOrder
+  }
+})
+
 // Computed filtered and sorted coupons
 const filteredCoupons = computed(() => {
   return coupons.value
@@ -134,22 +268,47 @@ function getStatusClass(status: string): string {
 
 // Modal state
 const showAddModal = ref(false)
-const newCoupon = ref({
+const today = new Date().toISOString().split('T')[0] as string
+const nextMonth = new Date()
+nextMonth.setMonth(nextMonth.getMonth() + 1)
+const nextMonthDate = nextMonth.toISOString().split('T')[0] as string
+
+interface Coupon {
+  id: number;
+  code: string;
+  type: string;
+  value: number;
+  minPurchase: number;
+  maxUses: number;
+  usedCount: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+interface NewCoupon {
+  code: string;
+  type: string;
+  value: number;
+  minPurchase: number;
+  maxUses: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+const newCoupon = ref<NewCoupon>({
   code: '',
   type: 'Percentage',
   value: 10,
   minPurchase: 0,
   maxUses: 100,
-  startDate: '',
-  endDate: '',
+  startDate: today,
+  endDate: nextMonthDate,
   status: 'Active'
 })
 
 function openAddModal(): void {
-  const today = new Date().toISOString().split('T')[0]
-  const nextMonth = new Date()
-  nextMonth.setMonth(nextMonth.getMonth() + 1)
-
   newCoupon.value = {
     code: '',
     type: 'Percentage',
@@ -157,7 +316,7 @@ function openAddModal(): void {
     minPurchase: 0,
     maxUses: 100,
     startDate: today,
-    endDate: nextMonth.toISOString().split('T')[0],
+    endDate: nextMonthDate,
     status: 'Active'
   }
   showAddModal.value = true
@@ -170,7 +329,7 @@ function closeAddModal(): void {
 function addCoupon(): void {
   // In a real app, this would send data to the server
   const id = Math.max(...coupons.value.map(c => c.id)) + 1
-  coupons.value.push({
+  const newCouponEntry: Coupon = {
     id,
     code: newCoupon.value.code,
     type: newCoupon.value.type,
@@ -181,7 +340,8 @@ function addCoupon(): void {
     startDate: newCoupon.value.startDate,
     endDate: newCoupon.value.endDate,
     status: newCoupon.value.status
-  })
+  }
+  coupons.value.push(newCouponEntry)
   closeAddModal()
 }
 </script>
@@ -209,8 +369,80 @@ function addCoupon(): void {
           </div>
         </div>
 
+        <!-- Time range selector -->
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Overview of your coupon performance
+          </p>
+          <div class="relative">
+            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Active Coupons</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.activeCoupons }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>1 more than last month</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Redemptions</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ couponStats.totalRedemptions.toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>12.5% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Discount Amount</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.totalDiscountAmount.toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>8.2% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Discount per Order</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ couponStats.avgDiscountPerOrder }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+              <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
+              <span>3.2% decrease</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Coupon Redemptions</h3>
+              <div class="mt-2 h-80">
+                <Line :data="monthlyChartData.couponUsageData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Discount Amount</h3>
+              <div class="mt-2 h-80">
+                <Bar :data="monthlyChartData.discountAmountData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -238,6 +470,12 @@ function addCoupon(): void {
 
         <!-- Coupons table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Coupons</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all the coupons in your store including their code, value, and status.
+            </p>
+          </div>
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
