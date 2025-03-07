@@ -396,7 +396,7 @@ export async function generateModelString(
     const searchAttrs = Array.isArray(displayableAttributes) ? displayableAttributes : []
 
     displayableStatements += `
-          toSearchableObject(): Partial<${formattedTableName}Table> {
+          toSearchableObject(): Partial<${modelName}JsonResponse> {
               return {
                   ${searchAttrs
                     .map(attr => `${attr}: this.${attr}`)
@@ -924,7 +924,7 @@ export async function generateModelString(
         [key: string]: any
       }
         
-      export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
+      export type New${modelName} = Insertable<${formattedTableName}Table>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
   
       type SortDirection = 'asc' | 'desc'

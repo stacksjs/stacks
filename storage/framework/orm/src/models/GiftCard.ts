@@ -54,7 +54,7 @@ export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, '
   [key: string]: any
 }
 
-export type NewGiftCard = Partial<Insertable<GiftCardsTable>>
+export type NewGiftCard = Insertable<GiftCardsTable>
 export type GiftCardUpdate = Updateable<GiftCardsTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1862,7 +1862,7 @@ export class GiftCardModel {
     return model
   }
 
-  toSearchableObject(): Partial<GiftCardsTable> {
+  toSearchableObject(): Partial<GiftCardJsonResponse> {
     return {
       id: this.id,
       code: this.code,

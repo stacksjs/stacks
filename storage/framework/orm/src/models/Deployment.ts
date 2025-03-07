@@ -42,7 +42,7 @@ export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable
   [key: string]: any
 }
 
-export type NewDeployment = Partial<Insertable<DeploymentsTable>>
+export type NewDeployment = Insertable<DeploymentsTable>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
 
       type SortDirection = 'asc' | 'desc'

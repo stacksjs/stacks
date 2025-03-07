@@ -38,7 +38,7 @@ export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointsT
   [key: string]: any
 }
 
-export type NewLoyaltyPoint = Partial<Insertable<LoyaltyPointsTable>>
+export type NewLoyaltyPoint = Insertable<LoyaltyPointsTable>
 export type LoyaltyPointUpdate = Updateable<LoyaltyPointsTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1692,7 +1692,7 @@ export class LoyaltyPointModel {
       .execute()
   }
 
-  toSearchableObject(): Partial<LoyaltyPointsTable> {
+  toSearchableObject(): Partial<LoyaltyPointJsonResponse> {
     return {
       id: this.id,
       wallet_id: this.wallet_id,

@@ -56,7 +56,7 @@ export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'passwo
   [key: string]: any
 }
 
-export type NewOrder = Partial<Insertable<OrdersTable>>
+export type NewOrder = Insertable<OrdersTable>
 export type OrderUpdate = Updateable<OrdersTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1822,7 +1822,7 @@ export class OrderModel {
     return model
   }
 
-  toSearchableObject(): Partial<OrdersTable> {
+  toSearchableObject(): Partial<OrderJsonResponse> {
     return {
       id: this.id,
       customer_id: this.customer_id,

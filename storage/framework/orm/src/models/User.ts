@@ -34,6 +34,9 @@ export interface UsersTable {
   email: string
   job_title: string
   password: string
+  public_passkey?: string
+  stripe_id?: string
+  uuid?: string
 
   created_at?: Date
 
@@ -52,13 +55,10 @@ export interface UserResponse {
 }
 
 export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password'> {
-  public_passkey?: string;
-  stripe_id?: string; 
-  uuid?: string;
   [key: string]: any
 }
 
-export type NewUser = Partial<Insertable<UsersTable>>
+export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1733,7 +1733,7 @@ export class UserModel {
     return relationResults
   }
 
-  toSearchableObject(): Partial<UsersTable> {
+  toSearchableObject(): Partial<UserJsonResponse> {
     return {
       id: this.id,
       job_title: this.job_title,
@@ -2018,7 +2018,7 @@ export class UserModel {
   }
 
   toJSON(): UserJsonResponse {
-    const output = {
+    const output: UserJsonResponse = {
 
       id: this.id,
       name: this.name,

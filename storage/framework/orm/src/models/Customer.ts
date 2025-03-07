@@ -46,7 +46,7 @@ export interface CustomerJsonResponse extends Omit<Selectable<CustomersTable>, '
   [key: string]: any
 }
 
-export type NewCustomer = Partial<Insertable<CustomersTable>>
+export type NewCustomer = Insertable<CustomersTable>
 export type CustomerUpdate = Updateable<CustomersTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1734,7 +1734,7 @@ export class CustomerModel {
     return model
   }
 
-  toSearchableObject(): Partial<CustomersTable> {
+  toSearchableObject(): Partial<CustomerJsonResponse> {
     return {
       id: this.id,
       name: this.name,

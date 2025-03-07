@@ -53,7 +53,7 @@ export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'pass
   [key: string]: any
 }
 
-export type NewCoupon = Partial<Insertable<CouponsTable>>
+export type NewCoupon = Insertable<CouponsTable>
 export type CouponUpdate = Updateable<CouponsTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1845,7 +1845,7 @@ export class CouponModel {
     return model
   }
 
-  toSearchableObject(): Partial<CouponsTable> {
+  toSearchableObject(): Partial<CouponJsonResponse> {
     return {
       id: this.id,
       code: this.code,

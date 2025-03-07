@@ -49,7 +49,7 @@ export interface AccessTokenJsonResponse extends Omit<Selectable<PersonalAccessT
   [key: string]: any
 }
 
-export type NewAccessToken = Partial<Insertable<PersonalAccessTokensTable>>
+export type NewAccessToken = Insertable<PersonalAccessTokensTable>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 
       type SortDirection = 'asc' | 'desc'

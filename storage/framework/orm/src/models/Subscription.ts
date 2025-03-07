@@ -45,7 +45,7 @@ export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionsT
   [key: string]: any
 }
 
-export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
+export type NewSubscription = Insertable<SubscriptionsTable>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 
       type SortDirection = 'asc' | 'desc'

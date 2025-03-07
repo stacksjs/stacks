@@ -39,7 +39,7 @@ export interface ProductCategoryJsonResponse extends Omit<Selectable<ProductCate
   [key: string]: any
 }
 
-export type NewProductCategory = Partial<Insertable<ProductCategoriesTable>>
+export type NewProductCategory = Insertable<ProductCategoriesTable>
 export type ProductCategoryUpdate = Updateable<ProductCategoriesTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1681,7 +1681,7 @@ export class ProductCategoryModel {
       .execute()
   }
 
-  toSearchableObject(): Partial<ProductCategoriesTable> {
+  toSearchableObject(): Partial<ProductCategoryJsonResponse> {
     return {
       id: this.id,
       name: this.name,

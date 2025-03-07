@@ -30,7 +30,7 @@ export interface ReleaseJsonResponse extends Omit<Selectable<ReleasesTable>, 'pa
   [key: string]: any
 }
 
-export type NewRelease = Partial<Insertable<ReleasesTable>>
+export type NewRelease = Insertable<ReleasesTable>
 export type ReleaseUpdate = Updateable<ReleasesTable>
 
       type SortDirection = 'asc' | 'desc'

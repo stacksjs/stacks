@@ -33,7 +33,7 @@ export interface JobJsonResponse extends Omit<Selectable<JobsTable>, 'password'>
   [key: string]: any
 }
 
-export type NewJob = Partial<Insertable<JobsTable>>
+export type NewJob = Insertable<JobsTable>
 export type JobUpdate = Updateable<JobsTable>
 
       type SortDirection = 'asc' | 'desc'

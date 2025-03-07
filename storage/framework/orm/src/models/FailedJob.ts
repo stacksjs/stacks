@@ -33,7 +33,7 @@ export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobsTable>,
   [key: string]: any
 }
 
-export type NewFailedJob = Partial<Insertable<FailedJobsTable>>
+export type NewFailedJob = Insertable<FailedJobsTable>
 export type FailedJobUpdate = Updateable<FailedJobsTable>
 
       type SortDirection = 'asc' | 'desc'

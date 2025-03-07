@@ -35,7 +35,7 @@ export interface PostJsonResponse extends Omit<Selectable<PostsTable>, 'password
   [key: string]: any
 }
 
-export type NewPost = Partial<Insertable<PostsTable>>
+export type NewPost = Insertable<PostsTable>
 export type PostUpdate = Updateable<PostsTable>
 
       type SortDirection = 'asc' | 'desc'

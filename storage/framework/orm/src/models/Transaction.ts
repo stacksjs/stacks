@@ -43,7 +43,7 @@ export interface TransactionJsonResponse extends Omit<Selectable<TransactionsTab
   [key: string]: any
 }
 
-export type NewTransaction = Partial<Insertable<TransactionsTable>>
+export type NewTransaction = Insertable<TransactionsTable>
 export type TransactionUpdate = Updateable<TransactionsTable>
 
       type SortDirection = 'asc' | 'desc'
@@ -1719,7 +1719,7 @@ export class TransactionModel {
     return model
   }
 
-  toSearchableObject(): Partial<TransactionsTable> {
+  toSearchableObject(): Partial<TransactionJsonResponse> {
     return {
       id: this.id,
       order_id: this.order_id,

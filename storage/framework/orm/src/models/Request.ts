@@ -38,7 +38,7 @@ export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'pa
   [key: string]: any
 }
 
-export type NewRequest = Partial<Insertable<RequestsTable>>
+export type NewRequest = Insertable<RequestsTable>
 export type RequestUpdate = Updateable<RequestsTable>
 
       type SortDirection = 'asc' | 'desc'

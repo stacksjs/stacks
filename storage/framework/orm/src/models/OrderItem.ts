@@ -42,7 +42,7 @@ export interface OrderItemJsonResponse extends Omit<Selectable<OrderItemsTable>,
   [key: string]: any
 }
 
-export type NewOrderItem = Partial<Insertable<OrderItemsTable>>
+export type NewOrderItem = Insertable<OrderItemsTable>
 export type OrderItemUpdate = Updateable<OrderItemsTable>
 
       type SortDirection = 'asc' | 'desc'

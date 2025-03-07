@@ -37,7 +37,7 @@ export interface PaymentProductJsonResponse extends Omit<Selectable<PaymentProdu
   [key: string]: any
 }
 
-export type NewPaymentProduct = Partial<Insertable<PaymentProductsTable>>
+export type NewPaymentProduct = Insertable<PaymentProductsTable>
 export type PaymentProductUpdate = Updateable<PaymentProductsTable>
 
       type SortDirection = 'asc' | 'desc'
