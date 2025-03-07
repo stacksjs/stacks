@@ -1445,7 +1445,7 @@ const removeCondition = (index: number) => {
               class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
 
@@ -1750,7 +1750,7 @@ const removeCondition = (index: number) => {
                                       @click="removeCondition(index)"
                                       class="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-blue-gray-700 dark:text-gray-200 dark:hover:bg-blue-gray-600"
                                     >
-                                      <div class="i-hugeicons-x-mark h-4 w-4"></div>
+                                      <div class="i-hugeicons-cancel-01 h-4 w-4"></div>
                                     </button>
                                   </div>
                                 </div>

@@ -452,7 +452,7 @@ const deleteProduct = () => {
                 class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
                 @click="showEditDialog = false"
               >
-                <div class="i-hugeicons-x-mark h-5 w-5"></div>
+                <div class="i-hugeicons-cancel-01 h-5 w-5"></div>
               </button>
             </div>
 
@@ -562,7 +562,7 @@ const deleteProduct = () => {
                 class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
                 @click="showSimilarProductsDialog = false"
               >
-                <div class="i-hugeicons-x-mark h-5 w-5"></div>
+                <div class="i-hugeicons-cancel-01 h-5 w-5"></div>
               </button>
             </div>
 

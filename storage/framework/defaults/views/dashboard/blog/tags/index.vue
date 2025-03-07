@@ -817,7 +817,7 @@ const paginationRange = computed(() => {
           <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
             <button type="button" @click="closeNewTagModal" class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
           <div>
@@ -890,7 +890,7 @@ const paginationRange = computed(() => {
           <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
             <button type="button" @click="closeEditTagModal" class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
           <div>
@@ -963,7 +963,7 @@ const paginationRange = computed(() => {
           <div class="absolute top-0 right-0 hidden pt-4 pr-4 sm:block">
             <button type="button" @click="closeDeleteModal" class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
           <div>

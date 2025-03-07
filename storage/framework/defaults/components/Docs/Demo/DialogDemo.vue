@@ -54,7 +54,7 @@ function handleClose() {
                   class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-full p-1"
                   @click="handleClose"
                 >
-                  <div class="i-hugeicons-x-mark-20-solid w-5 h-5" />
+                  <div class="i-hugeicons-cancel-01-20-solid w-5 h-5" />
                 </button>
               </div>
 

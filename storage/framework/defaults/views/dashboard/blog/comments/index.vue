@@ -660,7 +660,7 @@ function truncateText(text: string, maxLength: number): string {
               class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
@@ -763,7 +763,7 @@ function truncateText(text: string, maxLength: number): string {
               class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-x-mark h-6 w-6"></div>
+              <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
