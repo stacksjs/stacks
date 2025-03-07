@@ -33,6 +33,24 @@ interface EventData {
   value: number
 }
 
+interface ComparisonData {
+  current: {
+    completions: number
+    conversionRate: number
+    value: number
+  }
+  previous: {
+    completions: number
+    conversionRate: number
+    value: number
+  }
+  percentageChange: {
+    completions: number
+    conversionRate: number
+    value: number
+  }
+}
+
 // Date range options
 const dateRanges: DateRange[] = [
   { id: 'last7days', name: 'Last 7 Days' },
@@ -44,12 +62,25 @@ const dateRanges: DateRange[] = [
 ]
 
 // Selected date range
-const selectedDateRange = ref('all-time')
-const dateRangeDisplay = ref('All Time: Sep 7, 2023 to Mar 6, 2025')
+const selectedDateRange = ref('last30days')
+const dateRangeDisplay = ref('Last 30 Days: Feb 5, 2024 to Mar 6, 2024')
 const comparisonType = ref('no-comparison')
 const customStartDate = ref('')
 const customEndDate = ref('')
 const showCustomDateRange = computed(() => selectedDateRange.value === 'custom')
+const isDateRangeOpen = ref(false)
+
+// Comparison data
+const comparisonData = ref<Record<string, ComparisonData>>({})
+const isComparing = computed(() => comparisonType.value !== 'no-comparison')
+const comparisonLabel = computed(() => {
+  if (comparisonType.value === 'previous-period') return 'vs Previous Period'
+  if (comparisonType.value === 'previous-year') return 'vs Previous Year'
+  return ''
+})
+
+// Auto date range
+const isAutoDateRange = ref(true)
 
 // Conversion calculation type
 const conversionCalculationType = ref('pageviews') // 'pageviews' or 'people'
@@ -183,6 +214,35 @@ function createEventChart(eventId: string) {
 
   const chartData = eventChartData.value[eventId] || []
 
+  const datasets = [
+    {
+      label: 'Completions',
+      data: chartData.map(item => item.completions),
+      backgroundColor: 'rgba(59, 130, 246, 0.3)',
+      borderColor: 'rgba(59, 130, 246, 0.8)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true
+    }
+  ]
+
+  // Add comparison dataset if comparing
+  if (isComparing.value && comparisonData.value[eventId]) {
+    // Create a dataset with values that are 20-40% lower for demonstration
+    const comparisonDataset = {
+      label: comparisonLabel.value,
+      data: chartData.map(item => Math.round(item.completions * (0.6 + Math.random() * 0.2))),
+      backgroundColor: 'rgba(156, 163, 175, 0.2)',
+      borderColor: 'rgba(156, 163, 175, 0.7)',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      tension: 0.4,
+      fill: false
+    }
+
+    datasets.push(comparisonDataset)
+  }
+
   const chartConfig = {
     type: 'line' as keyof ChartTypeRegistry,
     data: {
@@ -190,17 +250,7 @@ function createEventChart(eventId: string) {
         const date = new Date(item.date)
         return `${date.getMonth() + 1}/${date.getDate()}`
       }),
-      datasets: [
-        {
-          label: 'Completions',
-          data: chartData.map(item => item.completions),
-          backgroundColor: 'rgba(59, 130, 246, 0.3)',
-          borderColor: 'rgba(59, 130, 246, 0.8)',
-          borderWidth: 2,
-          tension: 0.4,
-          fill: true
-        }
-      ]
+      datasets
     },
     options: {
       responsive: true,
@@ -224,7 +274,8 @@ function createEventChart(eventId: string) {
       },
       plugins: {
         legend: {
-          display: false
+          display: isComparing.value,
+          position: 'top' as const
         },
         tooltip: {
           mode: 'index' as const,
@@ -265,6 +316,17 @@ function formatDate(dateString: string): string {
     month: 'short',
     day: 'numeric'
   })
+}
+
+function formatPercentageChange(value: number): string {
+  if (value === 0) return '0%'
+  return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
+}
+
+function getPercentageChangeClass(value: number): string {
+  if (value > 0) return 'text-green-600 dark:text-green-400'
+  if (value < 0) return 'text-red-600 dark:text-red-400'
+  return 'text-gray-600 dark:text-gray-400'
 }
 
 // Event handlers
@@ -365,15 +427,103 @@ function updateConversionCalculationType() {
   console.log('Conversion calculation type updated to:', conversionCalculationType.value)
 }
 
-function handleDateRangeChange() {
-  // In a real app, this would fetch new data based on the date range
-  console.log('Date range changed to:', selectedDateRange.value)
+function updateDataForDateRange(): void {
+  // In a real app, this would fetch data from the server based on the selected date range
+  console.log('Updating data for date range:', selectedDateRange.value)
+  console.log('Comparison type:', comparisonType.value)
+
+  // Update date range display
+  if (selectedDateRange.value === 'last7days') {
+    dateRangeDisplay.value = 'Last 7 Days: Feb 28, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange.value === 'last30days') {
+    dateRangeDisplay.value = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange.value === 'thisMonth') {
+    dateRangeDisplay.value = 'This Month: Mar 1, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange.value === 'lastMonth') {
+    dateRangeDisplay.value = 'Last Month: Feb 1, 2024 to Feb 29, 2024'
+  } else if (selectedDateRange.value === 'thisYear') {
+    dateRangeDisplay.value = 'This Year: Jan 1, 2024 to Mar 6, 2024'
+  } else if (selectedDateRange.value === 'custom' && customStartDate.value && customEndDate.value) {
+    const start = formatDate(customStartDate.value)
+    const end = formatDate(customEndDate.value)
+    dateRangeDisplay.value = `Custom Range: ${start} to ${end}`
+  } else {
+    dateRangeDisplay.value = 'All Time: Sep 7, 2023 to Mar 6, 2024'
+  }
+
+  // Generate comparison data if needed
+  if (comparisonType.value !== 'no-comparison') {
+    generateComparisonData()
+  } else {
+    comparisonData.value = {}
+  }
+}
+
+// Generate mock comparison data
+function generateComparisonData(): void {
+  // In a real app, this would be fetched from the server
+  events.value.forEach(event => {
+    // Generate random percentage changes between -30% and +50%
+    const completionsChange = Math.floor(Math.random() * 80) - 30
+    const conversionRateChange = Math.floor(Math.random() * 80) - 30
+    const valueChange = Math.floor(Math.random() * 80) - 30
+
+    // Calculate previous period values based on current values and percentage changes
+    const previousCompletions = Math.round(event.completions / (1 + completionsChange / 100))
+    const previousConversionRate = +(event.conversionRate / (1 + conversionRateChange / 100)).toFixed(1)
+    const previousValue = Math.round(event.value / (1 + valueChange / 100))
+
+    comparisonData.value[event.id] = {
+      current: {
+        completions: event.completions,
+        conversionRate: event.conversionRate,
+        value: event.value
+      },
+      previous: {
+        completions: previousCompletions,
+        conversionRate: previousConversionRate,
+        value: previousValue
+      },
+      percentageChange: {
+        completions: completionsChange,
+        conversionRate: conversionRateChange,
+        value: valueChange
+      }
+    }
+  })
+}
+
+// Toggle auto date range
+function toggleAutoDateRange(): void {
+  isAutoDateRange.value = !isAutoDateRange.value
+
+  if (isAutoDateRange.value) {
+    // Set to last 30 days when auto is enabled
+    selectedDateRange.value = 'last30days'
+    updateDataForDateRange()
+  }
+}
+
+// Handle date range change
+function handleDateRangeChange(): void {
+  // Disable auto when manually changing date range
+  if (isAutoDateRange.value) {
+    isAutoDateRange.value = false
+  }
+
+  updateDataForDateRange()
+}
+
+// Handle comparison type change
+function handleComparisonTypeChange(): void {
+  updateDataForDateRange()
 }
 
 // Initialize when component is mounted
 onMounted(() => {
   // In a real app, this would fetch data from the server
   console.log('Events component mounted')
+  updateDataForDateRange()
 })
 </script>
 
@@ -385,7 +535,78 @@ onMounted(() => {
         <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="flex items-center space-x-2">
             <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
-            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
+            <div class="relative">
+              <button
+                type="button"
+                class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
+                @click="isDateRangeOpen = !isDateRangeOpen"
+              >
+                {{ dateRangeDisplay }}
+                <div class="i-hugeicons-chevron-down h-4 w-4 ml-1"></div>
+              </button>
+
+              <!-- Date range dropdown -->
+              <div
+                v-if="isDateRangeOpen"
+                class="absolute left-0 z-10 mt-2 w-72 origin-top-left rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700"
+              >
+                <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Select Date Range</h3>
+                </div>
+
+                <div class="py-2">
+                  <div
+                    v-for="range in dateRanges"
+                    :key="range.id"
+                    class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer"
+                    :class="{ 'bg-gray-50 dark:bg-blue-gray-700': selectedDateRange === range.id }"
+                    @click="selectedDateRange = range.id; handleDateRangeChange(); isDateRangeOpen = false"
+                  >
+                    {{ range.name }}
+                  </div>
+
+                  <div
+                    class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer"
+                    :class="{ 'bg-gray-50 dark:bg-blue-gray-700': selectedDateRange === 'all-time' }"
+                    @click="selectedDateRange = 'all-time'; handleDateRangeChange(); isDateRangeOpen = false"
+                  >
+                    All Time
+                  </div>
+                </div>
+
+                <!-- Custom date range -->
+                <div v-if="selectedDateRange === 'custom'" class="px-4 py-2 border-t border-gray-100 dark:border-gray-700">
+                  <div class="flex flex-col space-y-2">
+                    <div>
+                      <label for="customStartDate" class="block text-xs font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                      <input
+                        type="date"
+                        id="customStartDate"
+                        v-model="customStartDate"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <div>
+                      <label for="customEndDate" class="block text-xs font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                      <input
+                        type="date"
+                        id="customEndDate"
+                        v-model="customEndDate"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      class="mt-2 w-full inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
+                      @click="handleDateRangeChange(); isDateRangeOpen = false"
+                      :disabled="!customStartDate || !customEndDate"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
@@ -395,6 +616,7 @@ onMounted(() => {
               <select
                 v-model="comparisonType"
                 class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+                @change="handleComparisonTypeChange"
               >
                 <option value="no-comparison">No comparison</option>
                 <option value="previous-period">Previous period</option>
@@ -404,7 +626,11 @@ onMounted(() => {
 
             <button
               type="button"
-              class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset hover:bg-gray-50 dark:hover:bg-blue-gray-600"
+              :class="isAutoDateRange ?
+                'bg-blue-600 text-white ring-blue-600 dark:bg-blue-600 dark:text-white dark:ring-blue-500' :
+                'bg-white text-gray-900 ring-gray-300 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600'"
+              @click="toggleAutoDateRange"
             >
               <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
               Auto
@@ -422,7 +648,7 @@ onMounted(() => {
                 @click="openCreateEventModal"
                 class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
-                <div class="i-hugeicons-plus-sign h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-plus h-4 w-4 mr-1"></div>
                 Create Event
               </button>
             </div>
@@ -478,12 +704,15 @@ onMounted(() => {
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Completions
+                    <span v-if="isComparing" class="block text-[10px] font-normal normal-case">{{ comparisonLabel }}</span>
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Value
+                    <span v-if="isComparing" class="block text-[10px] font-normal normal-case">{{ comparisonLabel }}</span>
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Conversion Rate
+                    <span v-if="isComparing" class="block text-[10px] font-normal normal-case">{{ comparisonLabel }}</span>
                   </th>
                   <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Last Triggered
@@ -504,13 +733,22 @@ onMounted(() => {
                     {{ event.name }}
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ formatNumber(event.completions) }}
+                    <div>{{ formatNumber(event.completions) }}</div>
+                    <div v-if="isComparing && comparisonData[event.id]" class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.completions)">
+                      {{ formatPercentageChange(comparisonData[event.id].percentageChange.completions) }}
+                    </div>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ formatCurrency(event.value) }}
+                    <div>{{ formatCurrency(event.value) }}</div>
+                    <div v-if="isComparing && comparisonData[event.id] && event.value > 0" class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.value)">
+                      {{ formatPercentageChange(comparisonData[event.id].percentageChange.value) }}
+                    </div>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
-                    {{ event.conversionRate }}%
+                    <div>{{ event.conversionRate }}%</div>
+                    <div v-if="isComparing && comparisonData[event.id]" class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.conversionRate)">
+                      {{ formatPercentageChange(comparisonData[event.id].percentageChange.conversionRate) }}
+                    </div>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
                     {{ event.lastTriggered === '-' ? '-' : formatDate(event.lastTriggered) }}
@@ -736,23 +974,35 @@ window.addEventListener('load', () => {
                   <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Completions</div>
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatNumber(selectedEvent.completions) }}</div>
+                    <div v-if="isComparing && comparisonData[selectedEvent.id]" class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.completions)">
+                      {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.completions) }} {{ comparisonLabel }}
+                    </div>
                   </div>
 
                   <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Conversion Rate</div>
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedEvent.conversionRate }}%</div>
+                    <div v-if="isComparing && comparisonData[selectedEvent.id]" class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.conversionRate)">
+                      {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.conversionRate) }} {{ comparisonLabel }}
+                    </div>
                   </div>
 
                   <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
                     <div class="text-sm text-gray-500 dark:text-gray-400">Value</div>
                     <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(selectedEvent.value) }}</div>
+                    <div v-if="isComparing && comparisonData[selectedEvent.id] && selectedEvent.value > 0" class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.value)">
+                      {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.value) }} {{ comparisonLabel }}
+                    </div>
                   </div>
                 </div>
 
                 <!-- Event Chart -->
                 <div class="mb-6 bg-white dark:bg-blue-gray-700 rounded-lg p-4 shadow">
-                  <div class="mb-2">
+                  <div class="mb-2 flex justify-between items-center">
                     <h4 class="text-md font-medium text-gray-900 dark:text-white">Recent Activity</h4>
+                    <div v-if="isComparing" class="text-xs text-gray-500 dark:text-gray-400">
+                      {{ comparisonLabel }}
+                    </div>
                   </div>
                   <div class="h-64 w-full">
                     <canvas id="eventChart"></canvas>
