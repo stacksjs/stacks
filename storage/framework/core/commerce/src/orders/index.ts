@@ -16,7 +16,7 @@ export {
   bulkSoftDelete,
   destroy,
   softDelete,
-} from './delete'
+} from './destroy'
 
 // Export fetch functionality
 export {
