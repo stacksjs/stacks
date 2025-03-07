@@ -16,6 +16,7 @@ export async function store(request: CouponRequestType): Promise<CouponsTable | 
     description: request.get('description'),
     discount_type: request.get<string>('discount_type'),
     discount_value: request.get<number>('discount_value'),
+    product_id: request.get<number>('product_id'),
     min_order_amount: request.get<number | undefined>('min_order_amount'),
     max_discount_amount: request.get<number | undefined>('max_discount_amount'),
     free_product_id: request.get('free_product_id'),

@@ -1,4 +1,4 @@
-import type { CouponJsonResponse, CouponsTable } from '../../../../orm/src/models/Coupon'
+import type { CouponJsonResponse, CouponResponse } from '../../../../orm/src/models/Coupon'
 import type { CouponStats } from '../../types'
 import { db } from '@stacksjs/database'
 
@@ -17,22 +17,10 @@ export interface FetchCouponsOptions {
 }
 
 /**
- * Fetch all coupons from the database
- */
-export async function fetchAll(): Promise<CouponsTable[]> {
-  const coupons = await db
-    .selectFrom('coupons')
-    .selectAll()
-    .execute()
-
-  return coupons.map(processCouponData)
-}
-
-/**
  * Process coupon data from the database
  * Parses JSON strings for applicable_products and applicable_categories
  */
-function processCouponData(coupon: CouponsTable): CouponsTable {
+function processCouponData(coupon: CouponJsonResponse): CouponJsonResponse {
   // Create a copy to avoid modifying the original object
   const processed = { ...coupon }
 
@@ -55,9 +43,21 @@ function processCouponData(coupon: CouponsTable): CouponsTable {
 }
 
 /**
+ * Fetch all coupons from the database
+ */
+export async function fetchAll(): Promise<CouponJsonResponse[]> {
+  const coupons = await db
+    .selectFrom('coupons')
+    .selectAll()
+    .execute()
+
+  return coupons.map(processCouponData)
+}
+
+/**
  * Fetch coupons with pagination, sorting, and filtering options
  */
-export async function fetchPaginated(options: FetchCouponsOptions = {}): Promise<CouponJsonResponse> {
+export async function fetchPaginated(options: FetchCouponsOptions = {}): Promise<CouponResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -145,7 +145,7 @@ export async function fetchPaginated(options: FetchCouponsOptions = {}): Promise
 /**
  * Fetch a coupon by ID
  */
-export async function fetchById(id: number): Promise<CouponsTable | undefined> {
+export async function fetchById(id: number): Promise<CouponJsonResponse | undefined> {
   const coupon = await db
     .selectFrom('coupons')
     .where('id', '=', id)
@@ -162,7 +162,7 @@ export async function fetchById(id: number): Promise<CouponsTable | undefined> {
 /**
  * Fetch a coupon by code
  */
-export async function fetchByCode(code: string): Promise<CouponsTable | undefined> {
+export async function fetchByCode(code: string): Promise<CouponJsonResponse | undefined> {
   const coupon = await db
     .selectFrom('coupons')
     .where('code', '=', code)
@@ -179,7 +179,7 @@ export async function fetchByCode(code: string): Promise<CouponsTable | undefine
 /**
  * Fetch active coupons (is_active = true and within date range)
  */
-export async function fetchActive(options: FetchCouponsOptions = {}): Promise<CouponJsonResponse> {
+export async function fetchActive(options: FetchCouponsOptions = {}): Promise<CouponResponse> {
   const currentDate = new Date().toISOString().split('T')[0]
 
   return fetchPaginated({
