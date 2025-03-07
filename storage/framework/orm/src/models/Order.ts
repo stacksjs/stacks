@@ -18,7 +18,6 @@ import Customer from './Customer'
 
 export interface OrdersTable {
   id: Generated<number>
-  order_items: OrderItemModel[] | []
   customer_id: number
   customer?: CustomerModel
   coupon_id: number

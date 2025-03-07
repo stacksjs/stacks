@@ -10,7 +10,6 @@ import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductCategoriesTable {
   id: Generated<number>
-  products: ProductModel[] | []
   name: string
   description?: string
   image_url?: string

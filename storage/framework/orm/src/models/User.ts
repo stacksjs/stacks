@@ -25,11 +25,6 @@ import Team from './Team'
 
 export interface UsersTable {
   id: Generated<number>
-  deployments: DeploymentModel[] | []
-  subscriptions: SubscriptionModel[] | []
-  payment_methods: PaymentMethodModel[] | []
-  posts: PostModel[] | []
-  payment_transactions: PaymentTransactionModel[] | []
   name: string
   email: string
   job_title: string

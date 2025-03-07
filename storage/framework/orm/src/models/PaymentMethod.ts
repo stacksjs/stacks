@@ -13,7 +13,6 @@ import User from './User'
 
 export interface PaymentMethodsTable {
   id: Generated<number>
-  payment_transactions: PaymentTransactionModel[] | []
   user_id: number
   user?: UserModel
   type: string

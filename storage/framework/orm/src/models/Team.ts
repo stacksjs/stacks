@@ -10,7 +10,6 @@ import User from './User'
 
 export interface TeamsTable {
   id: Generated<number>
-  personal_access_tokens: AccessTokenModel[] | []
   name: string
   company_name: string
   email: string

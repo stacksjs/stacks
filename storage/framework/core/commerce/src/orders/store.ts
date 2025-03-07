@@ -17,6 +17,7 @@ export async function store(request: OrderRequestType): Promise<OrderType | unde
     // Prepare order data
     const orderData = {
       customer_id: request.get<number>('customer_id'),
+      coupon_id: request.get<number>('coupon_id'),
       status: request.get('status', 'PENDING'),
       total_amount: request.get<number>('total_amount', 0),
       tax_amount: request.get<number>('tax_amount'),
@@ -78,6 +79,7 @@ export async function bulkStore(requests: OrderRequestType[]): Promise<number> {
         // Prepare order data
         const orderData: NewOrder = {
           customer_id: request.get('customer_id'),
+          coupon_id: request.get('coupon_id'),
           status: request.get('status') || 'PENDING',
           total_amount: request.get('total_amount'),
           tax_amount: request.get('tax_amount'),

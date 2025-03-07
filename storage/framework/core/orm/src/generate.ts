@@ -234,8 +234,6 @@ export async function generateModelString(
         return this.attributes.${snakeCase(relationName)}
       }\n\n`
 
-      fieldString += `${snakeCase(relationName)}: ${modelRelation}Model[] | []\n`
-
       jsonRelations += `${snakeCase(relationName)}: this.${snakeCase(relationName)},\n`
     }
 

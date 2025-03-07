@@ -14,7 +14,6 @@ import User from './User'
 
 export interface GiftCardsTable {
   id: Generated<number>
-  orders: OrderModel[] | []
   user_id: number
   user?: UserModel
   code: string
