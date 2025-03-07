@@ -146,7 +146,7 @@ export class LoyaltyRewardModel {
     return this.attributes.product
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1795,8 +1795,8 @@ export class LoyaltyRewardModel {
     return instance
   }
 
-  toJSON(): Partial<LoyaltyRewardJsonResponse> {
-    const output: Partial<LoyaltyRewardJsonResponse> = {
+  toJSON(): LoyaltyRewardJsonResponse {
+    const output: LoyaltyRewardJsonResponse = {
 
       id: this.id,
       name: this.name,

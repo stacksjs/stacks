@@ -126,7 +126,7 @@ export class FailedJobModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1653,8 +1653,8 @@ export class FailedJobModel {
     return instance
   }
 
-  toJSON(): Partial<FailedJobJsonResponse> {
-    const output: Partial<FailedJobJsonResponse> = {
+  toJSON(): FailedJobJsonResponse {
+    const output: FailedJobJsonResponse = {
 
       id: this.id,
       connection: this.connection,

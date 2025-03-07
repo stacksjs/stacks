@@ -130,7 +130,7 @@ export class PaymentProductModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1701,8 +1701,8 @@ export class PaymentProductModel {
     return instance
   }
 
-  toJSON(): Partial<PaymentProductJsonResponse> {
-    const output: Partial<PaymentProductJsonResponse> = {
+  toJSON(): PaymentProductJsonResponse {
+    const output: PaymentProductJsonResponse = {
 
       id: this.id,
       name: this.name,

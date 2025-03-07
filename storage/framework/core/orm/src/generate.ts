@@ -230,7 +230,7 @@ export async function generateModelString(
       const relationName = camelCase(relation.relationName || tableRelation)
 
       // declareFields += `public ${snakeCase(relationName)}: ${modelRelation}Model[] | undefined\n`
-      getFields += `get ${snakeCase(relationName)}():${modelRelation}Model[] | undefined {
+      getFields += `get ${snakeCase(relationName)}():${modelRelation}Model[] | [] {
         return this.attributes.${snakeCase(relationName)}
       }\n\n`
 
@@ -278,7 +278,7 @@ export async function generateModelString(
       fieldString += `${snakeCase(morphName)}: ${modelRelation}Model[] | undefined\n`
 
       // Add getter for the relationship
-      getFields += `get ${snakeCase(morphName)}():${modelRelation}Model[] | undefined {
+      getFields += `get ${snakeCase(morphName)}():${modelRelation}Model[] | [] {
         return this.attributes.${snakeCase(morphName)}
       }\n\n`
 
@@ -375,7 +375,7 @@ export async function generateModelString(
 
   // declareFields += `public id: number | undefined \n   `
 
-  getFields += `get id(): number | undefined {
+  getFields += `get id(): number {
     return this.attributes.id
   }\n\n`
 
@@ -2487,8 +2487,8 @@ export async function generateModelString(
           return instance
         }
   
-        toJSON(): Partial<${modelName}JsonResponse> {
-          const output: Partial<${modelName}JsonResponse> = ${jsonFields}
+        toJSON(): ${modelName}JsonResponse {
+          const output: ${modelName}JsonResponse = ${jsonFields}
 
           return output
         }

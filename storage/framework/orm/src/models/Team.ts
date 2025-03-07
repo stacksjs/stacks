@@ -133,11 +133,11 @@ export class TeamModel {
     }
   }
 
-  get personal_access_tokens(): AccessTokenModel[] | undefined {
+  get personal_access_tokens(): AccessTokenModel[] | [] {
     return this.attributes.personal_access_tokens
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1731,8 +1731,8 @@ export class TeamModel {
     return instance
   }
 
-  toJSON(): Partial<TeamJsonResponse> {
-    const output: Partial<TeamJsonResponse> = {
+  toJSON(): TeamJsonResponse {
+    const output: TeamJsonResponse = {
 
       id: this.id,
       name: this.name,

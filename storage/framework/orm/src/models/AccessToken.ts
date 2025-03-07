@@ -158,7 +158,7 @@ export class AccessTokenModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1793,8 +1793,8 @@ export class AccessTokenModel {
     return instance
   }
 
-  toJSON(): Partial<AccessTokenJsonResponse> {
-    const output: Partial<AccessTokenJsonResponse> = {
+  toJSON(): AccessTokenJsonResponse {
+    const output: AccessTokenJsonResponse = {
 
       id: this.id,
       name: this.name,

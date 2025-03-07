@@ -147,7 +147,7 @@ export class ProductModel {
     return this.attributes.product_category
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1814,8 +1814,8 @@ export class ProductModel {
     return instance
   }
 
-  toJSON(): Partial<ProductJsonResponse> {
-    const output: Partial<ProductJsonResponse> = {
+  toJSON(): ProductJsonResponse {
+    const output: ProductJsonResponse = {
 
       id: this.id,
       name: this.name,

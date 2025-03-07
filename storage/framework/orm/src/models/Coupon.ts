@@ -146,7 +146,7 @@ export class CouponModel {
     }
   }
 
-  get orders(): OrderModel[] | undefined {
+  get orders(): OrderModel[] | [] {
     return this.attributes.orders
   }
 
@@ -158,7 +158,7 @@ export class CouponModel {
     return this.attributes.product
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1889,8 +1889,8 @@ export class CouponModel {
     return instance
   }
 
-  toJSON(): Partial<CouponJsonResponse> {
-    const output: Partial<CouponJsonResponse> = {
+  toJSON(): CouponJsonResponse {
+    const output: CouponJsonResponse = {
 
       id: this.id,
       code: this.code,

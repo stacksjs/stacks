@@ -136,7 +136,7 @@ export class PostModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1629,8 +1629,8 @@ export class PostModel {
     return instance
   }
 
-  toJSON(): Partial<PostJsonResponse> {
-    const output: Partial<PostJsonResponse> = {
+  toJSON(): PostJsonResponse {
+    const output: PostJsonResponse = {
 
       id: this.id,
       title: this.title,

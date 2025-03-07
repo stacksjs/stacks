@@ -122,7 +122,7 @@ export class SubscriberModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1585,8 +1585,8 @@ export class SubscriberModel {
     return instance
   }
 
-  toJSON(): Partial<SubscriberJsonResponse> {
-    const output: Partial<SubscriberJsonResponse> = {
+  toJSON(): SubscriberJsonResponse {
+    const output: SubscriberJsonResponse = {
 
       id: this.id,
       subscribed: this.subscribed,

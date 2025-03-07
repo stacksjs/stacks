@@ -146,7 +146,7 @@ export class SubscriptionModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1779,8 +1779,8 @@ export class SubscriptionModel {
     return instance
   }
 
-  toJSON(): Partial<SubscriptionJsonResponse> {
-    const output: Partial<SubscriptionJsonResponse> = {
+  toJSON(): SubscriptionJsonResponse {
+    const output: SubscriptionJsonResponse = {
 
       id: this.id,
       type: this.type,

@@ -147,7 +147,7 @@ export class CustomerModel {
     }
   }
 
-  get orders(): OrderModel[] | undefined {
+  get orders(): OrderModel[] | [] {
     return this.attributes.orders
   }
 
@@ -159,7 +159,7 @@ export class CustomerModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1776,8 +1776,8 @@ export class CustomerModel {
     return instance
   }
 
-  toJSON(): Partial<CustomerJsonResponse> {
-    const output: Partial<CustomerJsonResponse> = {
+  toJSON(): CustomerJsonResponse {
+    const output: CustomerJsonResponse = {
 
       id: this.id,
       name: this.name,

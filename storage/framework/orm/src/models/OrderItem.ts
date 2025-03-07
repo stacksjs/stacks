@@ -151,7 +151,7 @@ export class OrderItemModel {
     return this.attributes.product
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1674,8 +1674,8 @@ export class OrderItemModel {
     return instance
   }
 
-  toJSON(): Partial<OrderItemJsonResponse> {
-    const output: Partial<OrderItemJsonResponse> = {
+  toJSON(): OrderItemJsonResponse {
+    const output: OrderItemJsonResponse = {
 
       id: this.id,
       quantity: this.quantity,

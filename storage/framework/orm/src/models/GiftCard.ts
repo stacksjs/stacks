@@ -147,7 +147,7 @@ export class GiftCardModel {
     }
   }
 
-  get orders(): OrderModel[] | undefined {
+  get orders(): OrderModel[] | [] {
     return this.attributes.orders
   }
 
@@ -159,7 +159,7 @@ export class GiftCardModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1906,8 +1906,8 @@ export class GiftCardModel {
     return instance
   }
 
-  toJSON(): Partial<GiftCardJsonResponse> {
-    const output: Partial<GiftCardJsonResponse> = {
+  toJSON(): GiftCardJsonResponse {
+    const output: GiftCardJsonResponse = {
 
       id: this.id,
       code: this.code,

@@ -34,9 +34,6 @@ export interface UsersTable {
   email: string
   job_title: string
   password: string
-  public_passkey?: string
-  stripe_id?: string
-  uuid?: string
 
   created_at?: Date
 
@@ -55,6 +52,9 @@ export interface UserResponse {
 }
 
 export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password'> {
+  public_passkey?: string;
+  stripe_id?: string; 
+  uuid?: string;
   [key: string]: any
 }
 
@@ -165,27 +165,27 @@ export class UserModel {
     return this.attributes.subscriber
   }
 
-  get deployments(): DeploymentModel[] | undefined {
+  get deployments(): DeploymentModel[] | [] {
     return this.attributes.deployments
   }
 
-  get subscriptions(): SubscriptionModel[] | undefined {
+  get subscriptions(): SubscriptionModel[] | [] {
     return this.attributes.subscriptions
   }
 
-  get payment_methods(): PaymentMethodModel[] | undefined {
+  get payment_methods(): PaymentMethodModel[] | [] {
     return this.attributes.payment_methods
   }
 
-  get posts(): PostModel[] | undefined {
+  get posts(): PostModel[] | [] {
     return this.attributes.posts
   }
 
-  get payment_transactions(): PaymentTransactionModel[] | undefined {
+  get payment_transactions(): PaymentTransactionModel[] | [] {
     return this.attributes.payment_transactions
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -2017,8 +2017,8 @@ export class UserModel {
     return instance
   }
 
-  toJSON(): Partial<UserJsonResponse> {
-    const output: Partial<UserJsonResponse> = {
+  toJSON(): UserJsonResponse {
+    const output = {
 
       id: this.id,
       name: this.name,

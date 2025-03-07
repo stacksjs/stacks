@@ -126,7 +126,7 @@ export class ErrorModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1653,8 +1653,8 @@ export class ErrorModel {
     return instance
   }
 
-  toJSON(): Partial<ErrorJsonResponse> {
-    const output: Partial<ErrorJsonResponse> = {
+  toJSON(): ErrorJsonResponse {
+    const output: ErrorJsonResponse = {
 
       id: this.id,
       type: this.type,

@@ -123,7 +123,7 @@ export class ReleaseModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1602,8 +1602,8 @@ export class ReleaseModel {
     return instance
   }
 
-  toJSON(): Partial<ReleaseJsonResponse> {
-    const output: Partial<ReleaseJsonResponse> = {
+  toJSON(): ReleaseJsonResponse {
+    const output: ReleaseJsonResponse = {
 
       id: this.id,
       name: this.name,

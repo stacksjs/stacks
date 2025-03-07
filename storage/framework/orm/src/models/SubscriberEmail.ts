@@ -124,7 +124,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1623,8 +1623,8 @@ export class SubscriberEmailModel {
     return instance
   }
 
-  toJSON(): Partial<SubscriberEmailJsonResponse> {
-    const output: Partial<SubscriberEmailJsonResponse> = {
+  toJSON(): SubscriberEmailJsonResponse {
+    const output: SubscriberEmailJsonResponse = {
 
       id: this.id,
       email: this.email,

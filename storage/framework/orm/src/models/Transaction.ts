@@ -144,7 +144,7 @@ export class TransactionModel {
     return this.attributes.order
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1762,8 +1762,8 @@ export class TransactionModel {
     return instance
   }
 
-  toJSON(): Partial<TransactionJsonResponse> {
-    const output: Partial<TransactionJsonResponse> = {
+  toJSON(): TransactionJsonResponse {
+    const output: TransactionJsonResponse = {
 
       id: this.id,
       amount: this.amount,

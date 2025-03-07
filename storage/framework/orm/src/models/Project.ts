@@ -125,7 +125,7 @@ export class ProjectModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1636,8 +1636,8 @@ export class ProjectModel {
     return instance
   }
 
-  toJSON(): Partial<ProjectJsonResponse> {
-    const output: Partial<ProjectJsonResponse> = {
+  toJSON(): ProjectJsonResponse {
+    const output: ProjectJsonResponse = {
 
       id: this.id,
       name: this.name,

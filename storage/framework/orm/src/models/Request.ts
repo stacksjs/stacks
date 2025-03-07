@@ -131,7 +131,7 @@ export class RequestModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1742,8 +1742,8 @@ export class RequestModel {
     return instance
   }
 
-  toJSON(): Partial<RequestJsonResponse> {
-    const output: Partial<RequestJsonResponse> = {
+  toJSON(): RequestJsonResponse {
+    const output: RequestJsonResponse = {
 
       id: this.id,
       method: this.method,

@@ -155,7 +155,7 @@ export class PaymentTransactionModel {
     return this.attributes.payment_method
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1722,8 +1722,8 @@ export class PaymentTransactionModel {
     return instance
   }
 
-  toJSON(): Partial<PaymentTransactionJsonResponse> {
-    const output: Partial<PaymentTransactionJsonResponse> = {
+  toJSON(): PaymentTransactionJsonResponse {
+    const output: PaymentTransactionJsonResponse = {
 
       id: this.id,
       name: this.name,

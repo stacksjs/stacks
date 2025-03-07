@@ -149,7 +149,7 @@ export class OrderModel {
     }
   }
 
-  get order_items(): OrderItemModel[] | undefined {
+  get order_items(): OrderItemModel[] | [] {
     return this.attributes.order_items
   }
 
@@ -169,7 +169,7 @@ export class OrderModel {
     return this.attributes.coupon
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1865,8 +1865,8 @@ export class OrderModel {
     return instance
   }
 
-  toJSON(): Partial<OrderJsonResponse> {
-    const output: Partial<OrderJsonResponse> = {
+  toJSON(): OrderJsonResponse {
+    const output: OrderJsonResponse = {
 
       id: this.id,
       status: this.status,

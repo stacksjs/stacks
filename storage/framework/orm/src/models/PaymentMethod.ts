@@ -138,7 +138,7 @@ export class PaymentMethodModel {
     }
   }
 
-  get payment_transactions(): PaymentTransactionModel[] | undefined {
+  get payment_transactions(): PaymentTransactionModel[] | [] {
     return this.attributes.payment_transactions
   }
 
@@ -150,7 +150,7 @@ export class PaymentMethodModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1735,8 +1735,8 @@ export class PaymentMethodModel {
     return instance
   }
 
-  toJSON(): Partial<PaymentMethodJsonResponse> {
-    const output: Partial<PaymentMethodJsonResponse> = {
+  toJSON(): PaymentMethodJsonResponse {
+    const output: PaymentMethodJsonResponse = {
 
       id: this.id,
       type: this.type,

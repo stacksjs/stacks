@@ -126,7 +126,7 @@ export class JobModel {
     }
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1653,8 +1653,8 @@ export class JobModel {
     return instance
   }
 
-  toJSON(): Partial<JobJsonResponse> {
-    const output: Partial<JobJsonResponse> = {
+  toJSON(): JobJsonResponse {
+    const output: JobJsonResponse = {
 
       id: this.id,
       queue: this.queue,

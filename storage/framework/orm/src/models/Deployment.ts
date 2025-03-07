@@ -143,7 +143,7 @@ export class DeploymentModel {
     return this.attributes.user
   }
 
-  get id(): number | undefined {
+  get id(): number {
     return this.attributes.id
   }
 
@@ -1728,8 +1728,8 @@ export class DeploymentModel {
     return instance
   }
 
-  toJSON(): Partial<DeploymentJsonResponse> {
-    const output: Partial<DeploymentJsonResponse> = {
+  toJSON(): DeploymentJsonResponse {
+    const output: DeploymentJsonResponse = {
 
       id: this.id,
       commit_sha: this.commit_sha,
