@@ -516,7 +516,7 @@ function addGiftCard(): void {
                           Initial Value
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'initialValue'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -528,7 +528,7 @@ function addGiftCard(): void {
                           Balance
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'currentBalance'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -540,7 +540,7 @@ function addGiftCard(): void {
                           Purchase Date
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'purchaseDate'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -552,7 +552,7 @@ function addGiftCard(): void {
                           Expiry Date
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'expiryDate'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>

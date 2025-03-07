@@ -385,7 +385,7 @@ const formatNumber = (num: number): string => {
               class="inline-flex items-center space-x-1 text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               <span>View All</span>
-              <div class="i-hugeicons-arrow-right h-4 w-4" />
+              <div class="i-hugeicons-arrow-right-01  h-4 w-4" />
             </router-link>
           </div>
           <div class="mt-4 flow-root">

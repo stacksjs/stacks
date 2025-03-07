@@ -298,7 +298,7 @@ const initialColors: Record<string, string> = {
                           Category
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'name'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -311,7 +311,7 @@ const initialColors: Record<string, string> = {
                           Products
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'productCount'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -324,7 +324,7 @@ const initialColors: Record<string, string> = {
                           Created
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'createdAt'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>

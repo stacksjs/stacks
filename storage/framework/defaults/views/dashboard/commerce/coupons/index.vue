@@ -487,7 +487,7 @@ function addCoupon(): void {
                           Coupon Code
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'code'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -500,7 +500,7 @@ function addCoupon(): void {
                           Value
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'value'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -513,7 +513,7 @@ function addCoupon(): void {
                           Usage
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'usedCount'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -525,7 +525,7 @@ function addCoupon(): void {
                           Expiry
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'endDate'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>

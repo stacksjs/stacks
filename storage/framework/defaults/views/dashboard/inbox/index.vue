@@ -21,6 +21,7 @@ interface Email {
   starred: boolean
   folder: string
   attachment: boolean
+  labels?: string[] // Add labels for categorization
 }
 
 const sidebarOpen = ref(true)
@@ -34,114 +35,97 @@ const isLoading = ref(false)
 const emails = ref<Email[]>([
   {
     id: 1,
-    from: 'Chris Breuer',
-    email: 'chris@stacksjs.org',
-    subject: 'New Project Roadmap',
-    preview: 'Hey team, I wanted to share the roadmap for our next project. We\'ll be focusing on...',
+    from: 'William Smith',
+    email: 'williamsmith@example.com',
+    subject: 'Meeting Tomorrow',
+    preview: 'Hi, let\'s have a meeting tomorrow to discuss the project. I\'ve been reviewing the project details and have some ideas I\'d like to share...',
     body: `
-      <p>Hey team,</p>
-      <p>I wanted to share the roadmap for our next project. We'll be focusing on building a robust email API that integrates seamlessly with our existing stack.</p>
-      <p>Key milestones:</p>
-      <ul>
-        <li>API design by May 1st</li>
-        <li>Initial implementation by June 15th</li>
-        <li>Testing phase until July 10th</li>
-        <li>Production release by August 1st</li>
-      </ul>
-      <p>Please review and let me know your thoughts.</p>
-      <p>Best,<br>Chris</p>
+      <p>Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success.</p>
+      <p>Please come prepared with any questions or insights you may have. Looking forward to our meeting!</p>
+      <p>Best regards,<br>William</p>
     `,
-    date: '2024-02-28T10:23:00',
+    date: '2023-10-22T09:00:00',
     read: false,
-    starred: true,
+    starred: false,
     folder: 'inbox',
-    attachment: true,
+    attachment: false,
+    labels: ['meeting', 'work', 'important']
   },
   {
     id: 2,
-    from: 'Blake',
-    email: 'blake@stacksjs.org',
-    subject: 'Design Review Scheduled',
-    preview: 'Hi all, I\'ve scheduled the design review for Thursday at 2pm. Please review the mockups before...',
+    from: 'Alice Smith',
+    email: 'alice@example.com',
+    subject: 'Re: Project Update',
+    preview: 'Thank you for the project update. It looks great! I\'ve gone through the report, and the progress is impressive. The team has done a...',
     body: `
-      <p>Hi all,</p>
-      <p>I've scheduled the design review for Thursday at 2pm. Please review the mockups before our meeting so we can have a productive discussion.</p>
-      <p>You can find the latest designs here: <a href="#">https://figma.com/design/mail-app</a></p>
-      <p>Looking forward to your feedback.</p>
-      <p>-Blake</p>
+      <p>Thank you for the project update. It looks great!</p>
+      <p>I've gone through the report, and the progress is impressive. The team has done a fantastic job meeting all the milestones so far.</p>
+      <p>Let's discuss the next phase during our weekly meeting.</p>
+      <p>Regards,<br>Alice</p>
     `,
-    date: '2024-02-27T16:42:00',
+    date: '2023-10-20T14:30:00',
     read: true,
     starred: false,
     folder: 'inbox',
     attachment: false,
+    labels: ['work', 'important']
   },
   {
     id: 3,
-    from: 'Sarah Johnson',
-    email: 'sarah@stacksjs.org',
-    subject: 'Weekly Team Update',
-    preview: 'Team, here\'s our weekly progress update. Frontend team completed the new navigation...',
+    from: 'Bob Johnson',
+    email: 'bob@example.com',
+    subject: 'Weekend Plans',
+    preview: 'Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It\'s been a while since we had some outdoor fun...',
     body: `
-      <p>Team,</p>
-      <p>Here's our weekly progress update:</p>
-      <ul>
-        <li>Frontend team completed the new navigation components</li>
-        <li>Backend team implemented the new authentication system</li>
-        <li>DevOps set up the new CI/CD pipeline</li>
-      </ul>
-      <p>Overall, we're on track for our monthly goals.</p>
-      <p>Great work everyone!</p>
-      <p>Sarah</p>
+      <p>Hey,</p>
+      <p>Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun.</p>
+      <p>Let me know if you're interested, and we can plan accordingly.</p>
+      <p>Cheers,<br>Bob</p>
     `,
-    date: '2024-02-26T09:15:00',
+    date: '2022-05-15T09:45:00',
     read: true,
-    starred: true,
+    starred: false,
     folder: 'inbox',
     attachment: false,
+    labels: ['personal']
   },
   {
     id: 4,
-    from: 'Michael Chen',
-    email: 'michael@stacksjs.org',
-    subject: 'Bug Fix: Email Rendering Issue',
-    preview: 'I fixed the email rendering issue reported last week. The problem was related to...',
+    from: 'Emily Davis',
+    email: 'emily@example.com',
+    subject: 'Re: Question about Budget',
+    preview: 'I have a question about the budget for the upcoming project. It seems like there\'s a discrepancy in the allocation of resources. I\'ve...',
     body: `
-      <p>Hi team,</p>
-      <p>I fixed the email rendering issue reported last week. The problem was related to how we were handling HTML content in the email body.</p>
-      <p>The fix has been deployed to production. Please test it out and let me know if you encounter any issues.</p>
-      <p>Regards,<br>Michael</p>
+      <p>Hello,</p>
+      <p>I have a question about the budget for the upcoming project. It seems like there's a discrepancy in the allocation of resources.</p>
+      <p>I've noticed that the marketing budget is significantly higher than what we initially discussed. Can we review this together?</p>
+      <p>Thanks,<br>Emily</p>
     `,
-    date: '2024-02-25T14:53:00',
+    date: '2022-05-14T11:20:00',
     read: false,
     starred: false,
     folder: 'inbox',
     attachment: false,
+    labels: ['work', 'budget']
   },
   {
     id: 5,
-    from: 'Emma Wilson',
-    email: 'emma@stacksjs.org',
-    subject: 'Client Meeting Notes',
-    preview: 'Attached are my notes from yesterday\'s client meeting. We discussed their requirements for...',
+    from: 'Michael Wilson',
+    email: 'michael@example.com',
+    subject: 'Important Announcement',
+    preview: 'I have an important announcement to make during our team meeting. It pertains to a strategic shift in our approach to the project...',
     body: `
-      <p>Hello,</p>
-      <p>Attached are my notes from yesterday's client meeting. We discussed their requirements for the email integration feature and agreed on the following points:</p>
-      <ol>
-        <li>Support for multiple email accounts</li>
-        <li>Unified inbox with smart filtering</li>
-        <li>Rich text formatting in compose view</li>
-        <li>Attachment handling with preview capability</li>
-      </ol>
-      <p>They'd like to see a prototype by next month.</p>
-      <p>Let me know if you have any questions!</p>
-      <p>Best,<br>Emma</p>
+      <p>Team,</p>
+      <p>I have an important announcement to make during our team meeting. It pertains to a strategic shift in our approach to the project.</p>
+      <p>Please ensure everyone attends the meeting tomorrow at 10 AM.</p>
+      <p>Best,<br>Michael</p>
     `,
-    date: '2024-02-24T11:30:00',
+    date: '2022-05-13T15:00:00',
     read: true,
-    starred: false,
-    folder: 'archive',
-    attachment: true,
+    starred: true,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['meeting', 'work', 'important']
   },
   {
     id: 6,
@@ -259,6 +243,7 @@ const emails = ref<Email[]>([
 
 // Folder structure
 const folders = [
+  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
   { id: 'starred', name: 'Starred', icon: 'star' },
   { id: 'sent', name: 'Sent', icon: 'send' },
   { id: 'drafts', name: 'Drafts', icon: 'drafts' },
@@ -481,14 +466,14 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-// Add this computed property
+// Fix the TypeScript error by accessing the value property
 const inboxUnreadCount = computed(() => {
-  return unreadCounts.inbox || 0
+  return unreadCounts.value['inbox'] || 0
 })
 </script>
 
 <template>
-  <div class="min-h-screen dark:bg-blue-gray-800">
+  <div class="min-h-screen bg-white dark:bg-blue-gray-800">
     <div class="flex h-screen">
       <!-- Sidebar -->
       <EmailSidebar
@@ -501,42 +486,67 @@ const inboxUnreadCount = computed(() => {
 
       <!-- Main Content -->
       <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header with search and inbox nav -->
+        <!-- Header with title and actions -->
         <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 py-2 px-4">
           <div class="flex items-center justify-between">
-            <!-- Search bar -->
-            <div class="flex-1 max-w-2xl">
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <i class="i-hugeicons-search-01 text-gray-400 text-lg"></i>
-                </div>
-                <input
-                  v-model="searchQuery"
-                  type="text"
-                  placeholder="Search emails..."
-                  class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
+            <!-- Title -->
+            <div class="text-xl font-medium text-gray-900 dark:text-white">Inbox</div>
+
+            <!-- Action buttons -->
+            <div class="flex items-center space-x-1">
+              <div class="flex bg-gray-100 dark:bg-blue-gray-600 rounded-md">
+                <button
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white bg-gray-200 dark:bg-blue-gray-500 rounded-md"
+                >
+                  All mail
+                </button>
+                <button
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-white"
+                >
+                  Unread
+                </button>
+              </div>
+
+              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="i-hugeicons-waste text-lg"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="i-hugeicons-archive text-lg"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="i-hugeicons-spam text-lg"></i>
+              </button>
+
+              <div class="flex items-center ml-2">
+                <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                  <i class="i-hugeicons-clock-circle text-lg"></i>
+                </button>
+                <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                  <i class="i-hugeicons-arrow-left-circle text-lg"></i>
+                </button>
+                <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                  <i class="i-hugeicons-arrow-right-circle text-lg"></i>
+                </button>
+                <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+                  <i class="i-hugeicons-more-vertical-circle text-lg"></i>
+                </button>
               </div>
             </div>
+          </div>
+        </div>
 
-            <!-- Inbox navigation -->
-            <div class="flex items-center ml-4">
-              <button
-                @click="activeFolder = 'inbox'"
-                class="flex items-center px-3 py-2 rounded-md text-sm font-medium"
-                :class="[
-                  activeFolder === 'inbox'
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                    : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-                ]"
-              >
-                <i class="i-hugeicons-inbox text-lg mr-2"></i>
-                Inbox
-                <span v-if="inboxUnreadCount > 0" class="ml-2 bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">
-                  {{ inboxUnreadCount }}
-                </span>
-              </button>
+        <!-- Search bar -->
+        <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 px-4 py-2">
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <i class="i-hugeicons-search-01 text-gray-400 text-lg"></i>
             </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search"
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-blue-gray-600 rounded-md bg-gray-50 dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            />
           </div>
         </div>
 
@@ -544,43 +554,6 @@ const inboxUnreadCount = computed(() => {
         <div class="flex-1 flex overflow-hidden">
           <!-- Email list -->
           <div v-if="!selectedEmail || !isComposing" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 dark:border-blue-gray-600 flex flex-col">
-            <div class="bg-white dark:bg-blue-gray-700 py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {{ folders.find(f => f.id === activeFolder)?.name || 'All Mail' }}
-              </h2>
-              <div class="flex space-x-2">
-                <button @click="refreshEmails" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-refresh text-gray-500 dark:text-gray-400 text-lg" :class="{ 'animate-spin': isRefreshing }"></i>
-                </button>
-                <div class="relative">
-                  <button @click="toggleMoreMenu" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                    <i class="i-hugeicons-more-vertical-circle-01 text-gray-500 dark:text-gray-400 text-lg"></i>
-                  </button>
-                  <!-- Dropdown menu -->
-                  <div
-                    v-if="showMoreMenu"
-                    ref="dropdownRef"
-                    class="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-blue-gray-600 ring-1 ring-black ring-opacity-5 z-10"
-                  >
-                    <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
-                      <a href="/inbox/activity" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
-                        <div class="flex items-center">
-                          <i class="i-hugeicons-analytics-up text-lg mr-2"></i>
-                          Analytics
-                        </div>
-                      </a>
-                      <a href="/inbox/settings" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-blue-gray-700" role="menuitem">
-                        <div class="flex items-center">
-                          <i class="i-hugeicons-settings-01 text-lg mr-2"></i>
-                          Settings
-                        </div>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <div class="flex-1 overflow-y-auto">
               <ul class="divide-y divide-gray-200 dark:divide-blue-gray-600">
                 <li
@@ -588,43 +561,131 @@ const inboxUnreadCount = computed(() => {
                   :key="email.id"
                   @click="openEmail(email)"
                   :class="[
-                    'hover:bg-gray-100 dark:hover:bg-blue-gray-600 cursor-pointer',
-                    !email.read ? 'bg-blue-50 dark:bg-blue-gray-800' : 'bg-white dark:bg-blue-gray-700'
+                    'hover:bg-gray-50 dark:hover:bg-blue-gray-600 cursor-pointer',
+                    !email.read ? 'bg-white dark:bg-blue-gray-700' : 'bg-white dark:bg-blue-gray-700'
                   ]"
                 >
                   <div class="px-4 py-3">
                     <div class="flex items-center justify-between">
-                      <p class="text-sm font-medium" :class="[!email.read ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300']">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">
                         {{ email.from }}
                       </p>
                       <p class="text-xs text-gray-500 dark:text-gray-400">
                         {{ formatDate(email.date) }}
                       </p>
                     </div>
-                    <div class="flex items-center justify-between mt-1">
-                      <p class="text-sm" :class="[!email.read ? 'text-gray-900 dark:text-white font-medium' : 'text-gray-600 dark:text-gray-300']">
+                    <div class="mt-1">
+                      <p class="text-sm text-gray-900 dark:text-white">
                         {{ email.subject }}
                       </p>
-                      <div class="flex items-center space-x-1">
-                        <button @click.stop="toggleStar(email.id)" class="text-gray-400 hover:text-yellow-400">
-                          <span v-if="email.starred" class="text-yellow-400 text-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                              <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"/>
-                            </svg>
-                          </span>
-                          <i v-else class="i-hugeicons-star text-lg"></i>
-                        </button>
-                        <span v-if="email.attachment" class="text-gray-400">
-                          <i class="i-hugeicons-attachment-01 text-lg"></i>
-                        </span>
-                      </div>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                        {{ email.preview }}
+                      </p>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
-                      {{ email.preview }}
-                    </p>
+
+                    <!-- Email labels/tags -->
+                    <div class="mt-2 flex flex-wrap gap-1" v-if="email.labels && email.labels.length > 0">
+                      <span
+                        v-for="label in email.labels"
+                        :key="label"
+                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                        :class="{
+                          'bg-gray-100 text-gray-800 dark:bg-blue-900 dark:text-blue-200': label === 'work',
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': label === 'personal',
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': label === 'important',
+                          'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200': label === 'meeting',
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': label === 'budget'
+                        }"
+                      >
+                        {{ label }}
+                      </span>
+                    </div>
                   </div>
                 </li>
               </ul>
+            </div>
+          </div>
+
+          <!-- Email detail view -->
+          <div v-if="selectedEmail" class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
+            <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <button @click="closeEmail" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-arrow-left-02 text-lg"></i>
+                </button>
+                <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                  {{ selectedEmail?.subject }}
+                </h2>
+              </div>
+              <div class="flex space-x-2">
+                <button @click="selectedEmail && toggleStar(selectedEmail.id)" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
+                  <span v-if="selectedEmail?.starred" class="text-yellow-400 text-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                      <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"/>
+                    </svg>
+                  </span>
+                  <i v-else class="i-hugeicons-star text-gray-500 dark:text-gray-400 text-lg"></i>
+                </button>
+                <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-inbox text-lg"></i>
+                </button>
+                <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-waste text-lg"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Email header with sender info -->
+            <div class="px-4 py-3 border-b border-gray-200 dark:border-blue-gray-600">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center">
+                    <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-500 flex items-center justify-center text-gray-700 dark:text-white font-medium">
+                      {{ selectedEmail?.from.charAt(0) }}
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedEmail?.from }}</p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ selectedEmail?.email }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                  {{ selectedEmail?.date ? new Date(selectedEmail.date).toLocaleString() : '' }}
+                </div>
+              </div>
+              <div class="mt-2">
+                <p class="text-base font-medium text-gray-900 dark:text-white">{{ selectedEmail?.subject }}</p>
+              </div>
+            </div>
+
+            <!-- Email body -->
+            <div class="flex-1 p-4 overflow-y-auto text-gray-900 dark:text-white">
+              <div v-if="selectedEmail?.body" v-html="selectedEmail.body" class="prose dark:prose-invert max-w-none"></div>
+
+              <div v-if="selectedEmail?.attachment" class="mt-4 border border-gray-200 dark:border-blue-gray-600 rounded p-3">
+                <div class="flex items-center">
+                  <i class="i-hugeicons-file-01 text-gray-500 dark:text-gray-400 text-xl"></i>
+                  <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">Document.pdf</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">1.2 MB</p>
+                  </div>
+                  <button class="ml-auto p-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800">
+                    <i class="i-hugeicons-download text-lg"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Reply actions -->
+            <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
+              <div class="flex space-x-2">
+                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
+                  Reply
+                </button>
+                <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-600 font-medium text-sm">
+                  Forward
+                </button>
+              </div>
             </div>
           </div>
 
@@ -648,94 +709,14 @@ const inboxUnreadCount = computed(() => {
             </div>
           </div>
 
-          <!-- Email detail view -->
-          <div v-if="selectedEmail" class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
-            <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
-              <div class="flex items-center space-x-2">
-                <button @click="closeEmail" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-arrow-left-02 text-gray-500 dark:text-gray-400 text-lg"></i>
-                </button>
-                <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {{ selectedEmail?.subject }}
-                </h2>
-              </div>
-              <div class="flex space-x-2">
-                <button @click="selectedEmail && toggleStar(selectedEmail.id)" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <span v-if="selectedEmail?.starred" class="text-yellow-400 text-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                      <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"/>
-                    </svg>
-                  </span>
-                  <i v-else class="i-hugeicons-star text-gray-500 dark:text-gray-400 text-lg"></i>
-                </button>
-                <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-inbox text-gray-500 dark:text-gray-400 text-lg"></i>
-                </button>
-                <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-waste text-gray-500 dark:text-gray-400 text-lg"></i>
-                </button>
-              </div>
-            </div>
-
-            <div class="px-4 py-3 border-b border-gray-200 dark:border-blue-gray-600">
-              <div class="flex justify-between items-start">
-                <div>
-                  <div class="flex items-center">
-                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium">
-                      {{ selectedEmail?.from.charAt(0) }}
-                    </div>
-                    <div class="ml-3">
-                      <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ selectedEmail?.from }}</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">{{ selectedEmail?.email }}</p>
-                    </div>
-                  </div>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ selectedEmail?.date ? new Date(selectedEmail.date).toLocaleString() : '' }}
-                </div>
-              </div>
-              <div class="mt-2">
-                <p class="text-base font-medium text-gray-900 dark:text-gray-100">{{ selectedEmail?.subject }}</p>
-              </div>
-            </div>
-
-            <div class="flex-1 p-4 overflow-y-auto">
-              <div v-if="selectedEmail?.body" v-html="selectedEmail.body" class="prose dark:prose-invert max-w-none"></div>
-
-              <div v-if="selectedEmail?.attachment" class="mt-4 border border-gray-200 dark:border-blue-gray-600 rounded p-3">
-                <div class="flex items-center">
-                  <i class="i-hugeicons-file-01 text-gray-500 dark:text-gray-400 text-xl"></i>
-                  <div class="ml-3">
-                    <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Document.pdf</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">1.2 MB</p>
-                  </div>
-                  <button class="ml-auto p-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800">
-                    <i class="i-hugeicons-download text-lg"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
-              <div class="flex space-x-2">
-                <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
-                  Reply
-                </button>
-                <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-600 font-medium text-sm">
-                  Forward
-                </button>
-              </div>
-            </div>
-          </div>
-
           <!-- Compose new email view -->
           <div v-if="isComposing" class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
             <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
                 New Message
               </h2>
-              <button @click="cancelCompose" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                <i class="i-hugeicons-cancel-circle text-gray-500 dark:text-gray-400 text-lg"></i>
+              <button @click="cancelCompose" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                <i class="i-hugeicons-cancel-circle text-lg"></i>
               </button>
             </div>
 
@@ -776,14 +757,14 @@ const inboxUnreadCount = computed(() => {
 
             <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600 flex justify-between">
               <div class="flex space-x-2">
-                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-attachment-01 text-gray-500 dark:text-gray-400 text-lg"></i>
+                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-attachment-01 text-lg"></i>
                 </button>
-                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-image-01 text-gray-500 dark:text-gray-400 text-lg"></i>
+                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-image-01 text-lg"></i>
                 </button>
-                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
-                  <i class="i-hugeicons-smile text-gray-500 dark:text-gray-400 text-lg"></i>
+                <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600 text-gray-500 dark:text-gray-400">
+                  <i class="i-hugeicons-smile text-lg"></i>
                 </button>
               </div>
               <div>
@@ -792,6 +773,28 @@ const inboxUnreadCount = computed(() => {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Reply box at the bottom -->
+        <div v-if="selectedEmail" class="bg-white dark:bg-blue-gray-700 border-t border-gray-200 dark:border-blue-gray-600 p-4">
+          <div class="flex items-center">
+            <textarea
+              placeholder="Reply William Smith..."
+              class="flex-1 bg-white dark:bg-blue-gray-600 border border-gray-300 dark:border-blue-gray-600 rounded-md p-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              rows="3"
+            ></textarea>
+          </div>
+          <div class="flex justify-between mt-2">
+            <div class="flex items-center">
+              <label class="inline-flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-500 bg-white dark:bg-blue-gray-600">
+                <span class="ml-2">Mute this thread</span>
+              </label>
+            </div>
+            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
+              Send
+            </button>
           </div>
         </div>
       </div>

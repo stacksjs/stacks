@@ -139,7 +139,7 @@ function getActivityColor(status: string): string {
                       </dl>
                     </div>
                     <div class="flex-shrink-0 self-center">
-                      <div class="i-hugeicons-arrow-right h-5 w-5 text-gray-400"></div>
+                      <div class="i-hugeicons-arrow-right-01  h-5 w-5 text-gray-400"></div>
                     </div>
                   </div>
                 </div>

@@ -878,7 +878,7 @@ watch(() => Object.values(cloudConfig.value.servers), (servers) => {
                   class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
                 >
                   View All
-                  <div class="i-hugeicons-arrow-right w-4 h-4"></div>
+                  <div class="i-hugeicons-arrow-right-01  w-4 h-4"></div>
                 </router-link>
                 <button
                   @click="addServer"

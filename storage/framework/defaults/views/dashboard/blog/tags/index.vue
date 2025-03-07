@@ -832,7 +832,7 @@ const paginationRange = computed(() => {
                       Name
                       <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                         <div v-if="sortBy === 'name'" :class="[
-                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                           'h-4 w-4'
                         ]"></div>
                         <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -847,7 +847,7 @@ const paginationRange = computed(() => {
                       Posts
                       <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                         <div v-if="sortBy === 'postCount'" :class="[
-                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                           'h-4 w-4'
                         ]"></div>
                         <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -859,7 +859,7 @@ const paginationRange = computed(() => {
                       Created
                       <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                         <div v-if="sortBy === 'createdAt'" :class="[
-                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                          sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                           'h-4 w-4'
                         ]"></div>
                         <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -1213,7 +1213,7 @@ const paginationRange = computed(() => {
                   <ul class="divide-y divide-gray-200 dark:divide-gray-700 text-left">
                     <li v-for="id in selectedTagIds" :key="id" class="py-2 px-4 flex items-center">
                       <div class="flex-shrink-0 h-6 w-6 flex items-center justify-center bg-blue-100 dark:bg-blue-900 rounded-md mr-3">
-                        <div class="i-hugeicons-tag h-4 w-4 text-blue-600 dark:text-blue-400"></div>
+                        <div class="i-hugeicons-tag-01 h-4 w-4 text-blue-600 dark:text-blue-400"></div>
                       </div>
                       <span class="text-sm text-gray-700 dark:text-gray-300">{{ tags.find(tag => tag.id === id)?.name }}</span>
                     </li>

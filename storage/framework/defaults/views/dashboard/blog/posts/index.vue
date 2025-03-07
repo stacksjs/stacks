@@ -826,7 +826,7 @@ const blogStats = computed(() => {
         <div v-if="selectedTag !== 'All Tags'" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/20">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="i-hugeicons-tag h-5 w-5 text-blue-400 mr-2"></div>
+              <div class="i-hugeicons-tag-01 h-5 w-5 text-blue-400 mr-2"></div>
               <span class="text-sm text-blue-700 dark:text-blue-300">
                 Filtering by tag: <span class="font-medium">{{ selectedTag }}</span>
               </span>
@@ -874,7 +874,7 @@ const blogStats = computed(() => {
                           Title
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'title'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -886,7 +886,7 @@ const blogStats = computed(() => {
                           Author
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'author'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -899,7 +899,7 @@ const blogStats = computed(() => {
                           Views
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'views'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -911,7 +911,7 @@ const blogStats = computed(() => {
                           Comments
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'comments'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -923,7 +923,7 @@ const blogStats = computed(() => {
                           Published
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'published'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -1159,7 +1159,7 @@ const blogStats = computed(() => {
                         :key="tag"
                         class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30"
                       >
-                        <div class="i-hugeicons-tag h-3 w-3 mr-1"></div>
+                        <div class="i-hugeicons-tag-01 h-3 w-3 mr-1"></div>
                         {{ tag }}
                       </div>
                     </div>

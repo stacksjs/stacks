@@ -333,7 +333,7 @@ function addTax(): void {
                           Name
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'name'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -345,7 +345,7 @@ function addTax(): void {
                           Rate (%)
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'rate'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -358,7 +358,7 @@ function addTax(): void {
                           Country
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'country'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
@@ -373,7 +373,7 @@ function addTax(): void {
                           Created
                           <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                             <div v-if="sortBy === 'createdAt'" :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02-02',
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
                             ]"></div>
                             <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>

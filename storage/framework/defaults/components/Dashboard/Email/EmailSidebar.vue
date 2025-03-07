@@ -31,85 +31,121 @@ const startCompose = () => {
 const getUnreadCount = (folderId: string): number => {
   return props.unreadCounts[folderId] || 0
 }
+
+// User info
+const userInfo = {
+  name: 'Alicia Koch',
+  email: 'alicia@example.com',
+  initial: 'A'
+}
 </script>
 
 <template>
   <div
-    :class="[
-      'bg-gray-100 dark:bg-blue-gray-700 flex flex-col transition-all duration-300 ease-in-out',
-      sidebarOpen ? 'w-64' : 'w-16'
-    ]"
+    class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800"
   >
-    <div class="p-4 flex items-center justify-between border-b border-gray-200 dark:border-blue-gray-600">
-      <h1
-        :class="[
-          'font-bold text-xl text-gray-900 dark:text-white',
-          !sidebarOpen && 'sr-only'
-        ]"
-      >
-        Mail
-      </h1>
-      <button
-        @click="sidebarOpen = !sidebarOpen"
-        class="p-1 rounded-md text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-white"
-      >
-        <i class="i-hugeicons-menu-01 text-xl"></i>
-      </button>
+    <!-- User dropdown -->
+    <div class="p-3 border-b border-gray-200 dark:border-blue-gray-600">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded">
+            <i class="i-hugeicons-alert-02 text-sm"></i>
+          </div>
+          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ userInfo.name }}</span>
+        </div>
+        <button class="text-gray-500 dark:text-gray-400">
+          <i class="i-hugeicons-arrow-down-02 text-sm"></i>
+        </button>
+      </div>
     </div>
 
-    <div class="p-4">
-      <button
-        @click="startCompose"
-        class="w-full flex items-center justify-center rounded-md bg-blue-600 px-3 py-3 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500"
-      >
-        <i class="i-hugeicons-plus-sign text-lg" :class="{ 'mr-2': sidebarOpen, 'mr-0': !sidebarOpen }"></i>
-        <span v-if="sidebarOpen">Compose</span>
-      </button>
-    </div>
+    <!-- Folders -->
+    <div class="flex-1 overflow-y-auto">
+      <nav class="mt-1">
+        <ul>
+          <li v-for="folder in folders" :key="folder.id" class="mb-1">
+            <button
+              @click="setActiveFolder(folder.id)"
+              class="w-full flex items-center justify-between px-4 py-2 text-sm"
+              :class="[
+                activeFolder === folder.id
+                  ? 'bg-gray-100 dark:bg-blue-gray-700 text-gray-900 dark:text-white font-medium'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700'
+              ]"
+            >
+              <div class="flex items-center">
+                <i v-if="folder.id === 'inbox'" class="i-hugeicons-inbox text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'drafts'" class="i-hugeicons-edit-01 text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'sent'" class="i-hugeicons-sent text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'trash'" class="i-hugeicons-waste text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'archive'" class="i-hugeicons-archive text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'spam'" class="i-hugeicons-spam text-lg mr-3"></i>
+                <i v-else-if="folder.id === 'starred'" class="i-hugeicons-star text-lg mr-3"></i>
+                <span>{{ folder.name }}</span>
+              </div>
+              <span v-if="getUnreadCount(folder.id) > 0"
+                class="bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                {{ getUnreadCount(folder.id) }}
+              </span>
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-    <nav class="mt-2 flex-1 overflow-y-auto">
-      <ul class="space-y-1 px-2">
-        <li v-for="folder in folders" :key="folder.id">
-          <button
-            @click="setActiveFolder(folder.id)"
-            :class="[
-              'w-full flex items-center justify-start px-3 py-3 text-sm rounded-md',
-              activeFolder === folder.id
-                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                : 'text-gray-700 hover:bg-gray-200 dark:text-gray-200 dark:hover:bg-blue-gray-600'
-            ]"
-          >
-            <span class="flex-shrink-0">
-              <!-- Icons based on folder type -->
-              <i v-if="folder.icon === 'inbox'" class="i-hugeicons-inbox text-xl"></i>
-              <i v-else-if="folder.icon === 'star'" class="i-hugeicons-star text-xl"></i>
-              <i v-else-if="folder.icon === 'mail-send-01'" class="i-hugeicons-mail-send-02 text-xl"></i>
-              <i v-else-if="folder.icon === 'license-draft'" class="i-hugeicons-edit-01 text-xl"></i>
-              <i v-else-if="folder.icon === 'archive'" class="i-hugeicons-archive text-xl"></i>
-              <i v-else-if="folder.icon === 'spam'" class="i-hugeicons-spam text-xl"></i>
-              <i v-else-if="folder.icon === 'waste'" class="i-hugeicons-waste text-xl"></i>
-              <i v-else class="i-hugeicons-file-01 text-xl"></i>
-            </span>
-            <span v-if="sidebarOpen" class="flex-1 ml-3 text-left">{{ folder.name }}</span>
-            <span v-if="sidebarOpen && getUnreadCount(folder.id) > 0"
-              class="inline-flex items-center justify-center ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-              {{ getUnreadCount(folder.id) }}
-            </span>
-          </button>
-        </li>
-      </ul>
-    </nav>
-
-    <!-- Account Section -->
-    <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
-      <div class="flex items-center">
-        <div class="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-medium">
-          M
-        </div>
-        <div v-if="sidebarOpen" class="ml-3">
-          <p class="text-sm font-medium text-gray-700 dark:text-gray-200">me@stacksjs.org</p>
-          <p class="text-xs text-gray-500 dark:text-gray-400">5.2 GB of 15 GB used</p>
-        </div>
+      <!-- Categories -->
+      <div class="mt-6 px-4">
+        <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Categories
+        </h3>
+        <nav class="mt-2">
+          <ul>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-user text-lg mr-3"></i>
+                <span>Social</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  972
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-notification-03 text-lg mr-3"></i>
+                <span>Updates</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  342
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-chatting-01 text-lg mr-3"></i>
+                <span>Forums</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  128
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-shopping-cart-02 text-lg mr-3"></i>
+                <span>Shopping</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  8
+                </span>
+              </button>
+            </li>
+            <li class="mb-1">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+                <i class="i-hugeicons-tag-01 text-lg mr-3"></i>
+                <span>Promotions</span>
+                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  21
+                </span>
+              </button>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
   </div>
