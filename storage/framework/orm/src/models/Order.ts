@@ -56,7 +56,6 @@ export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'passwo
   [key: string]: any
 }
 
-export type OrderJsonResponse = Selectable<OrdersTable>
 export type NewOrder = Partial<Insertable<OrdersTable>>
 export type OrderUpdate = Updateable<OrdersTable>
 

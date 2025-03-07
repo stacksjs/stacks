@@ -31,7 +31,6 @@ export interface SubscriberEmailJsonResponse extends Omit<Selectable<SubscriberE
   [key: string]: any
 }
 
-export type SubscriberEmailJsonResponse = Selectable<SubscriberEmailsTable>
 export type NewSubscriberEmail = Partial<Insertable<SubscriberEmailsTable>>
 export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
 

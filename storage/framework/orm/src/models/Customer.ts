@@ -46,7 +46,6 @@ export interface CustomerJsonResponse extends Omit<Selectable<CustomersTable>, '
   [key: string]: any
 }
 
-export type CustomerJsonResponse = Selectable<CustomersTable>
 export type NewCustomer = Partial<Insertable<CustomersTable>>
 export type CustomerUpdate = Updateable<CustomersTable>
 

@@ -40,7 +40,6 @@ export interface TeamJsonResponse extends Omit<Selectable<TeamsTable>, 'password
   [key: string]: any
 }
 
-export type TeamJsonResponse = Selectable<TeamsTable>
 export type NewTeam = Partial<Insertable<TeamsTable>>
 export type TeamUpdate = Updateable<TeamsTable>
 

@@ -38,7 +38,6 @@ export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointsT
   [key: string]: any
 }
 
-export type LoyaltyPointJsonResponse = Selectable<LoyaltyPointsTable>
 export type NewLoyaltyPoint = Partial<Insertable<LoyaltyPointsTable>>
 export type LoyaltyPointUpdate = Updateable<LoyaltyPointsTable>
 

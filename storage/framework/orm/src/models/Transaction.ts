@@ -43,7 +43,6 @@ export interface TransactionJsonResponse extends Omit<Selectable<TransactionsTab
   [key: string]: any
 }
 
-export type TransactionJsonResponse = Selectable<TransactionsTable>
 export type NewTransaction = Partial<Insertable<TransactionsTable>>
 export type TransactionUpdate = Updateable<TransactionsTable>
 

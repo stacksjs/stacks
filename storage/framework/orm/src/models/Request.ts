@@ -38,7 +38,6 @@ export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'pa
   [key: string]: any
 }
 
-export type RequestJsonResponse = Selectable<RequestsTable>
 export type NewRequest = Partial<Insertable<RequestsTable>>
 export type RequestUpdate = Updateable<RequestsTable>
 

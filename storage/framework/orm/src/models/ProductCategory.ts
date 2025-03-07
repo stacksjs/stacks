@@ -39,7 +39,6 @@ export interface ProductCategoryJsonResponse extends Omit<Selectable<ProductCate
   [key: string]: any
 }
 
-export type ProductCategoryJsonResponse = Selectable<ProductCategoriesTable>
 export type NewProductCategory = Partial<Insertable<ProductCategoriesTable>>
 export type ProductCategoryUpdate = Updateable<ProductCategoriesTable>
 

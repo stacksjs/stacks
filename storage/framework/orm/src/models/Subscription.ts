@@ -45,7 +45,6 @@ export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionsT
   [key: string]: any
 }
 
-export type SubscriptionJsonResponse = Selectable<SubscriptionsTable>
 export type NewSubscription = Partial<Insertable<SubscriptionsTable>>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 

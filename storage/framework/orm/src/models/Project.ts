@@ -32,7 +32,6 @@ export interface ProjectJsonResponse extends Omit<Selectable<ProjectsTable>, 'pa
   [key: string]: any
 }
 
-export type ProjectJsonResponse = Selectable<ProjectsTable>
 export type NewProject = Partial<Insertable<ProjectsTable>>
 export type ProjectUpdate = Updateable<ProjectsTable>
 

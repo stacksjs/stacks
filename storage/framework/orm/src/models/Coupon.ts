@@ -53,7 +53,6 @@ export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'pass
   [key: string]: any
 }
 
-export type CouponJsonResponse = Selectable<CouponsTable>
 export type NewCoupon = Partial<Insertable<CouponsTable>>
 export type CouponUpdate = Updateable<CouponsTable>
 

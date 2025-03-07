@@ -42,7 +42,6 @@ export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable
   [key: string]: any
 }
 
-export type DeploymentJsonResponse = Selectable<DeploymentsTable>
 export type NewDeployment = Partial<Insertable<DeploymentsTable>>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
 

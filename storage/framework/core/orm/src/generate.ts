@@ -923,7 +923,6 @@ export async function generateModelString(
         [key: string]: any
       }
         
-      export type ${modelName}JsonResponse = Selectable<${formattedTableName}Table>
       export type New${modelName} = Partial<Insertable<${formattedTableName}Table>>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
   

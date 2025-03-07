@@ -45,7 +45,6 @@ export interface PaymentMethodJsonResponse extends Omit<Selectable<PaymentMethod
   [key: string]: any
 }
 
-export type PaymentMethodJsonResponse = Selectable<PaymentMethodsTable>
 export type NewPaymentMethod = Partial<Insertable<PaymentMethodsTable>>
 export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
 

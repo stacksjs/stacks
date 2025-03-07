@@ -33,7 +33,6 @@ export interface ErrorJsonResponse extends Omit<Selectable<ErrorsTable>, 'passwo
   [key: string]: any
 }
 
-export type ErrorJsonResponse = Selectable<ErrorsTable>
 export type NewError = Partial<Insertable<ErrorsTable>>
 export type ErrorUpdate = Updateable<ErrorsTable>
 

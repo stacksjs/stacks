@@ -45,7 +45,6 @@ export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyReward
   [key: string]: any
 }
 
-export type LoyaltyRewardJsonResponse = Selectable<LoyaltyRewardsTable>
 export type NewLoyaltyReward = Partial<Insertable<LoyaltyRewardsTable>>
 export type LoyaltyRewardUpdate = Updateable<LoyaltyRewardsTable>
 

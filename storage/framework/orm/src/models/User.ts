@@ -58,7 +58,6 @@ export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password
   [key: string]: any
 }
 
-export type UserJsonResponse = Selectable<UsersTable>
 export type NewUser = Partial<Insertable<UsersTable>>
 export type UserUpdate = Updateable<UsersTable>
 

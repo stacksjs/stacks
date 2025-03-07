@@ -46,7 +46,6 @@ export interface ProductJsonResponse extends Omit<Selectable<ProductsTable>, 'pa
   [key: string]: any
 }
 
-export type ProductJsonResponse = Selectable<ProductsTable>
 export type NewProduct = Partial<Insertable<ProductsTable>>
 export type ProductUpdate = Updateable<ProductsTable>
 

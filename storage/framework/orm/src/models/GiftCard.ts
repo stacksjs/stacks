@@ -54,7 +54,6 @@ export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, '
   [key: string]: any
 }
 
-export type GiftCardJsonResponse = Selectable<GiftCardsTable>
 export type NewGiftCard = Partial<Insertable<GiftCardsTable>>
 export type GiftCardUpdate = Updateable<GiftCardsTable>
 
