@@ -21,6 +21,8 @@ declare module 'vue' {
     ListboxDemo: typeof import('./../../defaults/components/Docs/Demo/ListboxDemo.vue')['default']
     NotificationDemo: typeof import('./../../defaults/components/Docs/Demo/NotificationDemo.vue')['default']
     Playground: typeof import('./../../defaults/components/Docs/Demo/Playground.vue')['default']
+    PopoverDemo: typeof import('./../../defaults/components/Docs/Demo/PopoverDemo.vue')['default']
+    RadioGroupDemo: typeof import('./../../defaults/components/Docs/Demo/RadioGroupDemo.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']

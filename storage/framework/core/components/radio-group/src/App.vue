@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import RadioGroupDemo from './RadioGroupDemo.vue'
+import Example from './Example.vue'
 import Footer from './Footer.vue'
 import Hero from './Hero.vue'
 import Usage from './Usage.vue'
@@ -22,7 +22,7 @@ useSEOHeader()
       >
         <Installation />
         <Usage />
-        <RadioGroupDemo />
+        <Example />
         <Styling />
       </main>
       <Footer />

@@ -1,3 +1,4 @@
+```vue
 <script lang="ts" setup>
 import { ref } from 'vue'
 import {
@@ -6,9 +7,6 @@ import {
   ListboxOption,
   ListboxOptions,
 } from '@stacksjs/listbox'
-
-import ListboxCode from './ListboxCode.md'
-import DocsPlayground from './DocsPlayground.vue'
 
 interface Person {
   id: number
@@ -29,9 +27,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
 </script>
 
 <template>
-
-<div class="max-w-4xl ">
-  <DocsPlayground>
+  <div class="max-w-4xl">
     <div class="space-y-4 w-3/5 my-12 mx-auto items-center h-[150px] w-[300px]">
       <Listbox v-model="selectedPerson">
         <div class="relative mt-1">
@@ -84,13 +80,8 @@ const selectedPerson = ref<Person>(people[0] as Person)
           </transition>
         </div>
       </Listbox>
-
     </div>
-
-    <template #code>
-      <ListboxCode />
-    </template>
-
-  </DocsPlayground>
-</div>
+  </div>
 </template>
+
+```
