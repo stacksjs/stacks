@@ -1,8 +1,10 @@
 import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 
+import type { CouponModel } from '../../orm/src/models/Coupon'
 // Import the CustomerTable type from the ORM
 import type {
   CustomerJsonResponse,
+  CustomerModel,
   CustomersTable,
   CustomerType,
   CustomerUpdate,
@@ -10,6 +12,7 @@ import type {
 } from '../../orm/src/models/Customer'
 // Import the OrderTable type from the ORM
 import type { OrdersTable } from '../../orm/src/models/Order'
+import type { OrderItemModel } from '../../orm/src/models/OrderItem'
 
 // Re-export the types
 export type {
@@ -164,4 +167,32 @@ export interface CouponStats {
     start_date: string | undefined
     end_date: string | undefined
   }[]
+}
+
+export interface OrderWithTotals {
+  order_items: OrderItemModel[] | []
+  id: number
+  customer_id: number
+  customer: CustomerModel | undefined
+  coupon_id: number
+  coupon: CouponModel | undefined
+  status: string
+  total_amount: number
+  tax_amount: number | undefined
+  discount_amount: number | undefined
+  delivery_fee: number | undefined
+  tip_amount: number | undefined
+  order_type: string
+  delivery_address: string | undefined
+  special_instructions: string | undefined
+  estimated_delivery_time: string | undefined
+  applied_coupon_id: string | undefined
+  uuid: string | undefined
+  created_at: Date | undefined
+  updated_at: Date | undefined
+  customer_name: string | null
+  customer_email: string | null
+  // Add the new calculated fields
+  totalItems: number
+  totalPrice: number
 }

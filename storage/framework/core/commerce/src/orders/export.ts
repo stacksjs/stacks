@@ -1,4 +1,5 @@
-import type { OrdersTable } from '../../../../orm/src/models/Order'
+import type { SpreadsheetWrapper } from 'ts-spreadsheets'
+import type { OrderWithTotals } from '../../types'
 import { db } from '@stacksjs/database'
 import { createSpreadsheet } from 'ts-spreadsheets'
 
@@ -19,7 +20,7 @@ export interface ExportedOrder {
  * @param format The format of the spreadsheet (default is CSV)
  * @returns Spreadsheet object ready for download or storage
  */
-export async function exportOrders(format: 'csv' | 'excel' = 'csv') {
+export async function exportOrders(format: 'csv' | 'excel' = 'csv'): Promise<SpreadsheetWrapper> {
   // Fetch all orders with their details
   const orders = await fetchAllWithDetails()
 
@@ -33,53 +34,59 @@ export async function exportOrders(format: 'csv' | 'excel' = 'csv') {
 /**
  * Fetch all orders with customer names and order items
  */
-async function fetchAllWithDetails(): Promise<(OrdersTable & {
-  customer?: { name: string }
-  order_items?: Array<{
-    product?: { name: string }
-    quantity: number
-    price: number
-  }>
-})[]> {
-  // Fetch orders with customer details
+async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
   const ordersWithCustomers = await db
     .selectFrom('orders')
     .leftJoin('customers', 'customers.id', 'orders.customer_id')
     .selectAll('orders')
-    .select('customers.name as customer_name')
+    .select(['customers.name as customer_name', 'customers.email as customer_email'])
     .execute()
 
-  // Fetch order items for all orders in a single query
-  const orderItems = await db
+  const orderIds = ordersWithCustomers.map(order => order.id)
+
+  if (orderIds.length === 0) {
+    return []
+  }
+
+  // Fetch order items related only to the fetched orders
+  const allOrderItems = await db
     .selectFrom('order_items')
-    .leftJoin('products', 'products.id', 'order_items.product_id')
+    .where('order_items.order_id', 'in', orderIds)
     .select([
       'order_items.order_id',
-      'products.name as product_name',
       'order_items.quantity',
       'order_items.price',
     ])
     .execute()
 
-  // Group order items by order ID
-  const orderItemsMap = orderItems.reduce((acc, item) => {
-    if (!acc[item.order_id]) {
-      acc[item.order_id] = []
-    }
-    acc[item.order_id].push({
-      product: { name: item.product_name },
-      quantity: item.quantity,
-      price: item.price,
-    })
-    return acc
-  }, {} as Record<number, Array<{ product?: { name: string }, quantity: number, price: number }>>)
+  const orderItemsMap = allOrderItems.reduce<Record<number, { totalItems: number, totalPrice: number }>>(
+    (acc, item) => {
+      if (!acc[item.order_id]) {
+        acc[item.order_id] = {
+          totalItems: 0,
+          totalPrice: 0,
+        }
+      }
 
-  // Attach order items to each order
-  return ordersWithCustomers.map(order => ({
-    ...order,
-    customer: { name: order.customer_name },
-    order_items: orderItemsMap[order.id] || [],
-  }))
+      acc[item.order_id].totalItems += item.quantity
+      acc[item.order_id].totalPrice += item.price * item.quantity
+
+      return acc
+    },
+    {},
+  )
+
+  const enrichedOrders = ordersWithCustomers.map((order) => {
+    const orderItemData = orderItemsMap[order.id] || { totalItems: 0, totalPrice: 0 }
+
+    return {
+      ...order,
+      totalItems: orderItemData.totalItems,
+      totalPrice: orderItemData.totalPrice,
+    }
+  })
+
+  return enrichedOrders
 }
 
 /**
@@ -87,14 +94,7 @@ async function fetchAllWithDetails(): Promise<(OrdersTable & {
  * @param orders Array of order objects
  * @returns Spreadsheet data structure
  */
-function prepareOrdersForExport(orders: (OrdersTable & {
-  customer?: { name: string }
-  order_items?: Array<{
-    product?: { name: string }
-    quantity: number
-    price: number
-  }>
-})[]) {
+function prepareOrdersForExport(orders: OrderWithTotals[]) {
   // Define headings
   const headings: (keyof ExportedOrder)[] = [
     'Order ID',
@@ -131,7 +131,7 @@ function prepareOrdersForExport(orders: (OrdersTable & {
  * @param filename Optional filename for the download
  * @returns Download response
  */
-export async function downloadOrders(format: 'csv' | 'excel' = 'csv', filename?: string) {
+export async function downloadOrders(format: 'csv' | 'excel' = 'csv', filename?: string): Promise<Response> {
   const spreadsheet = await exportOrders(format)
 
   // Use default filename if not provided
@@ -145,10 +145,11 @@ export async function downloadOrders(format: 'csv' | 'excel' = 'csv', filename?:
  * @param path Optional path to store the file
  * @returns Path where the file is stored
  */
-export async function storeOrdersExport(format: 'csv' | 'excel' = 'csv', path?: string) {
+export async function storeOrdersExport(format: 'csv' | 'excel' = 'csv', path?: string): Promise<void> {
   const spreadsheet = await exportOrders(format)
 
   // Use default path and filename if not provided
   const defaultPath = `orders_export_${new Date().toISOString().split('T')[0]}.${format}`
-  return spreadsheet.store(path || defaultPath)
+
+  spreadsheet.store(path || defaultPath)
 }
