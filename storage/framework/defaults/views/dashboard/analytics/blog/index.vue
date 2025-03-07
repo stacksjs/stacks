@@ -448,7 +448,7 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/blog/analytics/pages" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/pages" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all pages
               </a>
             </div>
@@ -499,7 +499,7 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/blog/analytics/referrers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/referrers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all referrers
               </a>
             </div>
@@ -547,7 +547,7 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/blog/analytics/devices" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/devices" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all devices
               </a>
             </div>
@@ -592,7 +592,7 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/blog/analytics/browsers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/browsers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all browsers
               </a>
             </div>
@@ -637,7 +637,7 @@ onMounted(() => {
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/blog/analytics/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all countries
               </a>
             </div>
