@@ -124,7 +124,10 @@ function getActivityColor(status: string): string {
           <div class="mt-8">
             <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Quick Links</h2>
             <div class="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <div v-for="link in quickLinks" :key="link.name" class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
+              <a v-for="link in quickLinks"
+                 :key="link.name"
+                 :href="link.href"
+                 class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
                 <div class="p-5">
                   <div class="flex items-center">
                     <div :class="[link.color, 'flex-shrink-0 rounded-md p-3']">
@@ -139,11 +142,11 @@ function getActivityColor(status: string): string {
                       </dl>
                     </div>
                     <div class="flex-shrink-0 self-center">
-                      <div class="i-hugeicons-arrow-right-01  h-5 w-5 text-gray-400"></div>
+                      <div class="i-hugeicons-arrow-right-01 h-5 w-5 text-gray-400"></div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
