@@ -1,10 +1,113 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Commerce Gift Cards',
 })
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Sample data - in a real app, this would be calculated from actual usage data
+  const salesData = [2, 3, 5, 4, 6, 8, 7, 10, 12, 15, 18, 20]
+  const revenueData = [100, 150, 250, 200, 300, 400, 350, 500, 600, 750, 900, 1000]
+
+  // Gift card sales chart data
+  const giftCardSalesData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Gift Card Sales',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: salesData,
+      },
+    ],
+  }
+
+  // Gift card revenue chart data
+  const giftCardRevenueData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Gift Card Revenue',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: revenueData,
+      },
+    ],
+  }
+
+  return {
+    giftCardSalesData,
+    giftCardRevenueData
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define gift card type
 interface GiftCard {
@@ -102,6 +205,33 @@ const statusFilter = ref('all')
 // Available statuses
 const statuses = ['all', 'Active', 'Used', 'Expired']
 
+// Computed gift card statistics
+const giftCardStats = computed(() => {
+  const activeGiftCards = giftCards.value.filter(c => c.status === 'Active').length
+  const totalGiftCards = giftCards.value.length
+
+  // Calculate total initial value and current balance
+  const totalInitialValue = giftCards.value.reduce((sum, card) => sum + card.initialValue, 0)
+  const totalCurrentBalance = giftCards.value.reduce((sum, card) => sum + card.currentBalance, 0)
+
+  // Calculate amount redeemed
+  const totalRedeemed = totalInitialValue - totalCurrentBalance
+
+  // Calculate redemption rate
+  const redemptionRate = totalInitialValue > 0
+    ? ((totalRedeemed / totalInitialValue) * 100).toFixed(1)
+    : '0.0'
+
+  return {
+    activeGiftCards,
+    totalGiftCards,
+    totalInitialValue: totalInitialValue.toFixed(2),
+    totalCurrentBalance: totalCurrentBalance.toFixed(2),
+    totalRedeemed: totalRedeemed.toFixed(2),
+    redemptionRate
+  }
+})
+
 // Computed filtered and sorted gift cards
 const filteredGiftCards = computed(() => {
   return giftCards.value
@@ -158,6 +288,12 @@ function getStatusClass(status: string): string {
   }
 }
 
+// Define global date variables
+const currentDate = new Date().toISOString().split('T')[0] as string
+const oneYearFromNow = new Date()
+oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+const futureDate = oneYearFromNow.toISOString().split('T')[0] as string
+
 // Modal state
 const showAddModal = ref(false)
 const newGiftCard = ref<NewGiftCard>({
@@ -165,20 +301,16 @@ const newGiftCard = ref<NewGiftCard>({
   initialValue: 50,
   recipient: '',
   email: '',
-  expiryDate: ''
+  expiryDate: futureDate
 })
 
 function openAddModal(): void {
-  // Set expiry date to one year from now
-  const oneYearFromNow = new Date()
-  oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
-
   newGiftCard.value = {
     code: generateGiftCardCode(),
     initialValue: 50,
     recipient: '',
     email: '',
-    expiryDate: oneYearFromNow.toISOString().split('T')[0]
+    expiryDate: futureDate
   }
   showAddModal.value = true
 }
@@ -216,13 +348,12 @@ function generateGiftCardCode(): string {
 function addGiftCard(): void {
   // In a real app, this would send data to the server
   const id = Math.max(...giftCards.value.map(c => c.id)) + 1
-  const today = new Date().toISOString().split('T')[0]
 
   // Ensure we have non-null values with default values
   const code = newGiftCard.value.code || generateGiftCardCode()
   const recipient = newGiftCard.value.recipient || 'Anonymous'
   const email = newGiftCard.value.email || ''
-  const expiryDate = newGiftCard.value.expiryDate || today
+  const expiryDate = newGiftCard.value.expiryDate || futureDate
 
   giftCards.value.push({
     id,
@@ -232,7 +363,7 @@ function addGiftCard(): void {
     recipient,
     email,
     purchasedBy: 'Current User', // In a real app, this would be the logged-in user
-    purchaseDate: today,
+    purchaseDate: currentDate,
     expiryDate,
     status: 'Active'
   })
@@ -263,8 +394,80 @@ function addGiftCard(): void {
           </div>
         </div>
 
+        <!-- Time range selector -->
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Overview of your gift card performance
+          </p>
+          <div class="relative">
+            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Active Gift Cards</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ giftCardStats.activeGiftCards }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ Math.round(giftCardStats.activeGiftCards / giftCardStats.totalGiftCards * 100) }}% of total</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Value</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(giftCardStats.totalInitialValue).toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>10.5% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Current Balance</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(giftCardStats.totalCurrentBalance).toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>${{ parseFloat(giftCardStats.totalRedeemed).toLocaleString() }} redeemed</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Redemption Rate</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ giftCardStats.redemptionRate }}%</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>5.2% increase</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Gift Card Sales</h3>
+              <div class="mt-2 h-80">
+                <Line :data="monthlyChartData.giftCardSalesData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Gift Card Revenue</h3>
+              <div class="mt-2 h-80">
+                <Bar :data="monthlyChartData.giftCardRevenueData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -292,6 +495,12 @@ function addGiftCard(): void {
 
         <!-- Gift Cards table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Gift Cards</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all the gift cards in your store including their value, balance, and status.
+            </p>
+          </div>
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
