@@ -420,7 +420,7 @@ function truncateText(text: string, maxLength: number): string {
                 @click="bulkUpdateStatus('pending')"
                 class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-yellow-600 shadow-sm ring-1 ring-inset ring-yellow-300 hover:bg-yellow-50 dark:bg-blue-gray-800 dark:text-yellow-400 dark:ring-yellow-500/30 dark:hover:bg-yellow-500/10"
               >
-                <div class="i-hugeicons-clock h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-clock-01 h-4 w-4 mr-1"></div>
                 Mark as Pending
               </button>
               <button
@@ -539,24 +539,24 @@ function truncateText(text: string, maxLength: number): string {
                         <button
                           v-if="comment.status !== 'pending'"
                           @click="updateCommentStatus(comment, 'pending')"
-                          class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                          class="text-gray-400 transition-colors duration-150 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                           title="Mark as Pending"
                         >
-                          <div class="i-hugeicons-clock h-5 w-5"></div>
+                          <div class="i-hugeicons-clock-01 h-5 w-5"></div>
                           <span class="sr-only">Mark as Pending</span>
                         </button>
                         <button
                           v-if="comment.status !== 'spam'"
                           @click="updateCommentStatus(comment, 'spam')"
-                          class="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
+                          class="text-gray-400 transition-colors duration-150 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
                           title="Mark as Spam"
                         >
-                          <div class="i-hugeicons-flag h-5 w-5"></div>
+                          <div class="i-hugeicons-flag-02 h-5 w-5"></div>
                           <span class="sr-only">Mark as Spam</span>
                         </button>
                         <button
                           @click="openEditModal(comment)"
-                          class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                           title="Edit"
                         >
                           <div class="i-hugeicons-edit-01 h-5 w-5"></div>
@@ -564,7 +564,7 @@ function truncateText(text: string, maxLength: number): string {
                         </button>
                         <button
                           @click="confirmDeleteComment(comment)"
-                          class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                          class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                           title="Delete"
                         >
                           <div class="i-hugeicons-waste h-5 w-5"></div>
