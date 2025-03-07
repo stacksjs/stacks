@@ -1,10 +1,157 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar, Doughnut } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Blog Categories',
 })
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Doughnut chart options (no scales)
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom' as const,
+    },
+  },
+}
+
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Sample data - in a real app, this would be calculated from actual category data
+  const categoryGrowthData = [5, 6, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12]
+
+  // Category growth chart data
+  const categoryGrowthChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Categories',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: categoryGrowthData,
+      },
+    ],
+  }
+
+  // Posts per category chart data
+  const postCountData = categories.value.map(category => category.postCount)
+  const categoryNames = categories.value.map(category => category.name)
+
+  const postsPerCategoryChartData = {
+    labels: categoryNames,
+    datasets: [
+      {
+        label: 'Posts',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: postCountData,
+      },
+    ],
+  }
+
+  // Category distribution chart data
+  const backgroundColors = [
+    'rgba(59, 130, 246, 0.8)',
+    'rgba(16, 185, 129, 0.8)',
+    'rgba(245, 158, 11, 0.8)',
+    'rgba(239, 68, 68, 0.8)',
+    'rgba(139, 92, 246, 0.8)',
+    'rgba(236, 72, 153, 0.8)',
+    'rgba(75, 85, 99, 0.8)',
+    'rgba(14, 165, 233, 0.8)',
+    'rgba(168, 85, 247, 0.8)',
+    'rgba(249, 115, 22, 0.8)',
+    'rgba(234, 88, 12, 0.8)',
+    'rgba(217, 119, 6, 0.8)',
+  ]
+
+  const categoryDistributionChartData = {
+    labels: categoryNames,
+    datasets: [
+      {
+        data: postCountData,
+        backgroundColor: backgroundColors.slice(0, categoryNames.length),
+        borderWidth: 0,
+      },
+    ],
+  }
+
+  return {
+    categoryGrowthChartData,
+    postsPerCategoryChartData,
+    categoryDistributionChartData,
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define category type
 interface Category {
@@ -204,6 +351,62 @@ const paginationRange = computed(() => {
   return range
 })
 
+// Computed category statistics
+const categoryStats = computed(() => {
+  // Total number of categories
+  const totalCategories = categories.value.length
+
+  // Total number of posts across all categories
+  const totalPosts = categories.value.reduce((sum, category) => sum + category.postCount, 0)
+
+  // Average posts per category
+  const avgPostsPerCategory = totalCategories > 0
+    ? (totalPosts / totalCategories).toFixed(1)
+    : '0.0'
+
+  // Find category with most posts
+  let mostPopularCategory = categories.value[0] || { name: 'None', postCount: 0 }
+
+  for (const category of categories.value) {
+    if (category.postCount > mostPopularCategory.postCount) {
+      mostPopularCategory = category
+    }
+  }
+
+  // Find category with least posts
+  let leastPopularCategory = categories.value[0] || { name: 'None', postCount: 0 }
+
+  for (const category of categories.value) {
+    if (category.postCount < leastPopularCategory.postCount) {
+      leastPopularCategory = category
+    }
+  }
+
+  // Calculate percentage of posts in top category
+  const topCategoryPercentage = totalPosts > 0
+    ? ((mostPopularCategory.postCount / totalPosts) * 100).toFixed(1)
+    : '0.0'
+
+  // Find newest category
+  let newestCategory = categories.value[0] || { name: 'None', createdAt: '' } as Category
+
+  for (const category of categories.value) {
+    if (new Date(category.createdAt) > new Date(newestCategory.createdAt)) {
+      newestCategory = category
+    }
+  }
+
+  return {
+    totalCategories,
+    totalPosts,
+    avgPostsPerCategory,
+    mostPopularCategory,
+    leastPopularCategory,
+    topCategoryPercentage,
+    newestCategory
+  }
+})
+
 // Methods
 function openNewCategoryModal(): void {
   newCategory.value = {
@@ -353,8 +556,87 @@ const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 
           </div>
         </div>
 
+        <!-- Time range selector -->
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Overview of your blog categories
+          </p>
+          <div class="relative">
+            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Categories</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ categoryStats.totalCategories }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ categoryStats.newestCategory.name }} added recently</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Posts</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ categoryStats.totalPosts }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <span>{{ categoryStats.avgPostsPerCategory }} avg per category</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Top Category</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ categoryStats.mostPopularCategory.name }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>{{ categoryStats.mostPopularCategory.postCount }} posts ({{ categoryStats.topCategoryPercentage }}%)</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Least Used Category</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ categoryStats.leastPopularCategory.name }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+              <span>{{ categoryStats.leastPopularCategory.postCount }} posts</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Category Growth</h3>
+              <div class="mt-2 h-80">
+                <Line :data="monthlyChartData.categoryGrowthChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Posts per Category</h3>
+              <div class="mt-2 h-80">
+                <Bar :data="monthlyChartData.postsPerCategoryChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Category Distribution</h3>
+              <div class="mt-2 h-80">
+                <Doughnut :data="monthlyChartData.categoryDistributionChartData" :options="doughnutChartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -418,6 +700,12 @@ const hasSelectedCategories = computed(() => selectedCategoryIds.value.length > 
 
         <!-- Categories Table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Categories</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all blog categories including name, description, and post count.
+            </p>
+          </div>
           <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow">
             <div class="overflow-hidden">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
