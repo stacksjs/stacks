@@ -63,6 +63,7 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
   '#commerce-analytics': false,
   '#social-posts': false,
   '#analytics': false,
+  '#analytics-web': false,
   '#waitlist': false
 })
 
@@ -243,7 +244,19 @@ const sectionContent: Record<string, SectionContent> = {
   },
   analytics: {
     items: [
-      { to: '/analytics/web', icon: 'i-hugeicons-global', text: 'Web' },
+      {
+        to: '#analytics-web',
+        icon: 'i-hugeicons-global',
+        text: 'Web',
+        children: [
+          { to: '/analytics/web', icon: 'i-hugeicons-dashboard-speed-01', text: 'Overview' },
+          { to: '/analytics/pages', icon: 'i-hugeicons-document-01', text: 'Pages' },
+          { to: '/analytics/referrers', icon: 'i-hugeicons-link-03', text: 'Referrers' },
+          { to: '/analytics/devices', icon: 'i-hugeicons-mobile-01', text: 'Devices' },
+          { to: '/analytics/browsers', icon: 'i-hugeicons-browser', text: 'Browsers' },
+          { to: '/analytics/countries', icon: 'i-hugeicons-globe-01', text: 'Countries' }
+        ]
+      },
       { to: '/analytics/blog', icon: 'i-hugeicons-document-validation', text: 'Blog' },
       { to: '/analytics/commerce/web', icon: 'i-hugeicons-shopping-cart-02', text: 'Commerce' },
       { to: '/analytics/commerce/sales', icon: 'i-hugeicons-sale-tag-01', text: 'Sales' },
