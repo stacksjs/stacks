@@ -1,10 +1,113 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 useHead({
   title: 'Dashboard - Commerce Payments',
 })
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Generate monthly data for charts
+const monthlyChartData = computed(() => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+  // Sample data - in a real app, this would be calculated from actual transaction data
+  const transactionCountData = [45, 52, 49, 60, 72, 68, 80, 91, 87, 94, 102, 110]
+  const revenueData = [5500, 6200, 5900, 7500, 8800, 8200, 9600, 11000, 10500, 11800, 12500, 13800]
+
+  // Transaction count chart data
+  const transactionCountChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Transaction Count',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: transactionCountData,
+      },
+    ],
+  }
+
+  // Revenue chart data
+  const revenueChartData = {
+    labels: months,
+    datasets: [
+      {
+        label: 'Revenue',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: revenueData,
+      },
+    ],
+  }
+
+  return {
+    transactionCountChartData,
+    revenueChartData
+  }
+})
+
+// Time range selector
+const timeRange = ref('Last 30 days')
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 // Define payment transaction type
 interface PaymentTransaction {
@@ -79,6 +182,61 @@ const transactions = ref<PaymentTransaction[]>([
     date: '2023-11-19'
   }
 ])
+
+// Computed payment statistics
+const paymentStats = computed(() => {
+  // Count transactions by status
+  const completedTransactions = transactions.value.filter(t => t.status === 'Completed').length
+  const pendingTransactions = transactions.value.filter(t => t.status === 'Pending').length
+  const failedTransactions = transactions.value.filter(t => t.status === 'Failed').length
+
+  // Calculate total amount for completed transactions
+  const totalAmount = transactions.value.reduce((sum, transaction) => {
+    if (transaction.status === 'Completed') {
+      return sum + transaction.amount
+    }
+    return sum
+  }, 0)
+
+  // Calculate average transaction value
+  const avgTransactionValue = completedTransactions > 0
+    ? (totalAmount / completedTransactions).toFixed(2)
+    : '0.00'
+
+  // Calculate success rate
+  const totalProcessedTransactions = completedTransactions + failedTransactions
+  const successRate = totalProcessedTransactions > 0
+    ? ((completedTransactions / totalProcessedTransactions) * 100).toFixed(1)
+    : '0.0'
+
+  // Count transactions by payment method
+  const methodCounts = transactions.value.reduce((counts, transaction) => {
+    counts[transaction.method] = (counts[transaction.method] || 0) + 1
+    return counts
+  }, {} as Record<string, number>)
+
+  // Find most popular payment method
+  let mostPopularMethod = 'Credit Card'
+  let maxCount = 0
+
+  for (const [method, count] of Object.entries(methodCounts)) {
+    if (count > maxCount) {
+      maxCount = count
+      mostPopularMethod = method
+    }
+  }
+
+  return {
+    totalTransactions: transactions.value.length,
+    completedTransactions,
+    pendingTransactions,
+    failedTransactions,
+    totalAmount: totalAmount.toFixed(2),
+    avgTransactionValue,
+    successRate,
+    mostPopularMethod
+  }
+})
 
 // Filter and sort options
 const searchQuery = ref('')
@@ -217,8 +375,80 @@ const totalAmount = computed(() => {
           </div>
         </div>
 
+        <!-- Time range selector -->
+        <div class="mt-4 flex items-center justify-between">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Overview of your payment transactions
+          </p>
+          <div class="relative">
+            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+              <option v-for="range in timeRanges" :key="range" :value="range">{{ range }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Transactions</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.totalTransactions }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>8.2% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Success Rate</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.successRate }}%</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>1.2% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(paymentStats.totalAmount).toLocaleString() }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>12.5% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Transaction</dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ paymentStats.avgTransactionValue }}</dd>
+            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+              <span>3.7% increase</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Transaction Count</h3>
+              <div class="mt-2 h-80">
+                <Line :data="monthlyChartData.transactionCountChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+            <div class="p-6">
+              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
+              <div class="mt-2 h-80">
+                <Bar :data="monthlyChartData.revenueChartData" :options="chartOptions" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total transactions card -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-5">
@@ -309,7 +539,7 @@ const totalAmount = computed(() => {
         </div>
 
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
@@ -347,6 +577,12 @@ const totalAmount = computed(() => {
 
         <!-- Transactions table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Transactions</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all payment transactions including order ID, customer, amount, and status.
+            </p>
+          </div>
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
