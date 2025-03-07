@@ -24,6 +24,7 @@ export default {
   attributes: {
     title: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -37,6 +38,7 @@ export default {
 
     body: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {

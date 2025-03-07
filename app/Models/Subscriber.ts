@@ -18,6 +18,7 @@ export default {
   attributes: {
     subscribed: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.boolean(),
         message: {

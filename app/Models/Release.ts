@@ -15,23 +15,24 @@ export default {
       // defaults to a count of 10, `seedable` used as an alias
       count: 100,
     },
-    // useUuid: true, // defaults to false
   },
 
   attributes: {
-    // name: {
-    //   validation: {
-    //     rule: schema.string().minLength(3).maxLength(255),
-    //     message: {
-    //       minLength: 'Name must have a minimum of 3 characters',
-    //       maxLength: 'Name must have a maximum of 255 characters',
-    //     },
-    //   },
+    name: {
+      required: true,
+      validation: {
+        rule: schema.string().minLength(3).maxLength(255),
+        message: {
+          minLength: 'Name must have a minimum of 3 characters',
+          maxLength: 'Name must have a maximum of 255 characters',
+        },
+      },
 
-    //   factory: (faker) => faker.person.fullName(),
-    // },
+      factory: faker => faker.person.fullName(),
+    },
 
     version: {
+      required: true,
       fillable: true,
       unique: true,
       validation: {

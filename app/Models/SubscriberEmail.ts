@@ -24,6 +24,7 @@ export default {
     email: {
       unique: true,
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string().email(),
         message: {
