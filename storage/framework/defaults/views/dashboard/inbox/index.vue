@@ -535,25 +535,25 @@ const inboxUnreadCount = computed(() => {
           </div>
         </div>
 
-        <!-- Search bar -->
-        <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 px-4 py-2">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <i class="i-hugeicons-search-01 text-gray-400 text-lg"></i>
-            </div>
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search"
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-blue-gray-600 rounded-md bg-gray-50 dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            />
-          </div>
-        </div>
-
         <!-- Email list and content area -->
         <div class="flex-1 flex overflow-hidden">
           <!-- Email list -->
           <div v-if="!selectedEmail || !isComposing" class="w-full md:w-1/3 lg:w-2/5 border-r border-gray-200 dark:border-blue-gray-600 flex flex-col">
+            <!-- Search bar (moved to left section) -->
+            <div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 px-4 py-2">
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <i class="i-hugeicons-search-01 text-gray-400 text-lg"></i>
+                </div>
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Search"
+                  class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-blue-gray-600 rounded-md bg-gray-50 dark:bg-blue-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
             <div class="flex-1 overflow-y-auto">
               <ul class="divide-y divide-gray-200 dark:divide-blue-gray-600">
                 <li
@@ -606,7 +606,7 @@ const inboxUnreadCount = computed(() => {
             </div>
           </div>
 
-          <!-- Email detail view -->
+          <!-- Email detail view with reply box at the bottom -->
           <div v-if="selectedEmail" class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
             <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
               <div class="flex items-center space-x-2">
@@ -676,14 +676,24 @@ const inboxUnreadCount = computed(() => {
               </div>
             </div>
 
-            <!-- Reply actions -->
-            <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
-              <div class="flex space-x-2">
+            <!-- Reply box at the bottom (only in the right section) -->
+            <div class="bg-white dark:bg-blue-gray-700 border-t border-gray-200 dark:border-blue-gray-600 p-4">
+              <div class="flex items-center">
+                <textarea
+                  placeholder="Reply William Smith..."
+                  class="flex-1 bg-white dark:bg-blue-gray-600 border border-gray-300 dark:border-blue-gray-600 rounded-md p-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="flex justify-between mt-2">
+                <div class="flex items-center">
+                  <label class="inline-flex items-center text-gray-500 dark:text-gray-400 text-sm">
+                    <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-500 bg-white dark:bg-blue-gray-600">
+                    <span class="ml-2">Mute this thread</span>
+                  </label>
+                </div>
                 <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
-                  Reply
-                </button>
-                <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-600 font-medium text-sm">
-                  Forward
+                  Send
                 </button>
               </div>
             </div>
@@ -773,28 +783,6 @@ const inboxUnreadCount = computed(() => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        <!-- Reply box at the bottom -->
-        <div v-if="selectedEmail" class="bg-white dark:bg-blue-gray-700 border-t border-gray-200 dark:border-blue-gray-600 p-4">
-          <div class="flex items-center">
-            <textarea
-              placeholder="Reply William Smith..."
-              class="flex-1 bg-white dark:bg-blue-gray-600 border border-gray-300 dark:border-blue-gray-600 rounded-md p-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              rows="3"
-            ></textarea>
-          </div>
-          <div class="flex justify-between mt-2">
-            <div class="flex items-center">
-              <label class="inline-flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-500 bg-white dark:bg-blue-gray-600">
-                <span class="ml-2">Mute this thread</span>
-              </label>
-            </div>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
-              Send
-            </button>
           </div>
         </div>
       </div>
