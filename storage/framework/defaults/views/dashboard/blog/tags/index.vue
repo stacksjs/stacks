@@ -1,10 +1,73 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar, Doughnut } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
+
+// Register ChartJS components
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
 
 useHead({
   title: 'Dashboard - Blog Tags',
 })
+
+// Chart options
+const lineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+const barChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+// Time range selector
+const timeRanges = [
+  { label: 'Today', value: 'today' },
+  { label: 'Last 7 days', value: '7days' },
+  { label: 'Last 30 days', value: '30days' },
+  { label: 'Last 90 days', value: '90days' },
+  { label: 'Last year', value: 'year' },
+  { label: 'All time', value: 'all' }
+]
+const selectedTimeRange = ref('30days')
 
 // Sample tags data
 const tags = ref([
@@ -268,16 +331,94 @@ const filteredTags = computed(() => {
     })
 })
 
+// Monthly chart data
+const monthlyChartData = computed(() => {
+  // Generate sample data for tag growth over time
+  const tagGrowthData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: 'New Tags',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        data: [2, 3, 1, 4, 2, 5, 3, 2, 4, 6, 3, 2]
+      }
+    ]
+  }
+
+  // Generate sample data for posts per tag
+  const postsPerTagData = {
+    labels: tags.value.slice(0, 8).map(tag => tag.name),
+    datasets: [
+      {
+        label: 'Posts',
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1,
+        data: tags.value.slice(0, 8).map(tag => tag.postCount)
+      }
+    ]
+  }
+
+  // Generate sample data for tag distribution
+  const tagColors = [
+    'rgba(255, 99, 132, 0.6)',
+    'rgba(54, 162, 235, 0.6)',
+    'rgba(255, 206, 86, 0.6)',
+    'rgba(75, 192, 192, 0.6)',
+    'rgba(153, 102, 255, 0.6)',
+    'rgba(255, 159, 64, 0.6)',
+    'rgba(199, 199, 199, 0.6)',
+    'rgba(83, 102, 255, 0.6)'
+  ]
+
+  const tagDistributionData = {
+    labels: tags.value.slice(0, 8).map(tag => tag.name),
+    datasets: [
+      {
+        backgroundColor: tagColors,
+        borderColor: tagColors.map(color => color.replace('0.6', '1')),
+        borderWidth: 1,
+        data: tags.value.slice(0, 8).map(tag => tag.postCount)
+      }
+    ]
+  }
+
+  return {
+    tagGrowthChartData: tagGrowthData,
+    postsPerTagChartData: postsPerTagData,
+    tagDistributionChartData: tagDistributionData
+  }
+})
+
 // Tag statistics
 const tagStats = computed(() => {
   const totalTags = tags.value.length
   const totalPosts = tags.value.reduce((sum, tag) => sum + tag.postCount, 0)
   const mostUsedTag = [...tags.value].sort((a, b) => b.postCount - a.postCount)[0]
+  const leastUsedTag = [...tags.value].sort((a, b) => a.postCount - b.postCount)[0]
+  const avgPostsPerTag = totalPosts / totalTags
+  const topTagPercentage = mostUsedTag ? Math.round((mostUsedTag.postCount / totalPosts) * 100) : 0
+
+  // Find newest tag
+  let newestTag = tags.value[0] || { name: 'None', createdAt: '' }
+
+  for (const tag of tags.value) {
+    if (new Date(tag.createdAt) > new Date(newestTag.createdAt)) {
+      newestTag = tag
+    }
+  }
 
   return {
     totalTags,
     totalPosts,
-    mostUsedTag
+    mostUsedTag,
+    leastUsedTag,
+    avgPostsPerTag: avgPostsPerTag.toFixed(1),
+    topTagPercentage,
+    newestTag
   }
 })
 
@@ -457,8 +598,20 @@ const paginationRange = computed(() => {
       </button>
     </div>
 
-    <!-- Tag Statistics -->
-    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Time Range Selector -->
+    <div class="flex justify-end">
+      <div class="relative inline-block w-full sm:w-auto">
+        <select
+          v-model="selectedTimeRange"
+          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+        >
+          <option v-for="range in timeRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Enhanced Tag Statistics -->
+    <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
       <!-- Total Tags -->
       <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
         <div class="px-4 py-5 sm:p-6">
@@ -476,6 +629,9 @@ const paginationRange = computed(() => {
                 <dd>
                   <div class="text-lg font-medium text-gray-900 dark:text-white">
                     {{ tagStats.totalTags }}
+                  </div>
+                  <div class="mt-1 text-sm text-green-600 dark:text-green-400">
+                    <span>{{ tagStats.newestTag.name }} added recently</span>
                   </div>
                 </dd>
               </dl>
@@ -502,6 +658,9 @@ const paginationRange = computed(() => {
                   <div class="text-lg font-medium text-gray-900 dark:text-white">
                     {{ tagStats.totalPosts }}
                   </div>
+                  <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <span>{{ tagStats.avgPostsPerTag }} avg per tag</span>
+                  </div>
                 </dd>
               </dl>
             </div>
@@ -526,13 +685,74 @@ const paginationRange = computed(() => {
                 <dd>
                   <div class="text-lg font-medium text-gray-900 dark:text-white">
                     {{ tagStats.mostUsedTag ? tagStats.mostUsedTag.name : 'None' }}
-                    <span v-if="tagStats.mostUsedTag" class="text-sm text-gray-500 dark:text-gray-400">
-                      ({{ tagStats.mostUsedTag.postCount }} posts)
-                    </span>
+                  </div>
+                  <div class="mt-1 text-sm text-green-600 dark:text-green-400">
+                    <span v-if="tagStats.mostUsedTag">{{ tagStats.mostUsedTag.postCount }} posts ({{ tagStats.topTagPercentage }}%)</span>
                   </div>
                 </dd>
               </dl>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Least Used Tag -->
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+              <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+            <div class="ml-5 w-0 flex-1">
+              <dl>
+                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                  Least Used Tag
+                </dt>
+                <dd>
+                  <div class="text-lg font-medium text-gray-900 dark:text-white">
+                    {{ tagStats.leastUsedTag ? tagStats.leastUsedTag.name : 'None' }}
+                  </div>
+                  <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <span v-if="tagStats.leastUsedTag">{{ tagStats.leastUsedTag.postCount }} posts</span>
+                  </div>
+                </dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">
+      <!-- Tag Growth Chart -->
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Tag Growth</h3>
+          <div class="mt-4" style="height: 250px;">
+            <Line :data="monthlyChartData.tagGrowthChartData" :options="lineChartOptions" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Posts Per Tag Chart -->
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Posts Per Tag</h3>
+          <div class="mt-4" style="height: 250px;">
+            <Bar :data="monthlyChartData.postsPerTagChartData" :options="barChartOptions" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Tag Distribution Chart -->
+      <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+          <h3 class="text-base font-semibold text-gray-900 dark:text-white">Tag Distribution</h3>
+          <div class="mt-4" style="height: 250px;">
+            <Doughnut :data="monthlyChartData.tagDistributionChartData" :options="doughnutChartOptions" />
           </div>
         </div>
       </div>
@@ -584,6 +804,12 @@ const paginationRange = computed(() => {
 
     <!-- Tags Table -->
     <div class="mt-6 flow-root">
+      <div class="sm:flex sm:items-center sm:justify-between mb-4">
+        <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Tags</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          A list of all blog tags including name, description, and post count.
+        </p>
+      </div>
       <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
