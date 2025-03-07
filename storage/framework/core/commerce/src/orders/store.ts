@@ -15,14 +15,14 @@ export async function store(request: OrderRequestType): Promise<OrderType | unde
 
   try {
     // Prepare order data
-    const orderData: NewOrder = {
-      customer_id: request.get('customer_id'),
-      status: request.get('status') || 'PENDING',
-      total_amount: request.get('total_amount'),
-      tax_amount: request.get('tax_amount'),
-      discount_amount: request.get('discount_amount') || 0,
-      delivery_fee: request.get('delivery_fee') || 0,
-      tip_amount: request.get('tip_amount') || 0,
+    const orderData = {
+      customer_id: request.get<number>('customer_id'),
+      status: request.get('status', 'PENDING'),
+      total_amount: request.get<number>('total_amount', 0),
+      tax_amount: request.get<number>('tax_amount'),
+      discount_amount: request.get<number>('discount_amount', 0),
+      delivery_fee: request.get<number>('delivery_fee', 0),
+      tip_amount: request.get<number>('tip_amount', 0),
       order_type: request.get('order_type'),
       delivery_address: request.get('delivery_address'),
       special_instructions: request.get('special_instructions'),

@@ -23,7 +23,7 @@ export interface RequestInstance {
 
   addParam: (param: RouteParams) => void
 
-  get: <T>(element: string, defaultValue?: T) => T | undefined
+  get: <T>(element: string, defaultValue?: T) => T
 
   header: (element: string) => string | number | boolean | null
 
