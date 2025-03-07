@@ -1,10 +1,73 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import { Line, Bar, Doughnut } from 'vue-chartjs'
+import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
+
+// Register ChartJS components
+ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
 
 useHead({
   title: 'Dashboard - Blog Comments',
 })
+
+// Chart options
+const lineChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+const barChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      ticks: {
+        precision: 0
+      }
+    }
+  },
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    }
+  }
+}
+
+// Time range selector
+const timeRanges = [
+  { label: 'Today', value: 'today' },
+  { label: 'Last 7 days', value: '7days' },
+  { label: 'Last 30 days', value: '30days' },
+  { label: 'Last 90 days', value: '90days' },
+  { label: 'Last year', value: 'year' },
+  { label: 'All time', value: 'all' }
+]
+const selectedTimeRange = ref('30days')
 
 // Define comment type
 interface Comment {
@@ -331,6 +394,132 @@ function truncateText(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text
   return text.substring(0, maxLength) + '...'
 }
+
+// Monthly chart data
+const monthlyChartData = computed(() => {
+  // Generate sample data for comments over time
+  const commentsByMonth = [8, 12, 15, 10, 18, 22, 16, 14, 20, 25, 30, 28]
+  const approvedByMonth = [6, 10, 12, 8, 15, 18, 14, 12, 16, 20, 24, 22]
+  const pendingByMonth = [1, 1, 2, 1, 2, 2, 1, 1, 2, 3, 4, 3]
+  const spamByMonth = [1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 2, 3]
+
+  const commentsOverTimeData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    datasets: [
+      {
+        label: 'Total Comments',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+        data: commentsByMonth
+      }
+    ]
+  }
+
+  // Generate sample data for comments by status
+  const commentsByStatusData = {
+    labels: ['Approved', 'Pending', 'Spam'],
+    datasets: [
+      {
+        backgroundColor: [
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(255, 99, 132, 0.6)'
+        ],
+        borderColor: [
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(255, 99, 132, 1)'
+        ],
+        borderWidth: 1,
+        data: [
+          comments.value.filter(c => c.status === 'approved').length,
+          comments.value.filter(c => c.status === 'pending').length,
+          comments.value.filter(c => c.status === 'spam').length
+        ]
+      }
+    ]
+  }
+
+  // Generate sample data for comments by post
+  const topPosts = [...new Set(comments.value.map(c => c.postTitle))]
+    .slice(0, 5)
+    .map(title => {
+      return {
+        title,
+        count: comments.value.filter(c => c.postTitle === title).length
+      }
+    })
+    .sort((a, b) => b.count - a.count)
+
+  const commentsByPostData = {
+    labels: topPosts.map(p => p.title),
+    datasets: [
+      {
+        label: 'Comments',
+        backgroundColor: 'rgba(153, 102, 255, 0.6)',
+        borderColor: 'rgba(153, 102, 255, 1)',
+        borderWidth: 1,
+        data: topPosts.map(p => p.count)
+      }
+    ]
+  }
+
+  return {
+    commentsOverTimeChartData: commentsOverTimeData,
+    commentsByStatusChartData: commentsByStatusData,
+    commentsByPostChartData: commentsByPostData
+  }
+})
+
+// Comment statistics
+const commentStats = computed(() => {
+  const totalComments = comments.value.length
+  const approvedComments = comments.value.filter(c => c.status === 'approved').length
+  const pendingComments = comments.value.filter(c => c.status === 'pending').length
+  const spamComments = comments.value.filter(c => c.status === 'spam').length
+
+  // Calculate approval rate
+  const approvalRate = totalComments > 0 ? Math.round((approvedComments / totalComments) * 100) : 0
+
+  // Find most active author
+  const authorCounts = comments.value.reduce((acc, comment) => {
+    acc[comment.author] = (acc[comment.author] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const mostActiveAuthor = Object.entries(authorCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([author, count]) => ({ author, count }))[0] || { author: 'None', count: 0 }
+
+  // Find most commented post
+  const postCounts = comments.value.reduce((acc, comment) => {
+    acc[comment.postTitle] = (acc[comment.postTitle] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  const mostCommentedPost = Object.entries(postCounts)
+    .sort((a, b) => b[1] - a[1])
+    .map(([title, count]) => ({ title, count }))[0] || { title: 'None', count: 0 }
+
+  // Find newest comment
+  const sortedComments = [...comments.value].sort((a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+  const newestComment = sortedComments[0] || null
+
+  return {
+    totalComments,
+    approvedComments,
+    pendingComments,
+    spamComments,
+    approvalRate,
+    mostActiveAuthor,
+    mostCommentedPost,
+    newestComment
+  }
+})
 </script>
 
 <template>
@@ -344,6 +533,168 @@ function truncateText(text: string, maxLength: number): string {
             <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
               Manage all your blog comments
             </p>
+          </div>
+        </div>
+
+        <!-- Time Range Selector -->
+        <div class="mt-6 flex justify-end">
+          <div class="relative inline-block w-full sm:w-auto">
+            <select
+              v-model="selectedTimeRange"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            >
+              <option v-for="range in timeRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Comment Statistics -->
+        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <!-- Total Comments -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                      Total Comments
+                    </dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                        {{ commentStats.totalComments }}
+                      </div>
+                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <span class="text-green-600 dark:text-green-400">{{ commentStats.approvedComments }}</span> approved,
+                        <span class="text-yellow-600 dark:text-yellow-400">{{ commentStats.pendingComments }}</span> pending,
+                        <span class="text-red-600 dark:text-red-400">{{ commentStats.spamComments }}</span> spam
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Approval Rate -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                      Approval Rate
+                    </dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                        {{ commentStats.approvalRate }}%
+                      </div>
+                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <span>{{ commentStats.approvedComments }} of {{ commentStats.totalComments }} comments</span>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Active Author -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                      Most Active Author
+                    </dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                        {{ commentStats.mostActiveAuthor.author }}
+                      </div>
+                      <div class="mt-1 text-sm text-green-600 dark:text-green-400">
+                        <span>{{ commentStats.mostActiveAuthor.count }} comments</span>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Most Commented Post -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <div class="flex items-center">
+                <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
+                  <svg class="h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                  </svg>
+                </div>
+                <div class="ml-5 w-0 flex-1">
+                  <dl>
+                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                      Most Commented Post
+                    </dt>
+                    <dd>
+                      <div class="text-lg font-medium text-gray-900 dark:text-white line-clamp-1">
+                        {{ commentStats.mostCommentedPost.title }}
+                      </div>
+                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        <span>{{ commentStats.mostCommentedPost.count }} comments</span>
+                      </div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
+          <!-- Comments Over Time Chart -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments Over Time</h3>
+              <div class="mt-4" style="height: 250px;">
+                <Line :data="monthlyChartData.commentsOverTimeChartData" :options="lineChartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Comments by Status Chart -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments by Status</h3>
+              <div class="mt-4" style="height: 250px;">
+                <Doughnut :data="monthlyChartData.commentsByStatusChartData" :options="doughnutChartOptions" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Comments by Post Chart -->
+          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+            <div class="px-4 py-5 sm:p-6">
+              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Posts by Comments</h3>
+              <div class="mt-4" style="height: 250px;">
+                <Bar :data="monthlyChartData.commentsByPostChartData" :options="barChartOptions" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -443,6 +794,12 @@ function truncateText(text: string, maxLength: number): string {
 
         <!-- Comments Table -->
         <div class="mt-6 flow-root">
+          <div class="sm:flex sm:items-center sm:justify-between mb-4">
+            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Comments</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              A list of all blog comments including content, author, post, status, and date.
+            </p>
+          </div>
           <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow">
             <div class="overflow-hidden">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
