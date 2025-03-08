@@ -39,6 +39,9 @@ const systemHealth = [
   { name: 'Storage', status: 'healthy', latency: '22ms', uptime: '100%' },
   { name: 'Cache', status: 'healthy', latency: '12ms', uptime: '99.95%' },
   { name: 'Queue', status: 'degraded', latency: '120ms', uptime: '99.90%' },
+  { name: 'Mail', status: 'healthy', latency: '12ms', uptime: '99.95%' },
+  { name: 'Printers', status: 'healthy', latency: '12ms', uptime: '99.95%' },
+  { name: 'Health', status: 'healthy', latency: '12ms', uptime: '99.95%' },
 ]
 
 // Get status color based on health status

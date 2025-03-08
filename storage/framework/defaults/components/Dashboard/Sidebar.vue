@@ -222,7 +222,8 @@ const sectionContent: Record<string, SectionContent> = {
           { to: '/commerce/waitlist/restaurant', icon: 'i-hugeicons-restaurant', text: 'Restaurant' }
         ]
       },
-      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' }
+      { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' },
+      { to: '/commerce/printers', icon: 'i-hugeicons-printer', text: 'Printers' }
     ]
   },
   data: {
