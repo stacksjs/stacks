@@ -93,7 +93,7 @@ declare module 'vue-router/auto-routes' {
     '/models/subscribers': RouteRecordInfo<'/models/subscribers', '/models/subscribers', Record<never, never>, Record<never, never>>,
     '/models/teams': RouteRecordInfo<'/models/teams', '/models/teams', Record<never, never>, Record<never, never>>,
     '/models/users': RouteRecordInfo<'/models/users', '/models/users', Record<never, never>, Record<never, never>>,
-    '/notifications/': RouteRecordInfo<'/notifications/', '/notifications', Record<never, never>, Record<never, never>>,
+    '/notifications/dashboard': RouteRecordInfo<'/notifications/dashboard', '/notifications/dashboard', Record<never, never>, Record<never, never>>,
     '/notifications/email': RouteRecordInfo<'/notifications/email', '/notifications/email', Record<never, never>, Record<never, never>>,
     '/notifications/history': RouteRecordInfo<'/notifications/history', '/notifications/history', Record<never, never>, Record<never, never>>,
     '/notifications/sms': RouteRecordInfo<'/notifications/sms', '/notifications/sms', Record<never, never>, Record<never, never>>,

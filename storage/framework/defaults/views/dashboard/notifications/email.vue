@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.vue'
+import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.vue'
 
 useHead({
   title: 'Dashboard - Email Notifications',
@@ -41,17 +42,9 @@ const sortDirection = ref<'asc' | 'desc'>('desc')
 // Filter options
 const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
 
-// Status colors
-const notificationStatusColors: Record<string, string> = {
-  delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
-  sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
-  pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
-  failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
-}
-
-const getStatusColor = (status: string): string => {
-  return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
-}
+// Add state for error modal
+const isErrorModalOpen = ref(false)
+const selectedNotification = ref<EmailNotification | null>(null)
 
 // Generate mock data
 const generateMockEmailNotifications = () => {
@@ -174,6 +167,17 @@ const toggleSort = (field: 'sent_at' | 'delivered_at') => {
     sortField.value = field
     sortDirection.value = 'desc'
   }
+}
+
+// Function to open error modal
+const openErrorModal = (notification: EmailNotification) => {
+  selectedNotification.value = notification
+  isErrorModalOpen.value = true
+}
+
+// Function to close error modal
+const closeErrorModal = () => {
+  isErrorModalOpen.value = false
 }
 
 // Load initial data
@@ -322,14 +326,23 @@ onMounted(async () => {
                       {{ formatDate(notification.sent_at) }}
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <button
-                        v-if="notification.status === 'failed'"
-                        @click="handleRetry(notification.id)"
-                        type="button"
-                        class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
-                      >
-                        Retry
-                      </button>
+                      <div class="flex justify-end space-x-2">
+                        <button
+                          v-if="notification.status === 'failed'"
+                          @click="handleRetry(notification.id)"
+                          type="button"
+                          class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                        >
+                          Retry
+                        </button>
+                        <button
+                          @click="openErrorModal(notification)"
+                          type="button"
+                          class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                        >
+                          View Logs
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 </tbody>
@@ -372,5 +385,15 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+
+    <!-- Add the error modal component at the end of the template -->
+    <NotificationErrorModal
+      :is-open="isErrorModalOpen"
+      :notification-id="selectedNotification?.id || ''"
+      notification-type="email"
+      :error-message="selectedNotification?.error || 'Unknown error'"
+      :sent-at="selectedNotification?.sent_at || ''"
+      @close="closeErrorModal"
+    />
   </div>
 </template>

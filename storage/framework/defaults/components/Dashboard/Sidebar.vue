@@ -194,7 +194,7 @@ const sectionContent: Record<string, SectionContent> = {
         icon: 'i-hugeicons-notification-square',
         text: 'Notifications',
         children: [
-          { to: '/notifications', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+          { to: '/notifications/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
           { to: '/notifications/history', icon: 'i-hugeicons-history', text: 'History' },
           { to: '/notifications/sms', icon: 'i-hugeicons-smart-phone-01', text: 'SMS' },
           { to: '/notifications/email', icon: 'i-hugeicons-mail-01', text: 'Email' }
