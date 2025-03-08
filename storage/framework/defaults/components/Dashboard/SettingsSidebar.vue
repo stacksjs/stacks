@@ -170,7 +170,7 @@
         <li>
           <RouterLink to="search-engine" class="sidebar-links group flex items-center justify-between">
             <div class="flex items-center gap-x-2">
-              <div class="i-hugeicons-magnifying-glass h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
+              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />
               Search Engine
             </div>
             <div class="i-hugeicons-arrow-right-01 h-5 w-5 self-end text-gray-500 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700" />

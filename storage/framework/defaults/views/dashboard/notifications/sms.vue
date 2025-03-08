@@ -199,7 +199,7 @@ onMounted(async () => {
           <label for="search" class="sr-only">Search SMS notifications</label>
           <div class="relative rounded-md shadow-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-magnifying-glass h-5 w-5 text-gray-400" />
+              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
             </div>
             <input
               v-model="searchQuery"
