@@ -64,7 +64,8 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
   '#social-posts': false,
   '#analytics': false,
   '#analytics-web': false,
-  '#waitlist': false
+  '#waitlist': false,
+  '#notifications': false
 })
 
 // Create an ordered array of sections that we can reorder
@@ -188,7 +189,17 @@ const sectionContent: Record<string, SectionContent> = {
           { to: '/jobs', icon: 'i-hugeicons-briefcase-01', text: 'Jobs' }
         ]
       },
-      { to: '/notifications', icon: 'i-hugeicons-notification-square', text: 'Notifications' }
+      {
+        to: '#notifications',
+        icon: 'i-hugeicons-notification-square',
+        text: 'Notifications',
+        children: [
+          { to: '/notifications', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+          { to: '/notifications/history', icon: 'i-hugeicons-history', text: 'History' },
+          { to: '/notifications/sms', icon: 'i-hugeicons-smart-phone-01', text: 'SMS' },
+          { to: '/notifications/email', icon: 'i-hugeicons-mail-01', text: 'Email' }
+        ]
+      }
     ]
   },
   commerce: {

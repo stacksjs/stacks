@@ -1,32 +1,36 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { useHead } from '@vueuse/head'
+import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.vue'
 
 useHead({
-  title: 'Dashboard - Notification History',
+  title: 'Dashboard - SMS Notifications',
 })
 
-interface NotificationEntry {
+interface SMSNotification {
   id: string
-  type: 'email' | 'sms' | 'push' | 'discord' | 'slack'
   recipient: string
-  subject: string
-  content: string
+  message: string
   status: 'sent' | 'delivered' | 'failed' | 'pending'
   sent_at: string
   delivered_at?: string
   error?: string
-  metadata?: Record<string, any>
+  metadata?: {
+    sender: string
+    country: string
+    provider: string
+    segments: number
+    cost: number
+  }
 }
 
 // Pagination and filtering state
-const notifications = ref<NotificationEntry[]>([])
+const notifications = ref<SMSNotification[]>([])
 const currentPage = ref(1)
 const perPage = ref(10)
 const totalNotifications = ref(0)
 const isLoading = ref(true)
 const searchQuery = ref('')
-const selectedType = ref<string>('all')
 const selectedStatus = ref<string>('all')
 const dateRange = ref<[string, string] | null>(null)
 const showFilters = ref(false)
@@ -34,80 +38,51 @@ const sortField = ref<'sent_at' | 'delivered_at' | null>(null)
 const sortDirection = ref<'asc' | 'desc'>('desc')
 
 // Filter options
-const notificationTypes = ['all', 'email', 'sms', 'push', 'discord', 'slack']
 const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
 
-// Status colors
-const notificationStatusColors: Record<string, string> = {
-  delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
-  sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
-  pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
-  failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
-}
-
-const getStatusColor = (status: string): string => {
-  return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
-}
-
-const getChannelIcon = (type: string): string => {
-  switch (type) {
-    case 'email':
-      return 'i-hugeicons-mail-01'
-    case 'sms':
-      return 'i-hugeicons-smart-phone-01'
-    case 'push':
-      return 'i-hugeicons-notification-01'
-    case 'discord':
-      return 'i-hugeicons-discord'
-    case 'slack':
-      return 'i-hugeicons-slack'
-    default:
-      return 'i-hugeicons-notification-03'
-  }
-}
-
 // Generate mock data
-const generateMockNotifications = () => {
-  const types = ['email', 'sms', 'push', 'discord', 'slack'] as const
+const generateMockSMSNotifications = () => {
   const statuses = ['sent', 'delivered', 'failed', 'pending'] as const
-  const subjects = [
-    'Welcome to our platform',
+  const messages = [
+    'Your verification code is: 123456',
+    'Your appointment is confirmed for tomorrow at 2 PM',
+    'Your order has been shipped',
+    'Your payment of $99.99 has been processed',
+    'Your password has been reset',
     'Your account has been updated',
-    'Security alert',
-    'Password reset request',
-    'New login detected',
-    'Subscription renewed',
-    'Payment processed',
-    'Order confirmation',
+    'Your subscription will renew in 3 days',
+    'Your 2FA code is: 987654',
   ]
+  const countries = ['US', 'UK', 'CA', 'AU', 'DE', 'FR', 'JP', 'BR']
+  const providers = ['Twilio', 'Nexmo', 'MessageBird', 'Plivo', 'Sinch']
 
   return Array.from({ length: 100 }, (_, i) => {
-    const typeIndex = Math.floor(Math.random() * types.length)
-    const statusIndex = Math.floor(Math.random() * statuses.length)
-    const subjectIndex = Math.min(Math.floor(Math.random() * subjects.length), subjects.length - 1)
+    const statusIndex = Math.min(Math.floor(Math.random() * statuses.length), statuses.length - 1)
+    const messageIndex = Math.floor(Math.random() * messages.length)
+    const countryIndex = Math.floor(Math.random() * countries.length)
+    const providerIndex = Math.floor(Math.random() * providers.length)
 
-    const type = types[typeIndex] as NotificationEntry['type']
-    const status = statuses[statusIndex] as NotificationEntry['status']
-    const subject = subjects[subjectIndex] || 'System Notification'
+    const status = statuses[statusIndex] as 'sent' | 'delivered' | 'failed' | 'pending'
+    const message = messages[messageIndex] || 'SMS notification'
+    const country = countries[countryIndex] || 'US'
+    const provider = providers[providerIndex] || 'Twilio'
     const sent_at = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
     const delivered_at = status === 'delivered' ? new Date(new Date(sent_at).getTime() + Math.random() * 60000).toISOString() : undefined
 
-    const notification: NotificationEntry = {
+    const notification: SMSNotification = {
       id: `${i + 1}`,
-      type,
-      recipient: type === 'email' ? 'user@example.com' :
-                type === 'sms' ? '+1234567890' :
-                type === 'push' ? 'device-token-123' :
-                type === 'discord' ? 'Channel #announcements' : '#general',
-      subject,
-      content: 'Notification content goes here...',
+      recipient: `+1${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 9000) + 1000}`,
+      message,
       status,
       sent_at,
       delivered_at,
-      error: status === 'failed' ? 'Failed to deliver notification' : undefined,
+      error: status === 'failed' ? 'Failed to deliver SMS' : undefined,
       metadata: {
-        device: type === 'push' ? 'iOS' : undefined,
-        browser: type === 'push' ? 'Safari' : undefined,
+        sender: `+1${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 9000) + 1000}`,
+        country,
+        provider,
+        segments: Math.floor(Math.random() * 3) + 1,
+        cost: parseFloat((Math.random() * 0.05 + 0.01).toFixed(4)),
       },
     }
 
@@ -118,13 +93,11 @@ const generateMockNotifications = () => {
 // Computed properties for filtering
 const filteredNotifications = computed(() => {
   return notifications.value.filter(notification => {
-    if (selectedType.value !== 'all' && notification.type !== selectedType.value) return false
     if (selectedStatus.value !== 'all' && notification.status !== selectedStatus.value) return false
     if (searchQuery.value) {
       const query = searchQuery.value.toLowerCase()
-      return notification.subject.toLowerCase().includes(query) ||
-             notification.recipient.toLowerCase().includes(query) ||
-             notification.content.toLowerCase().includes(query)
+      return notification.message.toLowerCase().includes(query) ||
+             notification.recipient.toLowerCase().includes(query)
     }
     return true
   })
@@ -158,11 +131,10 @@ const totalPages = computed(() => Math.ceil(filteredNotifications.value.length /
 // Methods
 const handleRetry = async (notificationId: string) => {
   // Implement retry logic
-  console.log('Retrying notification:', notificationId)
+  console.log('Retrying SMS notification:', notificationId)
 }
 
 const resetFilters = () => {
-  selectedType.value = 'all'
   selectedStatus.value = 'all'
   searchQuery.value = ''
   dateRange.value = null
@@ -187,10 +159,10 @@ onMounted(async () => {
   try {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000))
-    notifications.value = generateMockNotifications()
+    notifications.value = generateMockSMSNotifications()
     totalNotifications.value = notifications.value.length
   } catch (error) {
-    console.error('Failed to load notifications:', error)
+    console.error('Failed to load SMS notifications:', error)
   } finally {
     isLoading.value = false
   }
@@ -203,9 +175,9 @@ onMounted(async () => {
       <!-- Header -->
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Notification History</h1>
+          <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">SMS Notifications</h1>
           <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-            A complete history of all notifications sent through the system
+            Manage and monitor all SMS notifications sent through the system
           </p>
         </div>
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -221,10 +193,10 @@ onMounted(async () => {
       </div>
 
       <!-- Filters -->
-      <div v-if="showFilters" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div v-if="showFilters" class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <!-- Search -->
         <div class="flex-1 min-w-0">
-          <label for="search" class="sr-only">Search notifications</label>
+          <label for="search" class="sr-only">Search SMS notifications</label>
           <div class="relative rounded-md shadow-sm">
             <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <div class="i-hugeicons-magnifying-glass h-5 w-5 text-gray-400" />
@@ -235,21 +207,9 @@ onMounted(async () => {
               name="search"
               id="search"
               class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
-              placeholder="Search notifications..."
+              placeholder="Search by phone number or message..."
             >
           </div>
-        </div>
-
-        <!-- Type Filter -->
-        <div>
-          <select
-            v-model="selectedType"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
-          >
-            <option v-for="type in notificationTypes" :key="type" :value="type">
-              {{ type === 'all' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1) }}
-            </option>
-          </select>
         </div>
 
         <!-- Status Filter -->
@@ -276,7 +236,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- Notification List -->
+      <!-- SMS Notification List -->
       <div class="mt-8 flow-root">
         <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -284,26 +244,14 @@ onMounted(async () => {
               <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
                 <thead class="bg-gray-50 dark:bg-blue-gray-600">
                   <tr>
-                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Recipient</th>
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Subject</th>
+                    <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Recipient</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Message</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Provider</th>
                     <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer" @click="toggleSort('sent_at')">
                       <div class="flex items-center justify-end">
                         Sent
                         <div v-if="sortField === 'sent_at'" class="ml-2">
-                          <div v-if="sortDirection === 'desc'" class="i-hugeicons-chevron-down h-4 w-4" />
-                          <div v-else class="i-hugeicons-chevron-up h-4 w-4" />
-                        </div>
-                        <div v-else class="ml-2">
-                          <div class="i-hugeicons-arrows-up-down h-4 w-4 text-gray-400" />
-                        </div>
-                      </div>
-                    </th>
-                    <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer" @click="toggleSort('delivered_at')">
-                      <div class="flex items-center justify-end">
-                        Delivered
-                        <div v-if="sortField === 'delivered_at'" class="ml-2">
                           <div v-if="sortDirection === 'desc'" class="i-hugeicons-chevron-down h-4 w-4" />
                           <div v-else class="i-hugeicons-chevron-up h-4 w-4" />
                         </div>
@@ -319,41 +267,32 @@ onMounted(async () => {
                 </thead>
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-700">
                   <tr v-if="isLoading">
-                    <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                    <td colspan="6" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                       <div class="flex justify-center">
                         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                       </div>
                     </td>
                   </tr>
                   <tr v-else-if="paginatedNotifications.length === 0">
-                    <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
-                      No notifications found matching your criteria
+                    <td colspan="6" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                      No SMS notifications found matching your criteria
                     </td>
                   </tr>
                   <tr v-for="notification in paginatedNotifications" :key="notification.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
-                      <div class="flex items-center">
-                        <div :class="getChannelIcon(notification.type)" class="h-5 w-5 mr-2" />
-                        <span class="font-medium text-gray-900 dark:text-gray-100 capitalize">{{ notification.type }}</span>
-                      </div>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-gray-100 sm:pl-6">
+                      {{ notification.recipient }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.recipient }}</td>
                     <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      <div class="max-w-xs truncate">{{ notification.subject }}</div>
+                      <div class="max-w-xs truncate">{{ notification.message }}</div>
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm">
-                      <span
-                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
-                        :class="getStatusColor(notification.status)"
-                      >
-                        {{ notification.status }}
-                      </span>
+                      <NotificationStatusBadge :status="notification.status" />
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {{ notification.metadata?.provider }}
                     </td>
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
                       {{ formatDate(notification.sent_at) }}
-                    </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
-                      {{ notification.delivered_at ? formatDate(notification.delivered_at) : '-' }}
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                       <button
