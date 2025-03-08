@@ -10,7 +10,7 @@ useHead({
 const stats = [
   { name: 'Total Users', value: '8,294', change: '+12.5%', trend: 'up' },
   { name: 'Active Projects', value: '124', change: '+8.2%', trend: 'up' },
-  { name: 'Server Uptime', value: '99.98%', change: '+0.1%', trend: 'up' },
+  { name: 'Cloud Uptime', value: '99.98%', change: '+0.1%', trend: 'up' },
   { name: 'Response Time', value: '42ms', change: '-3.7%', trend: 'down' },
 ]
 
@@ -39,7 +39,7 @@ const systemHealth = [
   { name: 'Storage', status: 'healthy', latency: '22ms', uptime: '100%' },
   { name: 'Cache', status: 'healthy', latency: '12ms', uptime: '99.95%' },
   { name: 'Queue', status: 'degraded', latency: '120ms', uptime: '99.90%' },
-  { name: 'Mail', status: 'healthy', latency: '12ms', uptime: '99.95%' },
+  { name: 'Notifications', status: 'healthy', latency: '12ms', uptime: '99.95%' },
   { name: 'Printers', status: 'healthy', latency: '12ms', uptime: '99.95%' },
   { name: 'Health', status: 'healthy', latency: '12ms', uptime: '99.95%' },
 ]
