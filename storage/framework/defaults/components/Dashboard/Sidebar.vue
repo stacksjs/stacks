@@ -332,6 +332,29 @@ const switchTeam = (team: Team) => {
   // Add your team switching logic here
 }
 
+// Add reference for the button
+const teamSwitcherButton = ref<HTMLElement | null>(null)
+
+// Compute position for the teleported dropdown
+const teamSwitcherPosition = computed(() => {
+  if (!teamSwitcherButton.value) return {}
+
+  const rect = teamSwitcherButton.value.getBoundingClientRect()
+
+  // Calculate the dropdown width
+  const dropdownWidth = 256; // Width in pixels
+
+  // Calculate the left position to center the dropdown under the button
+  // We want to position it so it's not cut off on either side
+  const buttonCenter = rect.left + (rect.width / 2);
+  const leftPosition = Math.max(16, buttonCenter - (dropdownWidth / 2));
+
+  return {
+    top: `${rect.bottom + 8}px`,
+    left: `${leftPosition}px`
+  }
+})
+
 // Check if any child route is active for a parent item
 const isChildRouteActive = (item: SidebarItem) => {
   if (!item.children) return false
@@ -359,64 +382,69 @@ const isChildRouteActive = (item: SidebarItem) => {
               type="button"
               class="block p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
               @click="showTeamSwitcher = !showTeamSwitcher"
+              ref="teamSwitcherButton"
             >
               <div class="i-hugeicons-more-horizontal-circle-01 h-6 w-6 cursor-pointer text-gray-400 transition duration-150 ease-in-out hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100" />
             </button>
 
-            <!-- Team Switcher Dropdown -->
-            <div
-              v-if="showTeamSwitcher"
-              class="absolute right-0 z-10 mt-2 w-72 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700"
-              role="menu"
-              aria-orientation="vertical"
-              tabindex="-1"
-            >
-              <div class="px-4 py-2">
-                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Switch Team</h3>
-              </div>
+            <!-- Team Switcher Dropdown using Teleport -->
+            <Teleport to="body">
+              <div
+                v-if="showTeamSwitcher"
+                class="fixed z-50 rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700"
+                style="width: 256px;"
+                role="menu"
+                aria-orientation="vertical"
+                tabindex="-1"
+                :style="teamSwitcherPosition"
+              >
+                <div class="px-4 py-2">
+                  <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Switch Team</h3>
+                </div>
 
-              <div class="border-t border-gray-100 dark:border-gray-700">
-                <div class="max-h-96 overflow-y-auto py-2">
-                  <button
-                    v-for="team in teams"
-                    :key="team.id"
-                    class="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-blue-gray-700"
-                    :class="{ 'bg-gray-50 dark:bg-blue-gray-700': currentTeam.id === team.id }"
-                    @click="switchTeam(team)"
-                  >
-                    <div class="flex items-center">
-                      <div class="h-8 w-8 flex-shrink-0">
-                        <img
-                          src="https://avatars.githubusercontent.com/u/6228425?v=4"
-                          alt=""
-                          class="h-8 w-8 rounded-full"
+                <div class="border-t border-gray-100 dark:border-gray-700">
+                  <div class="max-h-96 overflow-y-auto py-2">
+                    <button
+                      v-for="team in teams"
+                      :key="team.id"
+                      class="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-blue-gray-700"
+                      :class="{ 'bg-gray-50 dark:bg-blue-gray-700': currentTeam.id === team.id }"
+                      @click="switchTeam(team)"
+                    >
+                      <div class="flex items-center">
+                        <div class="h-8 w-8 flex-shrink-0">
+                          <img
+                            src="/images/logos/logo.svg"
+                            alt=""
+                            class="h-8 w-8 rounded-full"
+                          >
+                        </div>
+                        <div class="ml-4">
+                          <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ team.name }}</p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">{{ team.email }}</p>
+                        </div>
+                        <div
+                          v-if="currentTeam.id === team.id"
+                          class="ml-auto"
                         >
+                          <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-600 dark:text-blue-400" />
+                        </div>
                       </div>
-                      <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ team.name }}</p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ team.email }}</p>
-                      </div>
-                      <div
-                        v-if="currentTeam.id === team.id"
-                        class="ml-auto"
-                      >
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                    </div>
-                  </button>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-2">
+                  <RouterLink
+                    to="/models/teams"
+                    class="block w-full rounded-md px-3 py-2 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-150"
+                    @click="showTeamSwitcher = false"
+                  >
+                    Manage Teams
+                  </RouterLink>
                 </div>
               </div>
-
-              <div class="border-t border-gray-100 dark:border-gray-700 px-4 py-2">
-                <RouterLink
-                  to="/models/teams"
-                  class="block w-full rounded-md px-3 py-2 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-colors duration-150"
-                  @click="showTeamSwitcher = false"
-                >
-                  Manage Teams
-                </RouterLink>
-              </div>
-            </div>
+            </Teleport>
           </div>
         </div>
 
