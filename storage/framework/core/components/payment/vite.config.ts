@@ -108,7 +108,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     resolve: {
-      '~/config/env': p.projectConfigPath('env.ts'),
+      '~/.env': p.projectConfigPath('env.ts'),
       '~/config/errors': p.projectConfigPath('errors.ts'),
 
       ...alias,
