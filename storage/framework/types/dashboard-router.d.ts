@@ -52,7 +52,7 @@ declare module 'vue-router/auto-routes' {
     '/commerce/manufacturers/': RouteRecordInfo<'/commerce/manufacturers/', '/commerce/manufacturers', Record<never, never>, Record<never, never>>,
     '/commerce/orders/': RouteRecordInfo<'/commerce/orders/', '/commerce/orders', Record<never, never>, Record<never, never>>,
     '/commerce/payments/': RouteRecordInfo<'/commerce/payments/', '/commerce/payments', Record<never, never>, Record<never, never>>,
-    '/commerce/printers/': RouteRecordInfo<'/commerce/printers/', '/commerce/printers', Record<never, never>, Record<never, never>>,
+    '/commerce/printers/devices/': RouteRecordInfo<'/commerce/printers/devices/', '/commerce/printers/devices', Record<never, never>, Record<never, never>>,
     '/commerce/printers/prints/': RouteRecordInfo<'/commerce/printers/prints/', '/commerce/printers/prints', Record<never, never>, Record<never, never>>,
     '/commerce/products/': RouteRecordInfo<'/commerce/products/', '/commerce/products', Record<never, never>, Record<never, never>>,
     '/commerce/products/detail': RouteRecordInfo<'/commerce/products/detail', '/commerce/products/detail', Record<never, never>, Record<never, never>>,

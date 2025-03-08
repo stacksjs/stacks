@@ -441,17 +441,17 @@ const toggleProject = (projectId: string) => {
 const getLogIcon = (type: Log['type']) => {
   switch (type) {
     case 'error':
-      return 'i-hugeicons-outline-exclamation-circle'
+      return 'i-hugeicons-alert-02'
     case 'info':
-      return 'i-hugeicons-outline-information-circle'
+      return 'i-hugeicons-information-circle'
     case 'success':
-      return 'i-hugeicons-outline-check-circle'
+      return 'i-hugeicons-checkmark-circle-02'
     case 'warning':
-      return 'i-hugeicons-outline-warning-triangle'
+      return 'i-hugeicons-alert-02'
     case 'mail':
-      return 'i-hugeicons-outline-mail'
+      return 'i-hugeicons-mail-01'
     default:
-      return 'i-hugeicons-outline-terminal'
+      return 'i-hugeicons-computer-terminal-01'
   }
 }
 
@@ -729,7 +729,7 @@ watch(timeRange, async () => {
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
               @click="resetFilters"
             >
-              <i class="i-hugeicons-outline-x h-4 w-4" aria-hidden="true" />
+              <i class="i-hugeicons-cancel-01 h-4 w-4" aria-hidden="true" />
               Reset Filters
             </button>
           </div>
@@ -807,7 +807,7 @@ watch(timeRange, async () => {
                     <td class="px-6 py-4 whitespace-nowrap text-right">
                       <div class="text-sm text-gray-900">
                         <i
-                          class="i-hugeicons-outline-clock h-4 w-4 mr-2 text-gray-400"
+                          class="i-hugeicons-clock-01 h-4 w-4 mr-2 text-gray-400"
                           aria-hidden="true"
                         />
                         {{ new Date(log.timestamp).toLocaleTimeString() }}
@@ -851,7 +851,7 @@ watch(timeRange, async () => {
                 class="px-2 py-1 text-sm border rounded-md"
                 :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
               >
-                <i class="i-hugeicons-outline-arrow-left h-4 w-4" aria-hidden="true" />
+                <i class="i-hugeicons-arrow-left-01 h-4 w-4" aria-hidden="true" />
               </button>
 
               <button
@@ -881,7 +881,7 @@ watch(timeRange, async () => {
                 class="px-2 py-1 text-sm border rounded-md"
                 :class="currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
               >
-                <i class="i-hugeicons-outline-arrow-right h-4 w-4" aria-hidden="true" />
+                <i class="i-hugeicons-arrow-right-01 h-4 w-4" aria-hidden="true" />
               </button>
             </div>
           </div>
@@ -901,7 +901,7 @@ watch(timeRange, async () => {
                   class="text-gray-500 hover:text-gray-700"
                 >
                   <i
-                    class="i-hugeicons-outline-x h-5 w-5"
+                    class="i-hugeicons-cancel-01 h-5 w-5"
                     aria-hidden="true"
                   />
                 </button>
@@ -983,7 +983,7 @@ watch(timeRange, async () => {
                         :key="index"
                         class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
                       >
-                        <i class="i-hugeicons-outline-paperclip h-4 w-4 mr-1" aria-hidden="true" />
+                        <i class="i-hugeicons-attachment-01 h-4 w-4 mr-1" aria-hidden="true" />
                         {{ attachment.name }} ({{ attachment.size }})
                       </div>
                     </div>
@@ -1041,7 +1041,7 @@ watch(timeRange, async () => {
                         <div class="flex items-center">
                           <i
                             :class="[
-                              selectedLog.email.userInteraction.opened ? 'i-hugeicons-outline-check-circle text-green-500' : 'i-hugeicons-outline-x-circle text-red-500',
+                              selectedLog.email.userInteraction.opened ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-circle text-red-500',
                               'h-5 w-5 mr-2'
                             ]"
                             aria-hidden="true"
@@ -1057,7 +1057,7 @@ watch(timeRange, async () => {
                         <div class="flex items-center">
                           <i
                             :class="[
-                              selectedLog.email.userInteraction.clicked ? 'i-hugeicons-outline-check-circle text-green-500' : 'i-hugeicons-outline-x-circle text-red-500',
+                              selectedLog.email.userInteraction.clicked ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-01-circle text-red-500',
                               'h-5 w-5 mr-2'
                             ]"
                             aria-hidden="true"
