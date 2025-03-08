@@ -918,11 +918,11 @@ const getEventTypeIcon = (type: string) => {
                 </h5>
                 <button
                   @click="selectedNode = null"
-                  class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
+                  class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150"
                 >
                   <span class="sr-only">Close</span>
                   <div class="h-5 w-5">
-                    <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200">×</span>
+                    <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150">×</span>
                   </div>
                 </button>
               </div>

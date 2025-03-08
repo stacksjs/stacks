@@ -761,11 +761,11 @@ watch(timeRange, async () => {
               <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                   <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                   </tr>
                 </thead>
@@ -776,6 +776,15 @@ watch(timeRange, async () => {
                     :class="[getLogRowClass(log.type), 'hover:bg-gray-50 cursor-pointer']"
                     @click="selectedLog = log"
                   >
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm text-gray-900">
+                        <i
+                          class="i-hugeicons-clock-01 h-4 w-4 mr-2 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        {{ new Date(log.timestamp).toLocaleTimeString() }}
+                      </div>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <i
@@ -803,15 +812,6 @@ watch(timeRange, async () => {
                       >
                         {{ projects.find(p => p.id === log.project)?.name }}
                       </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                      <div class="text-sm text-gray-900">
-                        <i
-                          class="i-hugeicons-clock-01 h-4 w-4 mr-2 text-gray-400"
-                          aria-hidden="true"
-                        />
-                        {{ new Date(log.timestamp).toLocaleTimeString() }}
-                      </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
                       <button class="text-blue-600 hover:text-blue-900">

@@ -118,7 +118,7 @@
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
                     <a
                       href="#"
-                      class="text-gray-400 hover:text-blue-gray-500"
+                      class="text-gray-400 hover:text-blue-gray-500 transition-colors duration-150"
                     ><div class="i-hugeicons-ellipsis-vertical h-6 w-6" /></a>
                   </td>
                 </tr>
