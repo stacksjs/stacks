@@ -23,10 +23,10 @@ const recentActivity = [
 ]
 
 const quickLinks = [
-  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/dashboard/blog', color: 'bg-blue-500' },
-  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-02', href: '/dashboard/commerce', color: 'bg-green-500' },
-  { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-ai-cloud', href: '/dashboard/servers', color: 'bg-purple-500' },
-  { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/dashboard/settings', color: 'bg-gray-500' },
+  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/content/dashboard', color: 'bg-blue-500' },
+  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-02', href: '/commerce', color: 'bg-green-500' },
+  { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-ai-cloud', href: '/cloud', color: 'bg-purple-500' },
+  { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/settings', color: 'bg-gray-500' },
 ]
 
 const timeRange = ref('Last 7 days')
