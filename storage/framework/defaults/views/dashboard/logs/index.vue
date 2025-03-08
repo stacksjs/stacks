@@ -109,7 +109,7 @@ const projects: Project[] = [
   { id: 'vite-plugin-local', name: 'vite-plugin-local', color: 'amber' },
 ]
 
-// Updated sample logs with project information
+// Updated sample logs with project information and CLI samples
 const sampleLogs: Log[] = [
   {
     id: '1',
@@ -128,120 +128,6 @@ const sampleLogs: Log[] = [
     message: 'Failed to compile component',
     metadata: { file: './components/Header.vue', line: 42 },
     project: 'rpx'
-  },
-  {
-    id: '11',
-    timestamp: new Date(Date.now() - 2000).toISOString(),
-    type: 'mail',
-    source: 'Mail',
-    message: 'Email delivered successfully',
-    metadata: { delivery_id: 'msg_123456' },
-    project: 'stacks',
-    email: {
-      subject: 'Your account has been created',
-      sender: 'noreply@stacksjs.org',
-      recipient: 'user@example.com',
-      messageId: '<msg_123456@mail.stacksjs.org>',
-      size: '24.5KB',
-      provider: 'SendGrid',
-      attachments: [
-        { name: 'welcome.pdf', type: 'application/pdf', size: '12KB' }
-      ],
-      authResults: {
-        spf: 'pass',
-        dkim: 'pass',
-        dmarc: 'pass'
-      },
-      userInteraction: {
-        opened: true,
-        openedAt: new Date(Date.now() - 1000).toISOString(),
-        clicked: true,
-        clickedAt: new Date(Date.now() - 500).toISOString(),
-        links: ['https://app.stacksjs.org/verify']
-      }
-    }
-  },
-  {
-    id: '12',
-    timestamp: new Date(Date.now() - 30000).toISOString(),
-    type: 'error',
-    source: 'Mail',
-    message: 'Failed to deliver email',
-    metadata: { delivery_id: 'msg_789012', error: 'Recipient mailbox full' },
-    project: 'stacks',
-    email: {
-      subject: 'Your weekly report',
-      sender: 'reports@stacksjs.org',
-      recipient: 'user@example.com',
-      messageId: '<msg_789012@mail.stacksjs.org>',
-      size: '156KB',
-      provider: 'SendGrid',
-      bounceInfo: {
-        reason: 'Mailbox full',
-        code: '552',
-        timestamp: new Date(Date.now() - 30000).toISOString()
-      },
-      authResults: {
-        spf: 'pass',
-        dkim: 'pass',
-        dmarc: 'pass'
-      }
-    }
-  },
-  {
-    id: '13',
-    timestamp: new Date(Date.now() - 150000).toISOString(),
-    type: 'warning',
-    source: 'Mail',
-    message: 'Email delayed',
-    metadata: { delivery_id: 'msg_345678', delay: '30s' },
-    project: 'stacks',
-    email: {
-      subject: 'Password reset request',
-      sender: 'security@stacksjs.org',
-      recipient: 'user@example.com',
-      messageId: '<msg_345678@mail.stacksjs.org>',
-      size: '8.2KB',
-      provider: 'Mailgun'
-    }
-  },
-  {
-    id: '14',
-    timestamp: new Date(Date.now() - 200000).toISOString(),
-    type: 'mail',
-    source: 'Notification',
-    message: 'Notification email sent',
-    metadata: { notification_id: 'notif_123', channel: 'email' },
-    project: 'stacks',
-    email: {
-      subject: 'New comment on your post',
-      sender: 'notifications@stacksjs.org',
-      recipient: 'user@example.com',
-      messageId: '<notif_123@mail.stacksjs.org>',
-      size: '12.8KB',
-      provider: 'Postmark',
-      attachments: []
-    }
-  },
-  {
-    id: '15',
-    timestamp: new Date(Date.now() - 250000).toISOString(),
-    type: 'mail',
-    source: 'Mail',
-    message: 'Bulk email campaign completed',
-    metadata: { campaign_id: 'camp_456', recipients: 1250, delivered: 1245, failed: 5 },
-    project: 'stacks',
-    email: {
-      subject: 'May Newsletter',
-      sender: 'newsletter@stacksjs.org',
-      recipient: 'multiple-recipients',
-      size: '45.2KB',
-      provider: 'Mailchimp',
-      attachments: [
-        { name: 'newsletter.pdf', type: 'application/pdf', size: '32KB' },
-        { name: 'banner.png', type: 'image/png', size: '8KB' }
-      ]
-    }
   },
   {
     id: '3',
@@ -267,7 +153,8 @@ const sampleLogs: Log[] = [
     metadata: {
       migration: 'create_users_table',
       database: 'production',
-      user: 'deploy@stacksjs.org'
+      user: 'deploy@stacksjs.org',
+      command: 'buddy db:migrate'
     },
     project: 'stacks'
   },
@@ -294,7 +181,8 @@ const sampleLogs: Log[] = [
     metadata: {
       duration: '12.5s',
       assets: ['main.js', 'vendor.js', 'app.css'],
-      size: '2.3MB'
+      size: '2.3MB',
+      command: 'buddy build --production'
     },
     project: 'stacks'
   },
@@ -316,12 +204,13 @@ const sampleLogs: Log[] = [
     id: '8',
     timestamp: new Date(Date.now() - 300000).toISOString(),
     type: 'success',
-    source: 'File',
+    source: 'CLI',
     message: 'Configuration cache cleared',
     metadata: {
       triggered_by: 'deployment',
       cache_size: '156KB',
-      duration: '0.8s'
+      duration: '0.8s',
+      command: 'buddy config:clear'
     },
     project: 'stacks'
   },
@@ -335,7 +224,8 @@ const sampleLogs: Log[] = [
       suite: 'Integration Tests',
       total_tests: 156,
       parallel: true,
-      ci: true
+      ci: true,
+      command: 'buddy test --suite=integration'
     },
     project: 'stacks'
   },
@@ -475,13 +365,13 @@ const getLogIconColor = (type: Log['type']) => {
 const getLogRowClass = (type: Log['type']) => {
   switch (type) {
     case 'error':
-      return 'bg-red-50'
+      return 'bg-red-50 bg-opacity-50'
     case 'success':
-      return 'bg-green-50'
+      return 'bg-green-50 bg-opacity-50'
     case 'warning':
-      return 'bg-amber-50'
+      return 'bg-amber-50 bg-opacity-50'
     case 'mail':
-      return 'bg-purple-50'
+      return 'bg-purple-50 bg-opacity-50'
     default:
       return ''
   }
@@ -814,8 +704,8 @@ watch(timeRange, async () => {
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-right">
-                      <button class="text-blue-600 hover:text-blue-900">
-                        View
+                      <button class="text-gray-400 hover:text-blue-500 transition-colors duration-150">
+                        <i class="i-hugeicons-view h-5 w-5" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>
@@ -1077,6 +967,14 @@ watch(timeRange, async () => {
                           {{ link }}
                         </li>
                       </ul>
+                    </div>
+                  </div>
+
+                  <!-- CLI Command -->
+                  <div v-if="selectedLog.source === 'CLI' && selectedLog.metadata?.command" class="mt-4">
+                    <label class="block text-sm font-medium text-gray-700">Command</label>
+                    <div class="mt-2 p-3 bg-gray-50 rounded-md font-mono text-sm">
+                      {{ selectedLog.metadata.command }}
                     </div>
                   </div>
                 </div>
