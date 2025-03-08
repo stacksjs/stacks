@@ -757,7 +757,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             Name
             <span v-if="sortBy === 'name'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -768,7 +768,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             Subscribers
             <span v-if="sortBy === 'subscriberCount'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -779,7 +779,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             Open Rate
             <span v-if="sortBy === 'openRate'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -790,7 +790,7 @@ function bulkChangeStatus(status: 'Active' | 'Draft' | 'Archived'): void {
             Date Created
             <span v-if="sortBy === 'dateCreated'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
         </div>

@@ -693,7 +693,7 @@ function truncateText(text: string, maxLength: number): string {
             Date
             <span v-if="sortBy === 'scheduledDate'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -704,7 +704,7 @@ function truncateText(text: string, maxLength: number): string {
             Engagement
             <span v-if="sortBy === 'engagement'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -715,7 +715,7 @@ function truncateText(text: string, maxLength: number): string {
             Author
             <span v-if="sortBy === 'author'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
         </div>

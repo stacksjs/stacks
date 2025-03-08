@@ -1199,7 +1199,7 @@ watch(waitlistEntries, () => {
             Name
             <span v-if="sortBy === 'name'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -1210,7 +1210,7 @@ watch(waitlistEntries, () => {
             Date Added
             <span v-if="sortBy === 'dateAdded'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -1221,7 +1221,7 @@ watch(waitlistEntries, () => {
             Quantity
             <span v-if="sortBy === 'quantity'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
         </div>

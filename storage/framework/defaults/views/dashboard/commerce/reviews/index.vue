@@ -648,7 +648,7 @@ function deleteReview(reviewId: number): void {
             Date
             <span v-if="sortBy === 'dateAdded'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -659,7 +659,7 @@ function deleteReview(reviewId: number): void {
             Rating
             <span v-if="sortBy === 'rating'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -670,7 +670,7 @@ function deleteReview(reviewId: number): void {
             Helpful
             <span v-if="sortBy === 'helpful'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
@@ -681,7 +681,7 @@ function deleteReview(reviewId: number): void {
             Customer
             <span v-if="sortBy === 'customerName'" class="ml-1">
               <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02-01 h-4 w-4"></div>
+              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
         </div>
