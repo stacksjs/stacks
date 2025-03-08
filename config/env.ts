@@ -9,54 +9,182 @@ import { schema } from '@stacksjs/validation'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  APP_NAME: schema.string(),
-  APP_ENV: schema.enum(['local', 'dev', 'stage', 'prod']),
-  APP_KEY: schema.string(),
-  APP_URL: schema.string(),
+  APP_NAME: {
+    validation: schema.string(),
+    default: 'Stacks',
+  },
 
-  PORT: schema.number(),
-  PORT_BACKEND: schema.number(),
-  PORT_ADMIN: schema.number(),
-  PORT_LIBRARY: schema.number(),
-  PORT_DESKTOP: schema.number(),
-  PORT_EMAIL: schema.number(),
-  PORT_DOCS: schema.number(),
-  PORT_INSPECT: schema.number(),
-  PORT_API: schema.number(),
-  PORT_SYSTEM_TRAY: schema.number(),
+  APP_ENV: {
+    validation: schema.enum(['local', 'dev', 'stage', 'prod']),
+    default: 'local',
+  },
 
-  APP_MAINTENANCE: schema.boolean(),
-  DEBUG: schema.boolean(),
+  APP_KEY: {
+    validation: schema.string(),
+    default: 'base64:1234567890',
+  },
 
-  API_PREFIX: schema.string(),
-  DOCS_PREFIX: schema.string(),
+  PORT: {
+    validation: schema.number(),
+    default: 3000,
+  },
 
-  DB_CONNECTION: schema.enum(['mysql', 'sqlite', 'postgres']),
-  DB_HOST: schema.string(),
-  DB_PORT: schema.number(),
-  DB_DATABASE: schema.string(),
-  DB_USERNAME: schema.string(),
-  DB_PASSWORD: schema.string(),
+  PORT_BACKEND: {
+    validation: schema.number(),
+    default: 3000,
+  },
 
-  AWS_ACCOUNT_ID: schema.string(),
-  AWS_ACCESS_KEY_ID: schema.string(),
-  AWS_SECRET_ACCESS_KEY: schema.string(),
-  AWS_DEFAULT_REGION: schema.string(),
-  AWS_DEFAULT_PASSWORD: schema.string(),
+  PORT_ADMIN: {
+    validation: schema.number(),
+    default: 3000,
+  },
 
-  MAIL_MAILER: schema.enum(['ses', 'sendmail', 'log', 'smtp']),
-  MAIL_HOST: schema.string(),
-  MAIL_PORT: schema.number(),
-  MAIL_USERNAME: schema.string(),
-  MAIL_PASSWORD: schema.string(),
-  MAIL_ENCRYPTION: schema.string(),
-  MAIL_FROM_NAME: schema.string(),
-  MAIL_FROM_ADDRESS: schema.string(),
+  PORT_LIBRARY: {
+    validation: schema.number(),
+    default: 3000,
+  },
 
-  SEARCH_ENGINE_DRIVER: schema.enum(['meilisearch', 'algolia', 'typesense']),
-  MEILISEARCH_HOST: schema.string(),
-  MEILISEARCH_KEY: schema.string(),
+  PORT_DESKTOP: {
+    validation: schema.number(),
+    default: 3000,
+  },
 
-  FRONTEND_APP_ENV: schema.enum(['development', 'staging', 'production']),
-  FRONTEND_APP_URL: schema.string(),
+  PORT_EMAIL: {
+    validation: schema.number(),
+    default: 3000,
+  },
+  PORT_DOCS: {
+    validation: schema.number(),
+    default: 3000,
+  },
+
+  PORT_INSPECT: {
+    validation: schema.number(),
+    default: 3000,
+  },
+
+  PORT_API: {
+    validation: schema.number(),
+    default: 3000,
+  },
+
+  PORT_SYSTEM_TRAY: {
+    validation: schema.number(),
+    default: 3000,
+  },
+
+  APP_MAINTENANCE: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
+  DEBUG: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
+  API_PREFIX: {
+    validation: schema.string(),
+    default: '/api',
+  },
+
+  DOCS_PREFIX: {
+    validation: schema.string(),
+    default: '/docs',
+  },
+
+  DB_CONNECTION: {
+    validation: schema.enum(['mysql', 'sqlite', 'postgres']),
+    default: 'mysql',
+  },
+
+  DB_HOST: {
+    validation: schema.string(),
+    default: 'localhost',
+  },
+
+  DB_PORT: {
+    validation: schema.number(),
+    default: 3306,
+  },
+
+  AWS_ACCOUNT_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  AWS_ACCESS_KEY_ID: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  AWS_SECRET_ACCESS_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  AWS_DEFAULT_REGION: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  AWS_DEFAULT_PASSWORD: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  MAIL_MAILER: {
+    validation: schema.enum(['ses', 'sendmail', 'log', 'smtp']),
+    default: 'ses',
+  },
+
+  MAIL_HOST: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  MAIL_PORT: {
+    validation: schema.number(),
+    default: 465,
+  },
+
+  MAIL_USERNAME: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  MAIL_PASSWORD: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  MAIL_FROM_ADDRESS: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  SEARCH_ENGINE_DRIVER: {
+    validation: schema.enum(['meilisearch', 'algolia', 'typesense']),
+    default: 'meilisearch',
+  },
+
+  MEILISEARCH_HOST: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  MEILISEARCH_KEY: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  FRONTEND_APP_ENV: {
+    validation: schema.enum(['development', 'staging', 'production']),
+    default: 'development',
+  },
+
+  FRONTEND_APP_URL: {
+    validation: schema.string(),
+    default: '',
+  },
 } satisfies EnvConfig

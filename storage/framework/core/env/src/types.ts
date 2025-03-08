@@ -1,4 +1,5 @@
 import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stacksjs/validation'
+import type { SchemaTypes } from '@vinejs/vine/types'
 import type { EnvKey } from '../../../env'
 import { schema } from '@stacksjs/validation'
 import env from '~/config/env'
@@ -15,26 +16,39 @@ export const envEnum: EnumObject = {
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }
 
-// we need to get this into the right format so we can infer the type
-type EnvValue = string | boolean | number | readonly string[]
-type EnvType = typeof env
-type EnvKeys = keyof EnvType
-type EnvMap = {
-  [K in EnvKeys]: EnvType[K] extends string
-    ? VineString
-    : EnvType[K] extends number
-      ? VineNumber
-      : EnvType[K] extends boolean
-        ? VineBoolean
-        : EnvType[K] extends readonly string[]
-          ? VineEnum<string[]>
-          : unknown
+interface StringEnvConfig {
+  validation: VineString
+  default: string
 }
 
-type ValidatorType = VineString | VineNumber | VineBoolean | VineEnum<string[]>
+interface NumberEnvConfig {
+  validation: VineNumber
+  default: number
+}
 
-const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
-  let validatorType: ValidatorType
+interface BooleanEnvConfig {
+  validation: VineBoolean
+  default: boolean
+}
+
+interface EnumEnvConfig {
+  validation: VineEnum<any>
+  default: string
+}
+
+type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | EnumEnvConfig
+
+export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
+
+type EnvMap = Record<string, SchemaTypes>
+
+const envStructure: EnvMap = Object.entries(env).reduce((acc, [key, value]) => {
+  if (typeof value === 'object' && value !== null && 'validation' in value) {
+    acc[key] = (value as EnvValueConfig).validation
+    return acc
+  }
+
+  let validatorType: SchemaTypes
   switch (typeof value) {
     case 'string':
       validatorType = schema.string()
@@ -52,11 +66,9 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
       }
 
       // check if is on object
-      if (typeof value === 'object') {
+      if (typeof value === 'object' && value !== null) {
         const schemaNameSymbol = Symbol.for('schema_name')
-        const schemaName = value[schemaNameSymbol]
-        // log.debug('value', value)
-        // log.debug('schemaName', schemaName)
+        const schemaName = (value as { [key: symbol]: string })[schemaNameSymbol]
 
         if (schemaName === 'vine.string') {
           validatorType = schema.string()
@@ -73,14 +85,8 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
           break
         }
 
-        // if (schemaName === 'vine.enum') {
-        //   validatorType = schema.enum(value as string[])
-        //   break
-        // }
-
-        // oddly, enums don't trigger schemaName === 'vine.enum'
-        if (!schemaName) {
-          validatorType = schema.enum(envEnum.APP_ENV)
+        if (!schemaName && key in envEnum) {
+          validatorType = schema.enum(envEnum[key as keyof typeof envEnum])
           break
         }
 
@@ -89,17 +95,15 @@ const envStructure = Object.entries(env).reduce((acc, [key, value]) => {
 
       throw new Error(`Invalid env value for ${key}`)
   }
-  const envKey = key as EnvKeys
 
-  acc[envKey] = validatorType as any
+  acc[key] = validatorType
   return acc
 }, {} as EnvMap)
 
-export const envSchema = schema.object(envStructure)
+export const envSchema: ReturnType<typeof schema.object> = schema.object(envStructure)
 export type Env = Infer<typeof envSchema>
 
 export type EnvOptions = Env
-export type EnvConfig = Partial<Record<EnvKey, EnvValue>>
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
