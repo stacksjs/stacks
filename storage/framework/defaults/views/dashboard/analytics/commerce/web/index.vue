@@ -141,7 +141,7 @@
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/web/pages" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/pages" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all pages
               </a>
             </div>
@@ -192,7 +192,7 @@
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/web/referrers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/referrers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all referrers
               </a>
             </div>
@@ -240,7 +240,7 @@
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/web/devices" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/devices" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all devices
               </a>
             </div>
@@ -285,7 +285,7 @@
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/web/browsers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/browsers" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all browsers
               </a>
             </div>
@@ -330,7 +330,7 @@
             </div>
 
             <div class="mt-2 flex justify-end">
-              <a href="/dashboard/commerce/analytics/web/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+              <a href="/analytics/countries" class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
                 View all countries
               </a>
             </div>

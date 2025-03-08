@@ -258,7 +258,7 @@ const sectionContent: Record<string, SectionContent> = {
         ]
       },
       { to: '/analytics/blog', icon: 'i-hugeicons-document-validation', text: 'Blog' },
-      { to: '/analytics/events', icon: 'i-hugeicons-target-01', text: 'Events' },
+      { to: '/analytics/events', icon: 'i-hugeicons-target-01', text: 'Goals' },
       { to: '/analytics/commerce/web', icon: 'i-hugeicons-shopping-cart-02', text: 'Commerce' },
       { to: '/analytics/commerce/sales', icon: 'i-hugeicons-sale-tag-01', text: 'Sales' },
       { to: '/analytics/marketing', icon: 'i-hugeicons-megaphone-01', text: 'Marketing' },
