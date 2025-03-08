@@ -234,7 +234,15 @@ const sectionContent: Record<string, SectionContent> = {
         ]
       },
       { to: '/commerce/taxes', icon: 'i-hugeicons-taxes', text: 'Taxes' },
-      { to: '/commerce/printers', icon: 'i-hugeicons-printer', text: 'Printers' }
+      {
+        to: '#printers',
+        icon: 'i-hugeicons-printer',
+        text: 'Printers',
+        children: [
+          { to: '/commerce/printers', icon: 'i-hugeicons-device-laptop', text: 'Devices' },
+          { to: '/commerce/printers/prints', icon: 'i-hugeicons-document-01', text: 'Prints' }
+        ]
+      }
     ]
   },
   data: {
