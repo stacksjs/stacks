@@ -67,6 +67,7 @@ declare module 'vue-router/auto-routes' {
     '/content/categories/': RouteRecordInfo<'/content/categories/', '/content/categories', Record<never, never>, Record<never, never>>,
     '/content/comments/': RouteRecordInfo<'/content/comments/', '/content/comments', Record<never, never>, Record<never, never>>,
     '/content/dashboard': RouteRecordInfo<'/content/dashboard', '/content/dashboard', Record<never, never>, Record<never, never>>,
+    '/content/pages/': RouteRecordInfo<'/content/pages/', '/content/pages', Record<never, never>, Record<never, never>>,
     '/content/posts/': RouteRecordInfo<'/content/posts/', '/content/posts', Record<never, never>, Record<never, never>>,
     '/content/seo/': RouteRecordInfo<'/content/seo/', '/content/seo', Record<never, never>, Record<never, never>>,
     '/content/tags/': RouteRecordInfo<'/content/tags/', '/content/tags', Record<never, never>, Record<never, never>>,

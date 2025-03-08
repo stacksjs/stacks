@@ -165,7 +165,9 @@ const sectionContent: Record<string, SectionContent> = {
   content: {
     items: [
       { to: '/content/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-      { to: '/content/posts', icon: 'i-hugeicons-document-validation', text: 'Posts' },
+      { to: '/content/file-manager', icon: 'i-hugeicons-apple-finder', text: 'File Manager' },
+      { to: '/content/pages', icon: 'i-hugeicons-file-02', text: 'Pages' },
+      { to: '/content/posts', icon: 'i-hugeicons-message-edit-02', text: 'Posts' },
       { to: '/content/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
       { to: '/content/tags', icon: 'i-hugeicons-tag-01', text: 'Tags' },
       { to: '/content/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
@@ -427,12 +429,6 @@ const isChildRouteActive = (item: SidebarItem) => {
                   <RouterLink to="/" class="group sidebar-links">
                     <div class="i-hugeicons-home-05 h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     Home
-                  </RouterLink>
-                </li>
-                <li>
-                  <RouterLink to="/file-manager" class="group sidebar-links">
-                    <div class="i-hugeicons-apple-finder h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
-                    File Manager
                   </RouterLink>
                 </li>
               </ul>
