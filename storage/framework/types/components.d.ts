@@ -80,6 +80,8 @@ declare module 'vue' {
     Navbar: typeof import('./../defaults/components/Dashboard/Navbar.vue')['default']
     NavLink: typeof import('./../defaults/components/Marketing/NavLink.vue')['default']
     NotificationDemo: typeof import('./../defaults/components/Docs/Demo/NotificationDemo.vue')['default']
+    NotificationErrorModal: typeof import('./../defaults/components/Dashboard/NotificationErrorModal.vue')['default']
+    NotificationStatusBadge: typeof import('./../defaults/components/Dashboard/NotificationStatusBadge.vue')['default']
     OneTimePayment: typeof import('./../defaults/components/Dashboard/Billing/OneTimePayment.vue')['default']
     Pagination: typeof import('./../defaults/components/Dashboard/Commerce/Delivery/Pagination.vue')['default']
     PaymentForm: typeof import('./../defaults/components/Dashboard/Billing/PaymentForm.vue')['default']

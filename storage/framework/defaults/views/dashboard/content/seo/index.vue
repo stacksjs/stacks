@@ -590,7 +590,7 @@ function getPostTitleById(id: number): string {
                 @click="openBulkOptimizationModal"
                 class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-600 shadow-sm ring-1 ring-inset ring-blue-300 hover:bg-blue-50 dark:bg-blue-gray-800 dark:text-blue-400 dark:ring-blue-500/30 dark:hover:bg-blue-500/10"
               >
-                <div class="i-hugeicons-magic-wand h-4 w-4 mr-1"></div>
+                <div class="i-hugeicons-magic-wand-05 h-4 w-4 mr-1"></div>
                 Optimize Selected
               </button>
             </div>
@@ -1157,7 +1157,7 @@ function getPostTitleById(id: number): string {
           </div>
           <div class="sm:flex sm:items-start">
             <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-magic-wand h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+              <div class="i-hugeicons-magic-wand-05 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
             </div>
             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Bulk SEO Optimization</h3>

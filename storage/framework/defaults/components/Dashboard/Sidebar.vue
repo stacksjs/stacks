@@ -45,7 +45,7 @@ const calculateTransform = (section: string) => {
 // State for each section's collapse status
 const sections = useLocalStorage<Sections>('sidebar-sections', {
   library: true,
-  blog: true,
+  content: true,
   app: true,
   data: true,
   commerce: true,
@@ -69,7 +69,7 @@ const expandedItems = useLocalStorage<Record<string, boolean>>('sidebar-expanded
 })
 
 // Create an ordered array of sections that we can reorder
-const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'blog', 'app', 'data', 'commerce', 'marketing', 'analytics', 'management'])
+const sectionOrder = useLocalStorage<string[]>('sidebar-section-order', ['library', 'content', 'app', 'data', 'commerce', 'marketing', 'analytics', 'management'])
 
 // Toggle function for sections
 const toggleSection = (section: string) => {
@@ -162,15 +162,15 @@ const sectionContent: Record<string, SectionContent> = {
       { to: '/packages', icon: 'i-hugeicons-package', text: 'Packages' }
     ]
   },
-  blog: {
+  content: {
     items: [
-      { to: '/blog', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-      { to: '/blog/posts', icon: 'i-hugeicons-document-validation', text: 'Posts' },
-      { to: '/blog/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
-      { to: '/blog/tags', icon: 'i-hugeicons-tag-01', text: 'Tags' },
-      { to: '/blog/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
-      { to: '/blog/authors', icon: 'i-hugeicons-user-edit-01', text: 'Authors' },
-      { to: '/blog/seo', icon: 'i-hugeicons-seo', text: 'SEO' }
+      { to: '/content/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/content/posts', icon: 'i-hugeicons-document-validation', text: 'Posts' },
+      { to: '/content/categories', icon: 'i-hugeicons-tags', text: 'Categories' },
+      { to: '/content/tags', icon: 'i-hugeicons-tag-01', text: 'Tags' },
+      { to: '/content/comments', icon: 'i-hugeicons-comment-01', text: 'Comments' },
+      { to: '/content/authors', icon: 'i-hugeicons-user-edit-01', text: 'Authors' },
+      { to: '/content/seo', icon: 'i-hugeicons-seo', text: 'SEO' }
     ]
   },
   app: {
