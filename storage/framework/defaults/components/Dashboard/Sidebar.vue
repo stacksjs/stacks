@@ -866,7 +866,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
             <!-- Bottom section -->
             <li class="mt-auto pb-4">
               <div :class="isSidebarCollapsed ? 'flex flex-col items-center justify-center space-y-6' : 'flex items-center space-x-4'">
-                <Tooltip text="AI Buddy" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="AI Buddy" position="top" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/buddy"
                     class="sidebar-bottom-link"
@@ -876,7 +876,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                   </RouterLink>
                 </Tooltip>
 
-                <Tooltip text="Environment" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Environment" position="top" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/environment"
                     class="sidebar-bottom-link"
@@ -886,7 +886,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                   </RouterLink>
                 </Tooltip>
 
-                <Tooltip text="Access Tokens" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Access Tokens" position="top" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/access-tokens"
                     class="sidebar-bottom-link"
@@ -896,7 +896,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                   </RouterLink>
                 </Tooltip>
 
-                <Tooltip text="Settings" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Settings" position="top" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/settings/ai"
                     class="sidebar-bottom-link"
