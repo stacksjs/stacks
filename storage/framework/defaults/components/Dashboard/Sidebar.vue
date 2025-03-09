@@ -448,7 +448,8 @@ const calculateDropdownPosition = (event: MouseEvent, itemPath: string) => {
   const target = event.currentTarget as HTMLElement
   if (target) {
     const rect = target.getBoundingClientRect()
-    dropdownPositions.value[itemPath] = rect.top
+    // Center the dropdown vertically relative to the button
+    dropdownPositions.value[itemPath] = rect.top - 5
   }
 }
 
@@ -519,7 +520,13 @@ const endAccordionTransition = (el: Element, done: () => void) => {
       class="hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ease-in-out"
       :class="isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'"
     >
-      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4 dark:border-gray-600 dark:bg-blue-gray-900" :class="{ 'items-center': isSidebarCollapsed }">
+      <div
+        class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-600 dark:bg-blue-gray-900 transition-all duration-300"
+        :class="{
+          'items-center px-2 pb-4': isSidebarCollapsed,
+          'px-6 pb-4': !isSidebarCollapsed
+        }"
+      >
         <div class="pt-4 h-10 flex shrink-0 items-center justify-between rounded-lg">
           <RouterLink to="/" :class="isSidebarCollapsed ? 'hidden' : ''">
             <img class="h-10 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
@@ -696,14 +703,14 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                       <li v-if="!item.children" class="w-full">
                         <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                           <RouterLink :to="item.to" class="group sidebar-links justify-center">
-                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
                             <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                               {{ item.letter }}
                             </div>
                           </RouterLink>
                         </Tooltip>
                         <RouterLink v-else :to="item.to" class="group sidebar-links w-full">
-                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
                           <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                             {{ item.letter }}
                           </div>
@@ -721,7 +728,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                           class="group sidebar-links w-full text-left sidebar-dropdown-trigger"
                           :class="{ 'parent-active': isChildRouteActive(item) }"
                         >
-                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
                           <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                             {{ item.letter }}
                           </div>
@@ -779,31 +786,24 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                   >
                     <div
                       v-if="sections[sectionKey]"
-                      class="w-full flex flex-col items-center space-y-0.5 accordion-content overflow-hidden"
+                      class="w-full flex flex-col items-center space-y-1 accordion-content overflow-hidden"
                     >
                       <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
                         <!-- Regular item -->
-                        <li v-if="!item.children" class="w-full">
+                        <li v-if="!item.children" class="flex justify-center w-full">
                           <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                             <RouterLink :to="item.to" class="group sidebar-links justify-center">
-                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
                               <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                                 {{ item.letter }}
                               </div>
                             </RouterLink>
                           </Tooltip>
-                          <RouterLink v-else :to="item.to" class="group sidebar-links w-full">
-                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                            <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
-                              {{ item.letter }}
-                            </div>
-                            <span class="flex-1">{{ item.text }}</span>
-                          </RouterLink>
                         </li>
 
                         <!-- Dropdown item in collapsed mode -->
-                        <li v-else class="w-full">
-                          <div class="relative">
+                        <li v-else class="flex justify-center w-full">
+                          <div class="relative flex justify-center">
                             <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                               <button
                                 @click="(event) => {
@@ -811,42 +811,27 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                                   toggleItem(item.to);
                                   calculateDropdownPosition(event as MouseEvent, item.to);
                                 }"
-                                class="group sidebar-links w-full justify-center sidebar-dropdown-trigger"
+                                class="group sidebar-links justify-center sidebar-dropdown-trigger"
                                 :class="{ 'parent-active': isChildRouteActive(item) }"
                               >
-                                <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                                <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
                                 <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                                   {{ item.letter }}
                                 </div>
                               </button>
                             </Tooltip>
-                            <button
-                              v-else
-                              @click="(event) => {
-                                event.stopPropagation();
-                                toggleItem(item.to);
-                              }"
-                              class="group sidebar-links w-full text-left sidebar-dropdown-trigger"
-                              :class="{ 'parent-active': isChildRouteActive(item) }"
-                            >
-                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                              <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
-                                {{ item.letter }}
-                              </div>
-                              <span class="flex-1">{{ item.text }}</span>
-                              <div
-                                class="i-hugeicons-arrow-right-01 ml-auto h-4 w-4 text-gray-400 transition-transform duration-200"
-                                :class="{ 'transform rotate-90': expandedItems[item.to] }"
-                              />
-                            </button>
                           </div>
 
                           <!-- Teleport dropdown for collapsed mode -->
                           <Teleport to="body" v-if="expandedItems[item.to]">
                             <div
                               class="fixed z-50 rounded-lg bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700 sidebar-dropdown-menu"
-                              style="width: 200px; left: 80px;"
-                              :style="{ top: `${dropdownPositions[item.to] || 100}px` }"
+                              style="width: 200px;"
+                              :style="{
+                                top: `${dropdownPositions[item.to] || 100}px`,
+                                left: '64px',
+                                transform: 'translateX(0)'
+                              }"
                             >
                               <div class="px-2 py-1">
                                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.text }}</h3>
@@ -881,77 +866,49 @@ const endAccordionTransition = (el: Element, done: () => void) => {
             <!-- Bottom section -->
             <li class="mt-auto pb-4">
               <div :class="isSidebarCollapsed ? 'flex flex-col items-center justify-center space-y-6' : 'flex items-center space-x-4'">
-                <Tooltip v-if="isSidebarCollapsed" text="AI Buddy" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="AI Buddy" position="right" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/buddy"
                     class="sidebar-bottom-link"
                     :class="{ 'active-bottom-link': route.path === '/buddy' }"
                   >
                     <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">AI Buddy</span>
                   </RouterLink>
                 </Tooltip>
-                <RouterLink
-                  v-else
-                  to="/buddy"
-                  class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': route.path === '/buddy' }"
-                >
-                  <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                </RouterLink>
 
-                <Tooltip v-if="isSidebarCollapsed" text="Environment" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Environment" position="right" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/environment"
                     class="sidebar-bottom-link"
                     :class="{ 'active-bottom-link': route.path === '/environment' }"
                   >
                     <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Environment</span>
                   </RouterLink>
                 </Tooltip>
-                <RouterLink
-                  v-else
-                  to="/environment"
-                  class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': route.path === '/environment' }"
-                >
-                  <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                </RouterLink>
 
-                <Tooltip v-if="isSidebarCollapsed" text="Access Tokens" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Access Tokens" position="right" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/access-tokens"
                     class="sidebar-bottom-link"
                     :class="{ 'active-bottom-link': route.path === '/access-tokens' }"
                   >
                     <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Access Tokens</span>
                   </RouterLink>
                 </Tooltip>
-                <RouterLink
-                  v-else
-                  to="/access-tokens"
-                  class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': route.path === '/access-tokens' }"
-                >
-                  <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                </RouterLink>
 
-                <Tooltip v-if="isSidebarCollapsed" text="Settings" position="right" :dark="isDark" :usePortal="true">
+                <Tooltip text="Settings" position="right" :dark="isDark" :usePortal="true">
                   <RouterLink
                     to="/settings/ai"
                     class="sidebar-bottom-link"
                     :class="{ 'active-bottom-link': route.path.startsWith('/settings/ai') }"
                   >
                     <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
+                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Settings</span>
                   </RouterLink>
                 </Tooltip>
-                <RouterLink
-                  v-else
-                  to="/settings/ai"
-                  class="sidebar-bottom-link"
-                  :class="{ 'active-bottom-link': route.path.startsWith('/settings/ai') }"
-                >
-                  <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                </RouterLink>
               </div>
             </li>
           </ul>
@@ -976,8 +933,10 @@ const endAccordionTransition = (el: Element, done: () => void) => {
 /* When sidebar is collapsed, adjust links */
 :deep(.lg\:w-20) .sidebar-links {
   @apply justify-center px-0 rounded-lg;
-  width: 40px;
+  width: 32px;
+  height: 32px;
   margin: 0 auto;
+  padding: 0.375rem; /* 6px */
 }
 
 /* Active state styling */
@@ -1060,10 +1019,15 @@ const endAccordionTransition = (el: Element, done: () => void) => {
 
 /* Bottom links styling */
 .sidebar-bottom-link {
-  @apply flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-lg;
+  @apply flex items-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-lg;
   transition: all 0.2s ease;
+}
+
+:deep(.lg\:w-20) .sidebar-bottom-link {
+  @apply justify-center;
   width: 32px;
   height: 32px;
+  padding: 0.375rem; /* 6px */
 }
 
 .active-bottom-link div {
@@ -1123,5 +1087,22 @@ img.rounded-lg {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-8px);
+}
+
+/* Dropdown menu styling */
+.sidebar-dropdown-menu {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure all items in collapsed sidebar are properly centered */
+:deep(.lg\:w-20) .flex.flex-col.items-center button,
+:deep(.lg\:w-20) .flex.flex-col.items-center a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0.375rem;
+  margin: 0 auto;
 }
 </style>
