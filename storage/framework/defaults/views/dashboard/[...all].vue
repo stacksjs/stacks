@@ -15,8 +15,8 @@ useHead({
             <div class="flex justify-center">
               <div class="i-hugeicons-alert-circle h-24 w-24 text-gray-400 dark:text-gray-500 mb-6"></div>
             </div>
-            <h1 class="text-5xl font-bold text-gray-900 dark:text-white">404</h1>
-            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-4xl">Page not found</p>
+            <h1 class="text-5xl font-bold text-gray-900 dark:text-white font-mono">404</h1>
+            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-4xl font-mono">Page not found</p>
             <p class="mt-4 text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
               Sorry, we couldn't find the page you're looking for. The page might have been moved or deleted.
             </p>
