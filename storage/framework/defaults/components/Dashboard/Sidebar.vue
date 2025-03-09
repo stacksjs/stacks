@@ -165,7 +165,7 @@ const sectionContent: Record<string, SectionContent> = {
   content: {
     items: [
       { to: '/content/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-      { to: '/content/file-manager', icon: 'i-hugeicons-apple-finder', text: 'Files' },
+      { to: '/content/files', icon: 'i-hugeicons-apple-finder', text: 'Files' },
       { to: '/content/pages', icon: 'i-hugeicons-file-02', text: 'Pages' },
       { to: '/content/posts', icon: 'i-hugeicons-message-edit-02', text: 'Posts' },
       { to: '/content/categories', icon: 'i-hugeicons-tags', text: 'Categories' },

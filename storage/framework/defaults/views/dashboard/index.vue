@@ -212,7 +212,7 @@ function getActivityColor(status: string): string {
                 </ul>
               </div>
               <div class="border-t border-gray-200 dark:border-gray-700 px-4 py-4 sm:px-6">
-                <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+                <a href="/activity" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
                   View all activity
                   <span aria-hidden="true"> &rarr;</span>
                 </a>

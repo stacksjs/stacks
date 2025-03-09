@@ -88,6 +88,10 @@ const logNames = [
   { id: 'posts', name: 'Posts', color: 'pink' },
   { id: 'comments', name: 'Comments', color: 'rose' },
   { id: 'media', name: 'Media', color: 'amber' },
+  { id: 'deployment', name: 'Deployment', color: 'emerald' },
+  { id: 'server', name: 'Server', color: 'cyan' },
+  { id: 'commerce', name: 'Commerce', color: 'orange' },
+  { id: 'blog', name: 'Blog', color: 'violet' },
 ]
 
 // Sample subject types
@@ -98,6 +102,11 @@ const subjectTypes = [
   { type: 'App\\Models\\Media', name: 'Media' },
   { type: 'App\\Models\\Role', name: 'Role' },
   { type: 'App\\Models\\Permission', name: 'Permission' },
+  { type: 'App\\Models\\Order', name: 'Order' },
+  { type: 'App\\Services\\Deployment', name: 'Deployment' },
+  { type: 'App\\Services\\Server', name: 'Server' },
+  { type: 'App\\Services\\Api', name: 'API' },
+  { type: 'App\\Services\\Backup', name: 'Backup' },
 ]
 
 // Sample activity logs in Laravel Spatie Activity Log format
@@ -307,7 +316,106 @@ const sampleActivityLogs: ActivityLog[] = [
     created_at: new Date(Date.now() - 420000).toISOString(),
     updated_at: new Date(Date.now() - 420000).toISOString(),
     event: 'completed',
-  }
+  },
+  {
+    id: '11',
+    log_name: 'deployment',
+    description: 'Production deployment successful',
+    subject_type: 'App\\Services\\Deployment',
+    subject_id: '123',
+    causer_type: 'App\\Models\\User',
+    causer_id: '1',
+    properties: {
+      environment: 'production',
+      branch: 'main',
+      commit: '7829abc',
+      duration: '45s',
+      status: 'success',
+    },
+    created_at: new Date(Date.now() - 10 * 60000).toISOString(), // 10 minutes ago
+    updated_at: new Date(Date.now() - 10 * 60000).toISOString(),
+    event: 'completed',
+  },
+  {
+    id: '12',
+    log_name: 'blog',
+    description: 'New blog post published',
+    subject_type: 'App\\Models\\Post',
+    subject_id: '45',
+    causer_type: 'App\\Models\\User',
+    causer_id: '3',
+    properties: {
+      attributes: {
+        title: 'Getting Started with Activity Logs',
+        slug: 'getting-started-with-activity-logs',
+        status: 'published',
+        created_at: new Date(Date.now() - 60 * 60000).toISOString(), // 1 hour ago
+      },
+      status: 'success',
+    },
+    created_at: new Date(Date.now() - 60 * 60000).toISOString(),
+    updated_at: new Date(Date.now() - 60 * 60000).toISOString(),
+    event: 'published',
+  },
+  {
+    id: '13',
+    log_name: 'server',
+    description: 'Server maintenance completed',
+    subject_type: 'App\\Services\\Server',
+    subject_id: '2',
+    causer_type: 'App\\Models\\User',
+    causer_id: '4',
+    properties: {
+      server: 'app-server-01',
+      maintenance_type: 'scheduled',
+      duration: '120m',
+      status: 'success',
+    },
+    created_at: new Date(Date.now() - 3 * 60 * 60000).toISOString(), // 3 hours ago
+    updated_at: new Date(Date.now() - 3 * 60 * 60000).toISOString(),
+    event: 'maintained',
+  },
+  {
+    id: '14',
+    log_name: 'default',
+    description: 'API rate limit exceeded',
+    subject_type: 'App\\Services\\Api',
+    subject_id: '1',
+    causer_type: null,
+    causer_id: null,
+    properties: {
+      endpoint: '/api/v1/users',
+      limit: 1000,
+      period: '1 hour',
+      ip: '192.168.1.50',
+      status: 'error',
+    },
+    created_at: new Date(Date.now() - 5 * 60 * 60000).toISOString(), // 5 hours ago
+    updated_at: new Date(Date.now() - 5 * 60 * 60000).toISOString(),
+    event: 'exceeded',
+  },
+  {
+    id: '15',
+    log_name: 'commerce',
+    description: 'New order received',
+    subject_type: 'App\\Models\\Order',
+    subject_id: '1001',
+    causer_type: 'App\\Models\\User',
+    causer_id: '2',
+    properties: {
+      attributes: {
+        order_number: 'ORD-1001',
+        total: '$129.99',
+        items: 3,
+        status: 'pending',
+        created_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(), // 12 hours ago
+      },
+      status: 'success',
+    },
+    created_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(),
+    updated_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(),
+    event: 'created',
+  },
 ]
 
 // Process logs to add computed properties
@@ -326,48 +434,80 @@ const processLogs = (logs: ActivityLog[]) => {
       subject_name = log.properties.attributes.filename
     } else if (log.subject_type === 'App\\Services\\Backup') {
       subject_name = 'System Backup'
+    } else if (log.subject_type === 'App\\Services\\Deployment') {
+      subject_name = `Deployment to ${log.properties?.environment || 'unknown'}`
+    } else if (log.subject_type === 'App\\Services\\Server') {
+      subject_name = log.properties?.server || 'Server'
+    } else if (log.subject_type === 'App\\Services\\Api') {
+      subject_name = log.properties?.endpoint || 'API'
+    } else if (log.subject_type === 'App\\Models\\Order' && log.properties?.attributes?.order_number) {
+      subject_name = log.properties.attributes.order_number
     } else {
       // Get the last part of the subject type as a fallback
       const parts = log.subject_type.split('\\')
       subject_name = `${parts[parts.length - 1]} #${log.subject_id}`
     }
 
-    // Determine icon and color based on event
+    // Determine icon and color based on event and status
     let icon = 'i-hugeicons-information-circle'
     let color = 'text-blue-500'
 
-    switch (log.event) {
-      case 'created':
-        icon = 'i-hugeicons-plus-sign-circle'
-        color = 'text-green-500'
-        break
-      case 'updated':
-        icon = 'i-hugeicons-edit-01'
-        color = 'text-blue-500'
-        break
-      case 'deleted':
-        icon = 'i-hugeicons-waste'
-        color = 'text-red-500'
-        break
-      case 'login':
-        icon = 'i-hugeicons-login-03'
-        color = 'text-indigo-500'
-        break
-      case 'login_failed':
-        icon = 'i-hugeicons-login-03'
-        color = 'text-amber-500'
-        break
-      case 'uploaded':
-        icon = 'i-hugeicons-upload-03'
-        color = 'text-purple-500'
-        break
-      case 'completed':
-        icon = 'i-hugeicons-checkmark-circle-02'
-        color = 'text-green-500'
-        break
-      default:
-        icon = 'i-hugeicons-information-circle'
-        color = 'text-gray-500'
+    // Check if there's a status in properties
+    const status = log.properties?.status
+
+    if (status === 'error') {
+      icon = 'i-hugeicons-alert-02'
+      color = 'text-red-500'
+    } else if (status === 'warning') {
+      icon = 'i-hugeicons-alert-02'
+      color = 'text-amber-500'
+    } else {
+      // If no status, use event to determine icon/color
+      switch (log.event) {
+        case 'created':
+          icon = 'i-hugeicons-plus-sign-circle'
+          color = 'text-green-500'
+          break
+        case 'updated':
+          icon = 'i-hugeicons-edit-01'
+          color = 'text-blue-500'
+          break
+        case 'deleted':
+          icon = 'i-hugeicons-waste'
+          color = 'text-red-500'
+          break
+        case 'login':
+          icon = 'i-hugeicons-login-03'
+          color = 'text-indigo-500'
+          break
+        case 'login_failed':
+          icon = 'i-hugeicons-login-03'
+          color = 'text-amber-500'
+          break
+        case 'uploaded':
+          icon = 'i-hugeicons-upload-03'
+          color = 'text-purple-500'
+          break
+        case 'completed':
+          icon = 'i-hugeicons-checkmark-circle-02'
+          color = 'text-green-500'
+          break
+        case 'published':
+          icon = 'i-hugeicons-book-open-01'
+          color = 'text-violet-500'
+          break
+        case 'maintained':
+          icon = 'i-hugeicons-settings-01'
+          color = 'text-cyan-500'
+          break
+        case 'exceeded':
+          icon = 'i-hugeicons-alert-02'
+          color = 'text-red-500'
+          break
+        default:
+          icon = 'i-hugeicons-information-circle'
+          color = 'text-gray-500'
+      }
     }
 
     return {
@@ -699,6 +839,9 @@ watch(timeRange, async () => {
               <option value="login_failed">Failed Login</option>
               <option value="uploaded">Uploaded</option>
               <option value="completed">Completed</option>
+              <option value="published">Published</option>
+              <option value="maintained">Maintained</option>
+              <option value="exceeded">Rate Limited</option>
             </select>
 
             <select
