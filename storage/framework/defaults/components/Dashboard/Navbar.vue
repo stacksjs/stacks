@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { useDark } from '@vueuse/core'
-import { ref, watch } from 'vue'
+import { useDark, useLocalStorage } from '@vueuse/core'
+import { ref, watch, computed } from 'vue'
 
 const showDropdown = ref(false)
 const isDark = useDark()
 const theme = ref(isDark.value ? 'dark' : 'light')
+
+// Import the sidebar collapsed state from localStorage
+const isSidebarCollapsed = useLocalStorage('sidebar-collapsed', false)
+
+// Compute classes based on sidebar state
+const navbarClasses = computed(() => {
+  return {
+    'navbar-expanded': !isSidebarCollapsed.value,
+    'navbar-collapsed': isSidebarCollapsed.value
+  }
+})
 
 watch(theme, (currentVal) => {
   if (currentVal === 'light')
@@ -16,7 +27,10 @@ watch(theme, (currentVal) => {
 </script>
 
 <template>
-  <div class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6">
+  <div
+    class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6 transition-all duration-300"
+    :class="navbarClasses"
+  >
     <button type="button" class="p-2.5 text-gray-700 -m-2.5 lg:hidden">
       <span class="sr-only">Open sidebar</span>
       <div class="i-hugeicons-menu-01 h-6 w-6" />
@@ -201,5 +215,21 @@ watch(theme, (currentVal) => {
 
 .user-menu-item.active {
   @apply bg-blue-gray-50 text-blue-600;
+}
+
+/* Navbar responsive styles - width only, no margin */
+.navbar-expanded {
+  width: 100%;
+}
+
+.navbar-collapsed {
+  width: 100%;
+}
+
+@media (max-width: 1023px) {
+  .navbar-expanded,
+  .navbar-collapsed {
+    width: 100%;
+  }
 }
 </style>
