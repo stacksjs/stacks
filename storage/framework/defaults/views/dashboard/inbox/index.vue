@@ -522,10 +522,10 @@ const inboxUnreadCount = computed(() => {
                   <i class="i-hugeicons-clock-circle text-lg"></i>
                 </button>
                 <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
-                  <i class="i-hugeicons-arrow-left-circle text-lg"></i>
+                  <i class="i-hugeicons-arrow-left-01 text-lg"></i>
                 </button>
                 <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
-                  <i class="i-hugeicons-arrow-right-circle text-lg"></i>
+                  <i class="i-hugeicons-arrow-right-01 text-lg"></i>
                 </button>
                 <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
                   <i class="i-hugeicons-more-vertical-circle text-lg"></i>
