@@ -435,6 +435,77 @@ const endSectionTransition = (el: Element, done: () => void) => {
   // Call done when transition completes
   el.addEventListener('transitionend', done, { once: true })
 }
+
+// Add a ref to store dropdown positions
+const dropdownPositions = ref<Record<string, number>>({})
+
+// Function to calculate dropdown position
+const calculateDropdownPosition = (event: MouseEvent, itemPath: string) => {
+  const target = event.currentTarget as HTMLElement
+  if (target) {
+    const rect = target.getBoundingClientRect()
+    dropdownPositions.value[itemPath] = rect.top
+  }
+}
+
+// Add refs for dropdown menus
+const dropdownRefs = ref<Record<string, HTMLElement | null>>({})
+
+// Function to close all dropdowns
+const closeAllDropdowns = () => {
+  Object.keys(expandedItems.value).forEach(key => {
+    if (expandedItems.value[key]) {
+      expandedItems.value[key] = false
+    }
+  })
+}
+
+// Add event listener to close dropdowns when clicking outside
+onMounted(() => {
+  document.addEventListener('click', (event) => {
+    // Only process if we have open dropdowns and we're in collapsed mode
+    if (isSidebarCollapsed.value && Object.values(expandedItems.value).some(v => v)) {
+      const target = event.target as HTMLElement
+      // Check if the click is outside any dropdown
+      if (!target.closest('.sidebar-dropdown-menu') && !target.closest('.sidebar-dropdown-trigger')) {
+        closeAllDropdowns()
+      }
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', closeAllDropdowns)
+})
+
+// Add transition functions for accordion animation in collapsed mode
+const startAccordionTransition = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+  // Start with height 0
+  element.style.height = '0'
+  // Force a reflow
+  void element.offsetHeight
+  // Set the height to the scroll height to trigger the transition
+  element.style.height = `${element.scrollHeight}px`
+  // Call done when transition completes
+  el.addEventListener('transitionend', () => {
+    // Remove the height constraint after animation completes
+    element.style.height = 'auto'
+    done()
+  }, { once: true })
+}
+
+const endAccordionTransition = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+  // First set the height to the current height
+  element.style.height = `${element.scrollHeight}px`
+  // Force a reflow
+  void element.offsetHeight
+  // Then animate to 0
+  element.style.height = '0'
+  // Call done when transition completes
+  el.addEventListener('transitionend', done, { once: true })
+}
 </script>
 
 <template>
@@ -586,7 +657,7 @@ const endSectionTransition = (el: Element, done: () => void) => {
                       @click.stop="toggleSection(sectionKey)"
                     >
                       <div
-                        class="i-hugeicons-arrow-right-01 h-4 w-4 transition-transform duration-200"
+                        class="i-hugeicons-arrow-right-01 h-5 w-5 transition-transform duration-200 mt-0.5"
                         :class="[
                           { 'transform rotate-90': sections[sectionKey] },
                           isSidebarCollapsed ? 'mx-auto' : ''
@@ -619,11 +690,14 @@ const endSectionTransition = (el: Element, done: () => void) => {
                       </RouterLink>
                     </li>
 
-                    <!-- Dropdown item -->
+                    <!-- Dropdown item in expanded mode -->
                     <li v-else class="w-full">
                       <button
-                        @click="toggleItem(item.to)"
-                        class="group sidebar-links w-full text-left"
+                        @click="(event) => {
+                          event.stopPropagation();
+                          toggleItem(item.to);
+                        }"
+                        class="group sidebar-links w-full text-left sidebar-dropdown-trigger"
                         :class="{ 'parent-active': isChildRouteActive(item) }"
                       >
                         <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
@@ -672,33 +746,83 @@ const endSectionTransition = (el: Element, done: () => void) => {
                 <!-- Special case for collapsed sidebar -->
                 <div
                   v-if="isSidebarCollapsed"
-                  class="mx-0 flex flex-col items-center space-y-0.5"
+                  class="mx-0 flex flex-col items-center"
                 >
-                  <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
-                    <!-- Regular item -->
-                    <li v-if="!item.children" class="w-full">
-                      <RouterLink :to="item.to" class="group sidebar-links justify-center">
-                        <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                        <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
-                          {{ item.letter }}
-                        </div>
-                      </RouterLink>
-                    </li>
+                  <!-- Section header is always visible -->
 
-                    <!-- Dropdown item -->
-                    <li v-else class="w-full">
-                      <button
-                        @click="toggleItem(item.to)"
-                        class="group sidebar-links w-full justify-center"
-                        :class="{ 'parent-active': isChildRouteActive(item) }"
-                      >
-                        <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
-                        <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
-                          {{ item.letter }}
-                        </div>
-                      </button>
-                    </li>
-                  </template>
+                  <!-- Accordion-style transition for section content -->
+                  <transition
+                    name="accordion"
+                    @enter="startAccordionTransition"
+                    @leave="endAccordionTransition"
+                  >
+                    <div
+                      v-if="sections[sectionKey]"
+                      class="w-full flex flex-col items-center space-y-0.5 accordion-content overflow-hidden"
+                    >
+                      <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
+                        <!-- Regular item -->
+                        <li v-if="!item.children" class="w-full">
+                          <RouterLink :to="item.to" class="group sidebar-links justify-center">
+                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                            <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                              {{ item.letter }}
+                            </div>
+                          </RouterLink>
+                        </li>
+
+                        <!-- Dropdown item in collapsed mode -->
+                        <li v-else class="w-full">
+                          <div class="relative">
+                            <button
+                              @click="(event) => {
+                                event.stopPropagation();
+                                toggleItem(item.to);
+                                calculateDropdownPosition(event as MouseEvent, item.to);
+                              }"
+                              class="group sidebar-links w-full justify-center sidebar-dropdown-trigger"
+                              :class="{ 'parent-active': isChildRouteActive(item) }"
+                            >
+                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                              <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                                {{ item.letter }}
+                              </div>
+                            </button>
+                          </div>
+
+                          <!-- Teleport dropdown for collapsed mode -->
+                          <Teleport to="body" v-if="expandedItems[item.to]">
+                            <div
+                              class="fixed z-50 rounded-lg bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700 sidebar-dropdown-menu"
+                              style="width: 200px; left: 80px;"
+                              :style="{ top: `${dropdownPositions[item.to] || 100}px` }"
+                            >
+                              <div class="px-2 py-1">
+                                <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ item.text }}</h3>
+                              </div>
+                              <div class="border-t border-gray-100 dark:border-gray-700">
+                                <div class="max-h-96 overflow-y-auto py-1">
+                                  <RouterLink
+                                    v-for="child in item.children"
+                                    :key="child.to"
+                                    :to="child.to"
+                                    class="block w-full px-3 py-1.5 text-left text-sm hover:bg-gray-50 dark:hover:bg-blue-gray-700"
+                                    :class="{ 'bg-gray-50 text-blue-600 dark:bg-blue-gray-700 dark:text-blue-400': route.path === child.to }"
+                                    @click="expandedItems[item.to] = false"
+                                  >
+                                    <div class="flex items-center">
+                                      <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 mr-2 text-gray-400']" />
+                                      <span>{{ child.text }}</span>
+                                    </div>
+                                  </RouterLink>
+                                </div>
+                              </div>
+                            </div>
+                          </Teleport>
+                        </li>
+                      </template>
+                    </div>
+                  </transition>
                 </div>
               </li>
             </template>
@@ -880,5 +1004,33 @@ img.rounded-lg {
 
 .dark .home-link.router-link-active {
   background-color: rgba(30, 41, 59, 0.8);
+}
+
+/* Accordion transition for collapsed sidebar sections */
+.accordion-enter-active,
+.accordion-leave-active {
+  transition: height 0.3s ease;
+  overflow: hidden;
+}
+
+.accordion-enter-from,
+.accordion-leave-to {
+  height: 0;
+}
+
+.accordion-content {
+  margin-top: 0.5rem;
+}
+
+/* Remove the fade transition since we're using accordion now */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 </style>
