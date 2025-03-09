@@ -750,7 +750,7 @@ const getEventTypeIcon = (type: string) => {
                 class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
               >
                 <span class="sr-only">Zoom In</span>
-                <div class="i-hugeicons-plus w-5 h-5" />
+                <div class="i-hugeicons-plus-sign w-5 h-5" />
               </button>
               <button
                 @click="zoomOut"

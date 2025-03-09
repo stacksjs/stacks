@@ -125,6 +125,7 @@ declare module 'vue' {
     Toast: typeof import('./../defaults/components/Dashboard/Modals/Popups/Toast.vue')['default']
     ToastWrapper: typeof import('./../defaults/components/Dashboard/Modals/ToastWrapper.vue')['default']
     ToggleDark: typeof import('./../defaults/components/Buttons/ToggleDark.vue')['default']
+    Tooltip: typeof import('./../defaults/components/Dashboard/Tooltip.vue')['default']
     Transaction: typeof import('./../defaults/components/Dashboard/Transaction/index.vue')['default']
     Usage: typeof import('./../defaults/components/Docs/demo/Usage.vue')['default']
   }
