@@ -873,7 +873,6 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                     :class="{ 'active-bottom-link': route.path === '/buddy' }"
                   >
                     <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">AI Buddy</span>
                   </RouterLink>
                 </Tooltip>
 
@@ -884,7 +883,6 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                     :class="{ 'active-bottom-link': route.path === '/environment' }"
                   >
                     <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Environment</span>
                   </RouterLink>
                 </Tooltip>
 
@@ -895,7 +893,6 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                     :class="{ 'active-bottom-link': route.path === '/access-tokens' }"
                   >
                     <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Access Tokens</span>
                   </RouterLink>
                 </Tooltip>
 
@@ -906,7 +903,6 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                     :class="{ 'active-bottom-link': route.path.startsWith('/settings/ai') }"
                   >
                     <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600" />
-                    <span v-if="!isSidebarCollapsed" class="ml-2 text-sm">Settings</span>
                   </RouterLink>
                 </Tooltip>
               </div>
