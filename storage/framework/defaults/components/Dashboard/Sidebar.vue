@@ -288,6 +288,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   management: {
     items: [
+      { to: '/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
       {
         to: '/cloud',
         icon: 'i-hugeicons-cloud',
