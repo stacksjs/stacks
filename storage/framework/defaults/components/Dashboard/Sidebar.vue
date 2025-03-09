@@ -378,17 +378,59 @@ const isChildRouteActive = (item: SidebarItem) => {
 const startTransition = (el: Element, done: () => void) => {
   const element = el as HTMLElement
   element.style.maxHeight = '0'
+  element.style.width = '100%'
+  element.style.overflow = 'hidden'
   // Force a reflow
   void element.offsetHeight
   // Set the max height to the scroll height to trigger the transition
-  element.style.maxHeight = element.scrollHeight + 'px'
+  element.style.maxHeight = `${element.scrollHeight}px`
   // Call done when transition completes
-  el.addEventListener('transitionend', done, { once: true })
+  el.addEventListener('transitionend', () => {
+    // Remove the max height constraint after animation completes
+    element.style.maxHeight = 'none'
+    done()
+  }, { once: true })
 }
 
 const endTransition = (el: Element, done: () => void) => {
   const element = el as HTMLElement
-  // Set the max height to 0 to trigger the transition
+  // First set the max height to the current height
+  element.style.maxHeight = `${element.scrollHeight}px`
+  element.style.overflow = 'hidden'
+  // Force a reflow
+  void element.offsetHeight
+  // Then animate to 0
+  element.style.maxHeight = '0'
+  // Call done when transition completes
+  el.addEventListener('transitionend', done, { once: true })
+}
+
+// Add transition functions for section transition
+const startSectionTransition = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+  element.style.maxHeight = '0'
+  element.style.width = '100%'
+  element.style.overflow = 'hidden'
+  // Force a reflow
+  void element.offsetHeight
+  // Set the max height to the scroll height to trigger the transition
+  element.style.maxHeight = `${element.scrollHeight}px`
+  // Call done when transition completes
+  el.addEventListener('transitionend', () => {
+    // Remove the max height constraint after animation completes
+    element.style.maxHeight = 'none'
+    done()
+  }, { once: true })
+}
+
+const endSectionTransition = (el: Element, done: () => void) => {
+  const element = el as HTMLElement
+  // First set the max height to the current height
+  element.style.maxHeight = `${element.scrollHeight}px`
+  element.style.overflow = 'hidden'
+  // Force a reflow
+  void element.offsetHeight
+  // Then animate to 0
   element.style.maxHeight = '0'
   // Call done when transition completes
   el.addEventListener('transitionend', done, { once: true })
@@ -500,7 +542,7 @@ const endTransition = (el: Element, done: () => void) => {
             <li>
               <ul role="list" class="mt-1 -mx-2 space-y-1" :class="{ 'mx-0 flex flex-col items-center': isSidebarCollapsed }">
                 <li>
-                  <RouterLink to="/" class="group sidebar-links" :class="{ 'justify-center': isSidebarCollapsed }">
+                  <RouterLink to="/" class="group sidebar-links" :class="{ 'justify-center': isSidebarCollapsed, 'home-link': route.path === '/' }">
                     <div class="i-hugeicons-home-05 h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5" />
                     <span :class="{ 'hidden': isSidebarCollapsed }">Home</span>
                   </RouterLink>
@@ -544,9 +586,9 @@ const endTransition = (el: Element, done: () => void) => {
                       @click.stop="toggleSection(sectionKey)"
                     >
                       <div
-                        class="i-hugeicons-arrow-down-01 h-4 w-4 transition-transform duration-200"
+                        class="i-hugeicons-arrow-right-01 h-4 w-4 transition-transform duration-200"
                         :class="[
-                          { 'rotate-180': sections[sectionKey] },
+                          { 'transform rotate-90': sections[sectionKey] },
                           isSidebarCollapsed ? 'mx-auto' : ''
                         ]"
                       />
@@ -554,21 +596,26 @@ const endTransition = (el: Element, done: () => void) => {
                   </div>
                 </div>
 
-                <!-- Section items -->
-                <div
-                  v-show="sections[sectionKey] || (isSidebarCollapsed && !sections[sectionKey])"
-                  class="mt-1 -mx-2 space-y-0.5"
-                  :class="{ 'mx-0 flex flex-col items-center': isSidebarCollapsed }"
+                <!-- Section items with transition -->
+                <transition
+                  name="section-transition"
+                  @enter="startSectionTransition"
+                  @leave="endSectionTransition"
                 >
-                  <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
+                  <div
+                    v-if="sections[sectionKey] && !isSidebarCollapsed"
+                    class="section-content mt-1 -mx-2 space-y-0.5 w-full"
+                    :style="{ maxHeight: 'none' }"
+                  >
+                    <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
                     <!-- Regular item -->
                     <li v-if="!item.children" class="w-full">
-                      <RouterLink :to="item.to" class="group sidebar-links" :class="{ 'justify-center': isSidebarCollapsed }">
+                      <RouterLink :to="item.to" class="group sidebar-links w-full">
                         <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
                         <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                           {{ item.letter }}
                         </div>
-                        <span :class="{ 'hidden': isSidebarCollapsed }">{{ item.text }}</span>
+                        <span class="flex-1">{{ item.text }}</span>
                       </RouterLink>
                     </li>
 
@@ -577,15 +624,14 @@ const endTransition = (el: Element, done: () => void) => {
                       <button
                         @click="toggleItem(item.to)"
                         class="group sidebar-links w-full text-left"
-                        :class="{ 'parent-active': isChildRouteActive(item), 'justify-center': isSidebarCollapsed }"
+                        :class="{ 'parent-active': isChildRouteActive(item) }"
                       >
                         <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
                         <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                           {{ item.letter }}
                         </div>
-                        <span :class="{ 'hidden': isSidebarCollapsed }">{{ item.text }}</span>
+                        <span class="flex-1">{{ item.text }}</span>
                         <div
-                          v-if="!isSidebarCollapsed"
                           class="i-hugeicons-arrow-right-01 ml-auto h-4 w-4 text-gray-400 transition-transform duration-200"
                           :class="{ 'transform rotate-90': expandedItems[item.to] }"
                         />
@@ -598,25 +644,59 @@ const endTransition = (el: Element, done: () => void) => {
                         @leave="endTransition"
                       >
                         <div
-                          v-if="expandedItems[item.to] && !isSidebarCollapsed"
-                          class="dropdown-list mt-0.5 space-y-0.5 pl-6 ml-2.5"
+                          v-if="expandedItems[item.to]"
+                          class="dropdown-list mt-0.5 space-y-0.5 pl-6 ml-2.5 w-full"
                           :data-dropdown-id="item.to"
+                          :style="{ maxHeight: 'none' }"
                         >
                           <div
                             v-for="child in item.children"
                             :key="child.to"
-                            class="dropdown-item"
+                            class="dropdown-item w-full"
                           >
                             <RouterLink
                               :to="child.to"
-                              class="sidebar-child-link"
+                              class="sidebar-child-link w-full"
                             >
                               <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 text-gray-400 mr-2']" />
-                              <span>{{ child.text }}</span>
+                              <span class="flex-1">{{ child.text }}</span>
                             </RouterLink>
                           </div>
                         </div>
                       </transition>
+                    </li>
+                    </template>
+                  </div>
+                </transition>
+
+                <!-- Special case for collapsed sidebar -->
+                <div
+                  v-if="isSidebarCollapsed"
+                  class="mx-0 flex flex-col items-center space-y-0.5"
+                >
+                  <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
+                    <!-- Regular item -->
+                    <li v-if="!item.children" class="w-full">
+                      <RouterLink :to="item.to" class="group sidebar-links justify-center">
+                        <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                        <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                          {{ item.letter }}
+                        </div>
+                      </RouterLink>
+                    </li>
+
+                    <!-- Dropdown item -->
+                    <li v-else class="w-full">
+                      <button
+                        @click="toggleItem(item.to)"
+                        class="group sidebar-links w-full justify-center"
+                        :class="{ 'parent-active': isChildRouteActive(item) }"
+                      >
+                        <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5']" />
+                        <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                          {{ item.letter }}
+                        </div>
+                      </button>
                     </li>
                   </template>
                 </div>
@@ -674,24 +754,24 @@ const endTransition = (el: Element, done: () => void) => {
 <style scoped>
 /* Add transition for sidebar collapse */
 .sidebar-links {
-  @apply flex items-center gap-x-3 rounded-md p-1.5 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
+  @apply flex items-center gap-x-3 p-1.5 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-lg;
   transition: all 0.3s ease;
 }
 
 /* When sidebar is collapsed, adjust links */
 :deep(.lg\:w-20) .sidebar-links {
-  @apply justify-center px-0;
+  @apply justify-center px-0 rounded-lg;
   width: 40px;
   margin: 0 auto;
 }
 
 /* Active state styling */
 .router-link-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400;
+  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 rounded-lg;
 }
 
 .router-link-exact-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 font-medium;
+  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 font-medium rounded-lg;
 }
 
 .router-link-active div[class^="i-hugeicons"],
@@ -710,15 +790,22 @@ const endTransition = (el: Element, done: () => void) => {
 
 /* Nested items styling */
 .dropdown-list {
-  overflow: hidden;
-  max-height: 0;
+  overflow: visible;
   transition: max-height 0.3s ease;
   @apply border-l border-gray-200 dark:border-blue-gray-700;
+  width: 100%;
+  position: relative;
+}
+
+.dropdown-item {
+  position: relative;
+  width: 100%;
 }
 
 .sidebar-child-link {
-  @apply flex items-center rounded-md py-1 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
+  @apply flex items-center rounded-lg py-1 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
   transition: all 0.2s ease;
+  width: calc(100% - 8px);
 }
 
 .sidebar-child-link.router-link-active {
@@ -729,7 +816,7 @@ const endTransition = (el: Element, done: () => void) => {
 .dropdown-enter-active,
 .dropdown-leave-active {
   transition: max-height 0.3s ease;
-  overflow: hidden;
+  width: 100%;
 }
 
 .dropdown-enter-from,
@@ -737,9 +824,28 @@ const endTransition = (el: Element, done: () => void) => {
   max-height: 0;
 }
 
+/* Section transition */
+.section-transition-enter-active,
+.section-transition-leave-active {
+  transition: max-height 0.3s ease;
+  width: 100%;
+  position: relative;
+}
+
+.section-transition-enter-from,
+.section-transition-leave-to {
+  max-height: 0;
+}
+
+.section-content {
+  overflow: visible;
+  width: 100%;
+  position: relative;
+}
+
 /* Bottom links styling */
 .sidebar-bottom-link {
-  @apply flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-md;
+  @apply flex items-center justify-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-lg;
   transition: all 0.2s ease;
   width: 32px;
   height: 32px;
@@ -756,5 +862,23 @@ const endTransition = (el: Element, done: () => void) => {
 
 :deep(.sidebar-collapsed .lg\:pl-64) {
   padding-left: 5rem !important; /* 5rem = 80px (w-20) */
+}
+
+/* Ensure logo is properly rounded */
+img.rounded-lg {
+  overflow: hidden;
+}
+
+/* Special styling for home link */
+.home-link {
+  @apply rounded-xl bg-gray-100;
+}
+
+.dark .home-link {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+.dark .home-link.router-link-active {
+  background-color: rgba(30, 41, 59, 0.8);
 }
 </style>
