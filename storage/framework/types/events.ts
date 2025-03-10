@@ -3,10 +3,10 @@ import type { CustomerModel } from '../orm/src/models/Customer'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
 import type { LoyaltyPointModel } from '../orm/src/models/LoyaltyPoint'
 import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
+import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductCategoryModel } from '../orm/src/models/ProductCategory'
-import type { ProductManufacturerModel } from '../orm/src/models/ProductManufacturer'
 import type { ProductReviewModel } from '../orm/src/models/ProductReview'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
@@ -16,6 +16,9 @@ export interface ModelEvents {
   'user:created': UserModel
   'user:updated': UserModel
   'user:deleted': UserModel
+  'manufacturer:created': ManufacturerModel
+  'manufacturer:updated': ManufacturerModel
+  'manufacturer:deleted': ManufacturerModel
   'customer:created': CustomerModel
   'customer:updated': CustomerModel
   'customer:deleted': CustomerModel
@@ -31,9 +34,6 @@ export interface ModelEvents {
   'order:created': OrderModel
   'order:updated': OrderModel
   'order:deleted': OrderModel
-  'productmanufacturer:created': ProductManufacturerModel
-  'productmanufacturer:updated': ProductManufacturerModel
-  'productmanufacturer:deleted': ProductManufacturerModel
   'coupon:created': CouponModel
   'coupon:updated': CouponModel
   'coupon:deleted': CouponModel

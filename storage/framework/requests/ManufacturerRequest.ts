@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { ProductManufacturerRequestType } from '../types/requests'
+import type { ManufacturerRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataProductManufacturer {
+interface RequestDataManufacturer {
   id: number
   manufacturer: string
   description: string
@@ -20,7 +20,7 @@ interface RequestDataProductManufacturer {
   created_at?: Date
   updated_at?: Date
 }
-export class ProductManufacturerRequest extends Request<RequestDataProductManufacturer> implements ProductManufacturerRequestType {
+export class ManufacturerRequest extends Request<RequestDataManufacturer> implements ManufacturerRequestType {
   public id = 1
   public manufacturer = ''
   public description = ''
@@ -31,7 +31,7 @@ export class ProductManufacturerRequest extends Request<RequestDataProductManufa
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('ProductManufacturer', this.all())
+      await validateField('Manufacturer', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -39,4 +39,4 @@ export class ProductManufacturerRequest extends Request<RequestDataProductManufa
   }
 }
 
-export const productManufacturerRequest = new ProductManufacturerRequest()
+export const manufacturerRequest = new ManufacturerRequest()

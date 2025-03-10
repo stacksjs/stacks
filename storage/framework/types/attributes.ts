@@ -29,6 +29,9 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  manufacturer: string
+  country: string
+  featured: boolean
   quantity: number
   price: number
   special_instructions: string
@@ -93,9 +96,6 @@ export interface Attributes {
   delivery_address: string
   estimated_delivery_time: string
   applied_coupon_id: string
-  manufacturer: string
-  country: string
-  featured: boolean
   discount_type: string
   discount_value: number
   min_order_amount: number

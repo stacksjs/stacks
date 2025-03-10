@@ -8,6 +8,7 @@ import type { GiftCardsTable } from '../src/models/GiftCard'
 import type { JobsTable } from '../src/models/Job'
 import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
 import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
+import type { ManufacturersTable } from '../src/models/Manufacturer'
 import type { OrdersTable } from '../src/models/Order'
 import type { OrderItemsTable } from '../src/models/OrderItem'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
@@ -16,7 +17,6 @@ import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductCategoriesTable } from '../src/models/ProductCategory'
-import type { ProductManufacturersTable } from '../src/models/ProductManufacturer'
 import type { ProductReviewsTable } from '../src/models/ProductReview'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
@@ -70,6 +70,7 @@ export interface Database {
   releases: ReleasesTable
   users: UsersTable
   posts: PostsTable
+  manufacturers: ManufacturersTable
   order_items: OrderItemsTable
   failed_jobs: FailedJobsTable
   customers: CustomersTable
@@ -80,7 +81,6 @@ export interface Database {
   requests: RequestsTable
   gift_cards: GiftCardsTable
   orders: OrdersTable
-  product_manufacturers: ProductManufacturersTable
   coupons: CouponsTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable

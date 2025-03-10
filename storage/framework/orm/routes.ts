@@ -1,5 +1,11 @@
 import { route } from '@stacksjs/router'
 
+route.get('product-manufacturers', 'ManufacturerIndexOrmAction')
+
+route.post('product-manufacturers', 'ManufacturerStoreOrmAction')
+
+route.get('product-manufacturers/{id}', 'ManufacturerShowOrmAction')
+
 route.get('customers', 'CustomerIndexOrmAction')
 
 route.post('customers', 'CustomerStoreOrmAction')
@@ -43,12 +49,6 @@ route.get('orders', 'OrderIndexOrmAction')
 route.post('orders', 'OrderStoreOrmAction')
 
 route.get('orders/{id}', 'OrderShowOrmAction')
-
-route.get('product-manufacturers', 'ProductManufacturerIndexOrmAction')
-
-route.post('product-manufacturers', 'ProductManufacturerStoreOrmAction')
-
-route.get('product-manufacturers/{id}', 'ProductManufacturerShowOrmAction')
 
 route.get('coupons', 'CouponIndexOrmAction')
 

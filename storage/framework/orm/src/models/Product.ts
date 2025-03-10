@@ -1,7 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ManufacturerModel } from './Manufacturer'
 import type { ProductCategoryModel } from './ProductCategory'
-import type { ProductManufacturerModel } from './ProductManufacturer'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
@@ -10,14 +10,14 @@ import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import ProductCategory from './ProductCategory'
+import Manufacturer from './Manufacturer'
 
-import ProductManufacturer from './ProductManufacturer'
+import ProductCategory from './ProductCategory'
 
 export interface ProductsTable {
   id: Generated<number>
   product_category_id: number
-  product_manufacturer_id: number
+  manufacturer_id: number
   name: string
   description?: string
   price: number
@@ -65,7 +65,7 @@ interface QueryOptions {
 
 export class ProductModel {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
-  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'product_manufacturer_id', 'product_category_id']
+  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'manufacturer_id', 'product_category_id']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
   protected attributes = {} as ProductJsonResponse
   protected originalAttributes = {} as ProductJsonResponse
@@ -151,12 +151,12 @@ export class ProductModel {
     return this.attributes.product_category
   }
 
-  get product_manufacturer_id(): number {
-    return this.attributes.product_manufacturer_id
+  get manufacturer_id(): number {
+    return this.attributes.manufacturer_id
   }
 
-  get product_manufacturer(): ProductManufacturerModel | undefined {
-    return this.attributes.product_manufacturer
+  get manufacturer(): ManufacturerModel | undefined {
+    return this.attributes.manufacturer
   }
 
   get id(): number {
@@ -1782,12 +1782,12 @@ export class ProductModel {
     return model
   }
 
-  async productManufacturerBelong(): Promise<ProductManufacturerModel> {
-    if (this.product_manufacturer_id === undefined)
+  async manufacturerBelong(): Promise<ManufacturerModel> {
+    if (this.manufacturer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await ProductManufacturer
-      .where('id', '=', this.product_manufacturer_id)
+    const model = await Manufacturer
+      .where('id', '=', this.manufacturer_id)
       .first()
 
     if (!model)
@@ -1863,8 +1863,8 @@ export class ProductModel {
 
       product_category_id: this.product_category_id,
       product_category: this.product_category,
-      product_manufacturer_id: this.product_manufacturer_id,
-      product_manufacturer: this.product_manufacturer,
+      manufacturer_id: this.manufacturer_id,
+      manufacturer: this.manufacturer,
       ...this.customColumns,
     }
 

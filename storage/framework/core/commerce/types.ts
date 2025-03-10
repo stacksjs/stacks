@@ -13,8 +13,8 @@ import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
 // Import the OrderTable type from the ORM
 import type { OrderJsonResponse, OrdersTable } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
-import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
 import type { ProductManufacturerJsonResponse } from '../../orm/src/models/ProductManufacturer'
+import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
 
 // Re-export the types
 export type {
@@ -267,22 +267,22 @@ export interface ProductReviewStats {
 export interface FetchProductManufacturersOptions {
   /** Page number for pagination */
   page?: number
-  
+
   /** Number of items per page */
   limit?: number
-  
+
   /** Field to sort by */
   sortBy?: 'manufacturer' | 'country' | 'created_at' | 'updated_at'
-  
+
   /** Sort direction */
   sortDirection?: 'asc' | 'desc'
-  
+
   /** Filter by country */
   country?: string
-  
+
   /** Filter by featured status */
   featured?: boolean
-  
+
   /** Search term to filter results */
   search?: string
 }

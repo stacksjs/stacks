@@ -8,7 +8,7 @@ import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-export interface ProductManufacturersTable {
+export interface ManufacturersTable {
   id: Generated<number>
   manufacturer: string
   description?: string
@@ -22,8 +22,8 @@ export interface ProductManufacturersTable {
 
 }
 
-export interface ProductManufacturerResponse {
-  data: ProductManufacturerJsonResponse[]
+export interface ManufacturerResponse {
+  data: ManufacturerJsonResponse[]
   paging: {
     total_records: number
     page: number
@@ -32,15 +32,15 @@ export interface ProductManufacturerResponse {
   next_cursor: number | null
 }
 
-export interface ProductManufacturerJsonResponse extends Omit<Selectable<ProductManufacturersTable>, 'password'> {
+export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturersTable>, 'password'> {
   [key: string]: any
 }
 
-export type NewProductManufacturer = Insertable<ProductManufacturersTable>
-export type ProductManufacturerUpdate = Updateable<ProductManufacturersTable>
+export type NewManufacturer = Insertable<ManufacturersTable>
+export type ManufacturerUpdate = Updateable<ManufacturersTable>
 
       type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductManufacturerJsonResponse, order: SortDirection }
+interface SortOptions { column: ManufacturerJsonResponse, order: SortDirection }
 // Define a type for the options parameter
 interface QueryOptions {
   sort?: SortOptions
@@ -49,12 +49,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductManufacturerModel {
-  private readonly hidden: Array<keyof ProductManufacturerJsonResponse> = []
-  private readonly fillable: Array<keyof ProductManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
-  private readonly guarded: Array<keyof ProductManufacturerJsonResponse> = []
-  protected attributes = {} as ProductManufacturerJsonResponse
-  protected originalAttributes = {} as ProductManufacturerJsonResponse
+export class ManufacturerModel {
+  private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
+  private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
+  private readonly guarded: Array<keyof ManufacturerJsonResponse> = []
+  protected attributes = {} as ManufacturerJsonResponse
+  protected originalAttributes = {} as ManufacturerJsonResponse
 
   protected selectFromQuery: any
   protected withRelations: string[]
@@ -64,31 +64,31 @@ export class ProductManufacturerModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(productManufacturer: ProductManufacturerJsonResponse | undefined) {
-    if (productManufacturer) {
-      this.attributes = { ...productManufacturer }
-      this.originalAttributes = { ...productManufacturer }
+  constructor(manufacturer: ManufacturerJsonResponse | undefined) {
+    if (manufacturer) {
+      this.attributes = { ...manufacturer }
+      this.originalAttributes = { ...manufacturer }
 
-      Object.keys(productManufacturer).forEach((key) => {
+      Object.keys(manufacturer).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (productManufacturer as ProductManufacturerJsonResponse)[key]
+          this.customColumns[key] = (manufacturer as ManufacturerJsonResponse)[key]
         }
       })
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('product_manufacturers')
-    this.updateFromQuery = DB.instance.updateTable('product_manufacturers')
-    this.deleteFromQuery = DB.instance.deleteFrom('product_manufacturers')
+    this.selectFromQuery = DB.instance.selectFrom('manufacturers')
+    this.updateFromQuery = DB.instance.updateTable('manufacturers')
+    this.deleteFromQuery = DB.instance.deleteFrom('manufacturers')
     this.hasSelect = false
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ProductManufacturerJsonResponse | ProductManufacturerJsonResponse[]): void {
+  mapCustomGetters(models: ManufacturerJsonResponse | ManufacturerJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
-      data.map((model: ProductManufacturerJsonResponse) => {
+      data.map((model: ManufacturerJsonResponse) => {
         const customGetter = {
           default: () => {
           },
@@ -117,7 +117,7 @@ export class ProductManufacturerModel {
     }
   }
 
-  async mapCustomSetters(model: NewProductManufacturer | ProductManufacturerUpdate): Promise<void> {
+  async mapCustomSetters(model: NewManufacturer | ManufacturerUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -189,7 +189,7 @@ export class ProductManufacturerModel {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductManufacturerJsonResponse): Partial<ProductManufacturerJsonResponse> {
+  getOriginal(column?: keyof ManufacturerJsonResponse): Partial<ManufacturerJsonResponse> {
     if (column) {
       return this.originalAttributes[column]
     }
@@ -197,10 +197,10 @@ export class ProductManufacturerModel {
     return this.originalAttributes
   }
 
-  getChanges(): Partial<ProductManufacturerJsonResponse> {
-    return this.fillable.reduce<Partial<ProductManufacturerJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductManufacturersTable]
-      const originalValue = this.originalAttributes[key as keyof ProductManufacturersTable]
+  getChanges(): Partial<ManufacturerJsonResponse> {
+    return this.fillable.reduce<Partial<ManufacturerJsonResponse>>((changes, key) => {
+      const currentValue = this.attributes[key as keyof ManufacturersTable]
+      const originalValue = this.originalAttributes[key as keyof ManufacturersTable]
 
       if (currentValue !== originalValue) {
         changes[key] = currentValue
@@ -210,7 +210,7 @@ export class ProductManufacturerModel {
     }, {})
   }
 
-  isDirty(column?: keyof ProductManufacturerJsonResponse): boolean {
+  isDirty(column?: keyof ManufacturerJsonResponse): boolean {
     if (column) {
       return this.attributes[column] !== this.originalAttributes[column]
     }
@@ -222,15 +222,15 @@ export class ProductManufacturerModel {
     })
   }
 
-  isClean(column?: keyof ProductManufacturerJsonResponse): boolean {
+  isClean(column?: keyof ManufacturerJsonResponse): boolean {
     return !this.isDirty(column)
   }
 
-  wasChanged(column?: keyof ProductManufacturerJsonResponse): boolean {
+  wasChanged(column?: keyof ManufacturerJsonResponse): boolean {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductManufacturerJsonResponse)[] | RawBuilder<string> | string): ProductManufacturerModel {
+  select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
@@ -238,8 +238,8 @@ export class ProductManufacturerModel {
     return this
   }
 
-  static select(params: (keyof ProductManufacturerJsonResponse)[] | RawBuilder<string> | string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     // Initialize a query with the table name and selected fields
     instance.selectFromQuery = instance.selectFromQuery.select(params)
@@ -249,8 +249,8 @@ export class ProductManufacturerModel {
     return instance
   }
 
-  async applyFind(id: number): Promise<ProductManufacturerModel | undefined> {
-    const model = await DB.instance.selectFrom('product_manufacturers').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFind(id: number): Promise<ManufacturerModel | undefined> {
+    const model = await DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (!model)
       return undefined
@@ -258,26 +258,26 @@ export class ProductManufacturerModel {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
-    cache.getOrSet(`productManufacturer:${id}`, JSON.stringify(model))
+    cache.getOrSet(`manufacturer:${id}`, JSON.stringify(model))
 
     return data
   }
 
-  async find(id: number): Promise<ProductManufacturerModel | undefined> {
+  async find(id: number): Promise<ManufacturerModel | undefined> {
     return await this.applyFind(id)
   }
 
-  // Method to find a ProductManufacturer by ID
-  static async find(id: number): Promise<ProductManufacturerModel | undefined> {
-    const instance = new ProductManufacturerModel(undefined)
+  // Method to find a Manufacturer by ID
+  static async find(id: number): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductManufacturerModel | undefined> {
-    let model: ProductManufacturerJsonResponse | undefined
+  async first(): Promise<ManufacturerModel | undefined> {
+    let model: ManufacturerJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -291,95 +291,95 @@ export class ProductManufacturerModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  static async first(): Promise<ProductManufacturerModel | undefined> {
-    const instance = new ProductManufacturerJsonResponse(null)
+  static async first(): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerJsonResponse(null)
 
-    const model = await DB.instance.selectFrom('product_manufacturers')
+    const model = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .executeTakeFirst()
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  async applyFirstOrFail(): Promise<ProductManufacturerModel | undefined> {
+  async applyFirstOrFail(): Promise<ManufacturerModel | undefined> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductManufacturerModel results found for query')
+      throw new ModelNotFoundException(404, 'No ManufacturerModel results found for query')
 
     if (model) {
       this.mapCustomGetters(model)
       await this.loadRelations(model)
     }
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  async firstOrFail(): Promise<ProductManufacturerModel | undefined> {
+  async firstOrFail(): Promise<ManufacturerModel | undefined> {
     return await this.applyFirstOrFail()
   }
 
-  static async firstOrFail(): Promise<ProductManufacturerModel | undefined> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async firstOrFail(): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyFirstOrFail()
   }
 
-  static async all(): Promise<ProductManufacturerModel[]> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async all(): Promise<ManufacturerModel[]> {
+    const instance = new ManufacturerModel(undefined)
 
-    const models = await DB.instance.selectFrom('product_manufacturers').selectAll().execute()
+    const models = await DB.instance.selectFrom('manufacturers').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
-    const data = await Promise.all(models.map(async (model: ProductManufacturerJsonResponse) => {
-      return new ProductManufacturerModel(model)
+    const data = await Promise.all(models.map(async (model: ManufacturerJsonResponse) => {
+      return new ManufacturerModel(model)
     }))
 
     return data
   }
 
-  async applyFindOrFail(id: number): Promise<ProductManufacturerModel> {
-    const model = await DB.instance.selectFrom('product_manufacturers').where('id', '=', id).selectAll().executeTakeFirst()
+  async applyFindOrFail(id: number): Promise<ManufacturerModel> {
+    const model = await DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll().executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductManufacturerModel results for ${id}`)
+      throw new ModelNotFoundException(404, `No ManufacturerModel results for ${id}`)
 
-    cache.getOrSet(`productManufacturer:${id}`, JSON.stringify(model))
+    cache.getOrSet(`manufacturer:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  async findOrFail(id: number): Promise<ProductManufacturerModel> {
+  async findOrFail(id: number): Promise<ManufacturerModel> {
     return await this.applyFindOrFail(id)
   }
 
-  static async findOrFail(id: number): Promise<ProductManufacturerModel> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async findOrFail(id: number): Promise<ManufacturerModel> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ProductManufacturerModel[]> {
-    let query = DB.instance.selectFrom('product_manufacturers').where('id', 'in', ids)
+  async applyFindMany(ids: number[]): Promise<ManufacturerModel[]> {
+    let query = DB.instance.selectFrom('manufacturers').where('id', 'in', ids)
 
-    const instance = new ProductManufacturerModel(undefined)
+    const instance = new ManufacturerModel(undefined)
 
     query = query.selectAll()
 
@@ -388,34 +388,34 @@ export class ProductManufacturerModel {
     instance.mapCustomGetters(models)
     await instance.loadRelations(models)
 
-    return models.map((modelItem: ProductManufacturerJsonResponse) => instance.parseResult(new ProductManufacturerModel(modelItem)))
+    return models.map((modelItem: ManufacturerJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
   }
 
-  static async findMany(ids: number[]): Promise<ProductManufacturerModel[]> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async findMany(ids: number[]): Promise<ManufacturerModel[]> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyFindMany(ids)
   }
 
-  async findMany(ids: number[]): Promise<ProductManufacturerModel[]> {
+  async findMany(ids: number[]): Promise<ManufacturerModel[]> {
     return await this.applyFindMany(ids)
   }
 
-  skip(count: number): ProductManufacturerModel {
+  skip(count: number): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.offset(count)
 
     return this
   }
 
-  static skip(count: number): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static skip(count: number): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.offset(count)
 
     return instance
   }
 
-  async applyChunk(size: number, callback: (models: ProductManufacturerModel[]) => Promise<void>): Promise<void> {
+  async applyChunk(size: number, callback: (models: ManufacturerModel[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true
 
@@ -441,56 +441,56 @@ export class ProductManufacturerModel {
     }
   }
 
-  async chunk(size: number, callback: (models: ProductManufacturerModel[]) => Promise<void>): Promise<void> {
+  async chunk(size: number, callback: (models: ManufacturerModel[]) => Promise<void>): Promise<void> {
     await this.applyChunk(size, callback)
   }
 
-  static async chunk(size: number, callback: (models: ProductManufacturerModel[]) => Promise<void>): Promise<void> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async chunk(size: number, callback: (models: ManufacturerModel[]) => Promise<void>): Promise<void> {
+    const instance = new ManufacturerModel(undefined)
 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ProductManufacturerModel {
+  take(count: number): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.limit(count)
 
     return this
   }
 
-  static take(count: number): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static take(count: number): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.limit(count)
 
     return instance
   }
 
-  static async pluck<K extends keyof ProductManufacturerModel>(field: K): Promise<ProductManufacturerModel[K][]> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async pluck<K extends keyof ManufacturerModel>(field: K): Promise<ManufacturerModel[K][]> {
+    const instance = new ManufacturerModel(undefined)
 
     if (instance.hasSelect) {
       const model = await instance.selectFromQuery.execute()
-      return model.map((modelItem: ProductManufacturerModel) => modelItem[field])
+      return model.map((modelItem: ManufacturerModel) => modelItem[field])
     }
 
     const model = await instance.selectFromQuery.selectAll().execute()
 
-    return model.map((modelItem: ProductManufacturerModel) => modelItem[field])
+    return model.map((modelItem: ManufacturerModel) => modelItem[field])
   }
 
-  async pluck<K extends keyof ProductManufacturerModel>(field: K): Promise<ProductManufacturerModel[K][]> {
+  async pluck<K extends keyof ManufacturerModel>(field: K): Promise<ManufacturerModel[K][]> {
     if (this.hasSelect) {
       const model = await this.selectFromQuery.execute()
-      return model.map((modelItem: ProductManufacturerModel) => modelItem[field])
+      return model.map((modelItem: ManufacturerModel) => modelItem[field])
     }
 
     const model = await this.selectFromQuery.selectAll().execute()
 
-    return model.map((modelItem: ProductManufacturerModel) => modelItem[field])
+    return model.map((modelItem: ManufacturerModel) => modelItem[field])
   }
 
   static async count(): Promise<number> {
-    const instance = new ProductManufacturerModel(undefined)
+    const instance = new ManufacturerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`COUNT(*) as count`)
@@ -507,8 +507,8 @@ export class ProductManufacturerModel {
     return result.count || 0
   }
 
-  static async max(field: keyof ProductManufacturerModel): Promise<number> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async max(field: keyof ManufacturerModel): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max `)
@@ -517,7 +517,7 @@ export class ProductManufacturerModel {
     return result.max
   }
 
-  async max(field: keyof ProductManufacturerModel): Promise<number> {
+  async max(field: keyof ManufacturerModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MAX(${sql.raw(field as string)}) as max`)
       .executeTakeFirst()
@@ -525,8 +525,8 @@ export class ProductManufacturerModel {
     return result.max
   }
 
-  static async min(field: keyof ProductManufacturerModel): Promise<number> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async min(field: keyof ManufacturerModel): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
@@ -535,7 +535,7 @@ export class ProductManufacturerModel {
     return result.min
   }
 
-  async min(field: keyof ProductManufacturerModel): Promise<number> {
+  async min(field: keyof ManufacturerModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`MIN(${sql.raw(field as string)}) as min `)
       .executeTakeFirst()
@@ -543,8 +543,8 @@ export class ProductManufacturerModel {
     return result.min
   }
 
-  static async avg(field: keyof ProductManufacturerModel): Promise<number> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async avg(field: keyof ManufacturerModel): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
@@ -553,7 +553,7 @@ export class ProductManufacturerModel {
     return result.avg
   }
 
-  async avg(field: keyof ProductManufacturerModel): Promise<number> {
+  async avg(field: keyof ManufacturerModel): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`AVG(${sql.raw(field as string)}) as avg `)
       .executeTakeFirst()
@@ -561,8 +561,8 @@ export class ProductManufacturerModel {
     return result.avg
   }
 
-  static async sum(field: keyof ProductManufacturerModel): Promise<number> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async sum(field: keyof ManufacturerModel): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
 
     const result = await instance.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
@@ -571,7 +571,7 @@ export class ProductManufacturerModel {
     return result.sum
   }
 
-  async sum(field: keyof ProductManufacturerModel): Promise<number> {
+  async sum(field: keyof ManufacturerModel): Promise<number> {
     const result = this.selectFromQuery
       .select(sql`SUM(${sql.raw(field as string)}) as sum `)
       .executeTakeFirst()
@@ -579,7 +579,7 @@ export class ProductManufacturerModel {
     return result.sum
   }
 
-  async applyGet(): Promise<ProductManufacturerModel[]> {
+  async applyGet(): Promise<ManufacturerModel[]> {
     let models
 
     if (this.hasSelect) {
@@ -592,51 +592,51 @@ export class ProductManufacturerModel {
     this.mapCustomGetters(models)
     await this.loadRelations(models)
 
-    const data = await Promise.all(models.map(async (model: ProductManufacturerJsonResponse) => {
-      return new ProductManufacturerModel(model)
+    const data = await Promise.all(models.map(async (model: ManufacturerJsonResponse) => {
+      return new ManufacturerModel(model)
     }))
 
     return data
   }
 
-  async get(): Promise<ProductManufacturerModel[]> {
+  async get(): Promise<ManufacturerModel[]> {
     return await this.applyGet()
   }
 
-  static async get(): Promise<ProductManufacturerModel[]> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async get(): Promise<ManufacturerModel[]> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyGet()
   }
 
-  has(relation: string): ProductManufacturerModel {
+  has(relation: string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productManufacturer_id`, '=', 'product_manufacturers.id'),
+          .whereRef(`${relation}.manufacturer_id`, '=', 'manufacturers.id'),
       ),
     )
 
     return this
   }
 
-  static has(relation: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static has(relation: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productManufacturer_id`, '=', 'product_manufacturers.id'),
+          .whereRef(`${relation}.manufacturer_id`, '=', 'manufacturers.id'),
       ),
     )
 
     return instance
   }
 
-  static whereExists(callback: (qb: any) => any): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereExists(callback: (qb: any) => any): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(({ exists, selectFrom }: any) =>
       exists(callback({ exists, selectFrom })),
@@ -647,8 +647,8 @@ export class ProductManufacturerModel {
 
   applyWhereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductManufacturerModel>) => void,
-  ): ProductManufacturerModel {
+    callback: (query: SubqueryBuilder<keyof ManufacturerModel>) => void,
+  ): ManufacturerModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -658,7 +658,7 @@ export class ProductManufacturerModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productManufacturer_id`, '=', 'product_manufacturers.id')
+          .whereRef(`${relation}.manufacturer_id`, '=', 'manufacturers.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -709,27 +709,27 @@ export class ProductManufacturerModel {
 
   whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductManufacturerModel>) => void,
-  ): ProductManufacturerModel {
+    callback: (query: SubqueryBuilder<keyof ManufacturerModel>) => void,
+  ): ManufacturerModel {
     return this.applyWhereHas(relation, callback)
   }
 
   static whereHas(
     relation: string,
-    callback: (query: SubqueryBuilder<keyof ProductManufacturerModel>) => void,
-  ): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+    callback: (query: SubqueryBuilder<keyof ManufacturerModel>) => void,
+  ): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereHas(relation, callback)
   }
 
-  applyDoesntHave(relation: string): ProductManufacturerModel {
+  applyDoesntHave(relation: string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
       not(
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.productManufacturer_id`, '=', 'product_manufacturers.id'),
+            .whereRef(`${relation}.manufacturer_id`, '=', 'manufacturers.id'),
         ),
       ),
     )
@@ -737,17 +737,17 @@ export class ProductManufacturerModel {
     return this
   }
 
-  doesntHave(relation: string): ProductManufacturerModel {
+  doesntHave(relation: string): ManufacturerModel {
     return this.applyDoesntHave(relation)
   }
 
-  static doesntHave(relation: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static doesntHave(relation: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyDoesntHave(relation)
   }
 
-  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductManufacturersTable>) => void): ProductManufacturerModel {
+  applyWhereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ManufacturersTable>) => void): ManufacturerModel {
     const subqueryBuilder = new SubqueryBuilder()
 
     callback(subqueryBuilder)
@@ -757,7 +757,7 @@ export class ProductManufacturerModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productManufacturer_id`, '=', 'product_manufacturers.id')
+          .whereRef(`${relation}.manufacturer_id`, '=', 'manufacturers.id')
 
         return not(exists(subquery))
       })
@@ -803,28 +803,28 @@ export class ProductManufacturerModel {
     return this
   }
 
-  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ProductManufacturersTable>) => void): ProductManufacturerModel {
+  whereDoesntHave(relation: string, callback: (query: SubqueryBuilder<ManufacturersTable>) => void): ManufacturerModel {
     return this.applyWhereDoesntHave(relation, callback)
   }
 
   static whereDoesntHave(
     relation: string,
-    callback: (query: SubqueryBuilder<ProductManufacturersTable>) => void,
-  ): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+    callback: (query: SubqueryBuilder<ManufacturersTable>) => void,
+  ): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereDoesntHave(relation, callback)
   }
 
-  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductManufacturerResponse> {
-    const totalRecordsResult = await DB.instance.selectFrom('product_manufacturers')
+  async applyPaginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ManufacturerResponse> {
+    const totalRecordsResult = await DB.instance.selectFrom('manufacturers')
       .select(DB.instance.fn.count('id').as('total')) // Use 'id' or another actual column name
       .executeTakeFirst()
 
     const totalRecords = Number(totalRecordsResult?.total) || 0
     const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
 
-    const product_manufacturersWithExtra = await DB.instance.selectFrom('product_manufacturers')
+    const manufacturersWithExtra = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .orderBy('id', 'asc') // Assuming 'id' is used for cursor-based pagination
       .limit((options.limit ?? 10) + 1) // Fetch one extra record
@@ -832,11 +832,11 @@ export class ProductManufacturerModel {
       .execute()
 
     let nextCursor = null
-    if (product_manufacturersWithExtra.length > (options.limit ?? 10))
-      nextCursor = product_manufacturersWithExtra.pop()?.id ?? null
+    if (manufacturersWithExtra.length > (options.limit ?? 10))
+      nextCursor = manufacturersWithExtra.pop()?.id ?? null
 
     return {
-      data: product_manufacturersWithExtra,
+      data: manufacturersWithExtra,
       paging: {
         total_records: totalRecords,
         page: options.page || 1,
@@ -846,98 +846,98 @@ export class ProductManufacturerModel {
     }
   }
 
-  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductManufacturerResponse> {
+  async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ManufacturerResponse> {
     return await this.applyPaginate(options)
   }
 
-  // Method to get all product_manufacturers
-  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ProductManufacturerResponse> {
-    const instance = new ProductManufacturerModel(undefined)
+  // Method to get all manufacturers
+  static async paginate(options: QueryOptions = { limit: 10, offset: 0, page: 1 }): Promise<ManufacturerResponse> {
+    const instance = new ManufacturerModel(undefined)
 
     return await instance.applyPaginate(options)
   }
 
-  async applyCreate(newProductManufacturer: NewProductManufacturer): Promise<ProductManufacturerModel> {
+  async applyCreate(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newProductManufacturer).filter(([key]) =>
+      Object.entries(newManufacturer).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProductManufacturer
+    ) as NewManufacturer
 
     await this.mapCustomSetters(filteredValues)
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('product_manufacturers')
+    const result = await DB.instance.insertInto('manufacturers')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductManufacturerModel
+    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ManufacturerModel
 
     if (model)
-      dispatch('productManufacturer:created', model)
+      dispatch('manufacturer:created', model)
 
     return model
   }
 
-  async create(newProductManufacturer: NewProductManufacturer): Promise<ProductManufacturerModel> {
-    return await this.applyCreate(newProductManufacturer)
+  async create(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
+    return await this.applyCreate(newManufacturer)
   }
 
-  static async create(newProductManufacturer: NewProductManufacturer): Promise<ProductManufacturerModel> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async create(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
+    const instance = new ManufacturerModel(undefined)
 
-    return await instance.applyCreate(newProductManufacturer)
+    return await instance.applyCreate(newManufacturer)
   }
 
-  static async createMany(newProductManufacturer: NewProductManufacturer[]): Promise<void> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async createMany(newManufacturer: NewManufacturer[]): Promise<void> {
+    const instance = new ManufacturerModel(undefined)
 
-    const valuesFiltered = newProductManufacturer.map((newProductManufacturer: NewProductManufacturer) => {
+    const valuesFiltered = newManufacturer.map((newManufacturer: NewManufacturer) => {
       const filteredValues = Object.fromEntries(
-        Object.entries(newProductManufacturer).filter(([key]) =>
+        Object.entries(newManufacturer).filter(([key]) =>
           !instance.guarded.includes(key) && instance.fillable.includes(key),
         ),
-      ) as NewProductManufacturer
+      ) as NewManufacturer
 
       filteredValues.uuid = randomUUIDv7()
 
       return filteredValues
     })
 
-    await DB.instance.insertInto('product_manufacturers')
+    await DB.instance.insertInto('manufacturers')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
-  static async forceCreate(newProductManufacturer: NewProductManufacturer): Promise<ProductManufacturerModel> {
-    const result = await DB.instance.insertInto('product_manufacturers')
-      .values(newProductManufacturer)
+  static async forceCreate(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
+    const result = await DB.instance.insertInto('manufacturers')
+      .values(newManufacturer)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductManufacturerModel
+    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ManufacturerModel
 
     if (model)
-      dispatch('productManufacturer:created', model)
+      dispatch('manufacturer:created', model)
 
     return model
   }
 
-  // Method to remove a ProductManufacturer
+  // Method to remove a Manufacturer
   static async remove(id: number): Promise<any> {
-    const instance = new ProductManufacturerModel(undefined)
+    const instance = new ManufacturerModel(undefined)
 
     const model = await instance.find(Number(id))
 
     if (model)
-      dispatch('productManufacturer:deleted', model)
+      dispatch('manufacturer:deleted', model)
 
-    return await DB.instance.deleteFrom('product_manufacturers')
+    return await DB.instance.deleteFrom('manufacturers')
       .where('id', '=', id)
       .execute()
   }
 
-  applyWhere<V>(column: keyof ProductManufacturersTable, ...args: [V] | [Operator, V]): ProductManufacturerModel {
+  applyWhere<V>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]): ManufacturerModel {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
@@ -954,66 +954,66 @@ export class ProductManufacturerModel {
     return this
   }
 
-  where<V = string>(column: keyof ProductManufacturersTable, ...args: [V] | [Operator, V]): ProductManufacturerModel {
+  where<V = string>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]): ManufacturerModel {
     return this.applyWhere<V>(column, ...args)
   }
 
-  static where<V = string>(column: keyof ProductManufacturersTable, ...args: [V] | [Operator, V]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static where<V = string>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductManufacturersTable, operator: Operator, second: keyof ProductManufacturersTable): ProductManufacturerModel {
+  whereColumn(first: keyof ManufacturersTable, operator: Operator, second: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
 
     return this
   }
 
-  static whereColumn(first: keyof ProductManufacturersTable, operator: Operator, second: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereColumn(first: keyof ManufacturersTable, operator: Operator, second: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
 
     return instance
   }
 
-  applyWhereRef(column: keyof ProductManufacturersTable, ...args: string[]): ProductManufacturerModel {
+  applyWhereRef(column: keyof ManufacturersTable, ...args: string[]): ManufacturerModel {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue
     const actualValue = value === undefined ? operatorOrValue : value
 
-    const instance = new ProductManufacturerModel(undefined)
+    const instance = new ManufacturerModel(undefined)
     instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
 
     return instance
   }
 
-  whereRef(column: keyof ProductManufacturersTable, ...args: string[]): ProductManufacturerModel {
+  whereRef(column: keyof ManufacturersTable, ...args: string[]): ManufacturerModel {
     return this.applyWhereRef(column, ...args)
   }
 
-  static whereRef(column: keyof ProductManufacturersTable, ...args: string[]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereRef(column: keyof ManufacturersTable, ...args: string[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ProductManufacturerModel {
+  whereRaw(sqlStatement: string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
 
     return this
   }
 
-  static whereRaw(sqlStatement: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereRaw(sqlStatement: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
 
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): ProductManufacturerModel {
+  applyOrWhere(...conditions: [string, any][]): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
       return eb.or(
         conditions.map(([column, value]) => eb(column, '=', value)),
@@ -1035,28 +1035,28 @@ export class ProductManufacturerModel {
     return this
   }
 
-  orWhere(...conditions: [string, any][]): ProductManufacturerModel {
+  orWhere(...conditions: [string, any][]): ManufacturerModel {
     return this.applyOrWhere(...conditions)
   }
 
-  static orWhere(...conditions: [string, any][]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static orWhere(...conditions: [string, any][]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
   when(
     condition: boolean,
-    callback: (query: ProductManufacturerModel) => ProductManufacturerModel,
-  ): ProductManufacturerModel {
-    return ProductManufacturerModel.when(condition, callback)
+    callback: (query: ManufacturerModel) => ManufacturerModel,
+  ): ManufacturerModel {
+    return ManufacturerModel.when(condition, callback)
   }
 
   static when(
     condition: boolean,
-    callback: (query: ProductManufacturerModel) => ProductManufacturerModel,
-  ): ProductManufacturerModel {
-    let instance = new ProductManufacturerModel(undefined)
+    callback: (query: ManufacturerModel) => ManufacturerModel,
+  ): ManufacturerModel {
+    let instance = new ManufacturerModel(undefined)
 
     if (condition)
       instance = callback(instance)
@@ -1064,7 +1064,7 @@ export class ProductManufacturerModel {
     return instance
   }
 
-  whereNotNull(column: keyof ProductManufacturersTable): ProductManufacturerModel {
+  whereNotNull(column: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
     )
@@ -1080,8 +1080,8 @@ export class ProductManufacturerModel {
     return this
   }
 
-  static whereNotNull(column: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereNotNull(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is not', null),
@@ -1098,7 +1098,7 @@ export class ProductManufacturerModel {
     return instance
   }
 
-  whereNull(column: keyof ProductManufacturersTable): ProductManufacturerModel {
+  whereNull(column: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
     )
@@ -1114,8 +1114,8 @@ export class ProductManufacturerModel {
     return this
   }
 
-  static whereNull(column: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereNull(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
       eb(column, '=', '').or(column, 'is', null),
@@ -1132,39 +1132,39 @@ export class ProductManufacturerModel {
     return instance
   }
 
-  static whereManufacturer(value: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereManufacturer(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('manufacturer', '=', value)
 
     return instance
   }
 
-  static whereDescription(value: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereDescription(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
 
     return instance
   }
 
-  static whereCountry(value: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereCountry(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('country', '=', value)
 
     return instance
   }
 
-  static whereFeatured(value: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereFeatured(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.where('featured', '=', value)
 
     return instance
   }
 
-  applyWhereIn<V>(column: keyof ProductManufacturersTable, values: V[]) {
+  applyWhereIn<V>(column: keyof ManufacturersTable, values: V[]) {
     this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
@@ -1174,17 +1174,17 @@ export class ProductManufacturerModel {
     return this
   }
 
-  whereIn<V = number>(column: keyof ProductManufacturersTable, values: V[]): ProductManufacturerModel {
+  whereIn<V = number>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
     return this.applyWhereIn<V>(column, values)
   }
 
-  static whereIn<V = number>(column: keyof ProductManufacturersTable, values: V[]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereIn<V = number>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
   }
 
-  applyWhereBetween<V>(column: keyof ProductManufacturersTable, range: [V, V]): ProductManufacturerModel {
+  applyWhereBetween<V>(column: keyof ManufacturersTable, range: [V, V]): ManufacturerModel {
     if (range.length !== 2) {
       throw new HttpError(500, 'Range must have exactly two values: [min, max]')
     }
@@ -1198,17 +1198,17 @@ export class ProductManufacturerModel {
     return this
   }
 
-  whereBetween<V = number>(column: keyof ProductManufacturersTable, range: [V, V]): ProductManufacturerModel {
+  whereBetween<V = number>(column: keyof ManufacturersTable, range: [V, V]): ManufacturerModel {
     return this.applyWhereBetween<V>(column, range)
   }
 
-  static whereBetween<V = number>(column: keyof ProductManufacturersTable, range: [V, V]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereBetween<V = number>(column: keyof ManufacturersTable, range: [V, V]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof ProductManufacturersTable, value: string): ProductManufacturerModel {
+  applyWhereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
 
     this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
@@ -1218,17 +1218,17 @@ export class ProductManufacturerModel {
     return this
   }
 
-  whereLike(column: keyof ProductManufacturersTable, value: string): ProductManufacturerModel {
+  whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
     return this.applyWhereLike(column, value)
   }
 
-  static whereLike(column: keyof ProductManufacturersTable, value: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  applyWhereNotIn<V>(column: keyof ProductManufacturersTable, values: V[]): ProductManufacturerModel {
+  applyWhereNotIn<V>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
 
     this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
@@ -1238,12 +1238,12 @@ export class ProductManufacturerModel {
     return this
   }
 
-  whereNotIn<V>(column: keyof ProductManufacturersTable, values: V[]): ProductManufacturerModel {
+  whereNotIn<V>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
     return this.applyWhereNotIn<V>(column, values)
   }
 
-  static whereNotIn<V = number>(column: keyof ProductManufacturersTable, values: V[]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static whereNotIn<V = number>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
@@ -1261,10 +1261,10 @@ export class ProductManufacturerModel {
     return model !== null && model !== undefined
   }
 
-  static async latest(): Promise<ProductManufacturerModel | undefined> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async latest(): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
 
-    const model = await DB.instance.selectFrom('product_manufacturers')
+    const model = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .orderBy('id', 'desc')
       .executeTakeFirst()
@@ -1274,15 +1274,15 @@ export class ProductManufacturerModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  static async oldest(): Promise<ProductManufacturerModel | undefined> {
-    const instance = new ProductManufacturerModel(undefined)
+  static async oldest(): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
 
-    const model = await DB.instance.selectFrom('product_manufacturers')
+    const model = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .orderBy('id', 'asc')
       .executeTakeFirst()
@@ -1292,18 +1292,18 @@ export class ProductManufacturerModel {
 
     instance.mapCustomGetters(model)
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
   static async firstOrCreate(
-    condition: Partial<ProductManufacturerJsonResponse>,
-    newProductManufacturer: NewProductManufacturer,
-  ): Promise<ProductManufacturerModel> {
-    const instance = new ProductManufacturerModel(undefined)
+    condition: Partial<ManufacturerJsonResponse>,
+    newManufacturer: NewManufacturer,
+  ): Promise<ManufacturerModel> {
+    const instance = new ManufacturerModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductManufacturerJsonResponse
+    const key = Object.keys(condition)[0] as keyof ManufacturerJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1312,29 +1312,29 @@ export class ProductManufacturerModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProductManufacturer = await DB.instance.selectFrom('product_manufacturers')
+    const existingManufacturer = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingProductManufacturer) {
-      instance.mapCustomGetters(existingProductManufacturer)
-      await instance.loadRelations(existingProductManufacturer)
+    if (existingManufacturer) {
+      instance.mapCustomGetters(existingManufacturer)
+      await instance.loadRelations(existingManufacturer)
 
-      return new ProductManufacturerModel(existingProductManufacturer as ProductManufacturerJsonResponse)
+      return new ManufacturerModel(existingManufacturer as ManufacturerJsonResponse)
     }
     else {
-      return await instance.create(newProductManufacturer)
+      return await instance.create(newManufacturer)
     }
   }
 
   static async updateOrCreate(
-    condition: Partial<ProductManufacturerJsonResponse>,
-    newProductManufacturer: NewProductManufacturer,
-  ): Promise<ProductManufacturerModel> {
-    const instance = new ProductManufacturerModel(undefined)
+    condition: Partial<ManufacturerJsonResponse>,
+    newManufacturer: NewManufacturer,
+  ): Promise<ManufacturerModel> {
+    const instance = new ManufacturerModel(undefined)
 
-    const key = Object.keys(condition)[0] as keyof ProductManufacturerJsonResponse
+    const key = Object.keys(condition)[0] as keyof ManufacturerJsonResponse
 
     if (!key) {
       throw new HttpError(500, 'Condition must contain at least one key-value pair')
@@ -1343,39 +1343,39 @@ export class ProductManufacturerModel {
     const value = condition[key]
 
     // Attempt to find the first record matching the condition
-    const existingProductManufacturer = await DB.instance.selectFrom('product_manufacturers')
+    const existingManufacturer = await DB.instance.selectFrom('manufacturers')
       .selectAll()
       .where(key, '=', value)
       .executeTakeFirst()
 
-    if (existingProductManufacturer) {
+    if (existingManufacturer) {
       // If found, update the existing record
-      await DB.instance.updateTable('product_manufacturers')
-        .set(newProductManufacturer)
+      await DB.instance.updateTable('manufacturers')
+        .set(newManufacturer)
         .where(key, '=', value)
         .executeTakeFirstOrThrow()
 
       // Fetch and return the updated record
-      const updatedProductManufacturer = await DB.instance.selectFrom('product_manufacturers')
+      const updatedManufacturer = await DB.instance.selectFrom('manufacturers')
         .selectAll()
         .where(key, '=', value)
         .executeTakeFirst()
 
-      if (!updatedProductManufacturer) {
+      if (!updatedManufacturer) {
         throw new HttpError(500, 'Failed to fetch updated record')
       }
 
       instance.hasSaved = true
 
-      return new ProductManufacturerModel(updatedProductManufacturer as ProductManufacturerJsonResponse)
+      return new ManufacturerModel(updatedManufacturer as ManufacturerJsonResponse)
     }
     else {
       // If not found, create a new record
-      return await instance.create(newProductManufacturer)
+      return await instance.create(newManufacturer)
     }
   }
 
-  async loadRelations(models: ProductManufacturerJsonResponse | ProductManufacturerJsonResponse[]): Promise<void> {
+  async loadRelations(models: ManufacturerJsonResponse | ManufacturerJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
@@ -1386,14 +1386,14 @@ export class ProductManufacturerModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('productManufacturer_id', 'in', modelIds)
+        .where('manufacturer_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
-        models.map((model: ProductManufacturerJsonResponse) => {
-          const records = relatedRecords.filter((record: { productManufacturer_id: number }) => {
-            return record.productManufacturer_id === model.id
+        models.map((model: ManufacturerJsonResponse) => {
+          const records = relatedRecords.filter((record: { manufacturer_id: number }) => {
+            return record.manufacturer_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1401,8 +1401,8 @@ export class ProductManufacturerModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { productManufacturer_id: number }) => {
-          return record.productManufacturer_id === models.id
+        const records = relatedRecords.filter((record: { manufacturer_id: number }) => {
+          return record.manufacturer_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1410,22 +1410,22 @@ export class ProductManufacturerModel {
     }
   }
 
-  with(relations: string[]): ProductManufacturerModel {
+  with(relations: string[]): ManufacturerModel {
     this.withRelations = relations
 
     return this
   }
 
-  static with(relations: string[]): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static with(relations: string[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.withRelations = relations
 
     return instance
   }
 
-  async last(): Promise<ProductManufacturerModel | undefined> {
-    let model: ProductManufacturerJsonResponse | undefined
+  async last(): Promise<ManufacturerModel | undefined> {
+    let model: ManufacturerJsonResponse | undefined
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
@@ -1439,116 +1439,116 @@ export class ProductManufacturerModel {
       await this.loadRelations(model)
     }
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  static async last(): Promise<ProductManufacturerModel | undefined> {
-    const model = await DB.instance.selectFrom('product_manufacturers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+  static async last(): Promise<ManufacturerModel | undefined> {
+    const model = await DB.instance.selectFrom('manufacturers').selectAll().orderBy('id', 'desc').executeTakeFirst()
 
     if (!model)
       return undefined
 
-    const data = new ProductManufacturerModel(model)
+    const data = new ManufacturerModel(model)
 
     return data
   }
 
-  orderBy(column: keyof ProductManufacturersTable, order: 'asc' | 'desc'): ProductManufacturerModel {
+  orderBy(column: keyof ManufacturersTable, order: 'asc' | 'desc'): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
     return this
   }
 
-  static orderBy(column: keyof ProductManufacturersTable, order: 'asc' | 'desc'): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static orderBy(column: keyof ManufacturersTable, order: 'asc' | 'desc'): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
 
     return instance
   }
 
-  groupBy(column: keyof ProductManufacturersTable): ProductManufacturerModel {
+  groupBy(column: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.groupBy(column)
 
     return this
   }
 
-  static groupBy(column: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static groupBy(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
 
     return instance
   }
 
-  having<V = string>(column: keyof ProductManufacturersTable, operator: Operator, value: V): ProductManufacturerModel {
+  having<V = string>(column: keyof ManufacturersTable, operator: Operator, value: V): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
 
     return this
   }
 
-  static having<V = string>(column: keyof ProductManufacturersTable, operator: Operator, value: V): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static having<V = string>(column: keyof ManufacturersTable, operator: Operator, value: V): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
 
     return instance
   }
 
-  inRandomOrder(): ProductManufacturerModel {
+  inRandomOrder(): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return this
   }
 
-  static inRandomOrder(): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static inRandomOrder(): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
 
     return instance
   }
 
-  orderByDesc(column: keyof ProductManufacturersTable): ProductManufacturerModel {
+  orderByDesc(column: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
-  static orderByDesc(column: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static orderByDesc(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
 
     return instance
   }
 
-  orderByAsc(column: keyof ProductManufacturersTable): ProductManufacturerModel {
+  orderByAsc(column: keyof ManufacturersTable): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
   }
 
-  static orderByAsc(column: keyof ProductManufacturersTable): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static orderByAsc(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
 
     return instance
   }
 
-  async update(newProductManufacturer: ProductManufacturerUpdate): Promise<ProductManufacturerModel | undefined> {
+  async update(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
     const filteredValues = Object.fromEntries(
-      Object.entries(newProductManufacturer).filter(([key]) =>
+      Object.entries(newManufacturer).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProductManufacturer
+    ) as NewManufacturer
 
     await this.mapCustomSetters(filteredValues)
 
-    await DB.instance.updateTable('product_manufacturers')
+    await DB.instance.updateTable('manufacturers')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
@@ -1557,7 +1557,7 @@ export class ProductManufacturerModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productManufacturer:updated', model)
+        dispatch('manufacturer:updated', model)
 
       return model
     }
@@ -1567,15 +1567,15 @@ export class ProductManufacturerModel {
     return undefined
   }
 
-  async forceUpdate(productManufacturer: ProductManufacturerUpdate): Promise<ProductManufacturerModel | undefined> {
+  async forceUpdate(manufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(productManufacturer).execute()
+      this.updateFromQuery.set(manufacturer).execute()
     }
 
-    await this.mapCustomSetters(productManufacturer)
+    await this.mapCustomSetters(manufacturer)
 
-    await DB.instance.updateTable('product_manufacturers')
-      .set(productManufacturer)
+    await DB.instance.updateTable('manufacturers')
+      .set(manufacturer)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1583,7 +1583,7 @@ export class ProductManufacturerModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productManufacturer:updated', model)
+        dispatch('manufacturer:updated', model)
 
       this.hasSaved = true
 
@@ -1595,7 +1595,7 @@ export class ProductManufacturerModel {
 
   async save(): Promise<void> {
     if (!this)
-      throw new HttpError(500, 'ProductManufacturer data is undefined')
+      throw new HttpError(500, 'Manufacturer data is undefined')
 
     await this.mapCustomSetters(this.attributes)
 
@@ -1609,12 +1609,12 @@ export class ProductManufacturerModel {
     this.hasSaved = true
   }
 
-  fill(data: Partial<ProductManufacturerJsonResponse>): ProductManufacturerModel {
+  fill(data: Partial<ManufacturerJsonResponse>): ManufacturerModel {
     const filteredValues = Object.fromEntries(
       Object.entries(data).filter(([key]) =>
         !this.guarded.includes(key) && this.fillable.includes(key),
       ),
-    ) as NewProductManufacturer
+    ) as NewManufacturer
 
     this.attributes = {
       ...this.attributes,
@@ -1624,7 +1624,7 @@ export class ProductManufacturerModel {
     return this
   }
 
-  forceFill(data: Partial<ProductManufacturerJsonResponse>): ProductManufacturerModel {
+  forceFill(data: Partial<ManufacturerJsonResponse>): ManufacturerModel {
     this.attributes = {
       ...this.attributes,
       ...data,
@@ -1633,20 +1633,20 @@ export class ProductManufacturerModel {
     return this
   }
 
-  // Method to delete (soft delete) the productManufacturer instance
-  async delete(): Promise<ProductManufacturersTable> {
+  // Method to delete (soft delete) the manufacturer instance
+  async delete(): Promise<ManufacturersTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
     if (model)
-      dispatch('productManufacturer:deleted', model)
+      dispatch('manufacturer:deleted', model)
 
-    return await DB.instance.deleteFrom('product_manufacturers')
+    return await DB.instance.deleteFrom('manufacturers')
       .where('id', '=', this.id)
       .execute()
   }
 
-  toSearchableObject(): Partial<ProductManufacturerJsonResponse> {
+  toSearchableObject(): Partial<ManufacturerJsonResponse> {
     return {
       id: this.id,
       manufacturer: this.manufacturer,
@@ -1656,7 +1656,7 @@ export class ProductManufacturerModel {
     }
   }
 
-  distinct(column: keyof ProductManufacturerJsonResponse): ProductManufacturerModel {
+  distinct(column: keyof ManufacturerJsonResponse): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.select(column).distinct()
 
     this.hasSelect = true
@@ -1664,8 +1664,8 @@ export class ProductManufacturerModel {
     return this
   }
 
-  static distinct(column: keyof ProductManufacturerJsonResponse): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static distinct(column: keyof ManufacturerJsonResponse): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.select(column).distinct()
 
@@ -1674,21 +1674,21 @@ export class ProductManufacturerModel {
     return instance
   }
 
-  join(table: string, firstCol: string, secondCol: string): ProductManufacturerModel {
+  join(table: string, firstCol: string, secondCol: string): ManufacturerModel {
     this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return this
   }
 
-  static join(table: string, firstCol: string, secondCol: string): ProductManufacturerModel {
-    const instance = new ProductManufacturerModel(undefined)
+  static join(table: string, firstCol: string, secondCol: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
 
     instance.selectFromQuery = instance.selectFromQuery.innerJoin(table, firstCol, secondCol)
 
     return instance
   }
 
-  toJSON(): ProductManufacturerJsonResponse {
+  toJSON(): ManufacturerJsonResponse {
     const output = {
 
       uuid: this.uuid,
@@ -1710,38 +1710,38 @@ export class ProductManufacturerModel {
     return output
   }
 
-  parseResult(model: ProductManufacturerModel): ProductManufacturerModel {
+  parseResult(model: ManufacturerModel): ManufacturerModel {
     for (const hiddenAttribute of this.hidden) {
-      delete model[hiddenAttribute as keyof ProductManufacturerModel]
+      delete model[hiddenAttribute as keyof ManufacturerModel]
     }
 
     return model
   }
 }
 
-async function find(id: number): Promise<ProductManufacturerModel | undefined> {
-  const query = DB.instance.selectFrom('product_manufacturers').where('id', '=', id).selectAll()
+async function find(id: number): Promise<ManufacturerModel | undefined> {
+  const query = DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
   if (!model)
     return undefined
 
-  return new ProductManufacturerModel(model)
+  return new ManufacturerModel(model)
 }
 
 export async function count(): Promise<number> {
-  const results = await ProductManufacturerModel.count()
+  const results = await ManufacturerModel.count()
 
   return results
 }
 
-export async function create(newProductManufacturer: NewProductManufacturer): Promise<ProductManufacturerModel> {
-  const result = await DB.instance.insertInto('product_manufacturers')
-    .values(newProductManufacturer)
+export async function create(newManufacturer: NewManufacturer): Promise<ManufacturerModel> {
+  const result = await DB.instance.insertInto('manufacturers')
+    .values(newManufacturer)
     .executeTakeFirstOrThrow()
 
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductManufacturerModel
+  return await find(Number(result.numInsertedOrUpdatedRows)) as ManufacturerModel
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
@@ -1749,39 +1749,39 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('product_manufacturers')
+  await DB.instance.deleteFrom('manufacturers')
     .where('id', '=', id)
     .execute()
 }
 
-export async function whereManufacturer(value: string): Promise<ProductManufacturerModel[]> {
-  const query = DB.instance.selectFrom('product_manufacturers').where('manufacturer', '=', value)
-  const results: ProductManufacturerJsonResponse = await query.execute()
+export async function whereManufacturer(value: string): Promise<ManufacturerModel[]> {
+  const query = DB.instance.selectFrom('manufacturers').where('manufacturer', '=', value)
+  const results: ManufacturerJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductManufacturerJsonResponse) => new ProductManufacturerModel(modelItem))
+  return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
 }
 
-export async function whereDescription(value: string): Promise<ProductManufacturerModel[]> {
-  const query = DB.instance.selectFrom('product_manufacturers').where('description', '=', value)
-  const results: ProductManufacturerJsonResponse = await query.execute()
+export async function whereDescription(value: string): Promise<ManufacturerModel[]> {
+  const query = DB.instance.selectFrom('manufacturers').where('description', '=', value)
+  const results: ManufacturerJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductManufacturerJsonResponse) => new ProductManufacturerModel(modelItem))
+  return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
 }
 
-export async function whereCountry(value: string): Promise<ProductManufacturerModel[]> {
-  const query = DB.instance.selectFrom('product_manufacturers').where('country', '=', value)
-  const results: ProductManufacturerJsonResponse = await query.execute()
+export async function whereCountry(value: string): Promise<ManufacturerModel[]> {
+  const query = DB.instance.selectFrom('manufacturers').where('country', '=', value)
+  const results: ManufacturerJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductManufacturerJsonResponse) => new ProductManufacturerModel(modelItem))
+  return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
 }
 
-export async function whereFeatured(value: boolean): Promise<ProductManufacturerModel[]> {
-  const query = DB.instance.selectFrom('product_manufacturers').where('featured', '=', value)
-  const results: ProductManufacturerJsonResponse = await query.execute()
+export async function whereFeatured(value: boolean): Promise<ManufacturerModel[]> {
+  const query = DB.instance.selectFrom('manufacturers').where('featured', '=', value)
+  const results: ManufacturerJsonResponse = await query.execute()
 
-  return results.map((modelItem: ProductManufacturerJsonResponse) => new ProductManufacturerModel(modelItem))
+  return results.map((modelItem: ManufacturerJsonResponse) => new ManufacturerModel(modelItem))
 }
 
-export const ProductManufacturer = ProductManufacturerModel
+export const Manufacturer = ManufacturerModel
 
-export default ProductManufacturer
+export default Manufacturer
