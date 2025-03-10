@@ -36,6 +36,14 @@ const colorPalette = {
   gray: '#4B5563',       // Gray
 }
 
+// Define relationship colors
+const relationshipColors = {
+  belongsTo: '#EF4444',      // Red
+  hasMany: '#3B82F6',        // Blue
+  hasOne: '#10B981',         // Green
+  belongsToMany: '#8B5CF6'   // Purple
+}
+
 // Model definitions based on actual Models directory
 const models: ModelNode[] = [
   {
@@ -60,6 +68,7 @@ const models: ModelNode[] = [
       { type: 'hasOne', model: 'Subscriber' },
       { type: 'hasMany', model: 'Deployment' },
       { type: 'hasMany', model: 'Post' },
+      { type: 'hasMany', model: 'AccessToken' },
       { type: 'belongsToMany', model: 'Team' }
     ],
     color: colorPalette.primary
@@ -113,6 +122,7 @@ const models: ModelNode[] = [
       { name: 'updated_at', type: 'timestamp', nullable: true }
     ],
     relationships: [
+      { type: 'belongsTo', model: 'User' },
       { type: 'hasMany', model: 'SubscriberEmail' }
     ],
     color: colorPalette.tertiary
@@ -143,7 +153,8 @@ const models: ModelNode[] = [
       { name: 'updated_at', type: 'timestamp', nullable: true }
     ],
     relationships: [
-      { type: 'belongsTo', model: 'User' }
+      { type: 'belongsTo', model: 'User' },
+      { type: 'belongsTo', model: 'Team' }
     ],
     color: colorPalette.primary
   },
@@ -158,7 +169,8 @@ const models: ModelNode[] = [
       { name: 'updated_at', type: 'timestamp', nullable: true }
     ],
     relationships: [
-      { type: 'belongsTo', model: 'Project' }
+      { type: 'belongsTo', model: 'Project' },
+      { type: 'belongsTo', model: 'User' }
     ],
     color: colorPalette.secondary
   },
@@ -194,7 +206,24 @@ const models: ModelNode[] = [
     color: colorPalette.secondary
   },
   {
-    id: 'order_items',
+    id: 'order',
+    name: 'Order',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'status', type: 'string', nullable: false },
+      { name: 'total', type: 'decimal', nullable: false },
+      { name: 'user_id', type: 'bigInteger', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'User' },
+      { type: 'hasMany', model: 'OrderItem' }
+    ],
+    color: colorPalette.quaternary
+  },
+  {
+    id: 'orderItem',
     name: 'OrderItem',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
@@ -211,18 +240,49 @@ const models: ModelNode[] = [
 
 // Define relationships between models
 const relationships: RelationshipLink[] = [
+  // User relationships
   { source: 'user', target: 'team', type: 'belongsToMany' },
-  { source: 'team', target: 'user', type: 'belongsToMany' },
   { source: 'user', target: 'accessToken', type: 'hasMany' },
   { source: 'user', target: 'post', type: 'hasMany' },
+  { source: 'user', target: 'subscriber', type: 'hasOne' },
+  { source: 'user', target: 'deployment', type: 'hasMany' },
+  { source: 'user', target: 'order', type: 'hasMany' },
+
+  // Team relationships
+  { source: 'team', target: 'user', type: 'belongsToMany' },
+  { source: 'team', target: 'accessToken', type: 'hasMany' },
+
+  // Post relationships
   { source: 'post', target: 'user', type: 'belongsTo' },
+
+  // Subscriber relationships
+  { source: 'subscriber', target: 'user', type: 'belongsTo' },
+  { source: 'subscriber', target: 'subscriberEmail', type: 'hasMany' },
+
+  // SubscriberEmail relationships
+  { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' },
+
+  // AccessToken relationships
+  { source: 'accessToken', target: 'user', type: 'belongsTo' },
+  { source: 'accessToken', target: 'team', type: 'belongsTo' },
+
+  // Project relationships
   { source: 'project', target: 'deployment', type: 'hasMany' },
   { source: 'project', target: 'release', type: 'hasMany' },
+
+  // Deployment relationships
   { source: 'deployment', target: 'project', type: 'belongsTo' },
+  { source: 'deployment', target: 'user', type: 'belongsTo' },
+
+  // Release relationships
   { source: 'release', target: 'project', type: 'belongsTo' },
-  { source: 'subscriber', target: 'subscriberEmail', type: 'hasMany' },
-  { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' },
-  { source: 'order_items', target: 'order', type: 'belongsTo' }
+
+  // Order relationships
+  { source: 'order', target: 'user', type: 'belongsTo' },
+  { source: 'order', target: 'orderItem', type: 'hasMany' },
+
+  // OrderItem relationships
+  { source: 'orderItem', target: 'order', type: 'belongsTo' }
 ]
 
 // Visualization state
@@ -340,10 +400,12 @@ const createDiagram = () => {
     .attr('height', height)
     .attr('class', 'dark:bg-blue-gray-800')
 
-  // Define arrow marker
-  svg.append('defs')
-    .append('marker')
-    .attr('id', 'arrow')
+  // Define arrow markers for different relationship types
+  const defs = svg.append('defs')
+
+  // Add arrow marker for belongsTo
+  defs.append('marker')
+    .attr('id', 'arrow-belongsTo')
     .attr('viewBox', '0 -5 10 10')
     .attr('refX', 20)
     .attr('refY', 0)
@@ -352,7 +414,46 @@ const createDiagram = () => {
     .attr('orient', 'auto')
     .append('path')
     .attr('d', 'M0,-5L10,0L0,5')
-    .attr('fill', '#9CA3AF')
+    .attr('fill', relationshipColors.belongsTo)
+
+  // Add arrow marker for hasMany
+  defs.append('marker')
+    .attr('id', 'arrow-hasMany')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 20)
+    .attr('refY', 0)
+    .attr('markerWidth', 8)
+    .attr('markerHeight', 8)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', relationshipColors.hasMany)
+
+  // Add arrow marker for hasOne
+  defs.append('marker')
+    .attr('id', 'arrow-hasOne')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 20)
+    .attr('refY', 0)
+    .attr('markerWidth', 8)
+    .attr('markerHeight', 8)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', relationshipColors.hasOne)
+
+  // Add arrow marker for belongsToMany
+  defs.append('marker')
+    .attr('id', 'arrow-belongsToMany')
+    .attr('viewBox', '0 -5 10 10')
+    .attr('refX', 20)
+    .attr('refY', 0)
+    .attr('markerWidth', 8)
+    .attr('markerHeight', 8)
+    .attr('orient', 'auto')
+    .append('path')
+    .attr('d', 'M0,-5L10,0L0,5')
+    .attr('fill', relationshipColors.belongsToMany)
 
   // Add zoom behavior
   const zoom = d3.zoom<SVGSVGElement, unknown>()
@@ -492,14 +593,14 @@ const createDiagram = () => {
 
         // Create colored background for relationship
         const relationshipType = rel.type
-        let bgColor = '#EF4444' // Red for belongsTo
+        let bgColor = relationshipColors.belongsTo // Default red for belongsTo
 
         if (relationshipType === 'hasMany') {
-          bgColor = '#3B82F6' // Blue for hasMany
+          bgColor = relationshipColors.hasMany
         } else if (relationshipType === 'hasOne') {
-          bgColor = '#10B981' // Green for hasOne
+          bgColor = relationshipColors.hasOne
         } else if (relationshipType === 'belongsToMany') {
-          bgColor = '#8B5CF6' // Purple for belongsToMany
+          bgColor = relationshipColors.belongsToMany
         }
 
         // Add relationship background
@@ -543,14 +644,14 @@ const createDiagram = () => {
     .join('line')
     .attr('stroke', d => {
       // Color links based on relationship type
-      if (d.type === 'hasMany') return '#3B82F6'
-      if (d.type === 'hasOne') return '#10B981'
-      if (d.type === 'belongsToMany') return '#8B5CF6'
-      return '#EF4444' // belongsTo
+      if (d.type === 'hasMany') return relationshipColors.hasMany
+      if (d.type === 'hasOne') return relationshipColors.hasOne
+      if (d.type === 'belongsToMany') return relationshipColors.belongsToMany
+      return relationshipColors.belongsTo // belongsTo
     })
     .attr('stroke-width', 2)
     .attr('stroke-dasharray', d => d.type === 'belongsToMany' ? '5,5' : 'none')
-    .attr('marker-end', 'url(#arrow)')
+    .attr('marker-end', d => `url(#arrow-${d.type})`)
 
   // Create force simulation
   simulation = d3.forceSimulation<ModelNode>(models)
