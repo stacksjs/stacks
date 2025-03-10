@@ -91,6 +91,7 @@ declare module 'vue-router/auto-routes' {
     '/jobs/history': RouteRecordInfo<'/jobs/history', '/jobs/history', Record<never, never>, Record<never, never>>,
     '/logs/': RouteRecordInfo<'/logs/', '/logs', Record<never, never>, Record<never, never>>,
     '/mailboxes/': RouteRecordInfo<'/mailboxes/', '/mailboxes', Record<never, never>, Record<never, never>>,
+    '/management/permissions/': RouteRecordInfo<'/management/permissions/', '/management/permissions', Record<never, never>, Record<never, never>>,
     '/marketing/campaigns/': RouteRecordInfo<'/marketing/campaigns/', '/marketing/campaigns', Record<never, never>, Record<never, never>>,
     '/marketing/lists/': RouteRecordInfo<'/marketing/lists/', '/marketing/lists', Record<never, never>, Record<never, never>>,
     '/marketing/social-posts/': RouteRecordInfo<'/marketing/social-posts/', '/marketing/social-posts', Record<never, never>, Record<never, never>>,
