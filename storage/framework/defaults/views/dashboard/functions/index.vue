@@ -410,7 +410,7 @@ onMounted(async () => {
                     </th>
 
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span class="sr-only">Open</span>
+                      <span class="sr-only">Edit</span>
                     </th>
                   </tr>
                 </thead>
@@ -438,7 +438,7 @@ onMounted(async () => {
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Component A, in IDE</span></a>
+                        <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Component A, in IDE</span></a>
                     </td>
                   </tr>
 
@@ -464,7 +464,7 @@ onMounted(async () => {
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Component A, in IDE</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Component A, in IDE</span></a>
                     </td>
                   </tr>
 
@@ -490,7 +490,7 @@ onMounted(async () => {
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a href="#" class="text-blue-600 hover:text-blue-900">Open<span class="sr-only">, Component A, in IDE</span></a>
+                      <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Component A, in IDE</span></a>
                     </td>
                   </tr>
                 </tbody>

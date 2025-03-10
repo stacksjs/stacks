@@ -642,7 +642,7 @@ const starsData = computed(() => ({
 
     <!-- Charts Section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div class="grid grid-cols-1 gap-8">
+      <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <!-- Downloads Chart -->
         <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
           <div class="p-6">
@@ -700,45 +700,6 @@ const starsData = computed(() => ({
           </div>
         </div>
 
-        <!-- Contributors Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="mb-6">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Package Contributors</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of contributors per package</p>
-            </div>
-            <div class="h-[400px]">
-              <Bar :data="contributorsData" :options="contributorsOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Issues Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="mb-6">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Open Issues</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of open issues per package</p>
-            </div>
-            <div class="h-[400px]">
-              <Bar :data="issuesData" :options="issuesOptions" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Stars Chart -->
-        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="mb-6">
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">GitHub Stars</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of stars per package</p>
-            </div>
-            <div class="h-[400px]">
-              <Bar :data="starsData" :options="starsOptions" />
-            </div>
-          </div>
-        </div>
-
         <!-- Star Growth Chart -->
         <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
           <div class="p-6">
@@ -789,6 +750,32 @@ const starsData = computed(() => ({
                 :data="starsTimeData"
                 :options="timeChartOptions"
               />
+            </div>
+          </div>
+        </div>
+
+        <!-- Contributors Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Package Contributors</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of contributors per package</p>
+            </div>
+            <div class="h-[400px]">
+              <Bar :data="contributorsData" :options="contributorsOptions" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Issues Chart -->
+        <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="mb-6">
+              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Open Issues</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of open issues per package</p>
+            </div>
+            <div class="h-[400px]">
+              <Bar :data="issuesData" :options="issuesOptions" />
             </div>
           </div>
         </div>
