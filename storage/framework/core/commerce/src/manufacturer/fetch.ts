@@ -11,8 +11,8 @@ export async function fetchPaginated(options: FetchProductManufacturersOptions =
   const limit = options.limit || 10
 
   // Start building the query
-  const query = db.selectFrom('product_manufacturers')
-  const countQuery = db.selectFrom('product_manufacturers')
+  const query = db.selectFrom('manufacturers')
+  const countQuery = db.selectFrom('manufacturers')
 
   // Get total count for pagination
   const countResult = await countQuery
@@ -47,7 +47,7 @@ export async function fetchPaginated(options: FetchProductManufacturersOptions =
  */
 export async function fetchById(id: number): Promise<ProductManufacturerJsonResponse | undefined> {
   return await db
-    .selectFrom('product_manufacturers')
+    .selectFrom('manufacturers')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -58,7 +58,7 @@ export async function fetchById(id: number): Promise<ProductManufacturerJsonResp
  */
 export async function fetchByUuid(uuid: string): Promise<ProductManufacturerJsonResponse | undefined> {
   return await db
-    .selectFrom('product_manufacturers')
+    .selectFrom('manufacturers')
     .where('uuid', '=', uuid)
     .selectAll()
     .executeTakeFirst()
@@ -69,7 +69,7 @@ export async function fetchByUuid(uuid: string): Promise<ProductManufacturerJson
  */
 export async function fetchFeatured(limit: number = 10): Promise<ProductManufacturerJsonResponse[]> {
   return await db
-    .selectFrom('product_manufacturers')
+    .selectFrom('manufacturers')
     .where('featured', '=', true)
     .selectAll()
     .orderBy('manufacturer', 'asc')
@@ -86,10 +86,10 @@ export async function fetchByCountry(country: string, options: FetchProductManuf
   const limit = options.limit || 10
 
   // Start building the query
-  const query = db.selectFrom('product_manufacturers')
+  const query = db.selectFrom('manufacturers')
     .where('country', '=', country)
 
-  const countQuery = db.selectFrom('product_manufacturers')
+  const countQuery = db.selectFrom('manufacturers')
     .where('country', '=', country)
 
   // Get total count for pagination
@@ -129,7 +129,7 @@ export async function fetchWithProductCount(options: FetchProductManufacturersOp
   const limit = options.limit || 10
 
   // Start building the query
-  const query = db.selectFrom('product_manufacturers as m')
+  const query = db.selectFrom('manufacturers as m')
     .leftJoin('products as p', 'p.manufacturer_id', 'm.id')
     .select([
       'm.id',
@@ -144,7 +144,7 @@ export async function fetchWithProductCount(options: FetchProductManufacturersOp
     ])
     .groupBy('m.id')
 
-  const countQuery = db.selectFrom('product_manufacturers')
+  const countQuery = db.selectFrom('manufacturers')
 
   // Apply filters if provided
   if (options.country) {
