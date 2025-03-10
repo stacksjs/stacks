@@ -486,28 +486,36 @@ const createDiagram = () => {
   // Create container for zoomable content
   const g = svg.append('g')
 
-  // Set initial positions for models (improved layout with better structure and spacing)
+  // Apply initial zoom to see all content
+  const initialScale = 0.7 // Reduced scale to see more content
+  svg.call(zoom.transform, d3.zoomIdentity.translate(width/2 - width*initialScale/2, 20).scale(initialScale))
+
+  // Set initial positions for models based on the reference image layout
   const initialPositions: Record<string, {x: number, y: number}> = {
-    // Core models - User centered
-    'user': { x: width / 2, y: height / 4 },
+    // Top row
+    'team': { x: width * 0.25, y: 150 },
+    'user': { x: width * 0.5, y: 150 },
+    'post': { x: width * 0.75, y: 150 },
 
-    // Left column - Team related
-    'team': { x: width / 4, y: height / 4 },
-    'accessToken': { x: width / 4, y: height / 4 + 200 },
+    // Second row
+    'accessToken': { x: width * 0.25, y: 450 },
 
-    // Right column - Post related
-    'post': { x: width * 3/4, y: height / 4 },
-    'subscriber': { x: width * 3/4, y: height / 4 + 200 },
-    'subscriberEmail': { x: width * 3/4, y: height / 4 + 400 },
+    // Third row - left side
+    'project': { x: width * 0.25, y: 700 },
 
-    // Bottom left - Project related
-    'project': { x: width / 4, y: height * 2/3 },
-    'deployment': { x: width / 4 - 200, y: height * 2/3 + 200 },
-    'release': { x: width / 4 + 200, y: height * 2/3 + 200 },
+    // Fourth row - left side
+    'deployment': { x: width * 0.1, y: 900 },
+    'release': { x: width * 0.4, y: 900 },
 
-    // Bottom right - Order related
-    'order': { x: width * 3/4, y: height * 2/3 },
-    'orderItem': { x: width * 3/4, y: height * 2/3 + 200 }
+    // Second row - right side
+    'subscriber': { x: width * 0.75, y: 450 },
+
+    // Third row - right side
+    'subscriberEmail': { x: width * 0.75, y: 700 },
+    'order': { x: width * 0.5, y: 700 },
+
+    // Fourth row - right side
+    'orderItem': { x: width * 0.5, y: 900 }
   }
 
   // Apply initial positions to models and store them for dragging
@@ -774,11 +782,15 @@ const createDiagram = () => {
       // Calculate control points for the curve
       const dx = targetModel.posX - sourceModel.posX
       const dy = targetModel.posY - sourceModel.posY
-      const dr = Math.sqrt(dx * dx + dy * dy) * 1.2 // Curve factor
+      const dr = Math.sqrt(dx * dx + dy * dy) * 1.5 // Increased curve factor for better arcs
+
+      // Determine if we need a clockwise or counter-clockwise arc
+      const sweep = (sourceId === 'user' && targetId === 'team') ||
+                   (sourceId === 'team' && targetId === 'user') ? 0 : 1;
 
       // Create curved path
       linkGroup.append('path')
-        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,1 ${targetModel.posX},${targetModel.posY}`)
+        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,${sweep} ${targetModel.posX},${targetModel.posY}`)
         .attr('fill', 'none')
         .attr('stroke', () => {
           // Color links based on relationship type
@@ -870,11 +882,15 @@ function updateLinks() {
       // Calculate control points for the curve
       const dx = targetModel.posX - sourceModel.posX
       const dy = targetModel.posY - sourceModel.posY
-      const dr = Math.sqrt(dx * dx + dy * dy) * 1.2 // Curve factor
+      const dr = Math.sqrt(dx * dx + dy * dy) * 1.5 // Increased curve factor for better arcs
+
+      // Determine if we need a clockwise or counter-clockwise arc
+      const sweep = (sourceId === 'user' && targetId === 'team') ||
+                   (sourceId === 'team' && targetId === 'user') ? 0 : 1;
 
       // Create curved path
       linkGroup.append('path')
-        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,1 ${targetModel.posX},${targetModel.posY}`)
+        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,${sweep} ${targetModel.posX},${targetModel.posY}`)
         .attr('fill', 'none')
         .attr('stroke', () => {
           // Color links based on relationship type
