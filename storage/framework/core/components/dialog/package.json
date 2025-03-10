@@ -38,7 +38,7 @@
     "highlight.js": "^11.11.1"
   },
   "devDependencies": {
-    "@iconify-json/hugeicons": "^1.2.3",
+    "@iconify-json/hugeicons": "^1.2.4",
     "@microsoft/api-extractor": "^7.51.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
