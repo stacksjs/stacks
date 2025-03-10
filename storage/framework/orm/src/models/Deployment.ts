@@ -19,7 +19,7 @@ export interface DeploymentsTable {
   execution_time: number
   deploy_script: string
   terminal_output: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -122,7 +122,7 @@ export class DeploymentModel {
     }
   }
 
-  async mapCustomSetters(model: NewDeployment): Promise<void> {
+  async mapCustomSetters(model: NewDeployment | DeploymentUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -134,7 +134,7 @@ export class DeploymentModel {
     }
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -146,7 +146,7 @@ export class DeploymentModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

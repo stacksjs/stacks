@@ -21,7 +21,7 @@ export interface PaymentMethodsTable {
   exp_year: number
   is_default?: boolean
   provider_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -71,14 +71,14 @@ export class PaymentMethodModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymentmethod: PaymentMethodJsonResponse | undefined) {
-    if (paymentmethod) {
-      this.attributes = { ...paymentmethod }
-      this.originalAttributes = { ...paymentmethod }
+  constructor(paymentMethod: PaymentMethodJsonResponse | undefined) {
+    if (paymentMethod) {
+      this.attributes = { ...paymentMethod }
+      this.originalAttributes = { ...paymentMethod }
 
-      Object.keys(paymentmethod).forEach((key) => {
+      Object.keys(paymentMethod).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (paymentmethod as PaymentMethodJsonResponse)[key]
+          this.customColumns[key] = (paymentMethod as PaymentMethodJsonResponse)[key]
         }
       })
     }
@@ -124,7 +124,7 @@ export class PaymentMethodModel {
     }
   }
 
-  async mapCustomSetters(model: NewPaymentMethod): Promise<void> {
+  async mapCustomSetters(model: NewPaymentMethod | PaymentMethodUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -140,7 +140,7 @@ export class PaymentMethodModel {
     return this.attributes.payment_transactions
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -152,7 +152,7 @@ export class PaymentMethodModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -299,7 +299,7 @@ export class PaymentMethodModel {
 
     const data = new PaymentMethodModel(model)
 
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentMethod:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -395,7 +395,7 @@ export class PaymentMethodModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PaymentMethodModel results for ${id}`)
 
-    cache.getOrSet(`paymentmethod:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentMethod:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -653,7 +653,7 @@ export class PaymentMethodModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+          .whereRef(`${relation}.paymentMethod_id`, '=', 'payment_methods.id'),
       ),
     )
 
@@ -667,7 +667,7 @@ export class PaymentMethodModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+          .whereRef(`${relation}.paymentMethod_id`, '=', 'payment_methods.id'),
       ),
     )
 
@@ -697,7 +697,7 @@ export class PaymentMethodModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id')
+          .whereRef(`${relation}.paymentMethod_id`, '=', 'payment_methods.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -768,7 +768,7 @@ export class PaymentMethodModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id'),
+            .whereRef(`${relation}.paymentMethod_id`, '=', 'payment_methods.id'),
         ),
       ),
     )
@@ -796,7 +796,7 @@ export class PaymentMethodModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentmethod_id`, '=', 'payment_methods.id')
+          .whereRef(`${relation}.paymentMethod_id`, '=', 'payment_methods.id')
 
         return not(exists(subquery))
       })
@@ -1436,14 +1436,14 @@ export class PaymentMethodModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('paymentmethod_id', 'in', modelIds)
+        .where('paymentMethod_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: PaymentMethodJsonResponse) => {
-          const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
-            return record.paymentmethod_id === model.id
+          const records = relatedRecords.filter((record: { paymentMethod_id: number }) => {
+            return record.paymentMethod_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1451,8 +1451,8 @@ export class PaymentMethodModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { paymentmethod_id: number }) => {
-          return record.paymentmethod_id === models.id
+        const records = relatedRecords.filter((record: { paymentMethod_id: number }) => {
+          return record.paymentMethod_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1614,15 +1614,15 @@ export class PaymentMethodModel {
     return undefined
   }
 
-  async forceUpdate(paymentmethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
+  async forceUpdate(paymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(paymentmethod).execute()
+      this.updateFromQuery.set(paymentMethod).execute()
     }
 
-    await this.mapCustomSetters(paymentmethod)
+    await this.mapCustomSetters(paymentMethod)
 
     await DB.instance.updateTable('payment_methods')
-      .set(paymentmethod)
+      .set(paymentMethod)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1677,7 +1677,7 @@ export class PaymentMethodModel {
     return this
   }
 
-  // Method to delete (soft delete) the paymentmethod instance
+  // Method to delete (soft delete) the paymentMethod instance
   async delete(): Promise<PaymentMethodsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

@@ -23,7 +23,7 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -126,7 +126,7 @@ export class ProductModel {
     }
   }
 
-  async mapCustomSetters(model: NewProduct): Promise<void> {
+  async mapCustomSetters(model: NewProduct | ProductUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -138,7 +138,7 @@ export class ProductModel {
     }
   }
 
-  get product_category_id(): number | undefined {
+  get product_category_id(): number {
     return this.attributes.product_category_id
   }
 
@@ -150,7 +150,7 @@ export class ProductModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

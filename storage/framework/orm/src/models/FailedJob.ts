@@ -61,14 +61,14 @@ export class FailedJobModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(failedjob: FailedJobJsonResponse | undefined) {
-    if (failedjob) {
-      this.attributes = { ...failedjob }
-      this.originalAttributes = { ...failedjob }
+  constructor(failedJob: FailedJobJsonResponse | undefined) {
+    if (failedJob) {
+      this.attributes = { ...failedJob }
+      this.originalAttributes = { ...failedJob }
 
-      Object.keys(failedjob).forEach((key) => {
+      Object.keys(failedJob).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (failedjob as FailedJobJsonResponse)[key]
+          this.customColumns[key] = (failedJob as FailedJobJsonResponse)[key]
         }
       })
     }
@@ -114,7 +114,7 @@ export class FailedJobModel {
     }
   }
 
-  async mapCustomSetters(model: NewFailedJob): Promise<void> {
+  async mapCustomSetters(model: NewFailedJob | FailedJobUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -253,7 +253,7 @@ export class FailedJobModel {
 
     const data = new FailedJobModel(model)
 
-    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
+    cache.getOrSet(`failedJob:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -349,7 +349,7 @@ export class FailedJobModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
 
-    cache.getOrSet(`failedjob:${id}`, JSON.stringify(model))
+    cache.getOrSet(`failedJob:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -607,7 +607,7 @@ export class FailedJobModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+          .whereRef(`${relation}.failedJob_id`, '=', 'failed_jobs.id'),
       ),
     )
 
@@ -621,7 +621,7 @@ export class FailedJobModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+          .whereRef(`${relation}.failedJob_id`, '=', 'failed_jobs.id'),
       ),
     )
 
@@ -651,7 +651,7 @@ export class FailedJobModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id')
+          .whereRef(`${relation}.failedJob_id`, '=', 'failed_jobs.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -722,7 +722,7 @@ export class FailedJobModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id'),
+            .whereRef(`${relation}.failedJob_id`, '=', 'failed_jobs.id'),
         ),
       ),
     )
@@ -750,7 +750,7 @@ export class FailedJobModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.failedjob_id`, '=', 'failed_jobs.id')
+          .whereRef(`${relation}.failedJob_id`, '=', 'failed_jobs.id')
 
         return not(exists(subquery))
       })
@@ -1370,14 +1370,14 @@ export class FailedJobModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('failedjob_id', 'in', modelIds)
+        .where('failedJob_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: FailedJobJsonResponse) => {
-          const records = relatedRecords.filter((record: { failedjob_id: number }) => {
-            return record.failedjob_id === model.id
+          const records = relatedRecords.filter((record: { failedJob_id: number }) => {
+            return record.failedJob_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1385,8 +1385,8 @@ export class FailedJobModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { failedjob_id: number }) => {
-          return record.failedjob_id === models.id
+        const records = relatedRecords.filter((record: { failedJob_id: number }) => {
+          return record.failedJob_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1548,15 +1548,15 @@ export class FailedJobModel {
     return undefined
   }
 
-  async forceUpdate(failedjob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
+  async forceUpdate(failedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(failedjob).execute()
+      this.updateFromQuery.set(failedJob).execute()
     }
 
-    await this.mapCustomSetters(failedjob)
+    await this.mapCustomSetters(failedJob)
 
     await DB.instance.updateTable('failed_jobs')
-      .set(failedjob)
+      .set(failedJob)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1611,7 +1611,7 @@ export class FailedJobModel {
     return this
   }
 
-  // Method to delete (soft delete) the failedjob instance
+  // Method to delete (soft delete) the failedJob instance
   async delete(): Promise<FailedJobsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

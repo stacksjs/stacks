@@ -114,7 +114,7 @@ export class JobModel {
     }
   }
 
-  async mapCustomSetters(model: NewJob): Promise<void> {
+  async mapCustomSetters(model: NewJob | JobUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

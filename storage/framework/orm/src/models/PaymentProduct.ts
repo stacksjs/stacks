@@ -15,7 +15,7 @@ export interface PaymentProductsTable {
   status?: string
   image?: string
   provider_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -65,14 +65,14 @@ export class PaymentProductModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymentproduct: PaymentProductJsonResponse | undefined) {
-    if (paymentproduct) {
-      this.attributes = { ...paymentproduct }
-      this.originalAttributes = { ...paymentproduct }
+  constructor(paymentProduct: PaymentProductJsonResponse | undefined) {
+    if (paymentProduct) {
+      this.attributes = { ...paymentProduct }
+      this.originalAttributes = { ...paymentProduct }
 
-      Object.keys(paymentproduct).forEach((key) => {
+      Object.keys(paymentProduct).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (paymentproduct as PaymentProductJsonResponse)[key]
+          this.customColumns[key] = (paymentProduct as PaymentProductJsonResponse)[key]
         }
       })
     }
@@ -118,7 +118,7 @@ export class PaymentProductModel {
     }
   }
 
-  async mapCustomSetters(model: NewPaymentProduct): Promise<void> {
+  async mapCustomSetters(model: NewPaymentProduct | PaymentProductUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -134,7 +134,7 @@ export class PaymentProductModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -281,7 +281,7 @@ export class PaymentProductModel {
 
     const data = new PaymentProductModel(model)
 
-    cache.getOrSet(`paymentproduct:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentProduct:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -377,7 +377,7 @@ export class PaymentProductModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PaymentProductModel results for ${id}`)
 
-    cache.getOrSet(`paymentproduct:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentProduct:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -635,7 +635,7 @@ export class PaymentProductModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentproduct_id`, '=', 'payment_products.id'),
+          .whereRef(`${relation}.paymentProduct_id`, '=', 'payment_products.id'),
       ),
     )
 
@@ -649,7 +649,7 @@ export class PaymentProductModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentproduct_id`, '=', 'payment_products.id'),
+          .whereRef(`${relation}.paymentProduct_id`, '=', 'payment_products.id'),
       ),
     )
 
@@ -679,7 +679,7 @@ export class PaymentProductModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentproduct_id`, '=', 'payment_products.id')
+          .whereRef(`${relation}.paymentProduct_id`, '=', 'payment_products.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -750,7 +750,7 @@ export class PaymentProductModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.paymentproduct_id`, '=', 'payment_products.id'),
+            .whereRef(`${relation}.paymentProduct_id`, '=', 'payment_products.id'),
         ),
       ),
     )
@@ -778,7 +778,7 @@ export class PaymentProductModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymentproduct_id`, '=', 'payment_products.id')
+          .whereRef(`${relation}.paymentProduct_id`, '=', 'payment_products.id')
 
         return not(exists(subquery))
       })
@@ -1418,14 +1418,14 @@ export class PaymentProductModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('paymentproduct_id', 'in', modelIds)
+        .where('paymentProduct_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: PaymentProductJsonResponse) => {
-          const records = relatedRecords.filter((record: { paymentproduct_id: number }) => {
-            return record.paymentproduct_id === model.id
+          const records = relatedRecords.filter((record: { paymentProduct_id: number }) => {
+            return record.paymentProduct_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1433,8 +1433,8 @@ export class PaymentProductModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { paymentproduct_id: number }) => {
-          return record.paymentproduct_id === models.id
+        const records = relatedRecords.filter((record: { paymentProduct_id: number }) => {
+          return record.paymentProduct_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1596,15 +1596,15 @@ export class PaymentProductModel {
     return undefined
   }
 
-  async forceUpdate(paymentproduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {
+  async forceUpdate(paymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(paymentproduct).execute()
+      this.updateFromQuery.set(paymentProduct).execute()
     }
 
-    await this.mapCustomSetters(paymentproduct)
+    await this.mapCustomSetters(paymentProduct)
 
     await DB.instance.updateTable('payment_products')
-      .set(paymentproduct)
+      .set(paymentProduct)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1659,7 +1659,7 @@ export class PaymentProductModel {
     return this
   }
 
-  // Method to delete (soft delete) the paymentproduct instance
+  // Method to delete (soft delete) the paymentProduct instance
   async delete(): Promise<PaymentProductsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

@@ -115,7 +115,7 @@ export class PostModel {
     }
   }
 
-  async mapCustomSetters(model: NewPost): Promise<void> {
+  async mapCustomSetters(model: NewPost | PostUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -127,7 +127,7 @@ export class PostModel {
     }
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 

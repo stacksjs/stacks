@@ -31,7 +31,7 @@ export interface UsersTable {
   password: string
   public_passkey?: string
   stripe_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -142,7 +142,7 @@ export class UserModel {
     }
   }
 
-  async mapCustomSetters(model: NewUser): Promise<void> {
+  async mapCustomSetters(model: NewUser | UserUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -188,7 +188,7 @@ export class UserModel {
     return this.attributes.stripe_id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

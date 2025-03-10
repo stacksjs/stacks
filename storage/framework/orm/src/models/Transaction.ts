@@ -20,7 +20,7 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -123,7 +123,7 @@ export class TransactionModel {
     }
   }
 
-  async mapCustomSetters(model: NewTransaction): Promise<void> {
+  async mapCustomSetters(model: NewTransaction | TransactionUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -135,7 +135,7 @@ export class TransactionModel {
     }
   }
 
-  get order_id(): number | undefined {
+  get order_id(): number {
     return this.attributes.order_id
   }
 
@@ -147,7 +147,7 @@ export class TransactionModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

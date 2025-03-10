@@ -114,7 +114,7 @@ export class ErrorModel {
     }
   }
 
-  async mapCustomSetters(model: NewError): Promise<void> {
+  async mapCustomSetters(model: NewError | ErrorUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

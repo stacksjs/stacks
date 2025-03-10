@@ -31,7 +31,7 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -134,7 +134,7 @@ export class OrderModel {
     }
   }
 
-  async mapCustomSetters(model: NewOrder): Promise<void> {
+  async mapCustomSetters(model: NewOrder | OrderUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -150,7 +150,7 @@ export class OrderModel {
     return this.attributes.order_items
   }
 
-  get customer_id(): number | undefined {
+  get customer_id(): number {
     return this.attributes.customer_id
   }
 
@@ -158,7 +158,7 @@ export class OrderModel {
     return this.attributes.customer
   }
 
-  get coupon_id(): number | undefined {
+  get coupon_id(): number {
     return this.attributes.coupon_id
   }
 
@@ -170,7 +170,7 @@ export class OrderModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

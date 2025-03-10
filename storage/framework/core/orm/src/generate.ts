@@ -74,7 +74,7 @@ export async function generateModelString(
   attributes: ModelElement[],
 ): Promise<string> {
   const formattedTableName = pascalCase(tableName) // users -> Users
-  const formattedModelName = modelName.toLowerCase() // User -> user
+  const formattedModelName = camelCase(modelName) // User -> user
 
   let instanceSoftDeleteStatements = ''
   let instanceSoftDeleteStatementsSelectFrom = ''
@@ -314,7 +314,7 @@ export async function generateModelString(
 
       fieldString += ` ${relation.modelKey}: number \n`
 
-      getFields += `get ${relation.modelKey}(): number | undefined {
+      getFields += `get ${relation.modelKey}(): number {
         return this.attributes.${relation.modelKey}
       }\n\n`
 
@@ -750,7 +750,7 @@ export async function generateModelString(
 
   if (useUuid) {
     // declareFields += 'public uuid: string | undefined \n'
-    getFields += `get uuid(): string | undefined {
+    getFields += `get uuid(): string {
       return this.attributes.uuid
     }\n\n`
 
@@ -867,7 +867,7 @@ export async function generateModelString(
     fieldString += 'stripe_id?: string \n'
 
   if (useUuid)
-    fieldString += 'uuid?: string \n'
+    fieldString += 'uuid: string \n'
 
   if (useTimestamps) {
     fieldString += `
@@ -1004,7 +1004,7 @@ export async function generateModelString(
           }
         }
 
-        async mapCustomSetters(model: New${modelName}): Promise<void> {
+        async mapCustomSetters(model: New${modelName} | ${modelName}Update): Promise<void> {
           const customSetter = {
             default: () => {
             },

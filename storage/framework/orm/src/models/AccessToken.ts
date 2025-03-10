@@ -75,14 +75,14 @@ export class AccessTokenModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(accesstoken: AccessTokenJsonResponse | undefined) {
-    if (accesstoken) {
-      this.attributes = { ...accesstoken }
-      this.originalAttributes = { ...accesstoken }
+  constructor(accessToken: AccessTokenJsonResponse | undefined) {
+    if (accessToken) {
+      this.attributes = { ...accessToken }
+      this.originalAttributes = { ...accessToken }
 
-      Object.keys(accesstoken).forEach((key) => {
+      Object.keys(accessToken).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (accesstoken as AccessTokenJsonResponse)[key]
+          this.customColumns[key] = (accessToken as AccessTokenJsonResponse)[key]
         }
       })
     }
@@ -128,7 +128,7 @@ export class AccessTokenModel {
     }
   }
 
-  async mapCustomSetters(model: NewAccessToken): Promise<void> {
+  async mapCustomSetters(model: NewAccessToken | AccessTokenUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -140,7 +140,7 @@ export class AccessTokenModel {
     }
   }
 
-  get team_id(): number | undefined {
+  get team_id(): number {
     return this.attributes.team_id
   }
 
@@ -148,7 +148,7 @@ export class AccessTokenModel {
     return this.attributes.team
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -323,7 +323,7 @@ export class AccessTokenModel {
 
     const data = new AccessTokenModel(model)
 
-    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+    cache.getOrSet(`accessToken:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -419,7 +419,7 @@ export class AccessTokenModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No AccessTokenModel results for ${id}`)
 
-    cache.getOrSet(`accesstoken:${id}`, JSON.stringify(model))
+    cache.getOrSet(`accessToken:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -677,7 +677,7 @@ export class AccessTokenModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+          .whereRef(`${relation}.accessToken_id`, '=', 'personal_access_tokens.id'),
       ),
     )
 
@@ -691,7 +691,7 @@ export class AccessTokenModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+          .whereRef(`${relation}.accessToken_id`, '=', 'personal_access_tokens.id'),
       ),
     )
 
@@ -721,7 +721,7 @@ export class AccessTokenModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id')
+          .whereRef(`${relation}.accessToken_id`, '=', 'personal_access_tokens.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -792,7 +792,7 @@ export class AccessTokenModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id'),
+            .whereRef(`${relation}.accessToken_id`, '=', 'personal_access_tokens.id'),
         ),
       ),
     )
@@ -820,7 +820,7 @@ export class AccessTokenModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.accesstoken_id`, '=', 'personal_access_tokens.id')
+          .whereRef(`${relation}.accessToken_id`, '=', 'personal_access_tokens.id')
 
         return not(exists(subquery))
       })
@@ -1480,14 +1480,14 @@ export class AccessTokenModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('accesstoken_id', 'in', modelIds)
+        .where('accessToken_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: AccessTokenJsonResponse) => {
-          const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
-            return record.accesstoken_id === model.id
+          const records = relatedRecords.filter((record: { accessToken_id: number }) => {
+            return record.accessToken_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1495,8 +1495,8 @@ export class AccessTokenModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { accesstoken_id: number }) => {
-          return record.accesstoken_id === models.id
+        const records = relatedRecords.filter((record: { accessToken_id: number }) => {
+          return record.accessToken_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1658,15 +1658,15 @@ export class AccessTokenModel {
     return undefined
   }
 
-  async forceUpdate(accesstoken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+  async forceUpdate(accessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(accesstoken).execute()
+      this.updateFromQuery.set(accessToken).execute()
     }
 
-    await this.mapCustomSetters(accesstoken)
+    await this.mapCustomSetters(accessToken)
 
     await DB.instance.updateTable('personal_access_tokens')
-      .set(accesstoken)
+      .set(accessToken)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1721,7 +1721,7 @@ export class AccessTokenModel {
     return this
   }
 
-  // Method to delete (soft delete) the accesstoken instance
+  // Method to delete (soft delete) the accessToken instance
   async delete(): Promise<PersonalAccessTokensTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

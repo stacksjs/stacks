@@ -68,14 +68,14 @@ export class OrderItemModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(orderitem: OrderItemJsonResponse | undefined) {
-    if (orderitem) {
-      this.attributes = { ...orderitem }
-      this.originalAttributes = { ...orderitem }
+  constructor(orderItem: OrderItemJsonResponse | undefined) {
+    if (orderItem) {
+      this.attributes = { ...orderItem }
+      this.originalAttributes = { ...orderItem }
 
-      Object.keys(orderitem).forEach((key) => {
+      Object.keys(orderItem).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (orderitem as OrderItemJsonResponse)[key]
+          this.customColumns[key] = (orderItem as OrderItemJsonResponse)[key]
         }
       })
     }
@@ -121,7 +121,7 @@ export class OrderItemModel {
     }
   }
 
-  async mapCustomSetters(model: NewOrderItem): Promise<void> {
+  async mapCustomSetters(model: NewOrderItem | OrderItemUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -133,7 +133,7 @@ export class OrderItemModel {
     }
   }
 
-  get order_id(): number | undefined {
+  get order_id(): number {
     return this.attributes.order_id
   }
 
@@ -141,7 +141,7 @@ export class OrderItemModel {
     return this.attributes.order
   }
 
-  get product_id(): number | undefined {
+  get product_id(): number {
     return this.attributes.product_id
   }
 
@@ -260,7 +260,7 @@ export class OrderItemModel {
 
     const data = new OrderItemModel(model)
 
-    cache.getOrSet(`orderitem:${id}`, JSON.stringify(model))
+    cache.getOrSet(`orderItem:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -356,7 +356,7 @@ export class OrderItemModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No OrderItemModel results for ${id}`)
 
-    cache.getOrSet(`orderitem:${id}`, JSON.stringify(model))
+    cache.getOrSet(`orderItem:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -614,7 +614,7 @@ export class OrderItemModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.orderitem_id`, '=', 'order_items.id'),
+          .whereRef(`${relation}.orderItem_id`, '=', 'order_items.id'),
       ),
     )
 
@@ -628,7 +628,7 @@ export class OrderItemModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.orderitem_id`, '=', 'order_items.id'),
+          .whereRef(`${relation}.orderItem_id`, '=', 'order_items.id'),
       ),
     )
 
@@ -658,7 +658,7 @@ export class OrderItemModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.orderitem_id`, '=', 'order_items.id')
+          .whereRef(`${relation}.orderItem_id`, '=', 'order_items.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -729,7 +729,7 @@ export class OrderItemModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.orderitem_id`, '=', 'order_items.id'),
+            .whereRef(`${relation}.orderItem_id`, '=', 'order_items.id'),
         ),
       ),
     )
@@ -757,7 +757,7 @@ export class OrderItemModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.orderitem_id`, '=', 'order_items.id')
+          .whereRef(`${relation}.orderItem_id`, '=', 'order_items.id')
 
         return not(exists(subquery))
       })
@@ -1361,14 +1361,14 @@ export class OrderItemModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('orderitem_id', 'in', modelIds)
+        .where('orderItem_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: OrderItemJsonResponse) => {
-          const records = relatedRecords.filter((record: { orderitem_id: number }) => {
-            return record.orderitem_id === model.id
+          const records = relatedRecords.filter((record: { orderItem_id: number }) => {
+            return record.orderItem_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1376,8 +1376,8 @@ export class OrderItemModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { orderitem_id: number }) => {
-          return record.orderitem_id === models.id
+        const records = relatedRecords.filter((record: { orderItem_id: number }) => {
+          return record.orderItem_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1539,15 +1539,15 @@ export class OrderItemModel {
     return undefined
   }
 
-  async forceUpdate(orderitem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
+  async forceUpdate(orderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(orderitem).execute()
+      this.updateFromQuery.set(orderItem).execute()
     }
 
-    await this.mapCustomSetters(orderitem)
+    await this.mapCustomSetters(orderItem)
 
     await DB.instance.updateTable('order_items')
-      .set(orderitem)
+      .set(orderItem)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1602,7 +1602,7 @@ export class OrderItemModel {
     return this
   }
 
-  // Method to delete (soft delete) the orderitem instance
+  // Method to delete (soft delete) the orderItem instance
   async delete(): Promise<OrderItemsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

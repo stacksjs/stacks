@@ -27,7 +27,7 @@ export interface ProductReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -77,14 +77,14 @@ export class ProductReviewModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(productreview: ProductReviewJsonResponse | undefined) {
-    if (productreview) {
-      this.attributes = { ...productreview }
-      this.originalAttributes = { ...productreview }
+  constructor(productReview: ProductReviewJsonResponse | undefined) {
+    if (productReview) {
+      this.attributes = { ...productReview }
+      this.originalAttributes = { ...productReview }
 
-      Object.keys(productreview).forEach((key) => {
+      Object.keys(productReview).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (productreview as ProductReviewJsonResponse)[key]
+          this.customColumns[key] = (productReview as ProductReviewJsonResponse)[key]
         }
       })
     }
@@ -130,7 +130,7 @@ export class ProductReviewModel {
     }
   }
 
-  async mapCustomSetters(model: NewProductReview): Promise<void> {
+  async mapCustomSetters(model: NewProductReview | ProductReviewUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -142,7 +142,7 @@ export class ProductReviewModel {
     }
   }
 
-  get product_id(): number | undefined {
+  get product_id(): number {
     return this.attributes.product_id
   }
 
@@ -150,7 +150,7 @@ export class ProductReviewModel {
     return this.attributes.product
   }
 
-  get customer_id(): number | undefined {
+  get customer_id(): number {
     return this.attributes.customer_id
   }
 
@@ -162,7 +162,7 @@ export class ProductReviewModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -325,7 +325,7 @@ export class ProductReviewModel {
 
     const data = new ProductReviewModel(model)
 
-    cache.getOrSet(`productreview:${id}`, JSON.stringify(model))
+    cache.getOrSet(`productReview:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -421,7 +421,7 @@ export class ProductReviewModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProductReviewModel results for ${id}`)
 
-    cache.getOrSet(`productreview:${id}`, JSON.stringify(model))
+    cache.getOrSet(`productReview:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -679,7 +679,7 @@ export class ProductReviewModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productreview_id`, '=', 'product_reviews.id'),
+          .whereRef(`${relation}.productReview_id`, '=', 'product_reviews.id'),
       ),
     )
 
@@ -693,7 +693,7 @@ export class ProductReviewModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productreview_id`, '=', 'product_reviews.id'),
+          .whereRef(`${relation}.productReview_id`, '=', 'product_reviews.id'),
       ),
     )
 
@@ -723,7 +723,7 @@ export class ProductReviewModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productreview_id`, '=', 'product_reviews.id')
+          .whereRef(`${relation}.productReview_id`, '=', 'product_reviews.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -794,7 +794,7 @@ export class ProductReviewModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.productreview_id`, '=', 'product_reviews.id'),
+            .whereRef(`${relation}.productReview_id`, '=', 'product_reviews.id'),
         ),
       ),
     )
@@ -822,7 +822,7 @@ export class ProductReviewModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productreview_id`, '=', 'product_reviews.id')
+          .whereRef(`${relation}.productReview_id`, '=', 'product_reviews.id')
 
         return not(exists(subquery))
       })
@@ -940,7 +940,7 @@ export class ProductReviewModel {
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductReviewModel
 
     if (model)
-      dispatch('productreview:created', model)
+      dispatch('productReview:created', model)
 
     return model
   }
@@ -983,7 +983,7 @@ export class ProductReviewModel {
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductReviewModel
 
     if (model)
-      dispatch('productreview:created', model)
+      dispatch('productReview:created', model)
 
     return model
   }
@@ -995,7 +995,7 @@ export class ProductReviewModel {
     const model = await instance.find(Number(id))
 
     if (model)
-      dispatch('productreview:deleted', model)
+      dispatch('productReview:deleted', model)
 
     return await DB.instance.deleteFrom('product_reviews')
       .where('id', '=', id)
@@ -1491,14 +1491,14 @@ export class ProductReviewModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('productreview_id', 'in', modelIds)
+        .where('productReview_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: ProductReviewJsonResponse) => {
-          const records = relatedRecords.filter((record: { productreview_id: number }) => {
-            return record.productreview_id === model.id
+          const records = relatedRecords.filter((record: { productReview_id: number }) => {
+            return record.productReview_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1506,8 +1506,8 @@ export class ProductReviewModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { productreview_id: number }) => {
-          return record.productreview_id === models.id
+        const records = relatedRecords.filter((record: { productReview_id: number }) => {
+          return record.productReview_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1662,7 +1662,7 @@ export class ProductReviewModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productreview:updated', model)
+        dispatch('productReview:updated', model)
 
       return model
     }
@@ -1672,15 +1672,15 @@ export class ProductReviewModel {
     return undefined
   }
 
-  async forceUpdate(productreview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {
+  async forceUpdate(productReview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(productreview).execute()
+      this.updateFromQuery.set(productReview).execute()
     }
 
-    await this.mapCustomSetters(productreview)
+    await this.mapCustomSetters(productReview)
 
     await DB.instance.updateTable('product_reviews')
-      .set(productreview)
+      .set(productReview)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1688,7 +1688,7 @@ export class ProductReviewModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productreview:updated', model)
+        dispatch('productReview:updated', model)
 
       this.hasSaved = true
 
@@ -1738,13 +1738,13 @@ export class ProductReviewModel {
     return this
   }
 
-  // Method to delete (soft delete) the productreview instance
+  // Method to delete (soft delete) the productReview instance
   async delete(): Promise<ProductReviewsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
     if (model)
-      dispatch('productreview:deleted', model)
+      dispatch('productReview:deleted', model)
 
     return await DB.instance.deleteFrom('product_reviews')
       .where('id', '=', this.id)

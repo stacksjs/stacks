@@ -22,7 +22,7 @@ export interface LoyaltyRewardsTable {
   is_active?: boolean
   expiry_days?: number
   image_url?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -72,14 +72,14 @@ export class LoyaltyRewardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(loyaltyreward: LoyaltyRewardJsonResponse | undefined) {
-    if (loyaltyreward) {
-      this.attributes = { ...loyaltyreward }
-      this.originalAttributes = { ...loyaltyreward }
+  constructor(loyaltyReward: LoyaltyRewardJsonResponse | undefined) {
+    if (loyaltyReward) {
+      this.attributes = { ...loyaltyReward }
+      this.originalAttributes = { ...loyaltyReward }
 
-      Object.keys(loyaltyreward).forEach((key) => {
+      Object.keys(loyaltyReward).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (loyaltyreward as LoyaltyRewardJsonResponse)[key]
+          this.customColumns[key] = (loyaltyReward as LoyaltyRewardJsonResponse)[key]
         }
       })
     }
@@ -125,7 +125,7 @@ export class LoyaltyRewardModel {
     }
   }
 
-  async mapCustomSetters(model: NewLoyaltyReward): Promise<void> {
+  async mapCustomSetters(model: NewLoyaltyReward | LoyaltyRewardUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -137,7 +137,7 @@ export class LoyaltyRewardModel {
     }
   }
 
-  get product_id(): number | undefined {
+  get product_id(): number {
     return this.attributes.product_id
   }
 
@@ -149,7 +149,7 @@ export class LoyaltyRewardModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -312,7 +312,7 @@ export class LoyaltyRewardModel {
 
     const data = new LoyaltyRewardModel(model)
 
-    cache.getOrSet(`loyaltyreward:${id}`, JSON.stringify(model))
+    cache.getOrSet(`loyaltyReward:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -408,7 +408,7 @@ export class LoyaltyRewardModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No LoyaltyRewardModel results for ${id}`)
 
-    cache.getOrSet(`loyaltyreward:${id}`, JSON.stringify(model))
+    cache.getOrSet(`loyaltyReward:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -666,7 +666,7 @@ export class LoyaltyRewardModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.loyaltyreward_id`, '=', 'loyalty_rewards.id'),
+          .whereRef(`${relation}.loyaltyReward_id`, '=', 'loyalty_rewards.id'),
       ),
     )
 
@@ -680,7 +680,7 @@ export class LoyaltyRewardModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.loyaltyreward_id`, '=', 'loyalty_rewards.id'),
+          .whereRef(`${relation}.loyaltyReward_id`, '=', 'loyalty_rewards.id'),
       ),
     )
 
@@ -710,7 +710,7 @@ export class LoyaltyRewardModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.loyaltyreward_id`, '=', 'loyalty_rewards.id')
+          .whereRef(`${relation}.loyaltyReward_id`, '=', 'loyalty_rewards.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -781,7 +781,7 @@ export class LoyaltyRewardModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.loyaltyreward_id`, '=', 'loyalty_rewards.id'),
+            .whereRef(`${relation}.loyaltyReward_id`, '=', 'loyalty_rewards.id'),
         ),
       ),
     )
@@ -809,7 +809,7 @@ export class LoyaltyRewardModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.loyaltyreward_id`, '=', 'loyalty_rewards.id')
+          .whereRef(`${relation}.loyaltyReward_id`, '=', 'loyalty_rewards.id')
 
         return not(exists(subquery))
       })
@@ -927,7 +927,7 @@ export class LoyaltyRewardModel {
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyRewardModel
 
     if (model)
-      dispatch('loyaltyreward:created', model)
+      dispatch('loyaltyReward:created', model)
 
     return model
   }
@@ -970,7 +970,7 @@ export class LoyaltyRewardModel {
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyRewardModel
 
     if (model)
-      dispatch('loyaltyreward:created', model)
+      dispatch('loyaltyReward:created', model)
 
     return model
   }
@@ -982,7 +982,7 @@ export class LoyaltyRewardModel {
     const model = await instance.find(Number(id))
 
     if (model)
-      dispatch('loyaltyreward:deleted', model)
+      dispatch('loyaltyReward:deleted', model)
 
     return await DB.instance.deleteFrom('loyalty_rewards')
       .where('id', '=', id)
@@ -1478,14 +1478,14 @@ export class LoyaltyRewardModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('loyaltyreward_id', 'in', modelIds)
+        .where('loyaltyReward_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: LoyaltyRewardJsonResponse) => {
-          const records = relatedRecords.filter((record: { loyaltyreward_id: number }) => {
-            return record.loyaltyreward_id === model.id
+          const records = relatedRecords.filter((record: { loyaltyReward_id: number }) => {
+            return record.loyaltyReward_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1493,8 +1493,8 @@ export class LoyaltyRewardModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { loyaltyreward_id: number }) => {
-          return record.loyaltyreward_id === models.id
+        const records = relatedRecords.filter((record: { loyaltyReward_id: number }) => {
+          return record.loyaltyReward_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1649,7 +1649,7 @@ export class LoyaltyRewardModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('loyaltyreward:updated', model)
+        dispatch('loyaltyReward:updated', model)
 
       return model
     }
@@ -1659,15 +1659,15 @@ export class LoyaltyRewardModel {
     return undefined
   }
 
-  async forceUpdate(loyaltyreward: LoyaltyRewardUpdate): Promise<LoyaltyRewardModel | undefined> {
+  async forceUpdate(loyaltyReward: LoyaltyRewardUpdate): Promise<LoyaltyRewardModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(loyaltyreward).execute()
+      this.updateFromQuery.set(loyaltyReward).execute()
     }
 
-    await this.mapCustomSetters(loyaltyreward)
+    await this.mapCustomSetters(loyaltyReward)
 
     await DB.instance.updateTable('loyalty_rewards')
-      .set(loyaltyreward)
+      .set(loyaltyReward)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1675,7 +1675,7 @@ export class LoyaltyRewardModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('loyaltyreward:updated', model)
+        dispatch('loyaltyReward:updated', model)
 
       this.hasSaved = true
 
@@ -1725,13 +1725,13 @@ export class LoyaltyRewardModel {
     return this
   }
 
-  // Method to delete (soft delete) the loyaltyreward instance
+  // Method to delete (soft delete) the loyaltyReward instance
   async delete(): Promise<LoyaltyRewardsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
     if (model)
-      dispatch('loyaltyreward:deleted', model)
+      dispatch('loyaltyReward:deleted', model)
 
     return await DB.instance.deleteFrom('loyalty_rewards')
       .where('id', '=', this.id)

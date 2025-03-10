@@ -113,7 +113,7 @@ export class ProjectModel {
     }
   }
 
-  async mapCustomSetters(model: NewProject): Promise<void> {
+  async mapCustomSetters(model: NewProject | ProjectUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

@@ -16,7 +16,7 @@ export interface ProductCategoriesTable {
   is_active?: boolean
   parent_category_id?: string
   display_order: number
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -66,14 +66,14 @@ export class ProductCategoryModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(productcategory: ProductCategoryJsonResponse | undefined) {
-    if (productcategory) {
-      this.attributes = { ...productcategory }
-      this.originalAttributes = { ...productcategory }
+  constructor(productCategory: ProductCategoryJsonResponse | undefined) {
+    if (productCategory) {
+      this.attributes = { ...productCategory }
+      this.originalAttributes = { ...productCategory }
 
-      Object.keys(productcategory).forEach((key) => {
+      Object.keys(productCategory).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (productcategory as ProductCategoryJsonResponse)[key]
+          this.customColumns[key] = (productCategory as ProductCategoryJsonResponse)[key]
         }
       })
     }
@@ -119,7 +119,7 @@ export class ProductCategoryModel {
     }
   }
 
-  async mapCustomSetters(model: NewProductCategory): Promise<void> {
+  async mapCustomSetters(model: NewProductCategory | ProductCategoryUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -139,7 +139,7 @@ export class ProductCategoryModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -278,7 +278,7 @@ export class ProductCategoryModel {
 
     const data = new ProductCategoryModel(model)
 
-    cache.getOrSet(`productcategory:${id}`, JSON.stringify(model))
+    cache.getOrSet(`productCategory:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -374,7 +374,7 @@ export class ProductCategoryModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No ProductCategoryModel results for ${id}`)
 
-    cache.getOrSet(`productcategory:${id}`, JSON.stringify(model))
+    cache.getOrSet(`productCategory:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -632,7 +632,7 @@ export class ProductCategoryModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productcategory_id`, '=', 'product_categories.id'),
+          .whereRef(`${relation}.productCategory_id`, '=', 'product_categories.id'),
       ),
     )
 
@@ -646,7 +646,7 @@ export class ProductCategoryModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productcategory_id`, '=', 'product_categories.id'),
+          .whereRef(`${relation}.productCategory_id`, '=', 'product_categories.id'),
       ),
     )
 
@@ -676,7 +676,7 @@ export class ProductCategoryModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productcategory_id`, '=', 'product_categories.id')
+          .whereRef(`${relation}.productCategory_id`, '=', 'product_categories.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -747,7 +747,7 @@ export class ProductCategoryModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.productcategory_id`, '=', 'product_categories.id'),
+            .whereRef(`${relation}.productCategory_id`, '=', 'product_categories.id'),
         ),
       ),
     )
@@ -775,7 +775,7 @@ export class ProductCategoryModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.productcategory_id`, '=', 'product_categories.id')
+          .whereRef(`${relation}.productCategory_id`, '=', 'product_categories.id')
 
         return not(exists(subquery))
       })
@@ -893,7 +893,7 @@ export class ProductCategoryModel {
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
 
     if (model)
-      dispatch('productcategory:created', model)
+      dispatch('productCategory:created', model)
 
     return model
   }
@@ -936,7 +936,7 @@ export class ProductCategoryModel {
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
 
     if (model)
-      dispatch('productcategory:created', model)
+      dispatch('productCategory:created', model)
 
     return model
   }
@@ -948,7 +948,7 @@ export class ProductCategoryModel {
     const model = await instance.find(Number(id))
 
     if (model)
-      dispatch('productcategory:deleted', model)
+      dispatch('productCategory:deleted', model)
 
     return await DB.instance.deleteFrom('product_categories')
       .where('id', '=', id)
@@ -1420,14 +1420,14 @@ export class ProductCategoryModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('productcategory_id', 'in', modelIds)
+        .where('productCategory_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: ProductCategoryJsonResponse) => {
-          const records = relatedRecords.filter((record: { productcategory_id: number }) => {
-            return record.productcategory_id === model.id
+          const records = relatedRecords.filter((record: { productCategory_id: number }) => {
+            return record.productCategory_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1435,8 +1435,8 @@ export class ProductCategoryModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { productcategory_id: number }) => {
-          return record.productcategory_id === models.id
+        const records = relatedRecords.filter((record: { productCategory_id: number }) => {
+          return record.productCategory_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1591,7 +1591,7 @@ export class ProductCategoryModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productcategory:updated', model)
+        dispatch('productCategory:updated', model)
 
       return model
     }
@@ -1601,15 +1601,15 @@ export class ProductCategoryModel {
     return undefined
   }
 
-  async forceUpdate(productcategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {
+  async forceUpdate(productCategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(productcategory).execute()
+      this.updateFromQuery.set(productCategory).execute()
     }
 
-    await this.mapCustomSetters(productcategory)
+    await this.mapCustomSetters(productCategory)
 
     await DB.instance.updateTable('product_categories')
-      .set(productcategory)
+      .set(productCategory)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1617,7 +1617,7 @@ export class ProductCategoryModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('productcategory:updated', model)
+        dispatch('productCategory:updated', model)
 
       this.hasSaved = true
 
@@ -1667,13 +1667,13 @@ export class ProductCategoryModel {
     return this
   }
 
-  // Method to delete (soft delete) the productcategory instance
+  // Method to delete (soft delete) the productCategory instance
   async delete(): Promise<ProductCategoriesTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
     if (model)
-      dispatch('productcategory:deleted', model)
+      dispatch('productCategory:deleted', model)
 
     return await DB.instance.deleteFrom('product_categories')
       .where('id', '=', this.id)

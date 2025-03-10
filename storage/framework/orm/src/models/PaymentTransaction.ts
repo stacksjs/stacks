@@ -22,7 +22,7 @@ export interface PaymentTransactionsTable {
   amount: number
   type: string
   provider_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -72,14 +72,14 @@ export class PaymentTransactionModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(paymenttransaction: PaymentTransactionJsonResponse | undefined) {
-    if (paymenttransaction) {
-      this.attributes = { ...paymenttransaction }
-      this.originalAttributes = { ...paymenttransaction }
+  constructor(paymentTransaction: PaymentTransactionJsonResponse | undefined) {
+    if (paymentTransaction) {
+      this.attributes = { ...paymentTransaction }
+      this.originalAttributes = { ...paymentTransaction }
 
-      Object.keys(paymenttransaction).forEach((key) => {
+      Object.keys(paymentTransaction).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (paymenttransaction as PaymentTransactionJsonResponse)[key]
+          this.customColumns[key] = (paymentTransaction as PaymentTransactionJsonResponse)[key]
         }
       })
     }
@@ -125,7 +125,7 @@ export class PaymentTransactionModel {
     }
   }
 
-  async mapCustomSetters(model: NewPaymentTransaction): Promise<void> {
+  async mapCustomSetters(model: NewPaymentTransaction | PaymentTransactionUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -137,7 +137,7 @@ export class PaymentTransactionModel {
     }
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -145,7 +145,7 @@ export class PaymentTransactionModel {
     return this.attributes.user
   }
 
-  get payment_method_id(): number | undefined {
+  get payment_method_id(): number {
     return this.attributes.payment_method_id
   }
 
@@ -157,7 +157,7 @@ export class PaymentTransactionModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -288,7 +288,7 @@ export class PaymentTransactionModel {
 
     const data = new PaymentTransactionModel(model)
 
-    cache.getOrSet(`paymenttransaction:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentTransaction:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -384,7 +384,7 @@ export class PaymentTransactionModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No PaymentTransactionModel results for ${id}`)
 
-    cache.getOrSet(`paymenttransaction:${id}`, JSON.stringify(model))
+    cache.getOrSet(`paymentTransaction:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -642,7 +642,7 @@ export class PaymentTransactionModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
+          .whereRef(`${relation}.paymentTransaction_id`, '=', 'payment_transactions.id'),
       ),
     )
 
@@ -656,7 +656,7 @@ export class PaymentTransactionModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
+          .whereRef(`${relation}.paymentTransaction_id`, '=', 'payment_transactions.id'),
       ),
     )
 
@@ -686,7 +686,7 @@ export class PaymentTransactionModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id')
+          .whereRef(`${relation}.paymentTransaction_id`, '=', 'payment_transactions.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -757,7 +757,7 @@ export class PaymentTransactionModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id'),
+            .whereRef(`${relation}.paymentTransaction_id`, '=', 'payment_transactions.id'),
         ),
       ),
     )
@@ -785,7 +785,7 @@ export class PaymentTransactionModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.paymenttransaction_id`, '=', 'payment_transactions.id')
+          .whereRef(`${relation}.paymentTransaction_id`, '=', 'payment_transactions.id')
 
         return not(exists(subquery))
       })
@@ -1409,14 +1409,14 @@ export class PaymentTransactionModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('paymenttransaction_id', 'in', modelIds)
+        .where('paymentTransaction_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: PaymentTransactionJsonResponse) => {
-          const records = relatedRecords.filter((record: { paymenttransaction_id: number }) => {
-            return record.paymenttransaction_id === model.id
+          const records = relatedRecords.filter((record: { paymentTransaction_id: number }) => {
+            return record.paymentTransaction_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1424,8 +1424,8 @@ export class PaymentTransactionModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { paymenttransaction_id: number }) => {
-          return record.paymenttransaction_id === models.id
+        const records = relatedRecords.filter((record: { paymentTransaction_id: number }) => {
+          return record.paymentTransaction_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1587,15 +1587,15 @@ export class PaymentTransactionModel {
     return undefined
   }
 
-  async forceUpdate(paymenttransaction: PaymentTransactionUpdate): Promise<PaymentTransactionModel | undefined> {
+  async forceUpdate(paymentTransaction: PaymentTransactionUpdate): Promise<PaymentTransactionModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(paymenttransaction).execute()
+      this.updateFromQuery.set(paymentTransaction).execute()
     }
 
-    await this.mapCustomSetters(paymenttransaction)
+    await this.mapCustomSetters(paymentTransaction)
 
     await DB.instance.updateTable('payment_transactions')
-      .set(paymenttransaction)
+      .set(paymentTransaction)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1650,7 +1650,7 @@ export class PaymentTransactionModel {
     return this
   }
 
-  // Method to delete (soft delete) the paymenttransaction instance
+  // Method to delete (soft delete) the paymentTransaction instance
   async delete(): Promise<PaymentTransactionsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()

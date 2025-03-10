@@ -30,7 +30,7 @@ export interface GiftCardsTable {
   expiry_date?: string
   last_used_date?: string
   template_id?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -80,14 +80,14 @@ export class GiftCardModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(giftcard: GiftCardJsonResponse | undefined) {
-    if (giftcard) {
-      this.attributes = { ...giftcard }
-      this.originalAttributes = { ...giftcard }
+  constructor(giftCard: GiftCardJsonResponse | undefined) {
+    if (giftCard) {
+      this.attributes = { ...giftCard }
+      this.originalAttributes = { ...giftCard }
 
-      Object.keys(giftcard).forEach((key) => {
+      Object.keys(giftCard).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (giftcard as GiftCardJsonResponse)[key]
+          this.customColumns[key] = (giftCard as GiftCardJsonResponse)[key]
         }
       })
     }
@@ -133,7 +133,7 @@ export class GiftCardModel {
     }
   }
 
-  async mapCustomSetters(model: NewGiftCard): Promise<void> {
+  async mapCustomSetters(model: NewGiftCard | GiftCardUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -149,7 +149,7 @@ export class GiftCardModel {
     return this.attributes.orders
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -161,7 +161,7 @@ export class GiftCardModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 
@@ -372,7 +372,7 @@ export class GiftCardModel {
 
     const data = new GiftCardModel(model)
 
-    cache.getOrSet(`giftcard:${id}`, JSON.stringify(model))
+    cache.getOrSet(`giftCard:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -468,7 +468,7 @@ export class GiftCardModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No GiftCardModel results for ${id}`)
 
-    cache.getOrSet(`giftcard:${id}`, JSON.stringify(model))
+    cache.getOrSet(`giftCard:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -726,7 +726,7 @@ export class GiftCardModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.giftcard_id`, '=', 'gift_cards.id'),
+          .whereRef(`${relation}.giftCard_id`, '=', 'gift_cards.id'),
       ),
     )
 
@@ -740,7 +740,7 @@ export class GiftCardModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.giftcard_id`, '=', 'gift_cards.id'),
+          .whereRef(`${relation}.giftCard_id`, '=', 'gift_cards.id'),
       ),
     )
 
@@ -770,7 +770,7 @@ export class GiftCardModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.giftcard_id`, '=', 'gift_cards.id')
+          .whereRef(`${relation}.giftCard_id`, '=', 'gift_cards.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -841,7 +841,7 @@ export class GiftCardModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.giftcard_id`, '=', 'gift_cards.id'),
+            .whereRef(`${relation}.giftCard_id`, '=', 'gift_cards.id'),
         ),
       ),
     )
@@ -869,7 +869,7 @@ export class GiftCardModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.giftcard_id`, '=', 'gift_cards.id')
+          .whereRef(`${relation}.giftCard_id`, '=', 'gift_cards.id')
 
         return not(exists(subquery))
       })
@@ -987,7 +987,7 @@ export class GiftCardModel {
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
 
     if (model)
-      dispatch('giftcard:created', model)
+      dispatch('giftCard:created', model)
 
     return model
   }
@@ -1030,7 +1030,7 @@ export class GiftCardModel {
     const model = await find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
 
     if (model)
-      dispatch('giftcard:created', model)
+      dispatch('giftCard:created', model)
 
     return model
   }
@@ -1042,7 +1042,7 @@ export class GiftCardModel {
     const model = await instance.find(Number(id))
 
     if (model)
-      dispatch('giftcard:deleted', model)
+      dispatch('giftCard:deleted', model)
 
     return await DB.instance.deleteFrom('gift_cards')
       .where('id', '=', id)
@@ -1586,14 +1586,14 @@ export class GiftCardModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('giftcard_id', 'in', modelIds)
+        .where('giftCard_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: GiftCardJsonResponse) => {
-          const records = relatedRecords.filter((record: { giftcard_id: number }) => {
-            return record.giftcard_id === model.id
+          const records = relatedRecords.filter((record: { giftCard_id: number }) => {
+            return record.giftCard_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1601,8 +1601,8 @@ export class GiftCardModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { giftcard_id: number }) => {
-          return record.giftcard_id === models.id
+        const records = relatedRecords.filter((record: { giftCard_id: number }) => {
+          return record.giftCard_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1757,7 +1757,7 @@ export class GiftCardModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('giftcard:updated', model)
+        dispatch('giftCard:updated', model)
 
       return model
     }
@@ -1767,15 +1767,15 @@ export class GiftCardModel {
     return undefined
   }
 
-  async forceUpdate(giftcard: GiftCardUpdate): Promise<GiftCardModel | undefined> {
+  async forceUpdate(giftCard: GiftCardUpdate): Promise<GiftCardModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(giftcard).execute()
+      this.updateFromQuery.set(giftCard).execute()
     }
 
-    await this.mapCustomSetters(giftcard)
+    await this.mapCustomSetters(giftCard)
 
     await DB.instance.updateTable('gift_cards')
-      .set(giftcard)
+      .set(giftCard)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1783,7 +1783,7 @@ export class GiftCardModel {
       const model = await this.find(this.id)
 
       if (model)
-        dispatch('giftcard:updated', model)
+        dispatch('giftCard:updated', model)
 
       this.hasSaved = true
 
@@ -1833,13 +1833,13 @@ export class GiftCardModel {
     return this
   }
 
-  // Method to delete (soft delete) the giftcard instance
+  // Method to delete (soft delete) the giftCard instance
   async delete(): Promise<GiftCardsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
     if (model)
-      dispatch('giftcard:deleted', model)
+      dispatch('giftCard:deleted', model)
 
     return await DB.instance.deleteFrom('gift_cards')
       .where('id', '=', this.id)

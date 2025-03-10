@@ -119,7 +119,7 @@ export class RequestModel {
     }
   }
 
-  async mapCustomSetters(model: NewRequest): Promise<void> {
+  async mapCustomSetters(model: NewRequest | RequestUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

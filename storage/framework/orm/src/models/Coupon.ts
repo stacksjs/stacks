@@ -29,7 +29,7 @@ export interface CouponsTable {
   end_date: string
   applicable_products?: string
   applicable_categories?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -132,7 +132,7 @@ export class CouponModel {
     }
   }
 
-  async mapCustomSetters(model: NewCoupon): Promise<void> {
+  async mapCustomSetters(model: NewCoupon | CouponUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -148,7 +148,7 @@ export class CouponModel {
     return this.attributes.orders
   }
 
-  get product_id(): number | undefined {
+  get product_id(): number {
     return this.attributes.product_id
   }
 
@@ -160,7 +160,7 @@ export class CouponModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

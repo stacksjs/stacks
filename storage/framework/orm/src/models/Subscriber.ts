@@ -110,7 +110,7 @@ export class SubscriberModel {
     }
   }
 
-  async mapCustomSetters(model: NewSubscriber): Promise<void> {
+  async mapCustomSetters(model: NewSubscriber | SubscriberUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

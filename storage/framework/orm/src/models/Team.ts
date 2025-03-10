@@ -120,7 +120,7 @@ export class TeamModel {
     }
   }
 
-  async mapCustomSetters(model: NewTeam): Promise<void> {
+  async mapCustomSetters(model: NewTeam | TeamUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

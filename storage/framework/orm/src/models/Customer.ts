@@ -22,7 +22,7 @@ export interface CustomersTable {
   last_order?: string
   status: string | string[]
   avatar?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -133,7 +133,7 @@ export class CustomerModel {
     }
   }
 
-  async mapCustomSetters(model: NewCustomer): Promise<void> {
+  async mapCustomSetters(model: NewCustomer | CustomerUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -149,7 +149,7 @@ export class CustomerModel {
     return this.attributes.orders
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -161,7 +161,7 @@ export class CustomerModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

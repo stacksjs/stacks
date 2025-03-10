@@ -22,7 +22,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: string
   ends_at?: string
   last_used_at?: string
-  uuid?: string
+  uuid: string
 
   created_at?: Date
 
@@ -125,7 +125,7 @@ export class SubscriptionModel {
     }
   }
 
-  async mapCustomSetters(model: NewSubscription): Promise<void> {
+  async mapCustomSetters(model: NewSubscription | SubscriptionUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -137,7 +137,7 @@ export class SubscriptionModel {
     }
   }
 
-  get user_id(): number | undefined {
+  get user_id(): number {
     return this.attributes.user_id
   }
 
@@ -149,7 +149,7 @@ export class SubscriptionModel {
     return this.attributes.id
   }
 
-  get uuid(): string | undefined {
+  get uuid(): string {
     return this.attributes.uuid
   }
 

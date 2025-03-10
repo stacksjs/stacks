@@ -111,7 +111,7 @@ export class ReleaseModel {
     }
   }
 
-  async mapCustomSetters(model: NewRelease): Promise<void> {
+  async mapCustomSetters(model: NewRelease | ReleaseUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

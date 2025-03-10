@@ -59,14 +59,14 @@ export class SubscriberEmailModel {
   private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
-  constructor(subscriberemail: SubscriberEmailJsonResponse | undefined) {
-    if (subscriberemail) {
-      this.attributes = { ...subscriberemail }
-      this.originalAttributes = { ...subscriberemail }
+  constructor(subscriberEmail: SubscriberEmailJsonResponse | undefined) {
+    if (subscriberEmail) {
+      this.attributes = { ...subscriberEmail }
+      this.originalAttributes = { ...subscriberEmail }
 
-      Object.keys(subscriberemail).forEach((key) => {
+      Object.keys(subscriberEmail).forEach((key) => {
         if (!(key in this)) {
-          this.customColumns[key] = (subscriberemail as SubscriberEmailJsonResponse)[key]
+          this.customColumns[key] = (subscriberEmail as SubscriberEmailJsonResponse)[key]
         }
       })
     }
@@ -112,7 +112,7 @@ export class SubscriberEmailModel {
     }
   }
 
-  async mapCustomSetters(model: NewSubscriberEmail): Promise<void> {
+  async mapCustomSetters(model: NewSubscriberEmail | SubscriberEmailUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },
@@ -227,7 +227,7 @@ export class SubscriberEmailModel {
 
     const data = new SubscriberEmailModel(model)
 
-    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+    cache.getOrSet(`subscriberEmail:${id}`, JSON.stringify(model))
 
     return data
   }
@@ -327,7 +327,7 @@ export class SubscriberEmailModel {
     if (model === undefined)
       throw new ModelNotFoundException(404, `No SubscriberEmailModel results for ${id}`)
 
-    cache.getOrSet(`subscriberemail:${id}`, JSON.stringify(model))
+    cache.getOrSet(`subscriberEmail:${id}`, JSON.stringify(model))
 
     this.mapCustomGetters(model)
     await this.loadRelations(model)
@@ -589,7 +589,7 @@ export class SubscriberEmailModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+          .whereRef(`${relation}.subscriberEmail_id`, '=', 'subscriber_emails.id'),
       ),
     )
 
@@ -603,7 +603,7 @@ export class SubscriberEmailModel {
       exists(
         selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+          .whereRef(`${relation}.subscriberEmail_id`, '=', 'subscriber_emails.id'),
       ),
     )
 
@@ -633,7 +633,7 @@ export class SubscriberEmailModel {
       .where(({ exists, selectFrom }: any) => {
         let subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id')
+          .whereRef(`${relation}.subscriberEmail_id`, '=', 'subscriber_emails.id')
 
         conditions.forEach((condition) => {
           switch (condition.method) {
@@ -704,7 +704,7 @@ export class SubscriberEmailModel {
         exists(
           selectFrom(relation)
             .select('1')
-            .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id'),
+            .whereRef(`${relation}.subscriberEmail_id`, '=', 'subscriber_emails.id'),
         ),
       ),
     )
@@ -732,7 +732,7 @@ export class SubscriberEmailModel {
       .where(({ exists, selectFrom, not }: any) => {
         const subquery = selectFrom(relation)
           .select('1')
-          .whereRef(`${relation}.subscriberemail_id`, '=', 'subscriber_emails.id')
+          .whereRef(`${relation}.subscriberEmail_id`, '=', 'subscriber_emails.id')
 
         return not(exists(subquery))
       })
@@ -1331,14 +1331,14 @@ export class SubscriberEmailModel {
     for (const relation of this.withRelations) {
       const relatedRecords = await DB.instance
         .selectFrom(relation)
-        .where('subscriberemail_id', 'in', modelIds)
+        .where('subscriberEmail_id', 'in', modelIds)
         .selectAll()
         .execute()
 
       if (Array.isArray(models)) {
         models.map((model: SubscriberEmailJsonResponse) => {
-          const records = relatedRecords.filter((record: { subscriberemail_id: number }) => {
-            return record.subscriberemail_id === model.id
+          const records = relatedRecords.filter((record: { subscriberEmail_id: number }) => {
+            return record.subscriberEmail_id === model.id
           })
 
           model[relation] = records.length === 1 ? records[0] : records
@@ -1346,8 +1346,8 @@ export class SubscriberEmailModel {
         })
       }
       else {
-        const records = relatedRecords.filter((record: { subscriberemail_id: number }) => {
-          return record.subscriberemail_id === models.id
+        const records = relatedRecords.filter((record: { subscriberEmail_id: number }) => {
+          return record.subscriberEmail_id === models.id
         })
 
         models[relation] = records.length === 1 ? records[0] : records
@@ -1509,15 +1509,15 @@ export class SubscriberEmailModel {
     return undefined
   }
 
-  async forceUpdate(subscriberemail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+  async forceUpdate(subscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
     if (this.id === undefined) {
-      this.updateFromQuery.set(subscriberemail).execute()
+      this.updateFromQuery.set(subscriberEmail).execute()
     }
 
-    await this.mapCustomSetters(subscriberemail)
+    await this.mapCustomSetters(subscriberEmail)
 
     await DB.instance.updateTable('subscriber_emails')
-      .set(subscriberemail)
+      .set(subscriberEmail)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
@@ -1572,7 +1572,7 @@ export class SubscriberEmailModel {
     return this
   }
 
-  // Method to delete (soft delete) the subscriberemail instance
+  // Method to delete (soft delete) the subscriberEmail instance
   async delete(): Promise<SubscriberEmailsTable> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
