@@ -502,7 +502,7 @@ const createDiagram = () => {
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
-    'project': { x: width * 0.2, y: 800 },
+    'project': { x: width * 0.2, y: 1400 },
     'order': { x: width * 0.5, y: 800 },
     'subscriberEmail': { x: width * 0.8, y: 800 },
 
@@ -585,7 +585,7 @@ const createDiagram = () => {
     .attr('width', cardWidth)
     .attr('height', d => {
       const propsHeight = d.properties.length * 22 // Reduced from 24
-      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 35) : 0 // Added 10px for margin below properties
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 40) : 0 // Increased from 35 to 40
       return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
@@ -600,7 +600,7 @@ const createDiagram = () => {
     .attr('height', d => {
       // Calculate height based on properties and relationships with reduced height
       const propsHeight = d.properties.length * 22 // Reduced from 24
-      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 35) : 0 // Added 10px for margin below properties
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 40) : 0 // Increased from 35 to 40
       return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
@@ -696,7 +696,7 @@ const createDiagram = () => {
 
     // Add relationships section if there are any
     if (d.relationships.length > 0) {
-      const relationshipsY = 36 + d.properties.length * 22 + 10 // Added 10px margin below properties
+      const relationshipsY = 36 + d.properties.length * 22 + 15 // Increased margin from 10px to 15px
 
       // Add relationship divider line
       g.append('line')
@@ -746,7 +746,7 @@ const createDiagram = () => {
           .attr('y', 0)
           .attr('dominant-baseline', 'middle')
           .attr('fill', bgColor)
-          .attr('font-size', '18px') // Increased from 16px to 18px
+          .attr('font-size', '16px')
           .attr('font-weight', 'bold')
           .text(rel.type + ':')
 
@@ -756,7 +756,7 @@ const createDiagram = () => {
           .attr('y', 0)
           .attr('dominant-baseline', 'middle')
           .attr('fill', '#FFFFFF')
-          .attr('font-size', '18px') // Increased from 16px to 18px
+          .attr('font-size', '16px')
           .attr('font-weight', 'medium')
           .text(rel.model)
       })
@@ -815,7 +815,7 @@ const createDiagram = () => {
     .attr('height', 130) // Adjusted for better vertical centering
     .attr('rx', 8)
     .attr('ry', 8)
-    .attr('fill', 'rgba(30, 41, 59, 0.8)') // Dark background with transparency
+    .attr('fill', '#4B5563') // Changed to match the image (solid gray background)
     .attr('stroke', '#4B5563')
     .attr('stroke-width', 1)
 
@@ -830,25 +830,22 @@ const createDiagram = () => {
     const legendItem = legend.append('g')
       .attr('transform', `translate(10, ${i * 25 + 20})`) // Adjusted for better vertical centering
 
-    // Line sample
-    legendItem.append('line')
-      .attr('x1', 0)
-      .attr('y1', 10)
-      .attr('x2', 30)
-      .attr('y2', 10)
-      .attr('stroke', rel.color)
-      .attr('stroke-width', 2)
-      .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
-      .attr('marker-end', `url(#arrow-${rel.type})`)
+      // Arrow head instead of line
+      legendItem.append('path')
+        .attr('d', 'M0,10 L30,10')
+        .attr('stroke', rel.color)
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
+        .attr('marker-end', `url(#arrow-${rel.type})`)
 
-    // Label with improved visibility
-    legendItem.append('text')
-      .attr('x', 40)
-      .attr('y', 10)
-      .attr('dominant-baseline', 'middle') // Improved vertical alignment
-      .attr('fill', '#FFFFFF') // White text for better contrast
-      .attr('font-size', '14px')
-      .text(rel.label)
+      // Label with improved visibility
+      legendItem.append('text')
+        .attr('x', 40)
+        .attr('y', 10)
+        .attr('dominant-baseline', 'middle') // Improved vertical alignment
+        .attr('fill', '#FFFFFF') // White text for better contrast
+        .attr('font-size', '14px')
+        .text(rel.label)
   })
 
   // Create force simulation with fixed positions
