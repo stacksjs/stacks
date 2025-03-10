@@ -10,10 +10,10 @@ import type {
   NewCustomer,
 } from '../../orm/src/models/Customer'
 import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
+import type { ManufacturerJsonResponse } from '../../orm/src/models/Manufacturer'
 // Import the OrderTable type from the ORM
 import type { OrderJsonResponse, OrdersTable } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
-import type { ProductManufacturerJsonResponse } from '../../orm/src/models/ProductManufacturer'
 import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
 
 // Re-export the types
@@ -246,7 +246,7 @@ export interface ProductReviewResponse extends BaseResponse {
 }
 
 export interface ProductManufacturerResponse extends BaseResponse {
-  data: ProductManufacturerJsonResponse[]
+  data: ManufacturerJsonResponse[]
 }
 export interface ProductReviewStats {
   total: number

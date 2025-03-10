@@ -1,23 +1,24 @@
 export {
-  deleteCoupon,
-  deleteCoupons,
-  deleteExpiredCoupons,
+  bulkDestroy,
+  destroy,
 } from './destroy'
 
 export {
-  fetchActive,
-  fetchAll,
-  fetchByCode,
+  fetchByCountry,
   fetchById,
-  type FetchCouponsOptions,
+  fetchByUuid,
+  fetchFeatured,
   fetchPaginated,
-  fetchStats,
+  fetchWithProductCount,
 } from './fetch'
 
 export {
+  bulkStore,
   store,
 } from './store'
 
 export {
   update,
+  updateByUuid,
+  updateFeaturedStatus,
 } from './update'

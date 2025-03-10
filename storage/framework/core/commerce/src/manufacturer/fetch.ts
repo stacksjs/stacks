@@ -1,4 +1,4 @@
-import type { ProductManufacturerJsonResponse } from '../../../../orm/src/models/ProductManufacturer'
+import type { ManufacturerJsonResponse } from '../../../../orm/src/models/Manufacturer'
 import type { FetchProductManufacturersOptions, ProductManufacturerResponse } from '../../types'
 import { db } from '@stacksjs/database'
 
@@ -45,7 +45,7 @@ export async function fetchPaginated(options: FetchProductManufacturersOptions =
 /**
  * Fetch a product manufacturer by ID
  */
-export async function fetchById(id: number): Promise<ProductManufacturerJsonResponse | undefined> {
+export async function fetchById(id: number): Promise<ManufacturerJsonResponse | undefined> {
   return await db
     .selectFrom('manufacturers')
     .where('id', '=', id)
@@ -56,7 +56,7 @@ export async function fetchById(id: number): Promise<ProductManufacturerJsonResp
 /**
  * Fetch a product manufacturer by UUID
  */
-export async function fetchByUuid(uuid: string): Promise<ProductManufacturerJsonResponse | undefined> {
+export async function fetchByUuid(uuid: string): Promise<ManufacturerJsonResponse | undefined> {
   return await db
     .selectFrom('manufacturers')
     .where('uuid', '=', uuid)
@@ -67,7 +67,7 @@ export async function fetchByUuid(uuid: string): Promise<ProductManufacturerJson
 /**
  * Fetch featured manufacturers
  */
-export async function fetchFeatured(limit: number = 10): Promise<ProductManufacturerJsonResponse[]> {
+export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJsonResponse[]> {
   return await db
     .selectFrom('manufacturers')
     .where('featured', '=', true)
