@@ -493,21 +493,21 @@ const createDiagram = () => {
   // Set initial positions for models based on the reference image layout
   const initialPositions: Record<string, {x: number, y: number}> = {
     // Top row - more evenly spaced
-    'team': { x: width * 0.2, y: 150 },
+    'team': { x: width * 0.01, y: 150 },
     'user': { x: width * 0.5, y: 150 },
-    'post': { x: width * 0.8, y: 150 },
+    'post': { x: width * 0.9, y: -200 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.2, y: 600 }, // Further moved down to avoid overlapping
+    'accessToken': { x: width * 0.2, y: -200 }, // Further moved down to avoid overlapping
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
-    'project': { x: width * 0.2, y: 1400 },
+    'project': { x: width * 0.2, y: 1500 },
     'order': { x: width * 0.5, y: 800 },
     'subscriberEmail': { x: width * 0.8, y: 800 },
 
     // Fourth row - better distributed with more horizontal spacing
-    'deployment': { x: width * 0.05, y: 1100 },
+    'deployment': { x: width * 0.05, y: 700 },
     'release': { x: width * 0.35, y: 1100 },
     'orderItem': { x: width * 0.65, y: 1100 }
   }
