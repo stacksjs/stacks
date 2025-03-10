@@ -487,22 +487,22 @@ const createDiagram = () => {
   const g = svg.append('g')
 
   // Apply initial zoom to see all content
-  const initialScale = 0.55 // Further reduced scale to see more content
+  const initialScale = 0.6 // Increased zoom by 10%
   svg.call(zoom.transform, d3.zoomIdentity.translate(width/2 - width*initialScale/2, 10).scale(initialScale))
 
   // Set initial positions for models based on the reference image layout
   const initialPositions: Record<string, {x: number, y: number}> = {
     // Top row - more evenly spaced
-    'team': { x: width * 0.2, y: 150 },
+    'team': { x: width * 0.1, y: 150 },
     'user': { x: width * 0.5, y: 150 },
     'post': { x: width * 0.8, y: 150 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.2, y: 500 }, // Moved down to avoid overlapping
+    'accessToken': { x: width * 0.1, y: 550 }, // Further moved down to avoid overlapping
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
-    'project': { x: width * 0.2, y: 750 },
+    'project': { x: width * 0.2, y: 1400 },
     'order': { x: width * 0.5, y: 750 },
     'subscriberEmail': { x: width * 0.8, y: 750 },
 
@@ -584,9 +584,9 @@ const createDiagram = () => {
   node.append('rect')
     .attr('width', cardWidth)
     .attr('height', d => {
-      const propsHeight = d.properties.length * 24
-      const relationshipsHeight = d.relationships.length * 24 + 10
-      return 60 + propsHeight + relationshipsHeight
+      const propsHeight = d.properties.length * 22 // Reduced from 24
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 22 + 20) : 0 // Reduced from 24
+      return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
     .attr('ry', 8)
@@ -598,10 +598,10 @@ const createDiagram = () => {
   node.append('rect')
     .attr('width', cardWidth)
     .attr('height', d => {
-      // Calculate height based on properties and relationships
-      const propsHeight = d.properties.length * 24
-      const relationshipsHeight = d.relationships.length * 24 + 10
-      return 60 + propsHeight + relationshipsHeight
+      // Calculate height based on properties and relationships with reduced height
+      const propsHeight = d.properties.length * 22 // Reduced from 24
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 22 + 20) : 0 // Reduced from 24
+      return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
     .attr('ry', 8)
@@ -618,7 +618,7 @@ const createDiagram = () => {
       // Header background
       header.append('rect')
         .attr('width', cardWidth)
-        .attr('height', 40)
+        .attr('height', 36) // Reduced from 40
         .attr('rx', 8)
         .attr('ry', 8)
         .attr('fill', '#1E293B')
@@ -626,15 +626,15 @@ const createDiagram = () => {
       // Emoji
       header.append('text')
         .attr('x', 20)
-        .attr('y', 25)
+        .attr('y', 22) // Adjusted from 25
         .attr('dominant-baseline', 'middle')
-        .attr('font-size', '20px')
+        .attr('font-size', '18px') // Reduced from 20px
         .text(d.emoji)
 
       // Model name
       header.append('text')
         .attr('x', 50)
-        .attr('y', 25)
+        .attr('y', 22) // Adjusted from 25
         .attr('dominant-baseline', 'middle')
         .attr('fill', '#E5E7EB')
         .attr('font-weight', 'bold')
@@ -647,11 +647,11 @@ const createDiagram = () => {
 
     // Properties container
     const propertiesGroup = g.append('g')
-      .attr('transform', 'translate(0, 40)')
+      .attr('transform', 'translate(0, 36)') // Reduced from 40
 
     // Add properties
     d.properties.forEach((prop, i) => {
-      const y = 20 + i * 24
+      const y = 18 + i * 22 // Reduced from 20 and 24
       const row = propertiesGroup.append('g')
         .attr('transform', `translate(0, ${y})`)
 
@@ -696,7 +696,7 @@ const createDiagram = () => {
 
     // Add relationships section if there are any
     if (d.relationships.length > 0) {
-      const relationshipsY = 40 + d.properties.length * 24
+      const relationshipsY = 36 + d.properties.length * 22 // Adjusted from 40 and 24
 
       // Add relationship divider line
       g.append('line')
@@ -714,7 +714,7 @@ const createDiagram = () => {
 
       // Add each relationship on its own row
       d.relationships.forEach((rel, i) => {
-        const y = 20 + i * 24
+        const y = 18 + i * 22 // Reduced from 20 and 24
         const row = relationshipsGroup.append('g')
           .attr('transform', `translate(0, ${y})`)
 
@@ -805,7 +805,7 @@ const createDiagram = () => {
 
   // Add a legend for relationship types with improved visibility
   const legend = svg.append('g')
-    .attr('transform', `translate(${width - 220}, 40)`) // Moved down to center vertically
+    .attr('transform', `translate(${width - 220}, 50)`) // Moved down more to center vertically
     .attr('class', 'legend')
 
   // Add legend background for better visibility
@@ -813,7 +813,7 @@ const createDiagram = () => {
     .attr('x', -10)
     .attr('y', -10)
     .attr('width', 220)
-    .attr('height', 130)
+    .attr('height', 120) // Reduced height to balance spacing
     .attr('rx', 8)
     .attr('ry', 8)
     .attr('fill', 'rgba(30, 41, 59, 0.8)') // Dark background with transparency
