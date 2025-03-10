@@ -447,97 +447,6 @@ const totalAmount = computed(() => {
           </div>
         </div>
 
-        <!-- Summary cards -->
-        <div class="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <!-- Total transactions card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-credit-card h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Transactions</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ transactions.length }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Completed transactions card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-green-100 p-2 dark:bg-green-900">
-                    <div class="i-hugeicons-checkmark-circle-01 h-6 w-6 text-green-600 dark:text-green-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Completed</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ transactions.filter(t => t.status === 'Completed').length }}
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Failed transactions card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-red-100 p-2 dark:bg-red-900">
-                    <div class="i-hugeicons-cancel-circle h-6 w-6 text-red-600 dark:text-red-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Failed</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
-                        {{ transactions.filter(t => t.status === 'Failed').length }}
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Total amount card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-            <div class="p-5">
-              <div class="flex items-center">
-                <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-dollar-circle h-6 w-6 text-blue-600 dark:text-blue-300"></div>
-                  </div>
-                </div>
-                <div class="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Amount</dt>
-                    <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">${{ totalAmount.toFixed(2) }}</div>
-                    </dd>
-                  </dl>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Filters -->
         <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div class="relative max-w-sm">
@@ -548,7 +457,7 @@ const totalAmount = computed(() => {
               v-model="searchQuery"
               type="text"
               class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
-              placeholder="Search transactions"
+              placeholder="Search transactions..."
             />
           </div>
 
