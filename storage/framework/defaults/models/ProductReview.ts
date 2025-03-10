@@ -29,32 +29,9 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['Product', 'User'],
+  belongsTo: ['Product', 'Customer'],
 
   attributes: {
-    product_id: {
-      required: true,
-      order: 1,
-      fillable: true,
-      validation: {
-        rule: schema.string().uuid(),
-        message: {
-          uuid: 'Product ID must be a valid UUID',
-        },
-      },
-      factory: faker => faker.string.uuid(),
-    },
-
-    user_id: {
-      required: true,
-      order: 2,
-      fillable: true,
-      validation: {
-        rule: schema.number(),
-      },
-      factory: faker => faker.number.int({ min: 1, max: 1000 }),
-    },
-
     rating: {
       required: true,
       order: 3,
@@ -158,42 +135,6 @@ export default {
           const imageCount = faker.number.int({ min: 1, max: 5 })
           const images = Array.from({ length: imageCount }, () => faker.image.url())
           return JSON.stringify(images)
-        }
-        return JSON.stringify([])
-      },
-    },
-
-    pros: {
-      required: false,
-      order: 12,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker) => {
-        const hasPros = faker.datatype.boolean({ probability: 0.7 })
-        if (hasPros) {
-          const count = faker.number.int({ min: 1, max: 4 })
-          const pros = Array.from({ length: count }, () => faker.lorem.sentence({ min: 3, max: 8 }))
-          return JSON.stringify(pros)
-        }
-        return JSON.stringify([])
-      },
-    },
-
-    cons: {
-      required: false,
-      order: 13,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker) => {
-        const hasCons = faker.datatype.boolean({ probability: 0.6 })
-        if (hasCons) {
-          const count = faker.number.int({ min: 0, max: 3 })
-          const cons = Array.from({ length: count }, () => faker.lorem.sentence({ min: 3, max: 8 }))
-          return JSON.stringify(cons)
         }
         return JSON.stringify([])
       },

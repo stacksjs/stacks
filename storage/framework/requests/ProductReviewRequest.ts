@@ -13,8 +13,6 @@ interface CustomAttributes {
 }
 interface RequestDataProductReview {
   id: number
-  product_id: string
-  user_id: number
   rating: number
   title: string
   content: string
@@ -31,8 +29,6 @@ interface RequestDataProductReview {
 }
 export class ProductReviewRequest extends Request<RequestDataProductReview> implements ProductReviewRequestType {
   public id = 1
-  public product_id = ''
-  public user_id = 0
   public rating = 0
   public title = ''
   public content = ''

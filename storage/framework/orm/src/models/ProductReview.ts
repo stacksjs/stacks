@@ -1,7 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
-import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
@@ -10,18 +10,16 @@ import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import Product from './Product'
+import Customer from './Customer'
 
-import User from './User'
+import Product from './Product'
 
 export interface ProductReviewsTable {
   id: Generated<number>
   product_id: number
   product?: ProductModel
-  user_id: number
-  user?: UserModel
-  product_id: string
-  user_id: number
+  customer_id: number
+  customer?: CustomerModel
   rating: number
   title: string
   content: string
@@ -70,7 +68,7 @@ interface QueryOptions {
 
 export class ProductReviewModel {
   private readonly hidden: Array<keyof ProductReviewJsonResponse> = []
-  private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['product_id', 'user_id', 'rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'pros', 'cons', 'uuid']
+  private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'pros', 'cons', 'uuid']
   private readonly guarded: Array<keyof ProductReviewJsonResponse> = []
   protected attributes = {} as ProductReviewJsonResponse
   protected originalAttributes = {} as ProductReviewJsonResponse
@@ -156,12 +154,12 @@ export class ProductReviewModel {
     return this.attributes.product
   }
 
-  get user_id(): number | undefined {
-    return this.attributes.user_id
+  get customer_id(): number | undefined {
+    return this.attributes.customer_id
   }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
+  get customer(): CustomerModel | undefined {
+    return this.attributes.customer
   }
 
   get id(): number {
@@ -170,14 +168,6 @@ export class ProductReviewModel {
 
   get uuid(): string | undefined {
     return this.attributes.uuid
-  }
-
-  get product_id(): string {
-    return this.attributes.product_id
-  }
-
-  get user_id(): number {
-    return this.attributes.user_id
   }
 
   get rating(): number {
@@ -234,14 +224,6 @@ export class ProductReviewModel {
 
   set uuid(value: string) {
     this.attributes.uuid = value
-  }
-
-  set product_id(value: string) {
-    this.attributes.product_id = value
-  }
-
-  set user_id(value: number) {
-    this.attributes.user_id = value
   }
 
   set rating(value: number) {
@@ -1235,22 +1217,6 @@ export class ProductReviewModel {
     return instance
   }
 
-  static whereProductId(value: string): ProductReviewModel {
-    const instance = new ProductReviewModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('product_id', '=', value)
-
-    return instance
-  }
-
-  static whereUserId(value: string): ProductReviewModel {
-    const instance = new ProductReviewModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('user_id', '=', value)
-
-    return instance
-  }
-
   static whereRating(value: string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
@@ -1835,12 +1801,12 @@ export class ProductReviewModel {
     return model
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
+  async customerBelong(): Promise<CustomerModel> {
+    if (this.customer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
+    const model = await Customer
+      .where('id', '=', this.customer_id)
       .first()
 
     if (!model)
@@ -1898,8 +1864,6 @@ export class ProductReviewModel {
     const output: ProductReviewJsonResponse = {
 
       id: this.id,
-      product_id: this.product_id,
-      user_id: this.user_id,
       rating: this.rating,
       title: this.title,
       content: this.content,
@@ -1918,8 +1882,8 @@ export class ProductReviewModel {
 
       product_id: this.product_id,
       product: this.product,
-      user_id: this.user_id,
-      user: this.user,
+      customer_id: this.customer_id,
+      customer: this.customer,
       ...this.customColumns,
     }
 
@@ -1968,20 +1932,6 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('product_reviews')
     .where('id', '=', id)
     .execute()
-}
-
-export async function whereProductId(value: string): Promise<ProductReviewModel[]> {
-  const query = DB.instance.selectFrom('product_reviews').where('product_id', '=', value)
-  const results: ProductReviewJsonResponse = await query.execute()
-
-  return results.map((modelItem: ProductReviewJsonResponse) => new ProductReviewModel(modelItem))
-}
-
-export async function whereUserId(value: number): Promise<ProductReviewModel[]> {
-  const query = DB.instance.selectFrom('product_reviews').where('user_id', '=', value)
-  const results: ProductReviewJsonResponse = await query.execute()
-
-  return results.map((modelItem: ProductReviewJsonResponse) => new ProductReviewModel(modelItem))
 }
 
 export async function whereRating(value: number): Promise<ProductReviewModel[]> {

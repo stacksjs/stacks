@@ -300,8 +300,6 @@ export interface CustomerRequestType extends Request {
 
 interface RequestDataProductReview {
   id: number
-  product_id: string
-  user_id: number
   rating: number
   title: string
   content: string
@@ -321,8 +319,6 @@ export interface ProductReviewRequestType extends Request {
   get: <T = string>(key: string, defaultValue?: T) => T
   all: () => RequestDataProductReview
   id: number
-  product_id: string
-  user_id: number
   rating: number
   title: string
   content: string
