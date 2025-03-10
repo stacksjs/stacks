@@ -342,6 +342,7 @@ interface RequestDataProduct {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  product_manufacturer_id: number
   product_category_id: number
   created_at?: Date
   updated_at?: Date
@@ -361,6 +362,7 @@ export interface ProductRequestType extends Request {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  product_manufacturer_id: number
   product_category_id: number
   created_at?: Date
   updated_at?: Date
@@ -538,6 +540,28 @@ export interface OrderRequestType extends Request {
   customer_id: number
   gift_card_id: number
   coupon_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataProductManufacturer {
+  id: number
+  manufacturer: string
+  description: string
+  country: string
+  featured: boolean
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ProductManufacturerRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataProductManufacturer
+  id: number
+  manufacturer: string
+  description: string
+  country: string
+  featured: boolean
   created_at?: Date
   updated_at?: Date
 }
@@ -810,4 +834,4 @@ export interface ProductCategoryRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductReviewRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductReviewRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | ProductManufacturerRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType

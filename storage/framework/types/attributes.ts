@@ -93,6 +93,9 @@ export interface Attributes {
   delivery_address: string
   estimated_delivery_time: string
   applied_coupon_id: string
+  manufacturer: string
+  country: string
+  featured: boolean
   discount_type: string
   discount_value: number
   min_order_amount: number

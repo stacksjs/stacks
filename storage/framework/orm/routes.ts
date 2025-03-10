@@ -44,6 +44,12 @@ route.post('orders', 'OrderStoreOrmAction')
 
 route.get('orders/{id}', 'OrderShowOrmAction')
 
+route.get('product-manufacturers', 'ProductManufacturerIndexOrmAction')
+
+route.post('product-manufacturers', 'ProductManufacturerStoreOrmAction')
+
+route.get('product-manufacturers/{id}', 'ProductManufacturerShowOrmAction')
+
 route.get('coupons', 'CouponIndexOrmAction')
 
 route.post('coupons', 'CouponStoreOrmAction')

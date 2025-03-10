@@ -16,6 +16,7 @@ import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductCategoriesTable } from '../src/models/ProductCategory'
+import type { ProductManufacturersTable } from '../src/models/ProductManufacturer'
 import type { ProductReviewsTable } from '../src/models/ProductReview'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
@@ -79,6 +80,7 @@ export interface Database {
   requests: RequestsTable
   gift_cards: GiftCardsTable
   orders: OrdersTable
+  product_manufacturers: ProductManufacturersTable
   coupons: CouponsTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
