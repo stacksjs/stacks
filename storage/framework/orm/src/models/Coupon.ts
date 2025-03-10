@@ -15,7 +15,6 @@ import Product from './Product'
 export interface CouponsTable {
   id: Generated<number>
   product_id: number
-  product?: ProductModel
   code: string
   description?: string
   discount_type: string

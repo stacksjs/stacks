@@ -15,7 +15,6 @@ import User from './User'
 export interface GiftCardsTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   code: string
   initial_balance: number
   current_balance: number

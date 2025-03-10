@@ -13,7 +13,6 @@ import ProductCategory from './ProductCategory'
 export interface ProductsTable {
   id: Generated<number>
   product_category_id: number
-  product_category?: ProductCategoryModel
   name: string
   description?: string
   price: number

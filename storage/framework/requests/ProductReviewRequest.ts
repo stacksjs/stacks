@@ -22,8 +22,6 @@ interface RequestDataProductReview {
   unhelpful_votes: number
   purchase_date: string
   images: string
-  pros: string
-  cons: string
   created_at?: Date
   updated_at?: Date
 }
@@ -38,8 +36,6 @@ export class ProductReviewRequest extends Request<RequestDataProductReview> impl
   public unhelpful_votes = 0
   public purchase_date = ''
   public images = ''
-  public pros = ''
-  public cons = ''
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

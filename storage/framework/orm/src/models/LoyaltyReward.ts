@@ -13,7 +13,6 @@ import Product from './Product'
 export interface LoyaltyRewardsTable {
   id: Generated<number>
   product_id: number
-  product?: ProductModel
   name: string
   description?: string
   points_required: number

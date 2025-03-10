@@ -15,9 +15,7 @@ import User from './User'
 export interface PersonalAccessTokensTable {
   id: Generated<number>
   team_id: number
-  team?: TeamModel
   user_id: number
-  user?: UserModel
   name: string
   token: string
   plain_text_token: string

@@ -309,8 +309,6 @@ interface RequestDataProductReview {
   unhelpful_votes: number
   purchase_date: string
   images: string
-  pros: string
-  cons: string
   created_at?: Date
   updated_at?: Date
 }
@@ -328,8 +326,6 @@ export interface ProductReviewRequestType extends Request {
   unhelpful_votes: number
   purchase_date: string
   images: string
-  pros: string
-  cons: string
   created_at?: Date
   updated_at?: Date
 }

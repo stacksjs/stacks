@@ -15,7 +15,6 @@ import User from './User'
 export interface CustomersTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   name: string
   email: string
   phone: string

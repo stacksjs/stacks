@@ -15,9 +15,7 @@ import Product from './Product'
 export interface OrderItemsTable {
   id: Generated<number>
   order_id: number
-  order?: OrderModel
   product_id: number
-  product?: ProductModel
   quantity: number
   price: number
   special_instructions?: string

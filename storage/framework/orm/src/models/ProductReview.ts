@@ -17,9 +17,7 @@ import Product from './Product'
 export interface ProductReviewsTable {
   id: Generated<number>
   product_id: number
-  product?: ProductModel
   customer_id: number
-  customer?: CustomerModel
   rating: number
   title: string
   content: string
@@ -29,8 +27,6 @@ export interface ProductReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  pros?: string
-  cons?: string
   uuid?: string
 
   created_at?: Date
@@ -68,7 +64,7 @@ interface QueryOptions {
 
 export class ProductReviewModel {
   private readonly hidden: Array<keyof ProductReviewJsonResponse> = []
-  private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'pros', 'cons', 'uuid']
+  private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid']
   private readonly guarded: Array<keyof ProductReviewJsonResponse> = []
   protected attributes = {} as ProductReviewJsonResponse
   protected originalAttributes = {} as ProductReviewJsonResponse
@@ -206,14 +202,6 @@ export class ProductReviewModel {
     return this.attributes.images
   }
 
-  get pros(): string | undefined {
-    return this.attributes.pros
-  }
-
-  get cons(): string | undefined {
-    return this.attributes.cons
-  }
-
   get created_at(): Date | undefined {
     return this.attributes.created_at
   }
@@ -260,14 +248,6 @@ export class ProductReviewModel {
 
   set images(value: string) {
     this.attributes.images = value
-  }
-
-  set pros(value: string) {
-    this.attributes.pros = value
-  }
-
-  set cons(value: string) {
-    this.attributes.cons = value
   }
 
   set updated_at(value: Date) {
@@ -1289,22 +1269,6 @@ export class ProductReviewModel {
     return instance
   }
 
-  static wherePros(value: string): ProductReviewModel {
-    const instance = new ProductReviewModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('pros', '=', value)
-
-    return instance
-  }
-
-  static whereCons(value: string): ProductReviewModel {
-    const instance = new ProductReviewModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('cons', '=', value)
-
-    return instance
-  }
-
   applyWhereIn<V>(column: keyof ProductReviewsTable, values: V[]) {
     this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
 
@@ -1873,8 +1837,6 @@ export class ProductReviewModel {
       unhelpful_votes: this.unhelpful_votes,
       purchase_date: this.purchase_date,
       images: this.images,
-      pros: this.pros,
-      cons: this.cons,
 
       created_at: this.created_at,
 
@@ -1992,20 +1954,6 @@ export async function wherePurchaseDate(value: string): Promise<ProductReviewMod
 
 export async function whereImages(value: string): Promise<ProductReviewModel[]> {
   const query = DB.instance.selectFrom('product_reviews').where('images', '=', value)
-  const results: ProductReviewJsonResponse = await query.execute()
-
-  return results.map((modelItem: ProductReviewJsonResponse) => new ProductReviewModel(modelItem))
-}
-
-export async function wherePros(value: string): Promise<ProductReviewModel[]> {
-  const query = DB.instance.selectFrom('product_reviews').where('pros', '=', value)
-  const results: ProductReviewJsonResponse = await query.execute()
-
-  return results.map((modelItem: ProductReviewJsonResponse) => new ProductReviewModel(modelItem))
-}
-
-export async function whereCons(value: string): Promise<ProductReviewModel[]> {
-  const query = DB.instance.selectFrom('product_reviews').where('cons', '=', value)
   const results: ProductReviewJsonResponse = await query.execute()
 
   return results.map((modelItem: ProductReviewJsonResponse) => new ProductReviewModel(modelItem))

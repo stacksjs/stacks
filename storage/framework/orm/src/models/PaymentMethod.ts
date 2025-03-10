@@ -14,7 +14,6 @@ import User from './User'
 export interface PaymentMethodsTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   type: string
   last_four: number
   brand: string

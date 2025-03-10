@@ -11,7 +11,6 @@ import User from './User'
 export interface PostsTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   title: string
   body: string
 

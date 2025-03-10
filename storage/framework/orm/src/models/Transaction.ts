@@ -13,7 +13,6 @@ import Order from './Order'
 export interface TransactionsTable {
   id: Generated<number>
   order_id: number
-  order?: OrderModel
   amount: number
   status: string
   payment_method: string

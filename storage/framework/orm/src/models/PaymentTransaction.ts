@@ -16,9 +16,7 @@ import User from './User'
 export interface PaymentTransactionsTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   payment_method_id: number
-  payment_method?: PaymentMethodModel
   name: string
   description?: string
   amount: number

@@ -49,8 +49,6 @@ export interface Attributes {
   unhelpful_votes: number
   purchase_date: string
   images: string
-  pros: string
-  cons: string
   image_url: string
   is_available: boolean
   inventory_count: number

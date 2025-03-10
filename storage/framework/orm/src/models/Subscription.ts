@@ -12,7 +12,6 @@ import User from './User'
 export interface SubscriptionsTable {
   id: Generated<number>
   user_id: number
-  user?: UserModel
   type: string
   provider_id: string
   provider_status: string
