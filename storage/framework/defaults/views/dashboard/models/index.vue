@@ -406,7 +406,7 @@ const createDiagram = () => {
   if (!diagramContainer.value) return
 
   const width = diagramContainer.value.clientWidth
-  const height = 800 // Increased height for better spacing
+  const height = 1200 // Further increased height for better vertical spacing
   const cardWidth = 310 // Card width defined here for consistent reference
 
   // Clear existing visualization
@@ -487,35 +487,29 @@ const createDiagram = () => {
   const g = svg.append('g')
 
   // Apply initial zoom to see all content
-  const initialScale = 0.7 // Reduced scale to see more content
-  svg.call(zoom.transform, d3.zoomIdentity.translate(width/2 - width*initialScale/2, 20).scale(initialScale))
+  const initialScale = 0.55 // Further reduced scale to see more content
+  svg.call(zoom.transform, d3.zoomIdentity.translate(width/2 - width*initialScale/2, 10).scale(initialScale))
 
   // Set initial positions for models based on the reference image layout
   const initialPositions: Record<string, {x: number, y: number}> = {
-    // Top row
-    'team': { x: width * 0.25, y: 150 },
+    // Top row - more evenly spaced
+    'team': { x: width * 0.2, y: 150 },
     'user': { x: width * 0.5, y: 150 },
-    'post': { x: width * 0.75, y: 150 },
+    'post': { x: width * 0.8, y: 150 },
 
-    // Second row
-    'accessToken': { x: width * 0.25, y: 450 },
+    // Second row - better distributed
+    'accessToken': { x: width * 0.2, y: 450 },
+    'subscriber': { x: width * 0.8, y: 450 },
 
-    // Third row - left side
-    'project': { x: width * 0.25, y: 700 },
+    // Third row - more evenly spaced
+    'project': { x: width * 0.2, y: 750 },
+    'order': { x: width * 0.5, y: 750 },
+    'subscriberEmail': { x: width * 0.8, y: 750 },
 
-    // Fourth row - left side
-    'deployment': { x: width * 0.1, y: 900 },
-    'release': { x: width * 0.4, y: 900 },
-
-    // Second row - right side
-    'subscriber': { x: width * 0.75, y: 450 },
-
-    // Third row - right side
-    'subscriberEmail': { x: width * 0.75, y: 700 },
-    'order': { x: width * 0.5, y: 700 },
-
-    // Fourth row - right side
-    'orderItem': { x: width * 0.5, y: 900 }
+    // Fourth row - better distributed with more horizontal spacing
+    'deployment': { x: width * 0.1, y: 1050 },
+    'release': { x: width * 0.35, y: 1050 },
+    'orderItem': { x: width * 0.65, y: 1050 }
   }
 
   // Apply initial positions to models and store them for dragging
@@ -782,11 +776,14 @@ const createDiagram = () => {
       // Calculate control points for the curve
       const dx = targetModel.posX - sourceModel.posX
       const dy = targetModel.posY - sourceModel.posY
-      const dr = Math.sqrt(dx * dx + dy * dy) * 1.5 // Increased curve factor for better arcs
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      // Adjust curve factor based on distance between nodes
+      const curveFactor = distance > 500 ? 1.5 : 2.5
+      const dr = distance * curveFactor
 
       // Determine if we need a clockwise or counter-clockwise arc
-      const sweep = (sourceId === 'user' && targetId === 'team') ||
-                   (sourceId === 'team' && targetId === 'user') ? 0 : 1;
+      const sweep = determineArcSweep(sourceId, targetId);
 
       // Create curved path
       linkGroup.append('path')
@@ -860,6 +857,32 @@ const createDiagram = () => {
     .alphaDecay(0.02) // Slower decay for smoother animation
 }
 
+// Helper function to determine arc sweep direction
+function determineArcSweep(sourceId: string, targetId: string): number {
+  // Define specific pairs that should use counter-clockwise arcs
+  const counterClockwisePairs = [
+    ['user', 'team'],
+    ['team', 'user'],
+    ['user', 'post'],
+    ['user', 'subscriber'],
+    ['user', 'deployment'],
+    ['project', 'deployment'],
+    ['project', 'release'],
+    ['subscriber', 'subscriberEmail'],
+    ['order', 'orderItem']
+  ];
+
+  // Check if this pair should use counter-clockwise arc
+  for (const pair of counterClockwisePairs) {
+    if ((sourceId === pair[0] && targetId === pair[1]) ||
+        (sourceId === pair[1] && targetId === pair[0])) {
+      return 0; // Counter-clockwise
+    }
+  }
+
+  return 1; // Default to clockwise
+}
+
 // Function to update links after dragging
 function updateLinks() {
   if (!diagramContainer.value) return
@@ -882,11 +905,14 @@ function updateLinks() {
       // Calculate control points for the curve
       const dx = targetModel.posX - sourceModel.posX
       const dy = targetModel.posY - sourceModel.posY
-      const dr = Math.sqrt(dx * dx + dy * dy) * 1.5 // Increased curve factor for better arcs
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      // Adjust curve factor based on distance between nodes
+      const curveFactor = distance > 500 ? 1.5 : 2.5
+      const dr = distance * curveFactor
 
       // Determine if we need a clockwise or counter-clockwise arc
-      const sweep = (sourceId === 'user' && targetId === 'team') ||
-                   (sourceId === 'team' && targetId === 'user') ? 0 : 1;
+      const sweep = determineArcSweep(sourceId, targetId);
 
       // Create curved path
       linkGroup.append('path')
@@ -971,7 +997,7 @@ onUnmounted(() => {
               </button>
             </div>
           </div>
-          <div ref="diagramContainer" class="w-full h-[800px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
+          <div ref="diagramContainer" class="w-full h-[1200px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
         </div>
       </div>
     </div>
