@@ -262,6 +262,7 @@ const sectionContent: Record<string, SectionContent> = {
   data: {
     items: [
       { to: '/models', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
       { to: '/models/users', letter: 'U', text: 'Users' },
       { to: '/models/teams', letter: 'T', text: 'Teams' },
       { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
@@ -300,7 +301,6 @@ const sectionContent: Record<string, SectionContent> = {
   },
   management: {
     items: [
-      { to: '/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
       {
         to: '/cloud',
         icon: 'i-hugeicons-cloud',
@@ -311,7 +311,7 @@ const sectionContent: Record<string, SectionContent> = {
         ]
       },
       { to: '/dns', icon: 'i-hugeicons-global-search', text: 'DNS' },
-      { to: '/management/permissions', icon: 'i-hugeicons-lock-01', text: 'Permissions' },
+      { to: '/management/permissions', icon: 'i-hugeicons-lock-key', text: 'Permissions' },
       { to: '/mailboxes', icon: 'i-hugeicons-mailbox-01', text: 'Mailboxes' },
       { to: '/logs', icon: 'i-hugeicons-search-list-01', text: 'Logs' }
     ]
