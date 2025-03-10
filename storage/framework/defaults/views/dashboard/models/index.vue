@@ -12,7 +12,7 @@ interface ModelNode extends d3.SimulationNodeDatum {
   id: string
   name: string
   properties: Array<{name: string, type: string, nullable: boolean}>
-  relationships: Array<{type: string, model: string}>
+  relationships: Array<{type: string, model: string, collection?: string}>
   color: string
   x?: number
   y?: number
@@ -290,7 +290,7 @@ const relationships: RelationshipLink[] = [
 
 // Visualization state
 const diagramContainer = ref<HTMLElement | null>(null)
-let simulation: d3.Simulation<ModelNode, undefined>
+let simulation: d3.Simulation<ModelNode, undefined> | null = null
 
 // Add format state
 const downloadFormat = ref<'svg' | 'png'>('svg')
@@ -470,19 +470,28 @@ const createDiagram = () => {
   // Create container for zoomable content
   const g = svg.append('g')
 
-  // Set initial positions for models (fixed layout similar to the reference image)
+  // Set initial positions for models (improved layout with better structure)
   const initialPositions: Record<string, {x: number, y: number}> = {
+    // Core models in the center
     'user': { x: width / 2, y: height / 3 - 50 },
-    'team': { x: width / 2 - 300, y: height / 2 + 100 },
-    'post': { x: width / 2 + 300, y: height / 3 - 50 },
-    'accessToken': { x: width / 2 + 300, y: height / 2 + 50 },
-    'subscriber': { x: width / 2 + 150, y: height / 2 + 200 },
-    'subscriberEmail': { x: width / 2 + 300, y: height / 2 + 350 },
-    'project': { x: width / 2 - 150, y: height / 2 + 50 },
-    'deployment': { x: width / 2 - 300, y: height / 2 + 300 },
-    'release': { x: width / 2, y: height / 2 + 200 },
-    'order': { x: width / 2 - 300, y: height / 3 - 50 },
-    'orderItem': { x: width / 2 - 300, y: height / 3 + 150 }
+
+    // Left column
+    'team': { x: width / 2 - 350, y: height / 3 - 50 },
+    'project': { x: width / 2 - 350, y: height / 2 + 100 },
+    'deployment': { x: width / 2 - 350, y: height / 2 + 300 },
+
+    // Right column
+    'post': { x: width / 2 + 350, y: height / 3 - 50 },
+    'accessToken': { x: width / 2 + 350, y: height / 3 + 200 },
+
+    // Bottom row
+    'subscriber': { x: width / 2, y: height / 2 + 150 },
+    'subscriberEmail': { x: width / 2 + 350, y: height / 2 + 300 },
+    'release': { x: width / 2 - 150, y: height / 2 + 300 },
+
+    // Top row
+    'order': { x: width / 2 - 150, y: height / 3 - 50 },
+    'orderItem': { x: width / 2 - 150, y: height / 3 + 150 }
   }
 
   // Apply initial positions to models and store them for dragging
@@ -508,7 +517,7 @@ const createDiagram = () => {
     .attr('class', 'nodes')
 
   // Card width increased to accommodate longer property names
-  const cardWidth = 240
+  const cardWidth = 280
 
   // Create nodes
   const node = nodeGroup
@@ -647,25 +656,41 @@ const createDiagram = () => {
         .attr('stroke-width', 1)
         .attr('stroke-opacity', 0.3)
 
+      // Group relationships by type
+      const relationshipsByType: Record<string, Array<{model: string, collection?: string}>> = {}
+
+      d.relationships.forEach(rel => {
+        const relType = rel.type || 'unknown'
+        if (!relationshipsByType[relType]) {
+          relationshipsByType[relType] = []
+        }
+        relationshipsByType[relType].push({
+          model: rel.model,
+          collection: rel.collection
+        })
+      })
+
       // Relationships container
       const relationshipsGroup = g.append('g')
         .attr('transform', `translate(0, ${relationshipsY})`)
 
-      // Add relationships
-      d.relationships.forEach((rel, i) => {
-        const y = 20 + i * 24
+      // Add relationships by type
+      let rowIndex = 0
+      Object.entries(relationshipsByType).forEach(([type, models]) => {
+        const y = 20 + rowIndex * 24
+        rowIndex++
+
         const row = relationshipsGroup.append('g')
           .attr('transform', `translate(0, ${y})`)
 
-        // Create colored background for relationship
-        const relationshipType = rel.type
+        // Create colored background for relationship type
         let bgColor = relationshipColors.belongsTo // Default red for belongsTo
 
-        if (relationshipType === 'hasMany') {
+        if (type === 'hasMany') {
           bgColor = relationshipColors.hasMany
-        } else if (relationshipType === 'hasOne') {
+        } else if (type === 'hasOne') {
           bgColor = relationshipColors.hasOne
-        } else if (relationshipType === 'belongsToMany') {
+        } else if (type === 'belongsToMany') {
           bgColor = relationshipColors.belongsToMany
         }
 
@@ -690,16 +715,17 @@ const createDiagram = () => {
           .attr('fill', bgColor)
           .attr('font-size', '14px')
           .attr('font-weight', 'bold')
-          .text(relationshipType + ':')
+          .text(type + ':')
 
-        // Related model - improved vertical alignment
+        // Related models - improved vertical alignment
+        const modelsList = models.map(m => m.model + (m.collection ? ` (${m.collection})` : '')).join(', ')
         row.append('text')
           .attr('x', 120)
           .attr('y', 0)
           .attr('dominant-baseline', 'middle') // Improved vertical alignment
           .attr('fill', '#E5E7EB')
           .attr('font-size', '14px')
-          .text(rel.model)
+          .text(modelsList)
       })
     }
   })
@@ -797,10 +823,18 @@ function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
 
 function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   // Update the model's position
-  event.subject.posX = event.x + 120 // Adjust for the transform offset
-  event.subject.posY = event.y + 40  // Adjust for the transform offset
+  const node = event.subject
+  if (node) {
+    node.posX = event.x + 140 // Adjust for the transform offset (half of cardWidth)
+    node.posY = event.y + 40  // Adjust for the transform offset
+  }
 
   // Update the node position
+  d3.select(event.sourceEvent.currentTarget.parentNode)
+    .select(`g[transform="translate(${event.x}, ${event.y})"]`)
+    .attr('transform', `translate(${event.x}, ${event.y})`)
+
+  // Update this specific node's transform
   d3.select(event.sourceEvent.currentTarget)
     .attr('transform', `translate(${event.x}, ${event.y})`)
 
