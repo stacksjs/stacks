@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useHead } from '@vueuse/head'
 import { Line, Bar } from 'vue-chartjs'
 import {

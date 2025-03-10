@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useHead } from '@vueuse/head'
 import * as d3 from 'd3'
 
@@ -311,6 +311,71 @@ let simulation: d3.Simulation<ModelNode, undefined> | null = null
 const downloadFormat = ref<'svg' | 'png'>('svg')
 const isDownloading = ref(false)
 
+// Add filter and search functionality
+const searchQuery = ref('')
+const selectedModelType = ref('All')
+const modelTypes = computed(() => {
+  const types = ['All']
+  const uniqueColors = new Set(models.map(model => model.color))
+  uniqueColors.forEach(color => {
+    const modelsWithColor = models.filter(model => model.color === color)
+    if (modelsWithColor.length > 0) {
+      // Get the first model with this color to determine the type
+      const modelType = getModelTypeByColor(color)
+      if (modelType) types.push(modelType)
+    }
+  })
+  return types
+})
+
+// Filter models based on search and type
+const filteredModels = computed(() => {
+  return models.filter(model => {
+    const matchesSearch = searchQuery.value === '' ||
+      model.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+      model.properties.some(prop => prop.name.toLowerCase().includes(searchQuery.value.toLowerCase()))
+
+    const matchesType = selectedModelType.value === 'All' ||
+      getModelTypeByColor(model.color) === selectedModelType.value
+
+    return matchesSearch && matchesType
+  })
+})
+
+// Get model type by color
+function getModelTypeByColor(color: string): string {
+  switch(color) {
+    case colorPalette.primary:
+      return 'Authentication'
+    case colorPalette.secondary:
+      return 'Content'
+    case colorPalette.tertiary:
+      return 'Communication'
+    case colorPalette.quaternary:
+      return 'Commerce'
+    default:
+      return 'Other'
+  }
+}
+
+// Selected model for details panel
+const selectedModel = ref<ModelNode | null>(null)
+
+// Model statistics
+const modelStats = computed(() => {
+  return {
+    totalModels: models.length,
+    totalRelationships: relationships.length,
+    totalProperties: models.reduce((sum, model) => sum + model.properties.length, 0),
+    modelsByType: {
+      Authentication: models.filter(m => m.color === colorPalette.primary).length,
+      Content: models.filter(m => m.color === colorPalette.secondary).length,
+      Communication: models.filter(m => m.color === colorPalette.tertiary).length,
+      Commerce: models.filter(m => m.color === colorPalette.quaternary).length
+    }
+  }
+})
+
 // Update download function to support both formats
 const downloadDiagram = async () => {
   if (!diagramContainer.value) {
@@ -487,7 +552,7 @@ const createDiagram = () => {
   const g = svg.append('g')
 
   // Apply initial zoom to see all content
-  const initialScale = 0.6 // Increased zoom by 10%
+  const initialScale = 0.6
   svg.call(zoom.transform, d3.zoomIdentity.translate(width/2 - width*initialScale/2, 10).scale(initialScale))
 
   // Set initial positions for models based on the reference image layout
@@ -498,7 +563,7 @@ const createDiagram = () => {
     'post': { x: width * 0.9, y: -200 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.2, y: -200 }, // Further moved down to avoid overlapping
+    'accessToken': { x: width * 0.2, y: -200 },
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
@@ -537,7 +602,7 @@ const createDiagram = () => {
   // Create nodes
   const node = nodeGroup
     .selectAll('g')
-    .data(models)
+    .data(filteredModels.value)
     .join('g')
     .attr('transform', d => {
       const x = d.posX || width / 2
@@ -579,6 +644,11 @@ const createDiagram = () => {
         delete event.subject.dragOffsetX;
         delete event.subject.dragOffsetY;
       }))
+    .on('click', (event, d) => {
+      // Set the selected model when clicked
+      event.stopPropagation() // Prevent bubbling
+      selectedModel.value = d
+    })
 
   // Add shadow effect to nodes
   node.append('rect')
@@ -773,8 +843,9 @@ const createDiagram = () => {
     const sourceId = typeof rel.source === 'string' ? rel.source : rel.source.id
     const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
-    const sourceModel = models.find(m => m.id === sourceId)
-    const targetModel = models.find(m => m.id === targetId)
+    // Only draw links for filtered models
+    const sourceModel = filteredModels.value.find(m => m.id === sourceId)
+    const targetModel = filteredModels.value.find(m => m.id === targetId)
 
     if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
       // Calculate control points for the curve
@@ -917,8 +988,13 @@ const createDiagram = () => {
   })
 
   // Create force simulation with fixed positions
-  simulation = d3.forceSimulation<ModelNode>(models)
+  simulation = d3.forceSimulation<ModelNode>(filteredModels.value)
     .alphaDecay(0.02) // Slower decay for smoother animation
+
+  // Add click handler to clear selection when clicking on the background
+  svg.on('click', () => {
+    selectedModel.value = null
+  })
 }
 
 // Helper function to determine arc sweep direction
@@ -962,8 +1038,9 @@ function updateLinks() {
     const sourceId = typeof rel.source === 'string' ? rel.source : rel.source.id
     const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
-    const sourceModel = models.find(m => m.id === sourceId)
-    const targetModel = models.find(m => m.id === targetId)
+    // Only draw links for filtered models
+    const sourceModel = filteredModels.value.find(m => m.id === sourceId)
+    const targetModel = filteredModels.value.find(m => m.id === targetId)
 
     if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
       // Calculate control points for the curve
@@ -997,6 +1074,16 @@ function updateLinks() {
   })
 }
 
+// Watch for changes in filters and search to update diagram
+watch([searchQuery, selectedModelType], () => {
+  // Use setTimeout to debounce the diagram update
+  const timer = setTimeout(() => {
+    createDiagram()
+  }, 300)
+
+  return () => clearTimeout(timer)
+})
+
 // Initialize visualization on mount
 onMounted(() => {
   createDiagram()
@@ -1015,20 +1102,68 @@ onUnmounted(() => {
 <template>
   <div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
     <div class="px-4 lg:px-8 sm:px-6">
-      <!-- Header -->
-      <div class="mb-8">
-        <div class="flex justify-between items-center">
-          <div class="flex items-center gap-3">
-            <div class="i-hugeicons-dashboard-speed-02 w-8 h-8 text-blue-500" />
-            <div>
-              <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Data Models
-              </h3>
-              <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-                Visualize your application's data models and relationships.
-              </p>
-            </div>
+      <!-- Stats Cards -->
+      <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Models</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalModels }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
+            <div class="i-hugeicons-database h-4 w-4 mr-1"></div>
+            <span>Application entities</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Properties</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalProperties }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
+            <div class="i-hugeicons-check-list h-4 w-4 mr-1"></div>
+            <span>Model attributes</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Relationships</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalRelationships }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
+            <div class="i-hugeicons-link-01 h-4 w-4 mr-1"></div>
+            <span>Model connections</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Model Categories</dt>
+          <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelTypes.length - 1 }}</dd>
+          <dd class="mt-2 flex items-center text-sm text-orange-600 dark:text-orange-400">
+            <div class="i-hugeicons-tag-01 h-4 w-4 mr-1"></div>
+            <span>Functional groups</span>
+          </dd>
+        </div>
+      </dl>
+
+      <!-- Search and Filter Controls -->
+      <div class="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div class="relative w-full sm:w-64">
+          <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
           </div>
+          <input
+            v-model="searchQuery"
+            type="text"
+            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-white"
+            placeholder="Search models or properties..."
+          />
+        </div>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <label for="model-type" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by type:</label>
+          <select
+            id="model-type"
+            v-model="selectedModelType"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700"
+          >
+            <option v-for="type in modelTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
         </div>
       </div>
 
@@ -1037,7 +1172,7 @@ onUnmounted(() => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-2">
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Entity Relationship Diagram</h4>
+              <h4 class="text-base font-medium text-gray-900 dark:text-white">Entity Relationship Diagram</h4>
               <span class="text-sm text-gray-500 dark:text-gray-400">
                 (Drag nodes to rearrange)
               </span>
@@ -1062,6 +1197,84 @@ onUnmounted(() => {
             </div>
           </div>
           <div ref="diagramContainer" class="w-full h-[1200px] bg-gray-50 dark:bg-blue-gray-800 rounded-lg"></div>
+        </div>
+      </div>
+
+      <!-- Selected Model Details Panel -->
+      <div v-if="selectedModel" class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">{{ selectedModel.emoji }}</span>
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white">{{ selectedModel.name }} Details</h3>
+            </div>
+            <button
+              @click="selectedModel = null"
+              class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
+            >
+              <div class="i-hugeicons-x-mark w-5 h-5"></div>
+            </button>
+          </div>
+        </div>
+        <div class="px-4 py-5 sm:p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Properties Section -->
+            <div>
+              <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Properties</h4>
+              <div class="bg-gray-50 dark:bg-blue-gray-800 rounded-md p-4">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Name</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Type</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Nullable</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr v-for="prop in selectedModel.properties" :key="prop.name">
+                      <td class="px-3 py-2 whitespace-nowrap text-sm font-medium" :class="prop.name === 'id' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'">{{ prop.name }}</td>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ prop.type }}</td>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm">
+                        <span :class="prop.nullable ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
+                          {{ prop.nullable ? 'Yes' : 'No' }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Relationships Section -->
+            <div>
+              <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Relationships</h4>
+              <div class="bg-gray-50 dark:bg-blue-gray-800 rounded-md p-4">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Type</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Related Model</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr v-for="(rel, index) in selectedModel.relationships" :key="index">
+                      <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                        <span :class="{
+                          'text-red-600 dark:text-red-400': rel.type === 'belongsTo',
+                          'text-blue-600 dark:text-blue-400': rel.type === 'hasMany',
+                          'text-green-600 dark:text-green-400': rel.type === 'hasOne',
+                          'text-purple-600 dark:text-purple-400': rel.type === 'belongsToMany'
+                        }">
+                          {{ rel.type }}
+                        </span>
+                      </td>
+                      <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ rel.model }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
