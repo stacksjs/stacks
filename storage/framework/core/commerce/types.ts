@@ -6,10 +6,10 @@ import type {
   CustomerJsonResponse,
   CustomerModel,
   CustomersTable,
-  CustomerType,
   CustomerUpdate,
   NewCustomer,
 } from '../../orm/src/models/Customer'
+import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
 // Import the OrderTable type from the ORM
 import type { OrdersTable } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
@@ -18,7 +18,6 @@ import type { OrderItemModel } from '../../orm/src/models/OrderItem'
 export type {
   CustomerJsonResponse,
   CustomersTable,
-  CustomerType,
   CustomerUpdate,
   NewCustomer,
 }
@@ -168,7 +167,6 @@ export interface CouponStats {
     end_date: string | undefined
   }[]
 }
-
 export interface OrderWithTotals {
   order_items: OrderItemModel[] | []
   id: number
@@ -195,4 +193,44 @@ export interface OrderWithTotals {
   // Add the new calculated fields
   totalItems: number
   totalPrice: number
+}
+
+export interface FetchGiftCardsOptions {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+  is_active?: boolean
+  is_digital?: boolean
+  is_reloadable?: boolean
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  purchaser_id?: string
+  from_date?: string
+  to_date?: string
+  min_balance?: number
+  max_balance?: number
+}
+
+export interface GiftCardResponse {
+  data: GiftCardJsonResponse[]
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export interface GiftCardStats {
+  total: number
+  active: number
+  by_status: Array<{ status: string, count: number }>
+  by_balance: {
+    low: number // Count of cards with less than 25% of initial balance
+    medium: number // Count of cards with 25-75% of initial balance
+    high: number // Count of cards with more than 75% of initial balance
+  }
+  expiring_soon: GiftCardJsonResponse[]
+  recently_used: GiftCardJsonResponse[]
 }

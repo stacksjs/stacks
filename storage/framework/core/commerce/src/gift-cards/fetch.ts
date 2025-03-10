@@ -1,45 +1,6 @@
 import type { GiftCardJsonResponse } from '../../../../orm/src/models/GiftCard'
-import { db } from '@stacksjs/database'
-
-export interface FetchGiftCardsOptions {
-  page?: number
-  limit?: number
-  search?: string
-  status?: string
-  is_active?: boolean
-  is_digital?: boolean
-  is_reloadable?: boolean
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  purchaser_id?: string
-  from_date?: string
-  to_date?: string
-  min_balance?: number
-  max_balance?: number
-}
-
-export interface GiftCardResponse {
-  data: GiftCardJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface GiftCardStats {
-  total: number
-  active: number
-  by_status: Array<{ status: string, count: number }>
-  by_balance: {
-    low: number // Count of cards with less than 25% of initial balance
-    medium: number // Count of cards with 25-75% of initial balance
-    high: number // Count of cards with more than 75% of initial balance
-  }
-  expiring_soon: GiftCardJsonResponse[]
-  recently_used: GiftCardJsonResponse[]
-}
+import type { FetchGiftCardsOptions, GiftCardResponse, GiftCardStats } from '../../types'
+import { db, sql } from '@stacksjs/database'
 
 /**
  * Fetch all gift cards from the database
@@ -124,8 +85,6 @@ export async function fetchByCode(code: string): Promise<GiftCardJsonResponse | 
  * Fetch active gift cards (is_active = true and not expired)
  */
 export async function fetchActive(options: FetchGiftCardsOptions = {}): Promise<GiftCardResponse> {
-  const currentDate = new Date().toISOString()
-
   return fetchPaginated({
     ...options,
     is_active: true,
@@ -166,22 +125,27 @@ export async function fetchStats(): Promise<GiftCardStats> {
   // Calculate balance distribution counts - separate queries for better reliability
   const lowBalanceCount = await db
     .selectFrom('gift_cards')
-    .where(eb => eb.raw('current_balance / initial_balance < 0.25'))
+    .where((eb) => {
+      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`
+    })
     .select(eb => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   const mediumBalanceCount = await db
     .selectFrom('gift_cards')
-    .where(eb => eb.and([
-      eb.raw('current_balance / initial_balance >= 0.25'),
-      eb.raw('current_balance / initial_balance <= 0.75'),
-    ]))
+    .where((eb) => {
+      // Using a raw expression inside the expression builder
+      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`
+    })
     .select(eb => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
   const highBalanceCount = await db
     .selectFrom('gift_cards')
-    .where(eb => eb.raw('current_balance / initial_balance > 0.75'))
+    .where((eb) => {
+      // Using a raw expression inside the expression builder
+      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`
+    })
     .select(eb => eb.fn.count('id').as('count'))
     .executeTakeFirst()
 
@@ -195,7 +159,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .where('status', '=', 'ACTIVE')
     .where('expiry_date', '<=', thirtyDaysFromNow.toISOString().split('T')[0])
     .where('expiry_date', '>=', currentDate)
-    .select(['id', 'code', 'current_balance', 'expiry_date', 'recipient_name', 'recipient_email'])
+    .selectAll()
     .limit(5)
     .execute()
 
@@ -203,7 +167,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
   const recentlyUsedGiftCards = await db
     .selectFrom('gift_cards')
     .where('last_used_date', 'is not', null)
-    .select(['id', 'code', 'current_balance', 'initial_balance', 'last_used_date', 'recipient_name'])
+    .selectAll()
     .limit(5)
     .execute()
 
