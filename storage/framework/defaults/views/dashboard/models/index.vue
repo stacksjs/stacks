@@ -467,15 +467,65 @@ const createDiagram = () => {
   // Create container for zoomable content
   const g = svg.append('g')
 
+  // Set initial positions for models (fixed layout similar to the reference image)
+  const initialPositions: Record<string, {x: number, y: number}> = {
+    'user': { x: width / 2, y: height / 3 },
+    'team': { x: width / 2 - 250, y: height / 2 + 150 },
+    'post': { x: width / 2 + 250, y: height / 3 },
+    'accessToken': { x: width / 2 + 250, y: height / 2 + 50 },
+    'subscriber': { x: width / 2 + 100, y: height / 2 + 200 },
+    'subscriberEmail': { x: width / 2 + 250, y: height / 2 + 350 },
+    'project': { x: width / 2 - 100, y: height / 2 + 50 },
+    'deployment': { x: width / 2 - 250, y: height / 2 + 300 },
+    'release': { x: width / 2, y: height / 2 + 200 },
+    'order': { x: width / 2 - 350, y: height / 3 },
+    'orderItem': { x: width / 2 - 350, y: height / 3 + 150 }
+  }
+
+  // Apply initial positions to models
+  models.forEach(model => {
+    if (initialPositions[model.id]) {
+      model.fx = initialPositions[model.id].x
+      model.fy = initialPositions[model.id].y
+    }
+  })
+
+  // Create links container
+  const linkGroup = g.append('g')
+    .attr('class', 'links')
+
+  // Create nodes container
+  const nodeGroup = g.append('g')
+    .attr('class', 'nodes')
+
   // Create nodes
-  const node = g.append('g')
+  const node = nodeGroup
     .selectAll('g')
     .data(models)
     .join('g')
+    .attr('transform', d => {
+      const pos = initialPositions[d.id] || { x: width / 2, y: height / 2 }
+      return `translate(${pos.x - 100}, ${pos.y - 40})`
+    })
     .call(d3.drag<any, ModelNode>()
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended))
+
+  // Add shadow effect to nodes
+  node.append('rect')
+    .attr('width', 200)
+    .attr('height', d => {
+      const propsHeight = d.properties.length * 24
+      const relationshipsHeight = d.relationships.length > 0 ?
+        (d.relationships.length * 24) + 10 : 0
+      return 60 + propsHeight + relationshipsHeight
+    })
+    .attr('rx', 8)
+    .attr('ry', 8)
+    .attr('fill', 'rgba(0, 0, 0, 0.3)')
+    .attr('transform', 'translate(3, 3)')
+    .style('filter', 'blur(3px)')
 
   // Add main rectangles for nodes with color border
   node.append('rect')
@@ -615,7 +665,6 @@ const createDiagram = () => {
           .attr('fill-opacity', 0.1)
           .attr('stroke', bgColor)
           .attr('stroke-width', 1)
-          .attr('stroke-opacity', 0.3)
 
         // Relationship type
         row.append('text')
@@ -637,57 +686,77 @@ const createDiagram = () => {
     }
   })
 
-  // Create links with gradients
-  const link = g.append('g')
-    .selectAll('line')
-    .data(relationships)
-    .join('line')
-    .attr('stroke', d => {
-      // Color links based on relationship type
-      if (d.type === 'hasMany') return relationshipColors.hasMany
-      if (d.type === 'hasOne') return relationshipColors.hasOne
-      if (d.type === 'belongsToMany') return relationshipColors.belongsToMany
-      return relationshipColors.belongsTo // belongsTo
-    })
-    .attr('stroke-width', 2)
-    .attr('stroke-dasharray', d => d.type === 'belongsToMany' ? '5,5' : 'none')
-    .attr('marker-end', d => `url(#arrow-${d.type})`)
+  // Create links between nodes
+  relationships.forEach(rel => {
+    const sourceId = typeof rel.source === 'string' ? rel.source : rel.source.id
+    const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
-  // Create force simulation
-  simulation = d3.forceSimulation<ModelNode>(models)
-    .force('link', d3.forceLink<ModelNode, RelationshipLink>(relationships)
-      .id(d => d.id)
-      .distance(250))
-    .force('charge', d3.forceManyBody()
-      .strength(-1000))
-    .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide().radius(150))
-    .force('x', d3.forceX(width / 2).strength(0.1))
-    .force('y', d3.forceY(height / 2).strength(0.1))
+    const sourcePos = initialPositions[sourceId]
+    const targetPos = initialPositions[targetId]
 
-  // Update positions on tick
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => {
-        const source = typeof d.source === 'string' ? models.find(m => m.id === d.source) : d.source as ModelNode
-        return source?.x || 0
-      })
-      .attr('y1', d => {
-        const source = typeof d.source === 'string' ? models.find(m => m.id === d.source) : d.source as ModelNode
-        return source?.y || 0
-      })
-      .attr('x2', d => {
-        const target = typeof d.target === 'string' ? models.find(m => m.id === d.target) : d.target as ModelNode
-        return target?.x || 0
-      })
-      .attr('y2', d => {
-        const target = typeof d.target === 'string' ? models.find(m => m.id === d.target) : d.target as ModelNode
-        return target?.y || 0
-      })
+    if (sourcePos && targetPos) {
+      // Calculate control points for the curve
+      const dx = targetPos.x - sourcePos.x
+      const dy = targetPos.y - sourcePos.y
+      const dr = Math.sqrt(dx * dx + dy * dy) * 1.2 // Curve factor
 
-    node
-      .attr('transform', d => `translate(${(d.x || 0) - 100},${(d.y || 0) - 40})`)
+      // Create curved path
+      linkGroup.append('path')
+        .attr('d', `M${sourcePos.x},${sourcePos.y}A${dr},${dr} 0 0,1 ${targetPos.x},${targetPos.y}`)
+        .attr('fill', 'none')
+        .attr('stroke', () => {
+          // Color links based on relationship type
+          if (rel.type === 'hasMany') return relationshipColors.hasMany
+          if (rel.type === 'hasOne') return relationshipColors.hasOne
+          if (rel.type === 'belongsToMany') return relationshipColors.belongsToMany
+          return relationshipColors.belongsTo // belongsTo
+        })
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
+        .attr('marker-end', `url(#arrow-${rel.type})`)
+        .attr('opacity', 0.8)
+    }
   })
+
+  // Add a legend for relationship types
+  const legend = svg.append('g')
+    .attr('transform', `translate(${width - 200}, 20)`)
+    .attr('class', 'legend')
+
+  const relationshipTypes = [
+    { type: 'belongsTo', label: 'Belongs To', color: relationshipColors.belongsTo },
+    { type: 'hasMany', label: 'Has Many', color: relationshipColors.hasMany },
+    { type: 'hasOne', label: 'Has One', color: relationshipColors.hasOne },
+    { type: 'belongsToMany', label: 'Belongs To Many', color: relationshipColors.belongsToMany }
+  ]
+
+  relationshipTypes.forEach((rel, i) => {
+    const legendItem = legend.append('g')
+      .attr('transform', `translate(0, ${i * 25})`)
+
+    // Line sample
+    legendItem.append('line')
+      .attr('x1', 0)
+      .attr('y1', 10)
+      .attr('x2', 30)
+      .attr('y2', 10)
+      .attr('stroke', rel.color)
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
+      .attr('marker-end', `url(#arrow-${rel.type})`)
+
+    // Label
+    legendItem.append('text')
+      .attr('x', 40)
+      .attr('y', 14)
+      .attr('fill', '#E5E7EB')
+      .attr('font-size', '12px')
+      .text(rel.label)
+  })
+
+  // Create force simulation with fixed positions
+  simulation = d3.forceSimulation<ModelNode>(models)
+    .alphaDecay(0.02) // Slower decay for smoother animation
 }
 
 // Drag functions
@@ -704,8 +773,6 @@ function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
 
 function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   if (!event.active && simulation) simulation.alphaTarget(0)
-  event.subject.fx = null
-  event.subject.fy = null
 }
 
 // Initialize visualization on mount
