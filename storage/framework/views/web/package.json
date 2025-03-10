@@ -17,7 +17,7 @@
     "@stacksjs/server": "workspace:*",
     "@unhead/vue": "^1.11.20",
     "@unocss/reset": "66.0.0",
-    "@vueuse/core": "^12.8.2",
+    "@vueuse/core": "^13.0.0",
     "@vueuse/head": "^2.0.0",
     "nprogress": "^0.2.0",
     "pinia": "^3.0.1",
