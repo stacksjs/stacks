@@ -18,6 +18,9 @@ interface ModelNode extends d3.SimulationNodeDatum {
   y?: number
   fx?: number | null
   fy?: number | null
+  // Track position for dragging
+  posX?: number
+  posY?: number
 }
 
 // Relationship link interface
@@ -469,24 +472,30 @@ const createDiagram = () => {
 
   // Set initial positions for models (fixed layout similar to the reference image)
   const initialPositions: Record<string, {x: number, y: number}> = {
-    'user': { x: width / 2, y: height / 3 },
-    'team': { x: width / 2 - 250, y: height / 2 + 150 },
-    'post': { x: width / 2 + 250, y: height / 3 },
-    'accessToken': { x: width / 2 + 250, y: height / 2 + 50 },
-    'subscriber': { x: width / 2 + 100, y: height / 2 + 200 },
-    'subscriberEmail': { x: width / 2 + 250, y: height / 2 + 350 },
-    'project': { x: width / 2 - 100, y: height / 2 + 50 },
-    'deployment': { x: width / 2 - 250, y: height / 2 + 300 },
+    'user': { x: width / 2, y: height / 3 - 50 },
+    'team': { x: width / 2 - 300, y: height / 2 + 100 },
+    'post': { x: width / 2 + 300, y: height / 3 - 50 },
+    'accessToken': { x: width / 2 + 300, y: height / 2 + 50 },
+    'subscriber': { x: width / 2 + 150, y: height / 2 + 200 },
+    'subscriberEmail': { x: width / 2 + 300, y: height / 2 + 350 },
+    'project': { x: width / 2 - 150, y: height / 2 + 50 },
+    'deployment': { x: width / 2 - 300, y: height / 2 + 300 },
     'release': { x: width / 2, y: height / 2 + 200 },
-    'order': { x: width / 2 - 350, y: height / 3 },
-    'orderItem': { x: width / 2 - 350, y: height / 3 + 150 }
+    'order': { x: width / 2 - 300, y: height / 3 - 50 },
+    'orderItem': { x: width / 2 - 300, y: height / 3 + 150 }
   }
 
-  // Apply initial positions to models
+  // Apply initial positions to models and store them for dragging
   models.forEach(model => {
     if (initialPositions[model.id]) {
-      model.fx = initialPositions[model.id].x
-      model.fy = initialPositions[model.id].y
+      const pos = initialPositions[model.id]
+      if (pos) {
+        model.fx = pos.x
+        model.fy = pos.y
+        // Store position for dragging
+        model.posX = pos.x
+        model.posY = pos.y
+      }
     }
   })
 
@@ -498,14 +507,18 @@ const createDiagram = () => {
   const nodeGroup = g.append('g')
     .attr('class', 'nodes')
 
+  // Card width increased to accommodate longer property names
+  const cardWidth = 240
+
   // Create nodes
   const node = nodeGroup
     .selectAll('g')
     .data(models)
     .join('g')
     .attr('transform', d => {
-      const pos = initialPositions[d.id] || { x: width / 2, y: height / 2 }
-      return `translate(${pos.x - 100}, ${pos.y - 40})`
+      const x = d.posX || width / 2
+      const y = d.posY || height / 2
+      return `translate(${x - cardWidth/2}, ${y - 40})`
     })
     .call(d3.drag<any, ModelNode>()
       .on('start', dragstarted)
@@ -514,7 +527,7 @@ const createDiagram = () => {
 
   // Add shadow effect to nodes
   node.append('rect')
-    .attr('width', 200)
+    .attr('width', cardWidth)
     .attr('height', d => {
       const propsHeight = d.properties.length * 24
       const relationshipsHeight = d.relationships.length > 0 ?
@@ -529,7 +542,7 @@ const createDiagram = () => {
 
   // Add main rectangles for nodes with color border
   node.append('rect')
-    .attr('width', 200)
+    .attr('width', cardWidth)
     .attr('height', d => {
       // Calculate height based on properties and relationships
       const propsHeight = d.properties.length * 24
@@ -551,7 +564,7 @@ const createDiagram = () => {
 
       // Header background
       header.append('rect')
-        .attr('width', 200)
+        .attr('width', cardWidth)
         .attr('height', 40)
         .attr('rx', 8)
         .attr('ry', 8)
@@ -559,7 +572,7 @@ const createDiagram = () => {
 
       // Model name
       header.append('text')
-        .attr('x', 100)
+        .attr('x', cardWidth / 2)
         .attr('y', 25)
         .attr('text-anchor', 'middle')
         .attr('fill', '#E5E7EB')
@@ -581,10 +594,10 @@ const createDiagram = () => {
       const row = propertiesGroup.append('g')
         .attr('transform', `translate(0, ${y})`)
 
-      // Primary key indicator (yellow dot for id)
+      // Primary key indicator (yellow dot for id) - fixed vertical alignment
       if (prop.name === 'id') {
         row.append('circle')
-          .attr('cx', 10)
+          .attr('cx', 12) // Adjusted for better alignment
           .attr('cy', 0)
           .attr('r', 4)
           .attr('fill', '#FCD34D') // Yellow for primary key
@@ -592,25 +605,28 @@ const createDiagram = () => {
 
       // Property name
       row.append('text')
-        .attr('x', 20)
+        .attr('x', 24) // Adjusted for better spacing
         .attr('y', 0)
+        .attr('dominant-baseline', 'middle') // Improved vertical alignment
         .attr('fill', prop.name === 'id' ? '#FCD34D' : '#E5E7EB')
         .attr('font-size', '14px')
         .text(prop.name)
 
       // Property type
       row.append('text')
-        .attr('x', 180)
+        .attr('x', cardWidth - 40) // Adjusted for wider card
         .attr('y', 0)
+        .attr('dominant-baseline', 'middle') // Improved vertical alignment
         .attr('text-anchor', 'end')
         .attr('fill', '#9CA3AF')
         .attr('font-size', '14px')
         .text(prop.type)
 
-      // Nullable indicator
+      // Nullable indicator - improved spacing from edge
       row.append('text')
-        .attr('x', 195)
+        .attr('x', cardWidth - 16) // Adjusted for better spacing from edge
         .attr('y', 0)
+        .attr('dominant-baseline', 'middle') // Improved vertical alignment
         .attr('text-anchor', 'middle')
         .attr('fill', prop.nullable ? '#EF4444' : '#10B981')
         .attr('font-size', '14px')
@@ -625,7 +641,7 @@ const createDiagram = () => {
       g.append('line')
         .attr('x1', 0)
         .attr('y1', relationshipsY)
-        .attr('x2', 200)
+        .attr('x2', cardWidth)
         .attr('y2', relationshipsY)
         .attr('stroke', '#4B5563')
         .attr('stroke-width', 1)
@@ -653,11 +669,11 @@ const createDiagram = () => {
           bgColor = relationshipColors.belongsToMany
         }
 
-        // Add relationship background
+        // Add relationship background - adjusted to match reference image
         row.append('rect')
-          .attr('x', 10)
+          .attr('x', 12)
           .attr('y', -12)
-          .attr('width', 180)
+          .attr('width', cardWidth - 24)
           .attr('height', 24)
           .attr('rx', 4)
           .attr('ry', 4)
@@ -666,19 +682,21 @@ const createDiagram = () => {
           .attr('stroke', bgColor)
           .attr('stroke-width', 1)
 
-        // Relationship type
+        // Relationship type - improved vertical alignment
         row.append('text')
-          .attr('x', 20)
+          .attr('x', 24)
           .attr('y', 0)
+          .attr('dominant-baseline', 'middle') // Improved vertical alignment
           .attr('fill', bgColor)
           .attr('font-size', '14px')
           .attr('font-weight', 'bold')
           .text(relationshipType + ':')
 
-        // Related model
+        // Related model - improved vertical alignment
         row.append('text')
-          .attr('x', 110)
+          .attr('x', 120)
           .attr('y', 0)
+          .attr('dominant-baseline', 'middle') // Improved vertical alignment
           .attr('fill', '#E5E7EB')
           .attr('font-size', '14px')
           .text(rel.model)
@@ -691,18 +709,18 @@ const createDiagram = () => {
     const sourceId = typeof rel.source === 'string' ? rel.source : rel.source.id
     const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
 
-    const sourcePos = initialPositions[sourceId]
-    const targetPos = initialPositions[targetId]
+    const sourceModel = models.find(m => m.id === sourceId)
+    const targetModel = models.find(m => m.id === targetId)
 
-    if (sourcePos && targetPos) {
+    if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
       // Calculate control points for the curve
-      const dx = targetPos.x - sourcePos.x
-      const dy = targetPos.y - sourcePos.y
+      const dx = targetModel.posX - sourceModel.posX
+      const dy = targetModel.posY - sourceModel.posY
       const dr = Math.sqrt(dx * dx + dy * dy) * 1.2 // Curve factor
 
       // Create curved path
       linkGroup.append('path')
-        .attr('d', `M${sourcePos.x},${sourcePos.y}A${dr},${dr} 0 0,1 ${targetPos.x},${targetPos.y}`)
+        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,1 ${targetModel.posX},${targetModel.posY}`)
         .attr('fill', 'none')
         .attr('stroke', () => {
           // Color links based on relationship type
@@ -718,10 +736,22 @@ const createDiagram = () => {
     }
   })
 
-  // Add a legend for relationship types
+  // Add a legend for relationship types with improved visibility
   const legend = svg.append('g')
-    .attr('transform', `translate(${width - 200}, 20)`)
+    .attr('transform', `translate(${width - 220}, 20)`)
     .attr('class', 'legend')
+
+  // Add legend background for better visibility
+  legend.append('rect')
+    .attr('x', -10)
+    .attr('y', -10)
+    .attr('width', 220)
+    .attr('height', 130)
+    .attr('rx', 8)
+    .attr('ry', 8)
+    .attr('fill', 'rgba(30, 41, 59, 0.8)') // Dark background with transparency
+    .attr('stroke', '#4B5563')
+    .attr('stroke-width', 1)
 
   const relationshipTypes = [
     { type: 'belongsTo', label: 'Belongs To', color: relationshipColors.belongsTo },
@@ -732,7 +762,7 @@ const createDiagram = () => {
 
   relationshipTypes.forEach((rel, i) => {
     const legendItem = legend.append('g')
-      .attr('transform', `translate(0, ${i * 25})`)
+      .attr('transform', `translate(10, ${i * 25 + 15})`)
 
     // Line sample
     legendItem.append('line')
@@ -745,12 +775,13 @@ const createDiagram = () => {
       .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
       .attr('marker-end', `url(#arrow-${rel.type})`)
 
-    // Label
+    // Label with improved visibility
     legendItem.append('text')
       .attr('x', 40)
-      .attr('y', 14)
-      .attr('fill', '#E5E7EB')
-      .attr('font-size', '12px')
+      .attr('y', 10)
+      .attr('dominant-baseline', 'middle') // Improved vertical alignment
+      .attr('fill', '#FFFFFF') // White text for better contrast
+      .attr('font-size', '14px')
       .text(rel.label)
   })
 
@@ -762,17 +793,66 @@ const createDiagram = () => {
 // Drag functions
 function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   if (!event.active && simulation) simulation.alphaTarget(0.3).restart()
-  event.subject.fx = event.subject.x
-  event.subject.fy = event.subject.y
 }
 
 function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
-  event.subject.fx = event.x
-  event.subject.fy = event.y
+  // Update the model's position
+  event.subject.posX = event.x + 120 // Adjust for the transform offset
+  event.subject.posY = event.y + 40  // Adjust for the transform offset
+
+  // Update the node position
+  d3.select(event.sourceEvent.currentTarget)
+    .attr('transform', `translate(${event.x}, ${event.y})`)
+
+  // Redraw all links
+  updateLinks()
 }
 
 function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   if (!event.active && simulation) simulation.alphaTarget(0)
+}
+
+// Function to update links after dragging
+function updateLinks() {
+  if (!diagramContainer.value) return
+
+  const svg = d3.select(diagramContainer.value).select('svg')
+  const linkGroup = svg.select('.links')
+
+  // Clear existing links
+  linkGroup.selectAll('path').remove()
+
+  // Redraw all links
+  relationships.forEach(rel => {
+    const sourceId = typeof rel.source === 'string' ? rel.source : rel.source.id
+    const targetId = typeof rel.target === 'string' ? rel.target : rel.target.id
+
+    const sourceModel = models.find(m => m.id === sourceId)
+    const targetModel = models.find(m => m.id === targetId)
+
+    if (sourceModel && targetModel && sourceModel.posX && sourceModel.posY && targetModel.posX && targetModel.posY) {
+      // Calculate control points for the curve
+      const dx = targetModel.posX - sourceModel.posX
+      const dy = targetModel.posY - sourceModel.posY
+      const dr = Math.sqrt(dx * dx + dy * dy) * 1.2 // Curve factor
+
+      // Create curved path
+      linkGroup.append('path')
+        .attr('d', `M${sourceModel.posX},${sourceModel.posY}A${dr},${dr} 0 0,1 ${targetModel.posX},${targetModel.posY}`)
+        .attr('fill', 'none')
+        .attr('stroke', () => {
+          // Color links based on relationship type
+          if (rel.type === 'hasMany') return relationshipColors.hasMany
+          if (rel.type === 'hasOne') return relationshipColors.hasOne
+          if (rel.type === 'belongsToMany') return relationshipColors.belongsToMany
+          return relationshipColors.belongsTo // belongsTo
+        })
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
+        .attr('marker-end', `url(#arrow-${rel.type})`)
+        .attr('opacity', 0.8)
+    }
+  })
 }
 
 // Initialize visualization on mount
