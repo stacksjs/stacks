@@ -804,18 +804,18 @@ const createDiagram = () => {
 
   // Add a legend for relationship types with improved visibility
   const legend = svg.append('g')
-    .attr('transform', `translate(${width - 220}, 50)`) // Moved down more to center vertically
+    .attr('transform', `translate(${width - 220}, 50)`) // Position in top-right corner
     .attr('class', 'legend')
 
   // Add legend background for better visibility
   legend.append('rect')
     .attr('x', -10)
-    .attr('y', -15) // Adjusted for better vertical centering
+    .attr('y', -15)
     .attr('width', 220)
-    .attr('height', 130) // Adjusted for better vertical centering
+    .attr('height', 160)
     .attr('rx', 8)
     .attr('ry', 8)
-    .attr('fill', '#4B5563') // Changed to match the image (solid gray background)
+    .attr('fill', '#4B5563') // Solid gray background
     .attr('stroke', '#4B5563')
     .attr('stroke-width', 1)
 
@@ -826,26 +826,89 @@ const createDiagram = () => {
     { type: 'belongsToMany', label: 'Belongs To Many', color: relationshipColors.belongsToMany }
   ]
 
-  relationshipTypes.forEach((rel, i) => {
-    const legendItem = legend.append('g')
-      .attr('transform', `translate(10, ${i * 25 + 20})`) // Adjusted for better vertical centering
+  // Calculate exact vertical positioning for perfect centering
+  const totalItems = relationshipTypes.length;
+  const itemHeight = 25;
+  const totalContentHeight = totalItems * itemHeight;
+  const containerHeight = 130;
+  const startY = (containerHeight - totalContentHeight) / 2;
 
-      // Arrow head instead of line
-      legendItem.append('path')
-        .attr('d', 'M0,10 L30,10')
+  relationshipTypes.forEach((rel, i) => {
+    const yPosition = startY + (i * itemHeight) + 5; // +5 for fine-tuning
+
+    const legendItem = legend.append('g')
+      .attr('transform', `translate(10, ${yPosition})`)
+
+    if (rel.type === 'belongsTo') {
+      // Left-pointing arrow for Belongs To
+      legendItem.append('line')
+        .attr('x1', 0)
+        .attr('y1', 12)
+        .attr('x2', 30)
+        .attr('y2', 12)
         .attr('stroke', rel.color)
         .attr('stroke-width', 2)
-        .attr('stroke-dasharray', rel.type === 'belongsToMany' ? '5,5' : 'none')
-        .attr('marker-end', `url(#arrow-${rel.type})`)
 
-      // Label with improved visibility
-      legendItem.append('text')
-        .attr('x', 40)
-        .attr('y', 10)
-        .attr('dominant-baseline', 'middle') // Improved vertical alignment
-        .attr('fill', '#FFFFFF') // White text for better contrast
-        .attr('font-size', '14px')
-        .text(rel.label)
+      // Arrow head
+      legendItem.append('polygon')
+        .attr('points', '0,12 8,8 8,16')
+        .attr('fill', rel.color)
+    }
+    else if (rel.type === 'hasMany') {
+      // Right-pointing arrow for Has Many
+      legendItem.append('line')
+        .attr('x1', 0)
+        .attr('y1', 12)
+        .attr('x2', 30)
+        .attr('y2', 12)
+        .attr('stroke', rel.color)
+        .attr('stroke-width', 2)
+
+      // Arrow head
+      legendItem.append('polygon')
+        .attr('points', '30,12 22,8 22,16')
+        .attr('fill', rel.color)
+    }
+    else if (rel.type === 'hasOne') {
+      // Right-pointing arrow for Has One
+      legendItem.append('line')
+        .attr('x1', 0)
+        .attr('y1', 12)
+        .attr('x2', 30)
+        .attr('y2', 12)
+        .attr('stroke', rel.color)
+        .attr('stroke-width', 2)
+
+      // Arrow head
+      legendItem.append('polygon')
+        .attr('points', '30,12 22,8 22,16')
+        .attr('fill', rel.color)
+    }
+    else if (rel.type === 'belongsToMany') {
+      // Left-pointing arrow with dashed line for Belongs To Many
+      legendItem.append('line')
+        .attr('x1', 0)
+        .attr('y1', 12)
+        .attr('x2', 30)
+        .attr('y2', 12)
+        .attr('stroke', rel.color)
+        .attr('stroke-width', 2)
+        .attr('stroke-dasharray', '5,5')
+
+      // Arrow head
+      legendItem.append('polygon')
+        .attr('points', '0,12 8,8 8,16')
+        .attr('fill', rel.color)
+    }
+
+    // Label with improved visibility
+    legendItem.append('text')
+      .attr('x', 40)
+      .attr('y', 12)
+      .attr('dominant-baseline', 'middle')
+      .attr('fill', '#FFFFFF') // White text for better contrast
+      .attr('font-size', '14px')
+      .text(rel.label)
   })
 
   // Create force simulation with fixed positions
