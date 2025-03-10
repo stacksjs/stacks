@@ -55,9 +55,6 @@ export const dashboardConfig: ViteConfig = {
     // pwa(),
     // devtools(),
     i18n(),
-
-    // https://github.com/feat-agency/vite-plugin-webfont-dl
-    // fonts(),
   ],
 
   // https://github.com/antfu/vite-ssg

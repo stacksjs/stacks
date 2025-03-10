@@ -39,7 +39,6 @@ const result = await Bun.build({
     'vitepress',
     'vite-plugin-pwa',
     'vite-plugin-pages',
-    'vite-plugin-webfont-dl',
     'vite-plugin-vue-devtools',
     'unocss',
     '@vitejs/plugin-vue',
