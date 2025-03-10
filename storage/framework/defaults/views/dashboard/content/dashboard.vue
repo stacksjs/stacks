@@ -150,7 +150,7 @@ const averageEngagement = '4.2%'
     <div class="relative isolate overflow-hidden">
       <div class="px-6 py-6 sm:px-6 lg:px-8">
         <div class="mx-auto max-w-7xl">
-          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Blog Dashboard</h1>
+          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Content Dashboard</h1>
 
           <!-- Time range selector -->
           <div class="mt-4 flex items-center justify-between">
@@ -285,12 +285,26 @@ const averageEngagement = '4.2%'
           <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
             <!-- Recent Comments -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-              <div class="px-4 py-5 sm:px-6">
+              <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Comments</h3>
+                <div class="flex space-x-2">
+                  <div class="relative">
+                    <select class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+                      <option>All comments</option>
+                      <option>Approved</option>
+                      <option>Pending</option>
+                      <option>Spam</option>
+                    </select>
+                  </div>
+                  <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
+                    <div class="i-hugeicons-refresh h-4 w-4 mr-1"></div>
+                    Refresh
+                  </button>
+                </div>
               </div>
               <div class="border-t border-gray-200 dark:border-gray-700">
-                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                  <li v-for="comment in recentComments" :key="comment.id" class="px-4 py-4 sm:px-6">
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+                  <li v-for="comment in recentComments" :key="comment.id" class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-blue-gray-700 transition duration-150">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -299,7 +313,10 @@ const averageEngagement = '4.2%'
                           </div>
                         </div>
                         <div class="ml-4">
-                          <div class="font-medium text-gray-900 dark:text-white">{{ comment.author }}</div>
+                          <div class="font-medium text-gray-900 dark:text-white flex items-center">
+                            {{ comment.author }}
+                            <span v-if="comment.id <= 2" class="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30">New</span>
+                          </div>
                           <div class="text-sm text-gray-500 dark:text-gray-400">{{ comment.email }}</div>
                         </div>
                       </div>
@@ -317,11 +334,12 @@ const averageEngagement = '4.2%'
                     <div class="mt-2 text-sm text-gray-700 dark:text-gray-300">
                       <p>{{ comment.content }}</p>
                     </div>
-                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                      <p>On: <span class="font-medium text-gray-900 dark:text-white">{{ comment.post }}</span> • {{ comment.date }}</p>
+                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                      <div class="i-hugeicons-document-text h-4 w-4 mr-1"></div>
+                      <p>On: <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">{{ comment.post }}</a> • <span class="whitespace-nowrap">{{ comment.date }}</span></p>
                     </div>
                     <div class="mt-2 flex space-x-2">
-                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
+                      <button v-if="comment.status !== 'Approved'" type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
                         <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                         Approve
                       </button>
@@ -336,34 +354,50 @@ const averageEngagement = '4.2%'
                     </div>
                   </li>
                 </ul>
-                <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-blue-gray-700">
+                <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-blue-gray-700 flex justify-between items-center">
                   <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View all comments<span aria-hidden="true"> &rarr;</span></a>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Showing 5 of 42 comments</div>
                 </div>
               </div>
             </div>
 
             <!-- Draft Posts -->
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
-              <div class="px-4 py-5 sm:px-6">
+              <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Draft Posts</h3>
+                <button type="button" class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                  <div class="i-hugeicons-plus-sign h-4 w-4 mr-1"></div>
+                  New Draft
+                </button>
               </div>
               <div class="border-t border-gray-200 dark:border-gray-700">
-                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700">
-                  <li v-for="post in draftPosts" :key="post.id" class="px-4 py-4 sm:px-6">
+                <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+                  <li v-for="post in draftPosts" :key="post.id" class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-blue-gray-700 transition duration-150">
                     <div class="flex items-center justify-between">
                       <div>
-                        <div class="font-medium text-gray-900 dark:text-white">{{ post.title }}</div>
+                        <div class="font-medium text-gray-900 dark:text-white flex items-center">
+                          {{ post.title }}
+                          <span v-if="post.id === 6" class="ml-2 inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/30">Updated today</span>
+                        </div>
                         <div class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <div class="i-hugeicons-folder-01 h-4 w-4 mr-1"></div>
                           <span>{{ post.category }}</span>
                           <span class="mx-2">&middot;</span>
                           <div class="i-hugeicons-user-01 h-4 w-4 mr-1"></div>
                           <span>{{ post.author }}</span>
+                          <span v-if="post.id === 7" class="ml-2 inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400 dark:ring-yellow-500/30">Needs review</span>
                         </div>
                       </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                      <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                        <div class="i-hugeicons-calendar h-4 w-4 mr-1"></div>
                         Last edited: {{ post.lastEdited }}
                       </div>
+                    </div>
+                    <div class="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                      <div class="bg-blue-600 h-1.5 rounded-full" :style="{width: post.id === 6 ? '90%' : post.id === 7 ? '65%' : '40%'}"></div>
+                    </div>
+                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                      {{ post.id === 6 ? 'Almost ready' : post.id === 7 ? 'In progress' : 'Just started' }}
                     </div>
                     <div class="mt-2 flex space-x-2">
                       <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600">
@@ -381,8 +415,9 @@ const averageEngagement = '4.2%'
                     </div>
                   </li>
                 </ul>
-                <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-blue-gray-700">
+                <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-blue-gray-700 flex justify-between items-center">
                   <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View all drafts<span aria-hidden="true"> &rarr;</span></a>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">Showing 3 of 12 drafts</div>
                 </div>
               </div>
             </div>
