@@ -498,7 +498,7 @@ const createDiagram = () => {
     'post': { x: width * 0.8, y: 150 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.2, y: 450 },
+    'accessToken': { x: width * 0.2, y: 500 }, // Moved down to avoid overlapping
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
@@ -708,9 +708,9 @@ const createDiagram = () => {
         .attr('stroke-width', 1)
         .attr('stroke-opacity', 0.3)
 
-      // Relationships container
+      // Relationships container - added margin above relationships section
       const relationshipsGroup = g.append('g')
-        .attr('transform', `translate(0, ${relationshipsY})`)
+        .attr('transform', `translate(0, ${relationshipsY + 10})`) // Added 10px margin
 
       // Add each relationship on its own row
       d.relationships.forEach((rel, i) => {
@@ -805,7 +805,7 @@ const createDiagram = () => {
 
   // Add a legend for relationship types with improved visibility
   const legend = svg.append('g')
-    .attr('transform', `translate(${width - 220}, 20)`)
+    .attr('transform', `translate(${width - 220}, 40)`) // Moved down to center vertically
     .attr('class', 'legend')
 
   // Add legend background for better visibility
