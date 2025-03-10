@@ -11,6 +11,7 @@ useHead({
 interface ModelNode extends d3.SimulationNodeDatum {
   id: string
   name: string
+  emoji: string
   properties: Array<{name: string, type: string, nullable: boolean}>
   relationships: Array<{type: string, model: string, collection?: string}>
   color: string
@@ -52,6 +53,7 @@ const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
+    emoji: '👤',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -79,6 +81,7 @@ const models: ModelNode[] = [
   {
     id: 'team',
     name: 'Team',
+    emoji: '👥',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -100,6 +103,7 @@ const models: ModelNode[] = [
   {
     id: 'post',
     name: 'Post',
+    emoji: '📝',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'title', type: 'string', nullable: false },
@@ -117,6 +121,7 @@ const models: ModelNode[] = [
   {
     id: 'subscriber',
     name: 'Subscriber',
+    emoji: '📫',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'email', type: 'string', nullable: false },
@@ -133,6 +138,7 @@ const models: ModelNode[] = [
   {
     id: 'subscriberEmail',
     name: 'SubscriberEmail',
+    emoji: '✉️',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'subscriber_id', type: 'bigInteger', nullable: false },
@@ -148,6 +154,7 @@ const models: ModelNode[] = [
   {
     id: 'accessToken',
     name: 'AccessToken',
+    emoji: '🔑',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'token', type: 'string', nullable: false },
@@ -164,6 +171,7 @@ const models: ModelNode[] = [
   {
     id: 'deployment',
     name: 'Deployment',
+    emoji: '🚀',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'status', type: 'string', nullable: false },
@@ -180,6 +188,7 @@ const models: ModelNode[] = [
   {
     id: 'project',
     name: 'Project',
+    emoji: '📂',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'name', type: 'string', nullable: false },
@@ -196,6 +205,7 @@ const models: ModelNode[] = [
   {
     id: 'release',
     name: 'Release',
+    emoji: '📦',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'version', type: 'string', nullable: false },
@@ -211,6 +221,7 @@ const models: ModelNode[] = [
   {
     id: 'order',
     name: 'Order',
+    emoji: '🛒',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'status', type: 'string', nullable: false },
@@ -228,6 +239,7 @@ const models: ModelNode[] = [
   {
     id: 'orderItem',
     name: 'OrderItem',
+    emoji: '📋',
     properties: [
       { name: 'id', type: 'bigInteger', nullable: false },
       { name: 'quantity', type: 'integer', nullable: false },
@@ -392,6 +404,7 @@ const createDiagram = () => {
 
   const width = diagramContainer.value.clientWidth
   const height = 800 // Increased height for better spacing
+  const cardWidth = 310 // Card width defined here for consistent reference
 
   // Clear existing visualization
   d3.select(diagramContainer.value).selectAll('*').remove()
@@ -516,9 +529,6 @@ const createDiagram = () => {
   const nodeGroup = g.append('g')
     .attr('class', 'nodes')
 
-  // Card width increased to accommodate longer property names
-  const cardWidth = 280
-
   // Create nodes
   const node = nodeGroup
     .selectAll('g')
@@ -529,7 +539,8 @@ const createDiagram = () => {
       const y = d.posY || height / 2
       return `translate(${x - cardWidth/2}, ${y - 40})`
     })
-    .call(d3.drag<any, ModelNode>()
+    .attr('cursor', 'move') // Add cursor style to indicate draggable
+    .call(d3.drag<any, ModelNode>() // Use any for the element type to avoid type issues
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended))
@@ -539,8 +550,7 @@ const createDiagram = () => {
     .attr('width', cardWidth)
     .attr('height', d => {
       const propsHeight = d.properties.length * 24
-      const relationshipsHeight = d.relationships.length > 0 ?
-        (d.relationships.length * 24) + 10 : 0
+      const relationshipsHeight = d.relationships.length * 24 + 10
       return 60 + propsHeight + relationshipsHeight
     })
     .attr('rx', 8)
@@ -555,8 +565,7 @@ const createDiagram = () => {
     .attr('height', d => {
       // Calculate height based on properties and relationships
       const propsHeight = d.properties.length * 24
-      const relationshipsHeight = d.relationships.length > 0 ?
-        (d.relationships.length * 24) + 10 : 0
+      const relationshipsHeight = d.relationships.length * 24 + 10
       return 60 + propsHeight + relationshipsHeight
     })
     .attr('rx', 8)
@@ -565,7 +574,7 @@ const createDiagram = () => {
     .attr('stroke', d => d.color)
     .attr('stroke-width', 2)
 
-  // Add header with model name
+  // Add header with model name and emoji
   node.append('g')
     .attr('class', 'header')
     .each(function(d) {
@@ -579,11 +588,19 @@ const createDiagram = () => {
         .attr('ry', 8)
         .attr('fill', '#1E293B')
 
+      // Emoji
+      header.append('text')
+        .attr('x', 20)
+        .attr('y', 25)
+        .attr('dominant-baseline', 'middle')
+        .attr('font-size', '20px')
+        .text(d.emoji)
+
       // Model name
       header.append('text')
-        .attr('x', cardWidth / 2)
+        .attr('x', 50)
         .attr('y', 25)
-        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'middle')
         .attr('fill', '#E5E7EB')
         .attr('font-weight', 'bold')
         .text(d.name)
@@ -656,41 +673,24 @@ const createDiagram = () => {
         .attr('stroke-width', 1)
         .attr('stroke-opacity', 0.3)
 
-      // Group relationships by type
-      const relationshipsByType: Record<string, Array<{model: string, collection?: string}>> = {}
-
-      d.relationships.forEach(rel => {
-        const relType = rel.type || 'unknown'
-        if (!relationshipsByType[relType]) {
-          relationshipsByType[relType] = []
-        }
-        relationshipsByType[relType].push({
-          model: rel.model,
-          collection: rel.collection
-        })
-      })
-
       // Relationships container
       const relationshipsGroup = g.append('g')
         .attr('transform', `translate(0, ${relationshipsY})`)
 
-      // Add relationships by type
-      let rowIndex = 0
-      Object.entries(relationshipsByType).forEach(([type, models]) => {
-        const y = 20 + rowIndex * 24
-        rowIndex++
-
+      // Add each relationship on its own row
+      d.relationships.forEach((rel, i) => {
+        const y = 20 + i * 24
         const row = relationshipsGroup.append('g')
           .attr('transform', `translate(0, ${y})`)
 
-        // Create colored background for relationship type
+        // Create colored background for relationship
         let bgColor = relationshipColors.belongsTo // Default red for belongsTo
 
-        if (type === 'hasMany') {
+        if (rel.type === 'hasMany') {
           bgColor = relationshipColors.hasMany
-        } else if (type === 'hasOne') {
+        } else if (rel.type === 'hasOne') {
           bgColor = relationshipColors.hasOne
-        } else if (type === 'belongsToMany') {
+        } else if (rel.type === 'belongsToMany') {
           bgColor = relationshipColors.belongsToMany
         }
 
@@ -715,17 +715,16 @@ const createDiagram = () => {
           .attr('fill', bgColor)
           .attr('font-size', '14px')
           .attr('font-weight', 'bold')
-          .text(type + ':')
+          .text(rel.type + ':')
 
-        // Related models - improved vertical alignment
-        const modelsList = models.map(m => m.model + (m.collection ? ` (${m.collection})` : '')).join(', ')
+        // Related model - improved vertical alignment
         row.append('text')
           .attr('x', 120)
           .attr('y', 0)
           .attr('dominant-baseline', 'middle') // Improved vertical alignment
           .attr('fill', '#E5E7EB')
           .attr('font-size', '14px')
-          .text(modelsList)
+          .text(rel.model + (rel.collection ? ` (${rel.collection})` : ''))
       })
     }
   })
@@ -819,22 +818,24 @@ const createDiagram = () => {
 // Drag functions
 function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   if (!event.active && simulation) simulation.alphaTarget(0.3).restart()
+
+  // Store the initial position for this drag operation
+  const node = event.subject
+  node.fx = node.posX
+  node.fy = node.posY
 }
 
 function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
-  // Update the model's position
   const node = event.subject
-  if (node) {
-    node.posX = event.x + 140 // Adjust for the transform offset (half of cardWidth)
-    node.posY = event.y + 40  // Adjust for the transform offset
-  }
+  const cardWidth = 310 // Same as defined in createDiagram
 
-  // Update the node position
-  d3.select(event.sourceEvent.currentTarget.parentNode)
-    .select(`g[transform="translate(${event.x}, ${event.y})"]`)
-    .attr('transform', `translate(${event.x}, ${event.y})`)
+  // Calculate the new position
+  node.fx = event.x + cardWidth/2
+  node.fy = event.y + 40
+  node.posX = node.fx
+  node.posY = node.fy
 
-  // Update this specific node's transform
+  // Update the node position in the DOM
   d3.select(event.sourceEvent.currentTarget)
     .attr('transform', `translate(${event.x}, ${event.y})`)
 
@@ -844,6 +845,14 @@ function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
 
 function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   if (!event.active && simulation) simulation.alphaTarget(0)
+
+  // Keep the node fixed at its new position
+  const node = event.subject
+  node.posX = node.fx || node.posX
+  node.posY = node.fy || node.posY
+
+  // Update links one final time
+  updateLinks()
 }
 
 // Function to update links after dragging
