@@ -1,18 +1,23 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { ProductCategoryModel } from './ProductCategory'
+import type { ProductManufacturerModel } from './ProductManufacturer'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import ProductCategory from './ProductCategory'
 
+import ProductManufacturer from './ProductManufacturer'
+
 export interface ProductsTable {
   id: Generated<number>
   product_category_id: number
+  product_manufacturer_id: number
   name: string
   description?: string
   price: number
@@ -144,6 +149,14 @@ export class ProductModel {
 
   get product_category(): ProductCategoryModel | undefined {
     return this.attributes.product_category
+  }
+
+  get product_manufacturer_id(): number {
+    return this.attributes.product_manufacturer_id
+  }
+
+  get product_manufacturer(): ProductManufacturerModel | undefined {
+    return this.attributes.product_manufacturer
   }
 
   get id(): number {
@@ -1769,6 +1782,20 @@ export class ProductModel {
     return model
   }
 
+  async productManufacturerBelong(): Promise<ProductManufacturerModel> {
+    if (this.product_manufacturer_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await ProductManufacturer
+      .where('id', '=', this.product_manufacturer_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   toSearchableObject(): Partial<ProductJsonResponse> {
     return {
       id: this.id,
@@ -1836,6 +1863,8 @@ export class ProductModel {
 
       product_category_id: this.product_category_id,
       product_category: this.product_category,
+      product_manufacturer_id: this.product_manufacturer_id,
+      product_manufacturer: this.product_manufacturer,
       ...this.customColumns,
     }
 

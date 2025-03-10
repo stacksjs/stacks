@@ -11,9 +11,10 @@ import type {
 } from '../../orm/src/models/Customer'
 import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
 // Import the OrderTable type from the ORM
-import type { OrdersTable } from '../../orm/src/models/Order'
+import type { OrderJsonResponse, OrdersTable } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
 import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
+import type { ProductManufacturerJsonResponse } from '../../orm/src/models/ProductManufacturer'
 
 // Re-export the types
 export type {
@@ -72,10 +73,6 @@ export interface OrderResponse {
     total_pages: number
   }
   next_cursor: number | null
-}
-
-export interface OrderJsonResponse extends OrderTable {
-  [key: string]: any
 }
 
 export type OrderType = Selectable<OrdersTable>
@@ -213,14 +210,17 @@ export interface FetchGiftCardsOptions {
   max_balance?: number
 }
 
-export interface GiftCardResponse {
-  data: GiftCardJsonResponse[]
+interface BaseResponse {
   paging: {
     total_records: number
     page: number
     total_pages: number
   }
   next_cursor: number | null
+}
+
+export interface GiftCardResponse extends BaseResponse {
+  data: GiftCardJsonResponse[]
 }
 
 export interface GiftCardStats {
@@ -241,16 +241,13 @@ export interface FetchProductReviewsOptions {
   limit?: number
 }
 
-export interface ProductReviewResponse {
+export interface ProductReviewResponse extends BaseResponse {
   data: ProductReviewJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
 }
 
+export interface ProductManufacturerResponse extends BaseResponse {
+  data: ProductManufacturerJsonResponse[]
+}
 export interface ProductReviewStats {
   total: number
   average_rating: number
@@ -262,4 +259,30 @@ export interface ProductReviewStats {
     five_star: number
   }
   recent_reviews: ProductReviewJsonResponse[]
+}
+
+/**
+ * Options for fetching product manufacturers
+ */
+export interface FetchProductManufacturersOptions {
+  /** Page number for pagination */
+  page?: number
+  
+  /** Number of items per page */
+  limit?: number
+  
+  /** Field to sort by */
+  sortBy?: 'manufacturer' | 'country' | 'created_at' | 'updated_at'
+  
+  /** Sort direction */
+  sortDirection?: 'asc' | 'desc'
+  
+  /** Filter by country */
+  country?: string
+  
+  /** Filter by featured status */
+  featured?: boolean
+  
+  /** Search term to filter results */
+  search?: string
 }
