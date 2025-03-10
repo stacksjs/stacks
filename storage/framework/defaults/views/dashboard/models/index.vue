@@ -498,18 +498,18 @@ const createDiagram = () => {
     'post': { x: width * 0.8, y: 150 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.2, y: 550 }, // Further moved down to avoid overlapping
+    'accessToken': { x: width * 0.2, y: 600 }, // Further moved down to avoid overlapping
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
-    'project': { x: width * 0.2, y: 750 },
-    'order': { x: width * 0.5, y: 750 },
-    'subscriberEmail': { x: width * 0.8, y: 750 },
+    'project': { x: width * 0.2, y: 800 },
+    'order': { x: width * 0.5, y: 800 },
+    'subscriberEmail': { x: width * 0.8, y: 800 },
 
     // Fourth row - better distributed with more horizontal spacing
-    'deployment': { x: width * 0.1, y: 1050 },
-    'release': { x: width * 0.35, y: 1050 },
-    'orderItem': { x: width * 0.65, y: 1050 }
+    'deployment': { x: width * 0.1, y: 1100 },
+    'release': { x: width * 0.35, y: 1100 },
+    'orderItem': { x: width * 0.65, y: 1100 }
   }
 
   // Apply initial positions to models and store them for dragging
@@ -585,7 +585,7 @@ const createDiagram = () => {
     .attr('width', cardWidth)
     .attr('height', d => {
       const propsHeight = d.properties.length * 22 // Reduced from 24
-      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 22 + 20) : 0 // Reduced from 24
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 35) : 0 // Added 10px for margin below properties
       return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
@@ -600,7 +600,7 @@ const createDiagram = () => {
     .attr('height', d => {
       // Calculate height based on properties and relationships with reduced height
       const propsHeight = d.properties.length * 22 // Reduced from 24
-      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 22 + 20) : 0 // Reduced from 24
+      const relationshipsHeight = d.relationships.length > 0 ? (d.relationships.length * 30 + 35) : 0 // Added 10px for margin below properties
       return 50 + propsHeight + relationshipsHeight // Reduced from 60
     })
     .attr('rx', 8)
@@ -696,7 +696,7 @@ const createDiagram = () => {
 
     // Add relationships section if there are any
     if (d.relationships.length > 0) {
-      const relationshipsY = 36 + d.properties.length * 22 // Adjusted from 40 and 24
+      const relationshipsY = 36 + d.properties.length * 22 + 10 // Added 10px margin below properties
 
       // Add relationship divider line
       g.append('line')
@@ -710,11 +710,11 @@ const createDiagram = () => {
 
       // Relationships container - added margin above relationships section
       const relationshipsGroup = g.append('g')
-        .attr('transform', `translate(0, ${relationshipsY + 10})`) // Added 10px margin
+        .attr('transform', `translate(0, ${relationshipsY + 15})`) // Increased margin from 10px to 15px
 
       // Add each relationship on its own row
       d.relationships.forEach((rel, i) => {
-        const y = 18 + i * 22 // Reduced from 20 and 24
+        const y = 18 + i * 30 // Increased spacing between relationships from 22 to 30
         const row = relationshipsGroup.append('g')
           .attr('transform', `translate(0, ${y})`)
 
@@ -732,9 +732,9 @@ const createDiagram = () => {
         // Add relationship background - adjusted to match reference image
         row.append('rect')
           .attr('x', 0)
-          .attr('y', -12)
+          .attr('y', -15) // Increased from -12 to -15 for more padding
           .attr('width', cardWidth)
-          .attr('height', 24)
+          .attr('height', 30) // Increased from 24 to 30 for more padding
           .attr('fill', bgColor)
           .attr('fill-opacity', 0.1)
           .attr('stroke', bgColor)
@@ -746,17 +746,17 @@ const createDiagram = () => {
           .attr('y', 0)
           .attr('dominant-baseline', 'middle')
           .attr('fill', bgColor)
-          .attr('font-size', '16px')
+          .attr('font-size', '18px') // Increased from 16px to 18px
           .attr('font-weight', 'bold')
           .text(rel.type + ':')
 
         // Related model - improved vertical alignment
         row.append('text')
-          .attr('x', 160)
+          .attr('x', 180) // Increased from 160 to 180 for more spacing
           .attr('y', 0)
           .attr('dominant-baseline', 'middle')
           .attr('fill', '#FFFFFF')
-          .attr('font-size', '16px')
+          .attr('font-size', '18px') // Increased from 16px to 18px
           .attr('font-weight', 'medium')
           .text(rel.model)
       })
@@ -810,9 +810,9 @@ const createDiagram = () => {
   // Add legend background for better visibility
   legend.append('rect')
     .attr('x', -10)
-    .attr('y', -10)
+    .attr('y', -15) // Adjusted for better vertical centering
     .attr('width', 220)
-    .attr('height', 120) // Reduced height to balance spacing
+    .attr('height', 130) // Adjusted for better vertical centering
     .attr('rx', 8)
     .attr('ry', 8)
     .attr('fill', 'rgba(30, 41, 59, 0.8)') // Dark background with transparency
@@ -828,7 +828,7 @@ const createDiagram = () => {
 
   relationshipTypes.forEach((rel, i) => {
     const legendItem = legend.append('g')
-      .attr('transform', `translate(10, ${i * 25 + 15})`)
+      .attr('transform', `translate(10, ${i * 25 + 20})`) // Adjusted for better vertical centering
 
     // Line sample
     legendItem.append('line')
