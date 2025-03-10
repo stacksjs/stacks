@@ -493,16 +493,16 @@ const createDiagram = () => {
   // Set initial positions for models based on the reference image layout
   const initialPositions: Record<string, {x: number, y: number}> = {
     // Top row - more evenly spaced
-    'team': { x: width * 0.1, y: 150 },
+    'team': { x: width * 0.2, y: 150 },
     'user': { x: width * 0.5, y: 150 },
     'post': { x: width * 0.8, y: 150 },
 
     // Second row - better distributed
-    'accessToken': { x: width * 0.1, y: 550 }, // Further moved down to avoid overlapping
+    'accessToken': { x: width * 0.2, y: 550 }, // Further moved down to avoid overlapping
     'subscriber': { x: width * 0.8, y: 450 },
 
     // Third row - more evenly spaced
-    'project': { x: width * 0.2, y: 1400 },
+    'project': { x: width * 0.2, y: 750 },
     'order': { x: width * 0.5, y: 750 },
     'subscriberEmail': { x: width * 0.8, y: 750 },
 
@@ -542,7 +542,7 @@ const createDiagram = () => {
     .attr('transform', d => {
       const x = d.posX || width / 2
       const y = d.posY || height / 2
-      return `translate(${x - cardWidth/2}, ${y - 40})`
+      return `translate(${x - cardWidth/2}, ${y - 25})`
     })
     .attr('cursor', 'move') // Add cursor style to indicate draggable
     .call(d3.drag<any, ModelNode>()
@@ -568,7 +568,7 @@ const createDiagram = () => {
 
         // Update the data position for the node
         d.posX = x + cardWidth/2;
-        d.posY = y + 40;
+        d.posY = y + 25;
 
         // Update links
         updateLinks();
@@ -731,35 +731,34 @@ const createDiagram = () => {
 
         // Add relationship background - adjusted to match reference image
         row.append('rect')
-          .attr('x', 12)
+          .attr('x', 0)
           .attr('y', -12)
-          .attr('width', cardWidth - 24)
+          .attr('width', cardWidth)
           .attr('height', 24)
-          .attr('rx', 4)
-          .attr('ry', 4)
           .attr('fill', bgColor)
           .attr('fill-opacity', 0.1)
           .attr('stroke', bgColor)
           .attr('stroke-width', 1)
 
-        // Relationship type - improved vertical alignment
+        // Relationship type - improved vertical alignment with bold styling
         row.append('text')
           .attr('x', 24)
           .attr('y', 0)
-          .attr('dominant-baseline', 'middle') // Improved vertical alignment
+          .attr('dominant-baseline', 'middle')
           .attr('fill', bgColor)
-          .attr('font-size', '14px')
+          .attr('font-size', '16px')
           .attr('font-weight', 'bold')
           .text(rel.type + ':')
 
         // Related model - improved vertical alignment
         row.append('text')
-          .attr('x', 120)
+          .attr('x', 160)
           .attr('y', 0)
-          .attr('dominant-baseline', 'middle') // Improved vertical alignment
-          .attr('fill', '#E5E7EB')
-          .attr('font-size', '14px')
-          .text(rel.model + (rel.collection ? ` (${rel.collection})` : ''))
+          .attr('dominant-baseline', 'middle')
+          .attr('fill', '#FFFFFF')
+          .attr('font-size', '16px')
+          .attr('font-weight', 'medium')
+          .text(rel.model)
       })
     }
   })
