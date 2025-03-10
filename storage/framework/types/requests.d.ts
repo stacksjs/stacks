@@ -298,6 +298,46 @@ export interface CustomerRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataProductReview {
+  id: number
+  product_id: string
+  user_id: number
+  rating: number
+  title: string
+  content: string
+  is_verified_purchase: boolean
+  is_approved: boolean
+  helpful_votes: number
+  unhelpful_votes: number
+  purchase_date: string
+  images: string
+  pros: string
+  cons: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ProductReviewRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataProductReview
+  id: number
+  product_id: string
+  user_id: number
+  rating: number
+  title: string
+  content: string
+  is_verified_purchase: boolean
+  is_approved: boolean
+  helpful_votes: number
+  unhelpful_votes: number
+  purchase_date: string
+  images: string
+  pros: string
+  cons: string
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataProduct {
   id: number
   name: string
@@ -778,4 +818,4 @@ export interface ProductCategoryRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductReviewRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType

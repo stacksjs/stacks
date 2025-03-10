@@ -16,6 +16,7 @@ import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductCategoriesTable } from '../src/models/ProductCategory'
+import type { ProductReviewsTable } from '../src/models/ProductReview'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
@@ -71,6 +72,7 @@ export interface Database {
   order_items: OrderItemsTable
   failed_jobs: FailedJobsTable
   customers: CustomersTable
+  product_reviews: ProductReviewsTable
   products: ProductsTable
   payment_methods: PaymentMethodsTable
   payment_transactions: PaymentTransactionsTable

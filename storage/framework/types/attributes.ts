@@ -41,6 +41,18 @@ export interface Attributes {
   total_spent: number
   last_order: string
   avatar: string
+  product_id: string
+  user_id: number
+  rating: number
+  content: string
+  is_verified_purchase: boolean
+  is_approved: boolean
+  helpful_votes: number
+  unhelpful_votes: number
+  purchase_date: string
+  images: string
+  pros: string
+  cons: string
   image_url: string
   is_available: boolean
   inventory_count: number

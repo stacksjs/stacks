@@ -10,6 +10,12 @@ route.patch('customers/{id}', 'CustomerUpdateOrmAction')
 
 route.delete('customers/{id}', 'CustomerDestroyOrmAction')
 
+route.get('product-reviews', 'ProductReviewIndexOrmAction')
+
+route.post('product-reviews', 'ProductReviewStoreOrmAction')
+
+route.get('product-reviews/{id}', 'ProductReviewShowOrmAction')
+
 route.get('products', 'ProductIndexOrmAction')
 
 route.post('products', 'ProductStoreOrmAction')

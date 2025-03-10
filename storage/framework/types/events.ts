@@ -6,6 +6,7 @@ import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductCategoryModel } from '../orm/src/models/ProductCategory'
+import type { ProductReviewModel } from '../orm/src/models/ProductReview'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 
@@ -17,6 +18,9 @@ export interface ModelEvents {
   'customer:created': CustomerModel
   'customer:updated': CustomerModel
   'customer:deleted': CustomerModel
+  'productreview:created': ProductReviewModel
+  'productreview:updated': ProductReviewModel
+  'productreview:deleted': ProductReviewModel
   'product:created': ProductModel
   'product:updated': ProductModel
   'product:deleted': ProductModel
