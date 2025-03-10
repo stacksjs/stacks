@@ -366,16 +366,6 @@ const createDiagram = () => {
   // Create container for zoomable content
   const g = svg.append('g')
 
-  // Create links with gradients
-  const link = g.append('g')
-    .selectAll('line')
-    .data(relationships)
-    .join('line')
-    .attr('stroke', '#9CA3AF')
-    .attr('stroke-width', 2)
-    .attr('stroke-dasharray', d => d.type === 'belongsToMany' ? '5,5' : 'none')
-    .attr('marker-end', 'url(#arrow)')
-
   // Create nodes
   const node = g.append('g')
     .selectAll('g')
@@ -386,10 +376,16 @@ const createDiagram = () => {
       .on('drag', dragged)
       .on('end', dragended))
 
-  // Add rectangles for nodes with color
+  // Add main rectangles for nodes with color border
   node.append('rect')
     .attr('width', 200)
-    .attr('height', d => 60 + d.properties.length * 24)
+    .attr('height', d => {
+      // Calculate height based on properties and relationships
+      const propsHeight = d.properties.length * 24
+      const relationshipsHeight = d.relationships.length > 0 ?
+        (d.relationships.length * 24) + 10 : 0
+      return 60 + propsHeight + relationshipsHeight
+    })
     .attr('rx', 8)
     .attr('ry', 8)
     .attr('fill', '#1E293B') // Dark background
@@ -434,7 +430,7 @@ const createDiagram = () => {
       const row = propertiesGroup.append('g')
         .attr('transform', `translate(0, ${y})`)
 
-      // Primary key indicator
+      // Primary key indicator (yellow dot for id)
       if (prop.name === 'id') {
         row.append('circle')
           .attr('cx', 10)
@@ -472,7 +468,17 @@ const createDiagram = () => {
 
     // Add relationships section if there are any
     if (d.relationships.length > 0) {
-      const relationshipsY = 40 + d.properties.length * 24 + 10
+      const relationshipsY = 40 + d.properties.length * 24
+
+      // Add relationship divider line
+      g.append('line')
+        .attr('x1', 0)
+        .attr('y1', relationshipsY)
+        .attr('x2', 200)
+        .attr('y2', relationshipsY)
+        .attr('stroke', '#4B5563')
+        .attr('stroke-width', 1)
+        .attr('stroke-opacity', 0.3)
 
       // Relationships container
       const relationshipsGroup = g.append('g')
@@ -484,24 +490,67 @@ const createDiagram = () => {
         const row = relationshipsGroup.append('g')
           .attr('transform', `translate(0, ${y})`)
 
+        // Create colored background for relationship
+        const relationshipType = rel.type
+        let bgColor = '#EF4444' // Red for belongsTo
+
+        if (relationshipType === 'hasMany') {
+          bgColor = '#3B82F6' // Blue for hasMany
+        } else if (relationshipType === 'hasOne') {
+          bgColor = '#10B981' // Green for hasOne
+        } else if (relationshipType === 'belongsToMany') {
+          bgColor = '#8B5CF6' // Purple for belongsToMany
+        }
+
+        // Add relationship background
+        row.append('rect')
+          .attr('x', 10)
+          .attr('y', -12)
+          .attr('width', 180)
+          .attr('height', 24)
+          .attr('rx', 4)
+          .attr('ry', 4)
+          .attr('fill', bgColor)
+          .attr('fill-opacity', 0.1)
+          .attr('stroke', bgColor)
+          .attr('stroke-width', 1)
+          .attr('stroke-opacity', 0.3)
+
         // Relationship type
         row.append('text')
           .attr('x', 20)
           .attr('y', 0)
-          .attr('fill', '#EF4444') // Red for relationship type
+          .attr('fill', bgColor)
           .attr('font-size', '14px')
-          .text(rel.type + ':')
+          .attr('font-weight', 'bold')
+          .text(relationshipType + ':')
 
         // Related model
         row.append('text')
-          .attr('x', 100)
+          .attr('x', 110)
           .attr('y', 0)
-          .attr('fill', '#9CA3AF')
+          .attr('fill', '#E5E7EB')
           .attr('font-size', '14px')
           .text(rel.model)
       })
     }
   })
+
+  // Create links with gradients
+  const link = g.append('g')
+    .selectAll('line')
+    .data(relationships)
+    .join('line')
+    .attr('stroke', d => {
+      // Color links based on relationship type
+      if (d.type === 'hasMany') return '#3B82F6'
+      if (d.type === 'hasOne') return '#10B981'
+      if (d.type === 'belongsToMany') return '#8B5CF6'
+      return '#EF4444' // belongsTo
+    })
+    .attr('stroke-width', 2)
+    .attr('stroke-dasharray', d => d.type === 'belongsToMany' ? '5,5' : 'none')
+    .attr('marker-end', 'url(#arrow)')
 
   // Create force simulation
   simulation = d3.forceSimulation<ModelNode>(models)
