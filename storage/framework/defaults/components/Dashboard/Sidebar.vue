@@ -218,7 +218,7 @@ const sectionContent: Record<string, SectionContent> = {
   },
   commerce: {
     items: [
-      { to: '/commerce', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/commerce/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/commerce/customers', icon: 'i-hugeicons-user-account', text: 'Customers' },
       { to: '/commerce/orders', icon: 'i-hugeicons-search-list-01', text: 'Orders' },
       {
