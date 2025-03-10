@@ -22,6 +22,9 @@ interface ModelNode extends d3.SimulationNodeDatum {
   // Track position for dragging
   posX?: number
   posY?: number
+  // Drag offset properties
+  dragOffsetX?: number
+  dragOffsetY?: number
 }
 
 // Relationship link interface
@@ -483,28 +486,28 @@ const createDiagram = () => {
   // Create container for zoomable content
   const g = svg.append('g')
 
-  // Set initial positions for models (improved layout with better structure)
+  // Set initial positions for models (improved layout with better structure and spacing)
   const initialPositions: Record<string, {x: number, y: number}> = {
-    // Core models in the center
-    'user': { x: width / 2, y: height / 3 - 50 },
+    // Core models - User centered
+    'user': { x: width / 2, y: height / 4 },
 
-    // Left column
-    'team': { x: width / 2 - 350, y: height / 3 - 50 },
-    'project': { x: width / 2 - 350, y: height / 2 + 100 },
-    'deployment': { x: width / 2 - 350, y: height / 2 + 300 },
+    // Left column - Team related
+    'team': { x: width / 4, y: height / 4 },
+    'accessToken': { x: width / 4, y: height / 4 + 200 },
 
-    // Right column
-    'post': { x: width / 2 + 350, y: height / 3 - 50 },
-    'accessToken': { x: width / 2 + 350, y: height / 3 + 200 },
+    // Right column - Post related
+    'post': { x: width * 3/4, y: height / 4 },
+    'subscriber': { x: width * 3/4, y: height / 4 + 200 },
+    'subscriberEmail': { x: width * 3/4, y: height / 4 + 400 },
 
-    // Bottom row
-    'subscriber': { x: width / 2, y: height / 2 + 150 },
-    'subscriberEmail': { x: width / 2 + 350, y: height / 2 + 300 },
-    'release': { x: width / 2 - 150, y: height / 2 + 300 },
+    // Bottom left - Project related
+    'project': { x: width / 4, y: height * 2/3 },
+    'deployment': { x: width / 4 - 200, y: height * 2/3 + 200 },
+    'release': { x: width / 4 + 200, y: height * 2/3 + 200 },
 
-    // Top row
-    'order': { x: width / 2 - 150, y: height / 3 - 50 },
-    'orderItem': { x: width / 2 - 150, y: height / 3 + 150 }
+    // Bottom right - Order related
+    'order': { x: width * 3/4, y: height * 2/3 },
+    'orderItem': { x: width * 3/4, y: height * 2/3 + 200 }
   }
 
   // Apply initial positions to models and store them for dragging
@@ -543,20 +546,36 @@ const createDiagram = () => {
     .call(d3.drag<any, ModelNode>()
       .on('start', function(event) {
         if (!event.active && simulation) simulation.alphaTarget(0.3).restart();
+        // Store the initial mouse position relative to the node
+        const currentTransform = d3.select(this).attr('transform');
+        const match = /translate\(([^,]+),\s*([^)]+)\)/.exec(currentTransform || '');
+        if (match && match[1] && match[2]) {
+          const x = parseFloat(match[1]);
+          const y = parseFloat(match[2]);
+          event.subject.dragOffsetX = event.x - x;
+          event.subject.dragOffsetY = event.y - y;
+        }
       })
       .on('drag', function(event, d) {
+        // Calculate position accounting for the initial offset to prevent jumping
+        const x = event.x - (d.dragOffsetX || 0);
+        const y = event.y - (d.dragOffsetY || 0);
+
         // Update the visual position of the node
-        d3.select(this).attr('transform', `translate(${event.x}, ${event.y})`);
+        d3.select(this).attr('transform', `translate(${x}, ${y})`);
 
         // Update the data position for the node
-        d.posX = event.x + cardWidth/2;
-        d.posY = event.y + 40;
+        d.posX = x + cardWidth/2;
+        d.posY = y + 40;
 
         // Update links
         updateLinks();
       })
       .on('end', function(event) {
         if (!event.active && simulation) simulation.alphaTarget(0);
+        // Clean up the offset properties
+        delete event.subject.dragOffsetX;
+        delete event.subject.dragOffsetY;
       }))
 
   // Add shadow effect to nodes
