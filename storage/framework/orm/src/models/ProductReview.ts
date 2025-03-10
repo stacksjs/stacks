@@ -27,7 +27,7 @@ export interface ProductReviewsTable {
   unhelpful_votes?: number
   purchase_date?: string
   images?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -162,7 +162,7 @@ export class ProductReviewModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

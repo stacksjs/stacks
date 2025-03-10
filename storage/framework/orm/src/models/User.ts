@@ -31,7 +31,7 @@ export interface UsersTable {
   password: string
   public_passkey?: string
   stripe_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -188,7 +188,7 @@ export class UserModel {
     return this.attributes.stripe_id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

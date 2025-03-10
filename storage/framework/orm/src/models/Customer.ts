@@ -22,7 +22,7 @@ export interface CustomersTable {
   last_order?: string
   status: string | string[]
   avatar?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -161,7 +161,7 @@ export class CustomerModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

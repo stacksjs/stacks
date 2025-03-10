@@ -22,7 +22,7 @@ export interface SubscriptionsTable {
   trial_ends_at?: string
   ends_at?: string
   last_used_at?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -149,7 +149,7 @@ export class SubscriptionModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

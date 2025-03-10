@@ -20,7 +20,7 @@ export interface TransactionsTable {
   transaction_reference?: string
   loyalty_points_earned?: number
   loyalty_points_redeemed?: number
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -147,7 +147,7 @@ export class TransactionModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

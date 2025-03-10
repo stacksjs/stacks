@@ -16,7 +16,7 @@ export interface LoyaltyPointsTable {
   description?: string
   expiry_date?: string
   is_used?: boolean
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -135,7 +135,7 @@ export class LoyaltyPointModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

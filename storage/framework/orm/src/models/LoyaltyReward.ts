@@ -22,7 +22,7 @@ export interface LoyaltyRewardsTable {
   is_active?: boolean
   expiry_days?: number
   image_url?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -149,7 +149,7 @@ export class LoyaltyRewardModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

@@ -21,7 +21,7 @@ export interface PaymentMethodsTable {
   exp_year: number
   is_default?: boolean
   provider_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -152,7 +152,7 @@ export class PaymentMethodModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

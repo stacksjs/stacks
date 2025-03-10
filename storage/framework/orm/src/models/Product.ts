@@ -23,7 +23,7 @@ export interface ProductsTable {
   preparation_time: number
   allergens?: string
   nutritional_info?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -150,7 +150,7 @@ export class ProductModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

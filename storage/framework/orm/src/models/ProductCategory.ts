@@ -16,7 +16,7 @@ export interface ProductCategoriesTable {
   is_active?: boolean
   parent_category_id?: string
   display_order: number
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -139,7 +139,7 @@ export class ProductCategoryModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

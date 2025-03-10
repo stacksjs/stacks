@@ -31,7 +31,7 @@ export interface OrdersTable {
   special_instructions?: string
   estimated_delivery_time?: string
   applied_coupon_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -170,7 +170,7 @@ export class OrderModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

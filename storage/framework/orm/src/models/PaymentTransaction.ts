@@ -22,7 +22,7 @@ export interface PaymentTransactionsTable {
   amount: number
   type: string
   provider_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -157,7 +157,7 @@ export class PaymentTransactionModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

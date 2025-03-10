@@ -749,7 +749,7 @@ export async function generateModelString(
   }
 
   if (useUuid) {
-    getFields += `get uuid(): string {
+    getFields += `get uuid(): string | undefined {
       return this.attributes.uuid
     }\n\n`
 
@@ -867,7 +867,7 @@ export async function generateModelString(
     fieldString += 'stripe_id?: string \n'
 
   if (useUuid)
-    fieldString += 'uuid: string \n'
+    fieldString += 'uuid?: string \n'
 
   if (useTimestamps) {
     fieldString += `

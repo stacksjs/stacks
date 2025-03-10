@@ -29,7 +29,7 @@ export interface CouponsTable {
   end_date: string
   applicable_products?: string
   applicable_categories?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -160,7 +160,7 @@ export class CouponModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

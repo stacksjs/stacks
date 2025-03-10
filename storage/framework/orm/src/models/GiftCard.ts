@@ -30,7 +30,7 @@ export interface GiftCardsTable {
   expiry_date?: string
   last_used_date?: string
   template_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -161,7 +161,7 @@ export class GiftCardModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

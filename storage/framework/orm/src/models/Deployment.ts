@@ -19,7 +19,7 @@ export interface DeploymentsTable {
   execution_time: number
   deploy_script: string
   terminal_output: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -146,7 +146,7 @@ export class DeploymentModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 

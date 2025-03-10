@@ -1,7 +1,6 @@
-import type { GiftCardRequestType, ProductRequestType } from '@stacksjs/orm'
-import type { GiftCardJsonResponse, NewGiftCard } from '../../../../orm/src/models/GiftCard'
-import { db } from '@stacksjs/database'
+import type { ProductRequestType } from '@stacksjs/orm'
 import type { NewProductReview, ProductReviewJsonResponse } from '../../../../orm/src/models/ProductReview'
+import { db } from '@stacksjs/database'
 
 /**
  * Create a new gift card

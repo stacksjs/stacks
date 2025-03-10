@@ -15,7 +15,7 @@ export interface PaymentProductsTable {
   status?: string
   image?: string
   provider_id?: string
-  uuid: string
+  uuid?: string
 
   created_at?: Date
 
@@ -134,7 +134,7 @@ export class PaymentProductModel {
     return this.attributes.id
   }
 
-  get uuid(): string {
+  get uuid(): string | undefined {
     return this.attributes.uuid
   }
 
