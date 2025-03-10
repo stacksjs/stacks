@@ -11,9 +11,8 @@ useHead({
 interface ModelNode extends d3.SimulationNodeDatum {
   id: string
   name: string
-  properties: string[]
-  relationships: string[]
-  emoji: string
+  properties: Array<{name: string, type: string, nullable: boolean}>
+  relationships: Array<{type: string, model: string}>
   color: string
   x?: number
   y?: number
@@ -28,114 +27,185 @@ interface RelationshipLink {
   type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
 }
 
-// ERD node interface
-interface ERDNode extends d3.SimulationNodeDatum {
-  id: string
-  name: string
-  columns: string[]
-  x?: number
-  y?: number
-  fx?: number | null
-  fy?: number | null
+// Define color palette for models
+const colorPalette = {
+  primary: '#2563EB',    // Blue
+  secondary: '#DB2777',  // Pink
+  tertiary: '#0D9488',   // Teal
+  quaternary: '#7E22CE', // Purple
+  gray: '#4B5563',       // Gray
 }
 
-// ERD link interface
-interface ERDLink {
-  source: string | ERDNode
-  target: string | ERDNode
-  sourceColumn: string
-  targetColumn: string
-}
-
-// Model definitions with colors and emojis
+// Model definitions based on actual Models directory
 const models: ModelNode[] = [
   {
     id: 'user',
     name: 'User',
-    properties: ['id', 'name', 'email', 'password'],
-    relationships: ['teams', 'accessTokens', 'activities'],
-    emoji: '👤',
-    color: '#2563EB' // blue-600 (parent)
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'name', type: 'string', nullable: false },
+      { name: 'email', type: 'string', nullable: false },
+      { name: 'email_verified_at', type: 'timestamp', nullable: true },
+      { name: 'password', type: 'string', nullable: false },
+      { name: 'two_factor_secret', type: 'text', nullable: true },
+      { name: 'two_factor_recovery_codes', type: 'text', nullable: true },
+      { name: 'two_factor_confirmed_at', type: 'timestamp', nullable: true },
+      { name: 'remember_token', type: 'string', nullable: true },
+      { name: 'current_team_id', type: 'bigInteger', nullable: true },
+      { name: 'profile_photo_path', type: 'string', nullable: true },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'hasOne', model: 'Subscriber' },
+      { type: 'hasMany', model: 'Deployment' },
+      { type: 'hasMany', model: 'Post' },
+      { type: 'belongsToMany', model: 'Team' }
+    ],
+    color: colorPalette.primary
   },
   {
     id: 'team',
     name: 'Team',
-    properties: ['id', 'name', 'owner_id'],
-    relationships: ['users', 'owner'],
-    emoji: '👥',
-    color: '#60A5FA' // blue-400
-  },
-  {
-    id: 'project',
-    name: 'Project',
-    properties: ['id', 'name', 'description'],
-    relationships: ['deployments', 'releases'],
-    emoji: '📂',
-    color: '#DB2777' // pink-600 (parent)
-  },
-  {
-    id: 'deployment',
-    name: 'Deployment',
-    properties: ['id', 'status', 'project_id'],
-    relationships: ['project'],
-    emoji: '🚀',
-    color: '#F472B6' // pink-400
-  },
-  {
-    id: 'release',
-    name: 'Release',
-    properties: ['id', 'version', 'project_id'],
-    relationships: ['project'],
-    emoji: '📦',
-    color: '#F9A8D4' // pink-300
-  },
-  {
-    id: 'activity',
-    name: 'Activity',
-    properties: ['id', 'type', 'user_id'],
-    relationships: ['user'],
-    emoji: '📊',
-    color: '#93C5FD' // blue-300
-  },
-  {
-    id: 'subscriber',
-    name: 'Subscriber',
-    properties: ['id', 'email', 'status'],
-    relationships: ['subscriberEmails'],
-    emoji: '📫',
-    color: '#0D9488' // teal-600 (parent)
-  },
-  {
-    id: 'subscriberEmail',
-    name: 'SubscriberEmail',
-    properties: ['id', 'email', 'subscriber_id'],
-    relationships: ['subscriber'],
-    emoji: '✉️',
-    color: '#2DD4BF' // teal-400
-  },
-  {
-    id: 'accessToken',
-    name: 'AccessToken',
-    properties: ['id', 'token', 'user_id'],
-    relationships: ['user'],
-    emoji: '🔑',
-    color: '#3B82F6' // blue-500
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'name', type: 'string', nullable: false },
+      { name: 'companyName', type: 'string', nullable: false },
+      { name: 'email', type: 'string', nullable: false },
+      { name: 'billingEmail', type: 'string', nullable: false },
+      { name: 'status', type: 'string', nullable: false },
+      { name: 'description', type: 'string', nullable: false },
+      { name: 'isPersonal', type: 'boolean', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsToMany', model: 'User' },
+      { type: 'hasMany', model: 'AccessToken' }
+    ],
+    color: colorPalette.primary
   },
   {
     id: 'post',
     name: 'Post',
-    properties: ['id', 'title', 'content'],
-    relationships: ['user'],
-    emoji: '📝',
-    color: '#BFDBFE' // blue-200
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'title', type: 'string', nullable: false },
+      { name: 'body', type: 'text', nullable: false },
+      { name: 'image', type: 'string', nullable: true },
+      { name: 'user_id', type: 'bigInteger', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'User' }
+    ],
+    color: colorPalette.secondary
   },
   {
-    id: 'request',
-    name: 'Request',
-    properties: ['id', 'method', 'url', 'status'],
-    relationships: [],
-    emoji: '🌐',
-    color: '#7E22CE' // purple-700
+    id: 'subscriber',
+    name: 'Subscriber',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'email', type: 'string', nullable: false },
+      { name: 'status', type: 'string', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'hasMany', model: 'SubscriberEmail' }
+    ],
+    color: colorPalette.tertiary
+  },
+  {
+    id: 'subscriberEmail',
+    name: 'SubscriberEmail',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'subscriber_id', type: 'bigInteger', nullable: false },
+      { name: 'email', type: 'string', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'Subscriber' }
+    ],
+    color: colorPalette.tertiary
+  },
+  {
+    id: 'accessToken',
+    name: 'AccessToken',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'token', type: 'string', nullable: false },
+      { name: 'user_id', type: 'bigInteger', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'User' }
+    ],
+    color: colorPalette.primary
+  },
+  {
+    id: 'deployment',
+    name: 'Deployment',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'status', type: 'string', nullable: false },
+      { name: 'project_id', type: 'bigInteger', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'Project' }
+    ],
+    color: colorPalette.secondary
+  },
+  {
+    id: 'project',
+    name: 'Project',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'name', type: 'string', nullable: false },
+      { name: 'description', type: 'string', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'hasMany', model: 'Deployment' },
+      { type: 'hasMany', model: 'Release' }
+    ],
+    color: colorPalette.secondary
+  },
+  {
+    id: 'release',
+    name: 'Release',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'version', type: 'string', nullable: false },
+      { name: 'project_id', type: 'bigInteger', nullable: false },
+      { name: 'created_at', type: 'timestamp', nullable: true },
+      { name: 'updated_at', type: 'timestamp', nullable: true }
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'Project' }
+    ],
+    color: colorPalette.secondary
+  },
+  {
+    id: 'order_items',
+    name: 'OrderItem',
+    properties: [
+      { name: 'id', type: 'bigInteger', nullable: false },
+      { name: 'quantity', type: 'integer', nullable: false },
+      { name: 'total', type: 'decimal', nullable: false },
+      { name: 'order_id', type: 'bigInteger', nullable: false },
+    ],
+    relationships: [
+      { type: 'belongsTo', model: 'Order' }
+    ],
+    color: colorPalette.quaternary
   }
 ]
 
@@ -144,82 +214,15 @@ const relationships: RelationshipLink[] = [
   { source: 'user', target: 'team', type: 'belongsToMany' },
   { source: 'team', target: 'user', type: 'belongsToMany' },
   { source: 'user', target: 'accessToken', type: 'hasMany' },
-  { source: 'user', target: 'activity', type: 'hasMany' },
+  { source: 'user', target: 'post', type: 'hasMany' },
+  { source: 'post', target: 'user', type: 'belongsTo' },
   { source: 'project', target: 'deployment', type: 'hasMany' },
   { source: 'project', target: 'release', type: 'hasMany' },
+  { source: 'deployment', target: 'project', type: 'belongsTo' },
+  { source: 'release', target: 'project', type: 'belongsTo' },
   { source: 'subscriber', target: 'subscriberEmail', type: 'hasMany' },
-  { source: 'post', target: 'user', type: 'belongsTo' },
-]
-
-// ERD table definitions based on migrations
-const erdNodes: ERDNode[] = [
-  {
-    id: 'users',
-    name: 'users',
-    columns: ['id', 'name', 'email', 'password', 'created_at', 'updated_at']
-  },
-  {
-    id: 'teams',
-    name: 'teams',
-    columns: ['id', 'name', 'owner_id', 'created_at', 'updated_at']
-  },
-  {
-    id: 'team_users',
-    name: 'team_users',
-    columns: ['team_id', 'user_id']
-  },
-  {
-    id: 'projects',
-    name: 'projects',
-    columns: ['id', 'name', 'description', 'created_at', 'updated_at']
-  },
-  {
-    id: 'deployments',
-    name: 'deployments',
-    columns: ['id', 'project_id', 'status', 'created_at', 'updated_at']
-  },
-  {
-    id: 'releases',
-    name: 'releases',
-    columns: ['id', 'project_id', 'version', 'created_at', 'updated_at']
-  },
-  {
-    id: 'activities',
-    name: 'activities',
-    columns: ['id', 'user_id', 'type', 'created_at', 'updated_at']
-  },
-  {
-    id: 'subscribers',
-    name: 'subscribers',
-    columns: ['id', 'email', 'status', 'created_at', 'updated_at']
-  },
-  {
-    id: 'subscriber_emails',
-    name: 'subscriber_emails',
-    columns: ['id', 'subscriber_id', 'email', 'created_at', 'updated_at']
-  },
-  {
-    id: 'personal_access_tokens',
-    name: 'personal_access_tokens',
-    columns: ['id', 'user_id', 'token', 'created_at', 'updated_at']
-  },
-  {
-    id: 'posts',
-    name: 'posts',
-    columns: ['id', 'title', 'content', 'created_at', 'updated_at']
-  }
-]
-
-// ERD relationships based on foreign keys
-const erdLinks: ERDLink[] = [
-  { source: 'team_users', target: 'teams', sourceColumn: 'team_id', targetColumn: 'id' },
-  { source: 'team_users', target: 'users', sourceColumn: 'user_id', targetColumn: 'id' },
-  { source: 'teams', target: 'users', sourceColumn: 'owner_id', targetColumn: 'id' },
-  { source: 'deployments', target: 'projects', sourceColumn: 'project_id', targetColumn: 'id' },
-  { source: 'releases', target: 'projects', sourceColumn: 'project_id', targetColumn: 'id' },
-  { source: 'activities', target: 'users', sourceColumn: 'user_id', targetColumn: 'id' },
-  { source: 'subscriber_emails', target: 'subscribers', sourceColumn: 'subscriber_id', targetColumn: 'id' },
-  { source: 'personal_access_tokens', target: 'users', sourceColumn: 'user_id', targetColumn: 'id' }
+  { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' },
+  { source: 'order_items', target: 'order', type: 'belongsTo' }
 ]
 
 // Visualization state
@@ -335,6 +338,7 @@ const createDiagram = () => {
     .append('svg')
     .attr('width', width)
     .attr('height', height)
+    .attr('class', 'dark:bg-blue-gray-800')
 
   // Define arrow marker
   svg.append('defs')
@@ -377,7 +381,7 @@ const createDiagram = () => {
     .selectAll('g')
     .data(models)
     .join('g')
-    .call(d3.drag<SVGGElement, ModelNode>()
+    .call(d3.drag<any, ModelNode>()
       .on('start', dragstarted)
       .on('drag', dragged)
       .on('end', dragended))
@@ -385,116 +389,171 @@ const createDiagram = () => {
   // Add rectangles for nodes with color
   node.append('rect')
     .attr('width', 200)
-    .attr('height', (d) => 80 + d.properties.length * 24)
+    .attr('height', d => 60 + d.properties.length * 24)
     .attr('rx', 8)
     .attr('ry', 8)
-    .attr('fill', 'white')
+    .attr('fill', '#1E293B') // Dark background
     .attr('stroke', d => d.color)
     .attr('stroke-width', 2)
 
-  // Add header rectangle
-  node.append('rect')
-    .attr('width', 200)
-    .attr('height', 40)
-    .attr('rx', 8)
-    .attr('ry', 8)
-    .attr('fill', d => d.color)
-    .attr('opacity', 0.1)
+  // Add header with model name
+  node.append('g')
+    .attr('class', 'header')
+    .each(function(d) {
+      const header = d3.select(this)
 
-  // Add emoji and model names
-  node.append('text')
-    .attr('x', 20)
-    .attr('y', 28)
-    .attr('font-size', '20px')
-    .text(d => d.emoji)
+      // Header background
+      header.append('rect')
+        .attr('width', 200)
+        .attr('height', 40)
+        .attr('rx', 8)
+        .attr('ry', 8)
+        .attr('fill', '#1E293B')
 
-  node.append('text')
-    .attr('x', 50)
-    .attr('y', 28)
-    .attr('fill', '#111827')
-    .attr('font-weight', 'bold')
-    .text(d => d.name)
+      // Model name
+      header.append('text')
+        .attr('x', 100)
+        .attr('y', 25)
+        .attr('text-anchor', 'middle')
+        .attr('fill', '#E5E7EB')
+        .attr('font-weight', 'bold')
+        .text(d.name)
+    })
 
-  // Add properties with icons
+  // Add properties
   node.each(function(d) {
     const g = d3.select(this)
+
+    // Properties container
+    const propertiesGroup = g.append('g')
+      .attr('transform', 'translate(0, 40)')
+
+    // Add properties
     d.properties.forEach((prop, i) => {
-      const y = 60 + i * 24
+      const y = 20 + i * 24
+      const row = propertiesGroup.append('g')
+        .attr('transform', `translate(0, ${y})`)
 
-      // Add property icon
-      g.append('text')
+      // Primary key indicator
+      if (prop.name === 'id') {
+        row.append('circle')
+          .attr('cx', 10)
+          .attr('cy', 0)
+          .attr('r', 4)
+          .attr('fill', '#FCD34D') // Yellow for primary key
+      }
+
+      // Property name
+      row.append('text')
         .attr('x', 20)
-        .attr('y', y)
-        .attr('fill', '#6B7280')
+        .attr('y', 0)
+        .attr('fill', prop.name === 'id' ? '#FCD34D' : '#E5E7EB')
         .attr('font-size', '14px')
-        .text(() => {
-          if (prop.includes('id')) return '🔑'
-          if (prop.includes('email')) return '📧'
-          if (prop.includes('password')) return '🔒'
-          if (prop.includes('name')) return '📝'
-          if (prop.includes('status')) return '🔵'
-          if (prop.includes('type')) return '🏷️'
-          if (prop.includes('content')) return '📄'
-          if (prop.includes('url')) return '🔗'
-          return '⚡'
-        })
+        .text(prop.name)
 
-      // Add property name
-      g.append('text')
-        .attr('x', 45)
-        .attr('y', y)
-        .attr('fill', '#374151')
+      // Property type
+      row.append('text')
+        .attr('x', 180)
+        .attr('y', 0)
+        .attr('text-anchor', 'end')
+        .attr('fill', '#9CA3AF')
         .attr('font-size', '14px')
-        .text(prop)
+        .text(prop.type)
+
+      // Nullable indicator
+      row.append('text')
+        .attr('x', 195)
+        .attr('y', 0)
+        .attr('text-anchor', 'middle')
+        .attr('fill', prop.nullable ? '#EF4444' : '#10B981')
+        .attr('font-size', '14px')
+        .text(prop.nullable ? 'N' : 'U')
     })
+
+    // Add relationships section if there are any
+    if (d.relationships.length > 0) {
+      const relationshipsY = 40 + d.properties.length * 24 + 10
+
+      // Relationships container
+      const relationshipsGroup = g.append('g')
+        .attr('transform', `translate(0, ${relationshipsY})`)
+
+      // Add relationships
+      d.relationships.forEach((rel, i) => {
+        const y = 20 + i * 24
+        const row = relationshipsGroup.append('g')
+          .attr('transform', `translate(0, ${y})`)
+
+        // Relationship type
+        row.append('text')
+          .attr('x', 20)
+          .attr('y', 0)
+          .attr('fill', '#EF4444') // Red for relationship type
+          .attr('font-size', '14px')
+          .text(rel.type + ':')
+
+        // Related model
+        row.append('text')
+          .attr('x', 100)
+          .attr('y', 0)
+          .attr('fill', '#9CA3AF')
+          .attr('font-size', '14px')
+          .text(rel.model)
+      })
+    }
   })
 
   // Create force simulation
   simulation = d3.forceSimulation<ModelNode>(models)
     .force('link', d3.forceLink<ModelNode, RelationshipLink>(relationships)
       .id(d => d.id)
-      .distance(150))
+      .distance(250))
     .force('charge', d3.forceManyBody()
-      .strength(d => {
-        // Stronger repulsion for unrelated nodes
-        const hasRelations = relationships.some(r =>
-          r.source === d.id || (r.source as ModelNode)?.id === d.id ||
-          r.target === d.id || (r.target as ModelNode)?.id === d.id
-        )
-        return hasRelations ? -800 : -1200
-      }))
+      .strength(-1000))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide().radius(110))
+    .force('collision', d3.forceCollide().radius(150))
     .force('x', d3.forceX(width / 2).strength(0.1))
     .force('y', d3.forceY(height / 2).strength(0.1))
 
   // Update positions on tick
   simulation.on('tick', () => {
     link
-      .attr('x1', d => (d.source as ModelNode).x!)
-      .attr('y1', d => (d.source as ModelNode).y!)
-      .attr('x2', d => (d.target as ModelNode).x!)
-      .attr('y2', d => (d.target as ModelNode).y!)
+      .attr('x1', d => {
+        const source = typeof d.source === 'string' ? models.find(m => m.id === d.source) : d.source as ModelNode
+        return source?.x || 0
+      })
+      .attr('y1', d => {
+        const source = typeof d.source === 'string' ? models.find(m => m.id === d.source) : d.source as ModelNode
+        return source?.y || 0
+      })
+      .attr('x2', d => {
+        const target = typeof d.target === 'string' ? models.find(m => m.id === d.target) : d.target as ModelNode
+        return target?.x || 0
+      })
+      .attr('y2', d => {
+        const target = typeof d.target === 'string' ? models.find(m => m.id === d.target) : d.target as ModelNode
+        return target?.y || 0
+      })
 
     node
-      .attr('transform', d => `translate(${d.x! - 100},${d.y! - 40})`)
+      .attr('transform', d => `translate(${(d.x || 0) - 100},${(d.y || 0) - 40})`)
   })
 }
 
 // Drag functions
-function dragstarted(event: d3.D3DragEvent<SVGGElement, any, any>) {
-  if (!event.active) simulation?.alphaTarget(0.3).restart()
+function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+  if (!event.active && simulation) simulation.alphaTarget(0.3).restart()
   event.subject.fx = event.subject.x
   event.subject.fy = event.subject.y
 }
 
-function dragged(event: d3.D3DragEvent<SVGGElement, any, any>) {
+function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
   event.subject.fx = event.x
   event.subject.fy = event.y
 }
 
-function dragended(event: d3.D3DragEvent<SVGGElement, any, any>) {
-  if (!event.active) simulation?.alphaTarget(0)
+function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
+  if (!event.active && simulation) simulation.alphaTarget(0)
   event.subject.fx = null
   event.subject.fy = null
 }
@@ -509,7 +568,7 @@ onMounted(() => {
 
 // Clean up on unmount
 onUnmounted(() => {
-  simulation?.stop()
+  if (simulation) simulation.stop()
   window.removeEventListener('resize', createDiagram)
 })
 </script>
@@ -524,10 +583,10 @@ onUnmounted(() => {
             <div class="i-hugeicons-dashboard-speed-02 w-8 h-8 text-blue-500" />
             <div>
               <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-                Data Visualization
+                Data Models
               </h3>
               <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-                Visualize your application's data models.
+                Visualize your application's data models and relationships.
               </p>
             </div>
           </div>
