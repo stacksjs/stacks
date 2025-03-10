@@ -407,7 +407,7 @@ const createDiagram = () => {
 
   const width = diagramContainer.value.clientWidth
   const height = 1200 // Further increased height for better vertical spacing
-  const cardWidth = 310 // Card width defined here for consistent reference
+  const cardWidth = 356
 
   // Clear existing visualization
   d3.select(diagramContainer.value).selectAll('*').remove()
@@ -507,7 +507,7 @@ const createDiagram = () => {
     'subscriberEmail': { x: width * 0.8, y: 800 },
 
     // Fourth row - better distributed with more horizontal spacing
-    'deployment': { x: width * 0.1, y: 1100 },
+    'deployment': { x: width * 0.05, y: 1100 },
     'release': { x: width * 0.35, y: 1100 },
     'orderItem': { x: width * 0.65, y: 1100 }
   }
@@ -671,6 +671,7 @@ const createDiagram = () => {
         .attr('dominant-baseline', 'middle') // Improved vertical alignment
         .attr('fill', prop.name === 'id' ? '#FCD34D' : '#E5E7EB')
         .attr('font-size', '14px')
+        .attr('font-family', 'monospace')
         .text(prop.name)
 
       // Property type
@@ -681,6 +682,7 @@ const createDiagram = () => {
         .attr('text-anchor', 'end')
         .attr('fill', '#9CA3AF')
         .attr('font-size', '14px')
+        .attr('font-family', 'monospace')
         .text(prop.type)
 
       // Nullable indicator - improved spacing from edge
@@ -691,6 +693,7 @@ const createDiagram = () => {
         .attr('text-anchor', 'middle')
         .attr('fill', prop.nullable ? '#EF4444' : '#10B981')
         .attr('font-size', '14px')
+        .attr('font-family', 'monospace')
         .text(prop.nullable ? 'N' : 'U')
     })
 
@@ -748,6 +751,7 @@ const createDiagram = () => {
           .attr('fill', bgColor)
           .attr('font-size', '16px')
           .attr('font-weight', 'bold')
+          .attr('font-family', 'monospace')
           .text(rel.type + ':')
 
         // Related model - improved vertical alignment
@@ -758,6 +762,7 @@ const createDiagram = () => {
           .attr('fill', '#FFFFFF')
           .attr('font-size', '16px')
           .attr('font-weight', 'medium')
+          .attr('font-family', 'monospace')
           .text(rel.model)
       })
     }
