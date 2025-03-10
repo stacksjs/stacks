@@ -1,9 +1,7 @@
+```vue
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { Notification, notification } from '@stacksjs/notification'
-
-import NotificationCode from './NotificationCode.md'
-import DocsPlayground from './DocsPlayground.vue'
 
 type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
 type Theme = 'light' | 'dark' | 'system'
@@ -73,9 +71,11 @@ const showCustomNotification = () => {
 </script>
 
 <template>
-  <div class="max-w-4xl ">
-    <DocsPlayground>
-      <div class="flex flex-wrap gap-3">
+  <div class="p-6 space-y-6">
+    <h2 class="text-2xl font-bold mb-4">Notification Demo</h2>
+
+    <div class="space-y-4">
+      <div class="flex flex-wrap gap-4">
         <button
           @click="showBasicNotification"
           class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -119,12 +119,12 @@ const showCustomNotification = () => {
         </button>
       </div>
 
-      <div class="space-y-2 mt-3">
+      <div class="space-y-2">
         <label class="block">
           Position:
           <select
             v-model="position"
-            class="ml-2 p-1 border rounded text-center bg-blue-500 text-white font-semibold"
+            class="ml-2 p-1 border rounded"
           >
             <option value="top-right">Top Right</option>
             <option value="top-left">Top Left</option>
@@ -135,11 +135,11 @@ const showCustomNotification = () => {
           </select>
         </label>
 
-        <label class="block ">
+        <label class="block">
           Theme:
           <select
             v-model="theme"
-            class="ml-2 p-2 border rounded text-center bg-blue-500 text-white font-semibold"
+            class="ml-2 p-1 border rounded"
           >
             <option value="light">Light</option>
             <option value="dark">Dark</option>
@@ -147,19 +147,14 @@ const showCustomNotification = () => {
           </select>
         </label>
       </div>
+    </div>
 
-      <template #code>
-        <NotificationCode />
-      </template>
-
-    </DocsPlayground>
+    <Notification
+    :position="position"
+    :theme="theme"
+    :close-button="true"
+  />
   </div>
-
-  <Notification
-      :position="position"
-      :theme="theme"
-      :close-button="true"
-    />
 </template>
 
 <style scoped>
@@ -175,3 +170,4 @@ const showCustomNotification = () => {
   margin-top: 0.5rem;
 }
 </style>
+```
