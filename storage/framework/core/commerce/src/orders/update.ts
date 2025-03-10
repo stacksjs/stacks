@@ -22,7 +22,7 @@ export async function update(id: number, request: OrderRequestType): Promise<Ord
   }
 
   // Create update data object using request fields
-  const updateData: Record<string, any> = {
+  const updateData = {
     customer_id: request.get<number>('customer_id'),
     coupon_id: request.get<number>('coupon_id'),
     status: request.get('status'),
@@ -35,16 +35,8 @@ export async function update(id: number, request: OrderRequestType): Promise<Ord
     delivery_address: request.get('delivery_address'),
     special_instructions: request.get('special_instructions'),
     estimated_delivery_time: request.get('estimated_delivery_time'),
-    applied_coupon_id: request.get<number>('applied_coupon_id'),
-    updated_at: new Date(),
+    applied_coupon_id: request.get('applied_coupon_id'),
   }
-
-  // Remove undefined fields to avoid overwriting with null values
-  Object.keys(updateData).forEach((key) => {
-    if (updateData[key] === undefined) {
-      delete updateData[key]
-    }
-  })
 
   // If no fields to update, just return the existing order
   if (Object.keys(updateData).length === 0) {

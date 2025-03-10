@@ -1,33 +1,6 @@
 import type { ProductReviewJsonResponse } from '../../../../orm/src/models/ProductReview'
+import type { FetchProductReviewsOptions, ProductReviewResponse, ProductReviewStats } from '../../types'
 import { db } from '@stacksjs/database'
-
-export interface FetchProductReviewsOptions {
-  page?: number
-  limit?: number
-}
-
-export interface ProductReviewResponse {
-  data: ProductReviewJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export interface ProductReviewStats {
-  total: number
-  average_rating: number
-  rating_distribution: {
-    one_star: number
-    two_star: number
-    three_star: number
-    four_star: number
-    five_star: number
-  }
-  recent_reviews: ProductReviewJsonResponse[]
-}
 
 /**
  * Fetch product reviews with pagination

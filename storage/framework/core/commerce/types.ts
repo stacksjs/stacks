@@ -13,6 +13,7 @@ import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
 // Import the OrderTable type from the ORM
 import type { OrdersTable } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
+import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
 
 // Re-export the types
 export type {
@@ -233,4 +234,32 @@ export interface GiftCardStats {
   }
   expiring_soon: GiftCardJsonResponse[]
   recently_used: GiftCardJsonResponse[]
+}
+
+export interface FetchProductReviewsOptions {
+  page?: number
+  limit?: number
+}
+
+export interface ProductReviewResponse {
+  data: ProductReviewJsonResponse[]
+  paging: {
+    total_records: number
+    page: number
+    total_pages: number
+  }
+  next_cursor: number | null
+}
+
+export interface ProductReviewStats {
+  total: number
+  average_rating: number
+  rating_distribution: {
+    one_star: number
+    two_star: number
+    three_star: number
+    four_star: number
+    five_star: number
+  }
+  recent_reviews: ProductReviewJsonResponse[]
 }
