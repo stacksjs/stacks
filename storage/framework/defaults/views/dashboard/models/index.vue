@@ -540,10 +540,24 @@ const createDiagram = () => {
       return `translate(${x - cardWidth/2}, ${y - 40})`
     })
     .attr('cursor', 'move') // Add cursor style to indicate draggable
-    .call(d3.drag<any, ModelNode>() // Use any for the element type to avoid type issues
-      .on('start', dragstarted)
-      .on('drag', dragged)
-      .on('end', dragended))
+    .call(d3.drag<any, ModelNode>()
+      .on('start', function(event) {
+        if (!event.active && simulation) simulation.alphaTarget(0.3).restart();
+      })
+      .on('drag', function(event, d) {
+        // Update the visual position of the node
+        d3.select(this).attr('transform', `translate(${event.x}, ${event.y})`);
+
+        // Update the data position for the node
+        d.posX = event.x + cardWidth/2;
+        d.posY = event.y + 40;
+
+        // Update links
+        updateLinks();
+      })
+      .on('end', function(event) {
+        if (!event.active && simulation) simulation.alphaTarget(0);
+      }))
 
   // Add shadow effect to nodes
   node.append('rect')
@@ -813,46 +827,6 @@ const createDiagram = () => {
   // Create force simulation with fixed positions
   simulation = d3.forceSimulation<ModelNode>(models)
     .alphaDecay(0.02) // Slower decay for smoother animation
-}
-
-// Drag functions
-function dragstarted(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
-  if (!event.active && simulation) simulation.alphaTarget(0.3).restart()
-
-  // Store the initial position for this drag operation
-  const node = event.subject
-  node.fx = node.posX
-  node.fy = node.posY
-}
-
-function dragged(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
-  const node = event.subject
-  const cardWidth = 310 // Same as defined in createDiagram
-
-  // Calculate the new position
-  node.fx = event.x + cardWidth/2
-  node.fy = event.y + 40
-  node.posX = node.fx
-  node.posY = node.fy
-
-  // Update the node position in the DOM
-  d3.select(event.sourceEvent.currentTarget)
-    .attr('transform', `translate(${event.x}, ${event.y})`)
-
-  // Redraw all links
-  updateLinks()
-}
-
-function dragended(event: d3.D3DragEvent<SVGGElement, ModelNode, ModelNode>) {
-  if (!event.active && simulation) simulation.alphaTarget(0)
-
-  // Keep the node fixed at its new position
-  const node = event.subject
-  node.posX = node.fx || node.posX
-  node.posY = node.fy || node.posY
-
-  // Update links one final time
-  updateLinks()
 }
 
 // Function to update links after dragging
