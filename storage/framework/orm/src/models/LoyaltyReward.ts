@@ -1795,7 +1795,9 @@ export class LoyaltyRewardModel {
   }
 
   toJSON(): LoyaltyRewardJsonResponse {
-    const output: LoyaltyRewardJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

@@ -1637,7 +1637,7 @@ export class ProjectModel {
   }
 
   toJSON(): ProjectJsonResponse {
-    const output: ProjectJsonResponse = {
+    const output = {
 
       id: this.id,
       name: this.name,

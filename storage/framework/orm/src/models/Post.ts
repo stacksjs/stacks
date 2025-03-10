@@ -1629,7 +1629,7 @@ export class PostModel {
   }
 
   toJSON(): PostJsonResponse {
-    const output: PostJsonResponse = {
+    const output = {
 
       id: this.id,
       title: this.title,

@@ -1737,7 +1737,9 @@ export class LoyaltyPointModel {
   }
 
   toJSON(): LoyaltyPointJsonResponse {
-    const output: LoyaltyPointJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       wallet_id: this.wallet_id,

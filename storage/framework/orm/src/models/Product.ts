@@ -1814,7 +1814,9 @@ export class ProductModel {
   }
 
   toJSON(): ProductJsonResponse {
-    const output: ProductJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

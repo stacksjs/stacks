@@ -1654,7 +1654,7 @@ export class JobModel {
   }
 
   toJSON(): JobJsonResponse {
-    const output: JobJsonResponse = {
+    const output = {
 
       id: this.id,
       queue: this.queue,

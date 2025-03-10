@@ -1863,7 +1863,9 @@ export class OrderModel {
   }
 
   toJSON(): OrderJsonResponse {
-    const output: OrderJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       status: this.status,

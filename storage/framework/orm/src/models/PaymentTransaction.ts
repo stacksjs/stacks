@@ -1721,7 +1721,9 @@ export class PaymentTransactionModel {
   }
 
   toJSON(): PaymentTransactionJsonResponse {
-    const output: PaymentTransactionJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

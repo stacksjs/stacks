@@ -1779,7 +1779,9 @@ export class SubscriptionModel {
   }
 
   toJSON(): SubscriptionJsonResponse {
-    const output: SubscriptionJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       type: this.type,

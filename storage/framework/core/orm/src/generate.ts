@@ -749,7 +749,6 @@ export async function generateModelString(
   }
 
   if (useUuid) {
-    // declareFields += 'public uuid: string | undefined \n'
     getFields += `get uuid(): string {
       return this.attributes.uuid
     }\n\n`
@@ -757,7 +756,8 @@ export async function generateModelString(
     setFields += `set uuid(value: string) {
       this.attributes.uuid = value
     }\n\n`
-    // constructorFields += `this.uuid = ${formattedModelName}?.uuid\n   `
+
+    jsonFields += '\n uuid: this.uuid,\n'
   }
 
   if (usePasskey) {
@@ -2484,7 +2484,7 @@ export async function generateModelString(
         }
   
         toJSON(): ${modelName}JsonResponse {
-          const output: ${modelName}JsonResponse = ${jsonFields}
+          const output = ${jsonFields}
 
           return output
         }

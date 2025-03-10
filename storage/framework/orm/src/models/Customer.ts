@@ -1775,7 +1775,9 @@ export class CustomerModel {
   }
 
   toJSON(): CustomerJsonResponse {
-    const output: CustomerJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

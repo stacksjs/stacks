@@ -1783,7 +1783,6 @@ export class ProductReviewModel {
     return {
       id: this.id,
       product_id: this.product_id,
-      user_id: this.user_id,
       rating: this.rating,
       title: this.title,
       content: this.content,
@@ -1825,7 +1824,9 @@ export class ProductReviewModel {
   }
 
   toJSON(): ProductReviewJsonResponse {
-    const output: ProductReviewJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       rating: this.rating,

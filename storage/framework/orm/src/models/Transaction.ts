@@ -1762,7 +1762,9 @@ export class TransactionModel {
   }
 
   toJSON(): TransactionJsonResponse {
-    const output: TransactionJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       amount: this.amount,

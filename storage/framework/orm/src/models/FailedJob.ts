@@ -1654,7 +1654,7 @@ export class FailedJobModel {
   }
 
   toJSON(): FailedJobJsonResponse {
-    const output: FailedJobJsonResponse = {
+    const output = {
 
       id: this.id,
       connection: this.connection,

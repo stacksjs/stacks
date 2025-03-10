@@ -1731,7 +1731,7 @@ export class TeamModel {
   }
 
   toJSON(): TeamJsonResponse {
-    const output: TeamJsonResponse = {
+    const output = {
 
       id: this.id,
       name: this.name,

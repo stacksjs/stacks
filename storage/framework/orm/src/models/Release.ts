@@ -1603,7 +1603,7 @@ export class ReleaseModel {
   }
 
   toJSON(): ReleaseJsonResponse {
-    const output: ReleaseJsonResponse = {
+    const output = {
 
       id: this.id,
       name: this.name,

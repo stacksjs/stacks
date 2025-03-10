@@ -1654,7 +1654,7 @@ export class ErrorModel {
   }
 
   toJSON(): ErrorJsonResponse {
-    const output: ErrorJsonResponse = {
+    const output = {
 
       id: this.id,
       type: this.type,

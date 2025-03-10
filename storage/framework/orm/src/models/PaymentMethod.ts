@@ -1734,7 +1734,9 @@ export class PaymentMethodModel {
   }
 
   toJSON(): PaymentMethodJsonResponse {
-    const output: PaymentMethodJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       type: this.type,

@@ -1743,7 +1743,7 @@ export class RequestModel {
   }
 
   toJSON(): RequestJsonResponse {
-    const output: RequestJsonResponse = {
+    const output = {
 
       id: this.id,
       method: this.method,

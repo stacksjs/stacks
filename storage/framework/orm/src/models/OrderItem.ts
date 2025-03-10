@@ -1673,7 +1673,7 @@ export class OrderItemModel {
   }
 
   toJSON(): OrderItemJsonResponse {
-    const output: OrderItemJsonResponse = {
+    const output = {
 
       id: this.id,
       quantity: this.quantity,

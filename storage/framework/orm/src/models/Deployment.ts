@@ -1728,7 +1728,9 @@ export class DeploymentModel {
   }
 
   toJSON(): DeploymentJsonResponse {
-    const output: DeploymentJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       commit_sha: this.commit_sha,

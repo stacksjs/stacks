@@ -1624,7 +1624,7 @@ export class SubscriberEmailModel {
   }
 
   toJSON(): SubscriberEmailJsonResponse {
-    const output: SubscriberEmailJsonResponse = {
+    const output = {
 
       id: this.id,
       email: this.email,

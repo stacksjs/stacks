@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'product_id', 'user_id', 'rating', 'title', 'content', 'is_verified_purchase', 'is_approved'],
-      searchable: ['title', 'content', 'product_id', 'user_id'],
+      displayable: ['id', 'product_id', 'rating', 'title', 'content', 'is_verified_purchase', 'is_approved'],
+      searchable: ['title', 'content', 'product_id'],
       sortable: ['rating', 'created_at', 'updated_at', 'helpful_votes'],
-      filterable: ['product_id', 'user_id', 'rating', 'is_verified_purchase', 'is_approved'],
+      filterable: ['product_id', 'rating', 'is_verified_purchase', 'is_approved'],
     },
 
     useSeeder: {

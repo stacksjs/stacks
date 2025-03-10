@@ -2013,7 +2013,9 @@ export class UserModel {
   }
 
   toJSON(): UserJsonResponse {
-    const output: UserJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

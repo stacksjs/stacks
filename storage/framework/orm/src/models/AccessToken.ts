@@ -1792,7 +1792,7 @@ export class AccessTokenModel {
   }
 
   toJSON(): AccessTokenJsonResponse {
-    const output: AccessTokenJsonResponse = {
+    const output = {
 
       id: this.id,
       name: this.name,

@@ -1905,7 +1905,9 @@ export class GiftCardModel {
   }
 
   toJSON(): GiftCardJsonResponse {
-    const output: GiftCardJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       code: this.code,

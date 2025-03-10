@@ -1724,7 +1724,9 @@ export class ProductCategoryModel {
   }
 
   toJSON(): ProductCategoryJsonResponse {
-    const output: ProductCategoryJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

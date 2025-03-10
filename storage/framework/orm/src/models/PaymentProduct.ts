@@ -1702,7 +1702,9 @@ export class PaymentProductModel {
   }
 
   toJSON(): PaymentProductJsonResponse {
-    const output: PaymentProductJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       name: this.name,

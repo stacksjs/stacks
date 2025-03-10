@@ -1888,7 +1888,9 @@ export class CouponModel {
   }
 
   toJSON(): CouponJsonResponse {
-    const output: CouponJsonResponse = {
+    const output = {
+
+      uuid: this.uuid,
 
       id: this.id,
       code: this.code,

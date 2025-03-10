@@ -1586,7 +1586,7 @@ export class SubscriberModel {
   }
 
   toJSON(): SubscriberJsonResponse {
-    const output: SubscriberJsonResponse = {
+    const output = {
 
       id: this.id,
       subscribed: this.subscribed,
