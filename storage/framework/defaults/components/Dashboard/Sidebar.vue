@@ -261,11 +261,11 @@ const sectionContent: Record<string, SectionContent> = {
   },
   data: {
     items: [
-      { to: '/models', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
-      { to: '/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
-      { to: '/models/users', letter: 'U', text: 'Users' },
-      { to: '/models/teams', letter: 'T', text: 'Teams' },
-      { to: '/models/subscribers', letter: 'S', text: 'Subscribers' }
+      { to: '/data/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/data/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
+      { to: '/data/users', letter: 'U', text: 'Users' },
+      { to: '/data/teams', letter: 'T', text: 'Teams' },
+      { to: '/data/subscribers', letter: 'S', text: 'Subscribers' }
     ]
   },
   marketing: {
