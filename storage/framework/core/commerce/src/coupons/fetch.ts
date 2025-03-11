@@ -243,3 +243,172 @@ export async function fetchStats(): Promise<CouponStats> {
     upcoming: upcomingCoupons,
   }
 }
+
+/**
+ * Interface for coupon count statistics
+ */
+export interface CouponCountStats {
+  total: number
+  active: number
+  inactive: number
+}
+
+/**
+ * Interface for time-based coupon statistics
+ */
+export interface CouponTimeStats {
+  week: CouponCountStats
+  month: CouponCountStats
+  year: CouponCountStats
+  all_time: CouponCountStats
+}
+
+/**
+ * Get count of active and inactive coupons for different time periods
+ */
+export async function fetchCouponCounts(): Promise<CouponTimeStats> {
+  const currentDate = new Date()
+
+  // Calculate start dates for different periods
+  const weekStart = new Date(currentDate)
+  weekStart.setDate(currentDate.getDate() - 7)
+
+  const monthStart = new Date(currentDate)
+  monthStart.setMonth(currentDate.getMonth() - 1)
+
+  const yearStart = new Date(currentDate)
+  yearStart.setFullYear(currentDate.getFullYear() - 1)
+
+  // All-time counts
+  const allTimeCounts = await fetchCountsForPeriod(null, null, currentDate)
+
+  // Week counts
+  const weekCounts = await fetchCountsForPeriod(weekStart, null, currentDate)
+
+  // Month counts
+  const monthCounts = await fetchCountsForPeriod(monthStart, null, currentDate)
+
+  // Year counts
+  const yearCounts = await fetchCountsForPeriod(yearStart, null, currentDate)
+
+  return {
+    week: weekCounts,
+    month: monthCounts,
+    year: yearCounts,
+    all_time: allTimeCounts,
+  }
+}
+
+/**
+ * Helper function to fetch coupon counts for a specific time period
+ *
+ * @param startDate - Start of the period (or null for all time)
+ * @param endDate - End of the period (or null for current date)
+ * @param currentDate - Current date for active/inactive calculation
+ */
+async function fetchCountsForPeriod(
+  startDate: Date | null,
+  endDate: Date | null,
+  currentDate: Date,
+): Promise<CouponCountStats> {
+  let query = db.selectFrom('coupons')
+
+  // Apply date filter if startDate is provided
+  if (startDate) {
+    query = query.where('created_at', '>=', startDate)
+  }
+
+  // Apply end date filter if endDate is provided
+  if (endDate) {
+    query = query.where('created_at', '<=', endDate)
+  }
+
+  // Get total count
+  const totalResult = await query
+    .select(db.fn.count('id').as('count'))
+    .executeTakeFirst()
+
+  // Get active count (is_active = true, start_date <= current date, end_date >= current date)
+  // Create a new query instead of cloning
+  let activeQuery = db.selectFrom('coupons')
+
+  // Apply the same date filters as the total query if needed
+  if (startDate) {
+    activeQuery = activeQuery.where('created_at', '>=', startDate)
+  }
+
+  if (endDate) {
+    activeQuery = activeQuery.where('created_at', '<=', endDate)
+  }
+
+  // Add active coupon conditions
+  activeQuery = activeQuery
+    .where('is_active', '=', true)
+    .where('start_date', '<=', currentDate)
+    .where('end_date', '>=', currentDate)
+
+  const activeResult = await activeQuery
+    .select(db.fn.count('id').as('count'))
+    .executeTakeFirst()
+
+  // Calculate counts
+  const total = Number(totalResult?.count || 0)
+  const active = Number(activeResult?.count || 0)
+  const inactive = total - active
+
+  return {
+    total,
+    active,
+    inactive,
+  }
+}
+
+/**
+ * Get detailed breakdown of active/inactive coupons by discount type
+ */
+export async function fetchCouponCountsByType(): Promise<Record<string, CouponCountStats>> {
+  const currentDate = new Date()
+
+  // Get all discount types
+  const discountTypes = await db
+    .selectFrom('coupons')
+    .select('discount_type')
+    .distinct()
+    .execute()
+
+  const result: Record<string, CouponCountStats> = {}
+
+  // For each discount type, get the counts
+  for (const { discount_type } of discountTypes) {
+    // Base query for this discount type
+    const query = db
+      .selectFrom('coupons')
+      .where('discount_type', '=', discount_type)
+
+    // Total count for this type
+    const totalResult = await query
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirst()
+
+    // Active count for this type - create a new query instead of cloning
+    const activeResult = await db
+      .selectFrom('coupons')
+      .where('discount_type', '=', discount_type)
+      .where('is_active', '=', true)
+      .where('start_date', '<=', currentDate)
+      .where('end_date', '>=', currentDate)
+      .select(db.fn.count('id').as('count'))
+      .executeTakeFirst()
+
+    const total = Number(totalResult?.count || 0)
+    const active = Number(activeResult?.count || 0)
+
+    result[discount_type] = {
+      total,
+      active,
+      inactive: total - active,
+    }
+  }
+
+  return result
+}

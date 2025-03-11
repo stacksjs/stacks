@@ -25,8 +25,8 @@ export interface CouponsTable {
   is_active?: boolean
   usage_limit?: number
   usage_count?: number
-  start_date: string
-  end_date: string
+  start_date: Date | string
+  end_date: Date | string
   applicable_products?: string
   applicable_categories?: string
   uuid?: string
@@ -204,11 +204,11 @@ export class CouponModel {
     return this.attributes.usage_count
   }
 
-  get start_date(): string {
+  get start_date(): Date | string {
     return this.attributes.start_date
   }
 
-  get end_date(): string {
+  get end_date(): Date | string {
     return this.attributes.end_date
   }
 
@@ -272,11 +272,11 @@ export class CouponModel {
     this.attributes.usage_count = value
   }
 
-  set start_date(value: string) {
+  set start_date(value: Date | string) {
     this.attributes.start_date = value
   }
 
-  set end_date(value: string) {
+  set end_date(value: Date | string) {
     this.attributes.end_date = value
   }
 
@@ -2035,14 +2035,14 @@ export async function whereUsageCount(value: number): Promise<CouponModel[]> {
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
-export async function whereStartDate(value: string): Promise<CouponModel[]> {
+export async function whereStartDate(value: Date | string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('start_date', '=', value)
   const results: CouponJsonResponse = await query.execute()
 
   return results.map((modelItem: CouponJsonResponse) => new CouponModel(modelItem))
 }
 
-export async function whereEndDate(value: string): Promise<CouponModel[]> {
+export async function whereEndDate(value: Date | string): Promise<CouponModel[]> {
   const query = DB.instance.selectFrom('coupons').where('end_date', '=', value)
   const results: CouponJsonResponse = await query.execute()
 

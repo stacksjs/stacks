@@ -103,8 +103,8 @@ export interface Attributes {
   free_product_id: string
   usage_limit: number
   usage_count: number
-  start_date: string
-  end_date: string
+  start_date: Date | string
+  end_date: Date | string
   applicable_products: string
   applicable_categories: string
   payment_method: string

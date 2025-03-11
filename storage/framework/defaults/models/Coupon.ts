@@ -142,7 +142,7 @@ export default {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.date(),
       },
       factory: faker => faker.date.recent().toISOString(),
     },
@@ -152,7 +152,7 @@ export default {
       order: 12,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.date(),
       },
       factory: faker => faker.date.future().toISOString(),
     },

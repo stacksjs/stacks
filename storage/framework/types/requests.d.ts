@@ -578,8 +578,8 @@ interface RequestDataCoupon {
   is_active: boolean
   usage_limit: number
   usage_count: number
-  start_date: string
-  end_date: string
+  start_date: date
+  end_date: date
   applicable_products: string
   applicable_categories: string
   created_at?: Date
@@ -600,8 +600,8 @@ export interface CouponRequestType extends Request {
   is_active: boolean
   usage_limit: number
   usage_count: number
-  start_date: string
-  end_date: string
+  start_date: date
+  end_date: date
   applicable_products: string
   applicable_categories: string
   created_at?: Date
