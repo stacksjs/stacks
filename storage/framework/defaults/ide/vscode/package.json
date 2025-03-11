@@ -39,6 +39,7 @@
     "theme": "light"
   },
   "extensionPack": [
+    "dotenv.dotenvx-vscode",
     "amazonwebservices.aws-toolkit-vscode",
     "antfu.unocss",
     "antfu.goto-alias",

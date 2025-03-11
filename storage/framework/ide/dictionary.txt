@@ -1,5 +1,0 @@
-iconify
-shikijs
-stacksjs
-unocss
-unplugin
