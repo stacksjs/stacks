@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
 import { useHead } from '@vueuse/head'
+import Tooltip from '../../../components/Dashboard/Tooltip.vue'
 // import { useToast } from '../../../../../../composables/useToast'
 
 // Set page title
@@ -12,6 +13,7 @@ useHead({
 const activeTab = ref('active') // 'active' or 'resolved'
 const selectedEnvironment = ref('all') // 'all', 'production', or 'staging'
 const isAiAnalyzing = ref(false)
+const isDark = ref(false) // You might want to use useDark() from @vueuse/core instead
 
 interface ErrorStats {
   total: number
@@ -359,45 +361,53 @@ const analyzeWithAI = async (errorId: string) => {
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                       <div class="inline-flex rounded-md shadow-sm" role="group">
                         <template v-if="activeTab === 'active'">
-                          <button
-                            @click="resolveError(error.id)"
-                            type="button"
-                            class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-green-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-green-400"
-                            aria-label="Mark error as resolved"
-                          >
-                            <div class="i-hugeicons-checkmark-circle-02 h-4 w-4" />
-                          </button>
-                          <button
-                            @click="analyzeWithAI(error.id)"
-                            type="button"
-                            :class="[
-                              'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-purple-600 focus:z-10 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-purple-400',
-                              isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 dark:text-gray-400'
-                            ]"
-                            :disabled="isAiAnalyzing"
-                            aria-label="Analyze error with AI"
-                          >
-                            <div :class="[
-                              'h-4 w-4',
-                              isAiAnalyzing ? 'i-hugeicons-arrow-path animate-spin' : 'i-hugeicons-sparkles'
-                            ]" />
-                          </button>
+                          <Tooltip text="Mark as resolved" position="top" :dark="isDark" :usePortal="true">
+                            <button
+                              @click="resolveError(error.id)"
+                              type="button"
+                              class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-green-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-green-400"
+                              aria-label="Mark error as resolved"
+                            >
+                              <div class="i-hugeicons-checkmark-circle-02 h-4 w-4" />
+                            </button>
+                          </Tooltip>
+                          <Tooltip text="Analyze with AI" position="top" :dark="isDark" :usePortal="true">
+                            <button
+                              @click="analyzeWithAI(error.id)"
+                              type="button"
+                              :class="[
+                                'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-purple-600 focus:z-10 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-purple-400',
+                                isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 dark:text-gray-400'
+                              ]"
+                              :disabled="isAiAnalyzing"
+                              aria-label="Analyze error with AI"
+                            >
+                              <div :class="[
+                                'h-4 w-4',
+                                isAiAnalyzing ? 'i-hugeicons-arrow-path animate-spin' : 'i-hugeicons-sparkles'
+                              ]" />
+                            </button>
+                          </Tooltip>
                         </template>
-                        <button
-                          type="button"
-                          class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-blue-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
-                          :class="{ 'rounded-l-md': activeTab === 'resolved' }"
-                          aria-label="Share error details"
-                        >
-                          <div class="i-hugeicons-share h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
-                          aria-label="View error details"
-                        >
-                          <div class="i-hugeicons-eye h-4 w-4" />
-                        </button>
+                        <Tooltip text="Share error details" position="top" :dark="isDark" :usePortal="true">
+                          <button
+                            type="button"
+                            class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-blue-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+                            :class="{ 'rounded-l-md': activeTab === 'resolved' }"
+                            aria-label="Share error details"
+                          >
+                            <div class="i-hugeicons-share-01 h-4 w-4" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="View error details" position="top" :dark="isDark" :usePortal="true">
+                          <button
+                            type="button"
+                            class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400"
+                            aria-label="View error details"
+                          >
+                            <div class="i-hugeicons-view h-4 w-4" />
+                          </button>
+                        </Tooltip>
                       </div>
                     </td>
                   </tr>
