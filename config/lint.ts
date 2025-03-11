@@ -1,6 +1,6 @@
-import stacks from '@stacksjs/eslint-config'
+import config from '@stacksjs/eslint-config'
 
-export default stacks({
+export default config({
   // Enable stylistic formatting rules
   // stylistic: true,
 

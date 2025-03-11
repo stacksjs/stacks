@@ -1,9 +1,9 @@
 import { components, functions } from '@stacksjs/utils'
-import git from './config/git'
+import git from './git'
+import type { UserConfig } from 'cz-git'
 
 const scopes = [...new Set([...git.scopes, ...components, ...functions])]
 
-/** @type {import('cz-git').UserConfig} */
 export default {
   rules: {
     // @see: https://commitlint.js.org/#/reference-rules
@@ -27,11 +27,11 @@ export default {
     breaklineChar: '|',
     skipQuestions: [],
     issuePrefixes: [{ value: 'closed', name: 'closed:   ISSUES has been processed' }],
-    customIssuePrefixesAlign: 'top',
-    emptyIssuePrefixesAlias: 'skip',
-    customIssuePrefixesAlias: 'custom',
-    allowCustomIssuePrefixes: true,
-    allowEmptyIssuePrefixes: true,
+    customIssuePrefixsAlign: 'top',
+    emptyIssuePrefixsAlias: 'skip',
+    customIssuePrefixsAlias: 'custom',
+    allowCustomIssuePrefixs: true,
+    allowEmptyIssuePrefixs: true,
     confirmColorize: true,
     maxHeaderLength: Number.POSITIVE_INFINITY,
     maxSubjectLength: Number.POSITIVE_INFINITY,
@@ -42,4 +42,4 @@ export default {
     defaultScope: '',
     defaultSubject: '',
   },
-}
+} satisfies UserConfig
