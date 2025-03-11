@@ -8,6 +8,7 @@ interface Team {
   name: string
   email: string
   type: 'Personal' | 'Professional'
+  logo?: string
 }
 
 interface SidebarItem {
@@ -329,15 +330,28 @@ onClickOutside(teamSwitcherRef, () => {
 
 // Mock teams data with proper typing
 const teams = ref<Team[]>([
-  { id: 1, name: 'Stacks.js', email: 'chris@stacksjs.org', type: 'Personal' },
-  { id: 2, name: 'Jetbrains', email: 'support@jetbrains.com', type: 'Professional' }
+  {
+    id: 1,
+    name: 'Stacks.js',
+    email: 'chris@stacksjs.org',
+    type: 'Personal',
+    logo: '/images/logos/logo.svg'
+  },
+  {
+    id: 2,
+    name: 'Jetbrains',
+    email: 'support@jetbrains.com',
+    type: 'Professional',
+    logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJMFMsdKNyFFDlff2bj1WT06bM8n-bFcnBLw&s'
+  }
 ])
 
 const currentTeam = ref<Team>(teams.value[0] ?? {
   id: 1,
   name: 'Stacks.js',
   email: 'chris@stacksjs.org',
-  type: 'Personal'
+  type: 'Personal',
+  logo: '/images/logos/logo.svg'
 })
 
 const switchTeam = (team: Team) => {
@@ -530,7 +544,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
       >
         <div class="pt-4 h-10 flex shrink-0 items-center justify-between rounded-lg">
           <RouterLink to="/" :class="isSidebarCollapsed ? 'hidden' : ''">
-            <img class="h-10 w-auto rounded-lg cursor-pointer" src="/images/logos/logo.svg" alt="Stacks Logo">
+            <img class="h-10 w-auto rounded-lg cursor-pointer" :src="currentTeam.logo" :alt="`${currentTeam.name} Logo`">
           </RouterLink>
 
           <div class="flex items-center space-x-2">
@@ -586,8 +600,8 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                         <div class="flex items-center">
                           <div class="h-8 w-8 flex-shrink-0">
                             <img
-                              src="/images/logos/logo.svg"
-                              alt=""
+                              :src="team.logo"
+                              :alt="`${team.name} logo`"
                               class="h-8 w-8 rounded-full"
                             >
                           </div>

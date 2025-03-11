@@ -325,7 +325,7 @@ const deleteRole = (roleId: number) => {
           <div class="mt-8">
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
               <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">System Roles</h3>
+                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Roles</h3>
                 <button
                   @click="addRole"
                   class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 dark:focus:ring-offset-blue-gray-800"
