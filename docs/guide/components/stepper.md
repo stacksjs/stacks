@@ -6,18 +6,13 @@ A modern, accessible stepper component for Vue applications.
 
 ## Features
 
-- 🎯 Fully accessible (WAI-ARIA compliant)
-- 🌐 Horizontal and vertical orientation support
-- 🎨 Modern UI with smooth transitions
-- 🔄 Dynamic step management
-- 📱 Mobile-friendly
-- 🎯 TypeScript support
-- ✨ Loading states
-- 🎨 Beautiful transitions and animations
-- 📝 Form integration ready
-- 🎯 Progress tracking
-- 🔍 Step validation support
-- 🎨 Customizable icons and styling
+- ♿️ **Accessibility** *Fully accessible (WAI-ARIA compliant)*
+- 🔄 **Orientation** *Horizontal and vertical orientation support*
+- ✨ **UI** *Modern interface with smooth transitions*
+- 📝 **Forms** *Ready for form integration*
+- 🔍 **Validation** *Built-in step validation support*
+- 🎭 **Dynamic** *Flexible content management*
+- 🎨 **Customization** *Configurable styling and icons*
 
 <br>
 
