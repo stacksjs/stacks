@@ -286,3 +286,48 @@ export interface FetchProductManufacturersOptions {
   /** Search term to filter results */
   search?: string
 }
+
+
+export interface FetchCouponsOptions {
+  page?: number
+  limit?: number
+  search?: string
+  is_active?: boolean
+  discount_type?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  product_id?: string
+  category_id?: string
+  from_date?: string
+  to_date?: string
+}
+
+/**
+ * Interface for coupon count statistics
+ */
+export interface CouponCountStats {
+  total: number
+  active: number
+  inactive: number
+}
+
+/**
+ * Interface for time-based coupon statistics
+ */
+export interface CouponTimeStats {
+  week: CouponCountStats
+  month: CouponCountStats
+  year: CouponCountStats
+  all_time: CouponCountStats
+}
+
+/**
+ * Interface for coupon redemption statistics
+ */
+export interface CouponRedemptionStats {
+  total: number
+  week: number
+  month: number
+  year: number
+  by_type: Record<string, number>
+}

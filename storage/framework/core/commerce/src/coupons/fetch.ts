@@ -1,20 +1,6 @@
 import type { CouponJsonResponse, CouponResponse } from '../../../../orm/src/models/Coupon'
-import type { CouponStats } from '../../types'
+import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats, FetchCouponsOptions } from '../../types'
 import { db } from '@stacksjs/database'
-
-export interface FetchCouponsOptions {
-  page?: number
-  limit?: number
-  search?: string
-  is_active?: boolean
-  discount_type?: string
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  product_id?: string
-  category_id?: string
-  from_date?: string
-  to_date?: string
-}
 
 /**
  * Process coupon data from the database
@@ -245,25 +231,6 @@ export async function fetchStats(): Promise<CouponStats> {
 }
 
 /**
- * Interface for coupon count statistics
- */
-export interface CouponCountStats {
-  total: number
-  active: number
-  inactive: number
-}
-
-/**
- * Interface for time-based coupon statistics
- */
-export interface CouponTimeStats {
-  week: CouponCountStats
-  month: CouponCountStats
-  year: CouponCountStats
-  all_time: CouponCountStats
-}
-
-/**
  * Get count of active and inactive coupons for different time periods
  */
 export async function fetchCouponCounts(): Promise<CouponTimeStats> {
@@ -411,17 +378,6 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
   }
 
   return result
-}
-
-/**
- * Interface for coupon redemption statistics
- */
-export interface CouponRedemptionStats {
-  total: number
-  week: number
-  month: number
-  year: number
-  by_type: Record<string, number>
 }
 
 /**
