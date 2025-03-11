@@ -10,7 +10,7 @@
 
 dependencies:
   aws.amazon.com/cli: ^2.22.26
-  bun.sh: ^1.2.4
+  bun.sh: ^1.2.5
   info-zip.org/zip: ^3.0
   info-zip.org/unzip: ^6.0
   # mailpit.axllent.org: ^1.21.8

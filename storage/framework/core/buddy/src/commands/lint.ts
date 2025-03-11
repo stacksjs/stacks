@@ -3,6 +3,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { path } from '@stacksjs/path'
 
 export function lint(buddy: CLI): void {
   const descriptions = {
@@ -23,8 +24,8 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       if (options.fix)
-        await runAction(Action.LintFix, { ...options })
-      else await runCommand('bunx --bun eslint .')
+        await runAction(Action.LintFix, { cwd: path.projectPath(), ...options })
+      else await runCommand('bunx --bun eslint . --config ./config/lint.ts', { cwd: path.projectPath() })
 
       await outro('Linted your project', { startTime, useSeconds: true })
     })
@@ -37,7 +38,7 @@ export function lint(buddy: CLI): void {
       log.debug('Running `buddy lint:fix` ...', options)
 
       log.info('Fixing lint errors...')
-      const result = await runAction(Action.LintFix, { ...options })
+      const result = await runAction(Action.LintFix, { cwd: path.projectPath(), ...options })
 
       if (result.isErr()) {
         log.error('There was an error lint fixing your code.', result.error)

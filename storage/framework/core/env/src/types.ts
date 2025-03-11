@@ -2,7 +2,7 @@ import type { Infer, VineBoolean, VineEnum, VineNumber, VineString } from '@stac
 import type { SchemaTypes } from '@vinejs/vine/types'
 import type { EnvKey } from '../../../env'
 import { schema } from '@stacksjs/validation'
-import env from '~/env'
+import env from '~/config/env'
 
 interface EnumObject {
   [key: string]: string[]

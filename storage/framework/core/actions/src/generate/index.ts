@@ -70,7 +70,7 @@ export async function generateVsCodeCustomData(): Promise<void> {
     process.exit()
   }
 
-  await runAction(Action.LintFix, { verbose: true }) // because the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
 
   log.success('Successfully generated the custom-elements.json file')
 }
@@ -83,7 +83,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions): Promise<vo
     process.exit()
   }
 
-  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
   log.success('Successfully generated IDE helpers')
 }
 
@@ -95,7 +95,7 @@ export async function generateComponentMeta(): Promise<void> {
     process.exit()
   }
 
-  await runAction(Action.LintFix, { verbose: true }) // the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
   log.success('Successfully generated component meta information')
 }
 
