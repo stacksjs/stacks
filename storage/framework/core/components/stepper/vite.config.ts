@@ -9,14 +9,13 @@ import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
-const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
+  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
-let cssCodeStr = ''
-
 export default defineConfig(({ mode }) => {
+  let cssCodeStr = ''
   const userConfig: UserConfig = {}
 
   const commonPlugins = [
@@ -25,7 +24,7 @@ export default defineConfig(({ mode }) => {
     }),
 
     UnoCSS({
-      mode: 'shadow-dom',
+      mode: 'vue-scoped',
     }),
 
     Components({
@@ -34,11 +33,16 @@ export default defineConfig(({ mode }) => {
       resolvers: [
         IconsResolver({
           prefix: '',
+          enabledCollections: ['heroicons'],
         }),
       ],
+      dts: true,
     }),
 
-    Icons(),
+    Icons({
+      autoInstall: true,
+      compiler: 'vue3',
+    }),
   ]
 
   if (mode === 'lib') {
@@ -53,12 +57,17 @@ export default defineConfig(({ mode }) => {
       cssCodeSplit: false,
       sourcemap: true,
       rollupOptions: {
-        external: ['vue'],
+        external: ['vue', '@heroicons/vue', 'unocss'],
         output: [
           {
             format: 'es',
-            entryFileNames: `index.js`,
+            entryFileNames: 'index.js',
             preserveModules: false,
+            globals: {
+              vue: 'Vue',
+              '@heroicons/vue': 'HeroIcons',
+              unocss: 'UnoCSS',
+            },
           },
         ],
       },

@@ -53,7 +53,7 @@ import { Dropdown, DropdownButton, DropdownItem, DropdownItems } from './'
                     active ? 'bg-violet-500 text-white' : 'text-gray-900',
                   ]"
                 >
-                  <div class="i-hugeicons-document-duplicate-20-solid" />
+                  <div class="i-hugeicons:copy-01-20-solid" />
                   Duplicate
                 </button>
               </DropdownItem>

@@ -1,10 +1,5 @@
-<script lang="ts" setup>
-import { ref } from 'vue'
-
-import { useCopyCode } from './composables/useCopyCode'
-
-const code = `<!-- App.vue -->
-<script setup lang="ts">
+```vue
+<script setup>
 import { ref, computed } from 'vue'
 import { Stepper } from '@stacksjs/stepper'
 
@@ -69,7 +64,7 @@ const currentContent = computed(() => {
       }
   }
 })
-<\/script>
+</script>
 
 <template>
   <div class="p-8 max-w-3xl mx-auto">
@@ -218,43 +213,4 @@ input[type="checkbox"] {
   @apply rounded border-gray-300 text-blue-600 focus:ring-blue-500;
 }
 </style>
-`
-
-const showCheckIcon = ref(false)
-
-async function handleCopyCode() {
-  await useCopyCode({ code, checkIconRef: showCheckIcon })
-}
-</script>
-
-<template>
-  <div class="usage">
-    <h1 class="my-2 text-lg font-semibold">
-      Usage
-    </h1>
-    <p class="my-3 text-base">
-      To use the component in your templates, simply import and register with your component. To control the Stepper state, we use the v-model directive, just like on any other input element with two-way binding. The Stepper acts as a group of radio-buttons.
-    </p>
-    <div class="group code-block relative">
-      <Highlight
-        class-name="hightlight-rounded-md text-xs"
-        language="xml"
-        :autodetect="false"
-        :code="code"
-      />
-      <button
-        aria-label="Copy code"
-        title="Copy code"
-        class="btn-border absolute right-2 top-2 hidden p-1 group-hover:block"
-        @click="handleCopyCode"
-      >
-        <div v-if="showCheckIcon" class="i-hugeicons:checkmark-circle-01 text-gray-500" />
-        <div v-else class="i-hugeicons:copy-01 text-gray-500" />
-      </button>
-    </div>
-  </div>
-</template>
-
-<style scoped>
-/* @unocss-placeholder  */
-</style>
+```

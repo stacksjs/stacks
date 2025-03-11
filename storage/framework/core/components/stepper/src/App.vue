@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import StepperDemo from './StepperDemo.vue'
+import Example from './Example.vue'
 import Footer from './Footer.vue'
 import Hero from './Hero.vue'
 import Installation from './Installation.vue'
@@ -17,7 +17,7 @@ import Usage from './Usage.vue'
       >
         <Installation />
         <Usage />
-        <StepperDemo />
+        <Example />
         <Footer />
       </main>
     </div>
@@ -35,5 +35,5 @@ button {
   border: 0px solid #000;
 }
 
-/* @unocss-placeholder */
+
 </style>

@@ -142,5 +142,4 @@
   }
 }
 
-/* @unocss-placeholder */
 </style>

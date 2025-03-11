@@ -111,7 +111,7 @@ const filteredPeople = computed(() =>{
                       class="absolute inset-y-0 left-0 flex items-center pl-3"
                       :class="{ 'text-white': active, 'text-teal-600': !active }"
                     >
-                      <div class="i-hugeicons-check-20-solid" />
+                      <div class="i-hugeicons:checkmark-circle-01" />
                     </span>
                   </li>
                 </ComboboxOption>

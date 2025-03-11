@@ -81,7 +81,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
                       v-if="selected"
                       class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
                     >
-                      <div class="i-hugeicons-check-20-solid" />
+                      <div class="i-hugeicons:checkmark-circle-01-20-solid" />
                     </span>
                   </li>
                 </ListboxOption>
