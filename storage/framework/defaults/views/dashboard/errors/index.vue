@@ -399,7 +399,7 @@ const analyzeWithAI = async (errorId: string) => {
                             <div class="i-hugeicons-share-01 h-4 w-4" />
                           </button>
                         </Tooltip>
-                        <Tooltip text="View error details" position="top" :dark="isDark" :usePortal="true">
+                        <Tooltip text="View error details" position="top" :dark="isDark" :usePortal="true" alignment="right">
                           <button
                             type="button"
                             class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-gray-400 dark:ring-gray-600 dark:hover:bg-gray-700 dark:hover:text-indigo-400"

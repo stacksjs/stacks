@@ -18,6 +18,11 @@ const props = defineProps({
   usePortal: {
     type: Boolean,
     default: false
+  },
+  alignment: {
+    type: String,
+    default: 'center',
+    validator: (value: string) => ['left', 'center', 'right'].includes(value)
   }
 })
 
@@ -39,11 +44,27 @@ const calculatePosition = () => {
   switch (props.position) {
     case 'bottom':
       top = containerRect.bottom + 10
-      left = containerRect.left + (containerRect.width / 2) - (tooltipRect.width / 2)
+
+      // Apply alignment for bottom position
+      if (props.alignment === 'left') {
+        left = containerRect.left
+      } else if (props.alignment === 'right') {
+        left = containerRect.right - tooltipRect.width
+      } else { // center
+        left = containerRect.left + (containerRect.width / 2) - (tooltipRect.width / 2)
+      }
       break
     case 'top':
       top = containerRect.top - tooltipRect.height - 10
-      left = containerRect.left + (containerRect.width / 2) - (tooltipRect.width / 2)
+
+      // Apply alignment for top position
+      if (props.alignment === 'left') {
+        left = containerRect.left
+      } else if (props.alignment === 'right') {
+        left = containerRect.right - tooltipRect.width
+      } else { // center
+        left = containerRect.left + (containerRect.width / 2) - (tooltipRect.width / 2)
+      }
       break
     case 'left':
       top = containerRect.top + (containerRect.height / 2) - (tooltipRect.height / 2)
@@ -110,11 +131,11 @@ onBeforeUnmount(() => {
         v-show="isVisible"
         ref="tooltipRef"
         class="tooltip-portal"
-        :class="[position, { 'dark-tooltip': dark }]"
+        :class="[position, { 'dark-tooltip': dark }, `align-${alignment}`]"
         :style="tooltipPosition"
       >
         {{ text }}
-        <div class="tooltip-arrow" :class="position"></div>
+        <div class="tooltip-arrow" :class="[position, `align-${alignment}`]"></div>
       </div>
     </Teleport>
 
@@ -123,7 +144,7 @@ onBeforeUnmount(() => {
       v-if="!usePortal"
       v-show="isVisible"
       class="tooltip"
-      :class="[position, { 'dark-tooltip': dark }]"
+      :class="[position, { 'dark-tooltip': dark }, `align-${alignment}`]"
     >
       {{ text }}
     </span>
@@ -208,10 +229,32 @@ onBeforeUnmount(() => {
   transform: translateX(-50%);
 }
 
+.tooltip.bottom.align-left {
+  left: 0;
+  transform: none;
+}
+
+.tooltip.bottom.align-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
 .tooltip.top {
   top: -30px;
   left: 50%;
   transform: translateX(-50%);
+}
+
+.tooltip.top.align-left {
+  left: 0;
+  transform: none;
+}
+
+.tooltip.top.align-right {
+  left: auto;
+  right: 0;
+  transform: none;
 }
 
 .tooltip.left {
@@ -227,7 +270,8 @@ onBeforeUnmount(() => {
 }
 
 /* Arrows for each position */
-.tooltip.bottom::after {
+.tooltip.bottom::after,
+.tooltip-portal.bottom .tooltip-arrow {
   content: "";
   position: absolute;
   bottom: 100%;
@@ -238,7 +282,21 @@ onBeforeUnmount(() => {
   border-color: transparent transparent rgba(0, 0, 0, 0.8) transparent;
 }
 
-.tooltip.top::after {
+.tooltip.bottom.align-left::after,
+.tooltip-portal.bottom.align-left .tooltip-arrow {
+  left: 10px;
+  margin-left: 0;
+}
+
+.tooltip.bottom.align-right::after,
+.tooltip-portal.bottom.align-right .tooltip-arrow {
+  left: auto;
+  right: 10px;
+  margin-left: 0;
+}
+
+.tooltip.top::after,
+.tooltip-portal.top .tooltip-arrow {
   content: "";
   position: absolute;
   top: 100%;
@@ -249,7 +307,21 @@ onBeforeUnmount(() => {
   border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
 }
 
-.tooltip.left::after {
+.tooltip.top.align-left::after,
+.tooltip-portal.top.align-left .tooltip-arrow {
+  left: 10px;
+  margin-left: 0;
+}
+
+.tooltip.top.align-right::after,
+.tooltip-portal.top.align-right .tooltip-arrow {
+  left: auto;
+  right: 10px;
+  margin-left: 0;
+}
+
+.tooltip.left::after,
+.tooltip-portal.left .tooltip-arrow {
   content: "";
   position: absolute;
   top: 50%;
@@ -260,7 +332,8 @@ onBeforeUnmount(() => {
   border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
 }
 
-.tooltip.right::after {
+.tooltip.right::after,
+.tooltip-portal.right .tooltip-arrow {
   content: "";
   position: absolute;
   top: 50%;
@@ -277,35 +350,27 @@ onBeforeUnmount(() => {
   color: #1e293b;
 }
 
-.dark-tooltip.tooltip-arrow.bottom {
+.dark-tooltip.tooltip-arrow.bottom,
+.dark-tooltip.bottom::after,
+.dark-tooltip.tooltip-portal.bottom .tooltip-arrow {
   border-bottom-color: rgba(255, 255, 255, 0.8);
 }
 
-.dark-tooltip.tooltip-arrow.top {
+.dark-tooltip.tooltip-arrow.top,
+.dark-tooltip.top::after,
+.dark-tooltip.tooltip-portal.top .tooltip-arrow {
   border-top-color: rgba(255, 255, 255, 0.8);
 }
 
-.dark-tooltip.tooltip-arrow.left {
+.dark-tooltip.tooltip-arrow.left,
+.dark-tooltip.left::after,
+.dark-tooltip.tooltip-portal.left .tooltip-arrow {
   border-left-color: rgba(255, 255, 255, 0.8);
 }
 
-.dark-tooltip.tooltip-arrow.right {
+.dark-tooltip.tooltip-arrow.right,
+.dark-tooltip.right::after,
+.dark-tooltip.tooltip-portal.right .tooltip-arrow {
   border-right-color: rgba(255, 255, 255, 0.8);
-}
-
-.dark-tooltip.bottom::after {
-  border-color: transparent transparent rgba(255, 255, 255, 0.8) transparent;
-}
-
-.dark-tooltip.top::after {
-  border-color: rgba(255, 255, 255, 0.8) transparent transparent transparent;
-}
-
-.dark-tooltip.left::after {
-  border-color: transparent transparent transparent rgba(255, 255, 255, 0.8);
-}
-
-.dark-tooltip.right::after {
-  border-color: transparent rgba(255, 255, 255, 0.8) transparent transparent;
 }
 </style>
