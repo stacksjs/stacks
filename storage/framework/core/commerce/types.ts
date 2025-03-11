@@ -161,8 +161,8 @@ export interface CouponStats {
     code: string | undefined
     discount_type: string | undefined
     discount_value: number | undefined
-    start_date: string | undefined
-    end_date: string | undefined
+    start_date: Date | string
+    end_date: Date | string
   }[]
 }
 export interface OrderWithTotals {
