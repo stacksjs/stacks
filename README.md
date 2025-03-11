@@ -317,7 +317,7 @@ Convention over configuration, while staying wholly configurable. _No more boile
 
 - 💎 **Automated Upgrades** _no need to worry about upgrading to the latest versions, Stacks upgrades you_
 - 🦋 **Pretty Dev URLs** _your-project.localhost instead of localhost:3000_
-- 💡 **IDE Integration** _auto-completions, inline docs & a powerful VS Code setup_
+- 💡 **IDE Integration** _auto-completions, inline docs & a powerful IDE setup_
 - 🪄 **Zero-Config** _yet highly configurable—convention over configuration_
 - 💅 **Linter & Formatter** _auto-configured & built into your IDE_
 - 💪🏼 **Type Strong** _built-in e2e type-safety_
