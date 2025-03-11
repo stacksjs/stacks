@@ -287,7 +287,6 @@ export interface FetchProductManufacturersOptions {
   search?: string
 }
 
-
 export interface FetchCouponsOptions {
   page?: number
   limit?: number

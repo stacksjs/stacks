@@ -380,9 +380,6 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
   return result
 }
 
-/**
- * Fetch coupon redemption statistics based on usage_count
- */
 export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   // Total redemptions (sum of all usage_count)
   const totalResult = await db
@@ -545,5 +542,58 @@ export async function fetchConversionRate(): Promise<{
     rate,
     total_active: totalActive,
     total_redeemed: totalRedeemed,
+  }
+}
+
+/**
+ * Calculate the month-over-month change in active coupons
+ */
+export async function getActiveCouponsMoMChange(): Promise<{
+  current_month: number
+  previous_month: number
+  difference: number
+  percentage_change: number
+}> {
+  const today = new Date()
+
+  // Current month (start of current month to today)
+  const currentMonthStart = new Date(today.getFullYear(), today.getMonth(), 1)
+
+  // Previous month
+  const previousMonthStart = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  const previousMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0)
+
+  // Get active coupons for current month
+  const currentMonthActive = await db
+    .selectFrom('coupons')
+    .select(db.fn.count('id').as('count'))
+    .where('is_active', '=', true)
+    .where('start_date', '<=', today)
+    .where('end_date', '>=', currentMonthStart)
+    .executeTakeFirst()
+
+  // Get active coupons for previous month
+  const previousMonthActive = await db
+    .selectFrom('coupons')
+    .select(db.fn.count('id').as('count'))
+    .where('is_active', '=', true)
+    .where('start_date', '<=', previousMonthEnd)
+    .where('end_date', '>=', previousMonthStart)
+    .executeTakeFirst()
+
+  const currentCount = Number(currentMonthActive?.count || 0)
+  const previousCount = Number(previousMonthActive?.count || 0)
+  const difference = currentCount - previousCount
+
+  // Calculate percentage change, handling division by zero
+  const percentageChange = previousCount !== 0
+    ? (difference / previousCount) * 100
+    : (currentCount > 0 ? 100 : 0) // If previous month was 0, and current is > 0, that's a 100% increase
+
+  return {
+    current_month: currentCount,
+    previous_month: previousCount,
+    difference,
+    percentage_change: percentageChange,
   }
 }

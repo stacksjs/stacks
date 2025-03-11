@@ -64,9 +64,9 @@ export default defineConfig(({ mode }) => {
             entryFileNames: 'index.js',
             preserveModules: false,
             globals: {
-              vue: 'Vue',
+              'vue': 'Vue',
               '@heroicons/vue': 'HeroIcons',
-              unocss: 'UnoCSS',
+              'unocss': 'UnoCSS',
             },
           },
         ],
