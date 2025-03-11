@@ -178,6 +178,7 @@ export default {
     default: '',
   },
 
+  #  FRONTEND_* variables should not contain any sensitive information
   FRONTEND_APP_ENV: {
     validation: schema.enum(['development', 'staging', 'production']),
     default: 'development',
