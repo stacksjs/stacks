@@ -526,6 +526,24 @@ const endAccordionTransition = (el: Element, done: () => void) => {
   // Call done when transition completes
   el.addEventListener('transitionend', done, { once: true })
 }
+
+// Add color mapping for section icons
+const sectionColors: Record<string, string> = {
+  library: 'text-blue-600 dark:text-blue-400',
+  content: 'text-blue-600 dark:text-blue-400',
+  app: 'text-blue-600 dark:text-blue-400',
+  data: 'text-blue-600 dark:text-blue-400',
+  commerce: 'text-cyan-600 dark:text-cyan-400',
+  marketing: 'text-purple-600 dark:text-purple-400',
+  analytics: 'text-emerald-600 dark:text-emerald-400',
+  management: 'text-blue-600 dark:text-blue-400'
+}
+
+// Function to get icon color based on section
+const getIconColor = (sectionKey: string, isActive: boolean = false) => {
+  if (isActive) return 'text-blue-600 dark:text-blue-400'
+  return sectionColors[sectionKey] || 'text-gray-400 dark:text-gray-200'
+}
 </script>
 
 <template>
@@ -718,14 +736,14 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                       <li v-if="!item.children" class="w-full">
                         <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                           <RouterLink :to="item.to" class="group sidebar-links justify-center">
-                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
+                            <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
                             <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                               {{ item.letter }}
                             </div>
                           </RouterLink>
                         </Tooltip>
                         <RouterLink v-else :to="item.to" class="group sidebar-links w-full">
-                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
+                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
                           <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                             {{ item.letter }}
                           </div>
@@ -743,7 +761,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                           class="group sidebar-links w-full text-left sidebar-dropdown-trigger"
                           :class="{ 'parent-active': isChildRouteActive(item) }"
                         >
-                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
+                          <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, isChildRouteActive(item))]" />
                           <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                             {{ item.letter }}
                           </div>
@@ -808,7 +826,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                         <li v-if="!item.children" class="flex justify-center w-full">
                           <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                             <RouterLink :to="item.to" class="group sidebar-links justify-center">
-                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
+                              <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
                               <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                                 {{ item.letter }}
                               </div>
@@ -829,7 +847,7 @@ const endAccordionTransition = (el: Element, done: () => void) => {
                                 class="group sidebar-links justify-center sidebar-dropdown-trigger"
                                 :class="{ 'parent-active': isChildRouteActive(item) }"
                               >
-                                <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700']" />
+                                <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, isChildRouteActive(item))]" />
                                 <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
                                   {{ item.letter }}
                                 </div>
