@@ -21,7 +21,6 @@ export interface PaymentsTable {
   amount: number
   method: string
   status: string
-  date: Date | string
   currency?: string
   reference_number?: string
   card_last_four?: string
@@ -68,7 +67,7 @@ interface QueryOptions {
 
 export class PaymentModel {
   private readonly hidden: Array<keyof PaymentJsonResponse> = []
-  private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'date', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
+  private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
   private readonly guarded: Array<keyof PaymentJsonResponse> = []
   protected attributes = {} as PaymentJsonResponse
   protected originalAttributes = {} as PaymentJsonResponse
@@ -182,10 +181,6 @@ export class PaymentModel {
     return this.attributes.status
   }
 
-  get date(): Date | string {
-    return this.attributes.date
-  }
-
   get currency(): string | undefined {
     return this.attributes.currency
   }
@@ -244,10 +239,6 @@ export class PaymentModel {
 
   set status(value: string) {
     this.attributes.status = value
-  }
-
-  set date(value: Date | string) {
-    this.attributes.date = value
   }
 
   set currency(value: string) {
@@ -1257,14 +1248,6 @@ export class PaymentModel {
     return instance
   }
 
-  static whereDate(value: string): PaymentModel {
-    const instance = new PaymentModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('date', '=', value)
-
-    return instance
-  }
-
   static whereCurrency(value: string): PaymentModel {
     const instance = new PaymentModel(undefined)
 
@@ -1900,7 +1883,6 @@ export class PaymentModel {
       amount: this.amount,
       method: this.method,
       status: this.status,
-      date: this.date,
       currency: this.currency,
       reference_number: this.reference_number,
       card_last_four: this.card_last_four,
@@ -1985,13 +1967,6 @@ export async function whereMethod(value: string): Promise<PaymentModel[]> {
 
 export async function whereStatus(value: string): Promise<PaymentModel[]> {
   const query = DB.instance.selectFrom('payments').where('status', '=', value)
-  const results: PaymentJsonResponse = await query.execute()
-
-  return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
-}
-
-export async function whereDate(value: Date | string): Promise<PaymentModel[]> {
-  const query = DB.instance.selectFrom('payments').where('date', '=', value)
   const results: PaymentJsonResponse = await query.execute()
 
   return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))

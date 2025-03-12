@@ -77,16 +77,6 @@ export default {
       ]),
     },
 
-    date: {
-      required: true,
-      order: 6,
-      fillable: true,
-      validation: {
-        rule: schema.date(),
-      },
-      factory: faker => faker.date.recent().toISOString(),
-    },
-
     currency: {
       required: false,
       order: 7,

@@ -16,7 +16,6 @@ interface RequestDataPayment {
   amount: number
   method: string
   status: string
-  date: date
   currency: string
   reference_number: string
   card_last_four: string
@@ -34,7 +33,6 @@ export class PaymentRequest extends Request<RequestDataPayment> implements Payme
   public amount = 0
   public method = ''
   public status = ''
-  public date = ''
   public currency = ''
   public reference_number = ''
   public card_last_four = ''

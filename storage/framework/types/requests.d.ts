@@ -229,7 +229,6 @@ interface RequestDataPayment {
   amount: number
   method: string
   status: string
-  date: date
   currency: string
   reference_number: string
   card_last_four: string
@@ -250,7 +249,6 @@ export interface PaymentRequestType extends Request {
   amount: number
   method: string
   status: string
-  date: date
   currency: string
   reference_number: string
   card_last_four: string

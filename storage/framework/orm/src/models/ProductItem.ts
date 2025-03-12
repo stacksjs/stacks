@@ -135,7 +135,7 @@ export class ProductItemModel {
     }
   }
 
-  async mapCustomSetters(model: NewProductItem): Promise<void> {
+  async mapCustomSetters(model: NewProductItem | ProductItemUpdate): Promise<void> {
     const customSetter = {
       default: () => {
       },

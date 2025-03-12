@@ -31,7 +31,6 @@ export interface Attributes {
   body: string
   amount: number
   method: string
-  date: Date | string
   currency: string
   reference_number: string
   card_last_four: string
