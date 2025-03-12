@@ -13,7 +13,7 @@ export default {
     useSearch: {
       displayable: ['id', 'order_id', 'customer_id', 'amount', 'method', 'status', 'date'],
       searchable: ['order_id', 'customer_id', 'reference_number'],
-      sortable: ['date', 'amount', 'created_at'],
+      sortable: ['amount', 'created_at'],
       filterable: ['method', 'status', 'date'],
     },
 
@@ -29,7 +29,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['Order', 'User'], // For order_id and customer_id
+  belongsTo: ['Order', 'Customer'], // For order_id and customer_id
 
   attributes: {
     amount: {

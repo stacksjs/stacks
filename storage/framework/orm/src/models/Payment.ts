@@ -1,7 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
-import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
@@ -10,14 +10,14 @@ import { dispatch } from '@stacksjs/events'
 
 import { DB, SubqueryBuilder } from '@stacksjs/orm'
 
-import Order from './Order'
+import Customer from './Customer'
 
-import User from './User'
+import Order from './Order'
 
 export interface PaymentsTable {
   id: Generated<number>
   order_id: number
-  user_id: number
+  customer_id: number
   amount: number
   method: string
   status: string
@@ -153,12 +153,12 @@ export class PaymentModel {
     return this.attributes.order
   }
 
-  get user_id(): number {
-    return this.attributes.user_id
+  get customer_id(): number {
+    return this.attributes.customer_id
   }
 
-  get user(): UserModel | undefined {
-    return this.attributes.user
+  get customer(): CustomerModel | undefined {
+    return this.attributes.customer
   }
 
   get id(): number {
@@ -1816,12 +1816,12 @@ export class PaymentModel {
     return model
   }
 
-  async userBelong(): Promise<UserModel> {
-    if (this.user_id === undefined)
+  async customerBelong(): Promise<CustomerModel> {
+    if (this.customer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await User
-      .where('id', '=', this.user_id)
+    const model = await Customer
+      .where('id', '=', this.customer_id)
       .first()
 
     if (!model)
@@ -1899,8 +1899,8 @@ export class PaymentModel {
 
       order_id: this.order_id,
       order: this.order,
-      user_id: this.user_id,
-      user: this.user,
+      customer_id: this.customer_id,
+      customer: this.customer,
       ...this.customColumns,
     }
 
