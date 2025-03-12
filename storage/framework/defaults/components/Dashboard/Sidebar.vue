@@ -793,7 +793,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                                 :to="child.to"
                                 class="sidebar-child-link w-full"
                               >
-                                <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 text-gray-400 mr-2']" />
+                                <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 mr-2', getIconColor(sectionKey, route.path === child.to)]" />
                                 <span class="flex-1">{{ child.text }}</span>
                               </RouterLink>
                             </div>
@@ -880,7 +880,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                                     @click="expandedItems[item.to] = false"
                                   >
                                     <div class="flex items-center">
-                                      <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 mr-2 text-gray-400']" />
+                                      <div v-if="child.icon" :class="[child.icon, 'h-4 w-4 mr-2', getIconColor(sectionKey, route.path === child.to)]" />
                                       <span>{{ child.text }}</span>
                                     </div>
                                   </RouterLink>
