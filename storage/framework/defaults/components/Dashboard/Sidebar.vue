@@ -737,14 +737,14 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                         <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                           <RouterLink :to="item.to" class="group sidebar-links justify-center">
                             <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
-                            <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                            <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
                               {{ item.letter }}
                             </div>
                           </RouterLink>
                         </Tooltip>
                         <RouterLink v-else :to="item.to" class="group sidebar-links w-full">
                           <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
-                          <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                          <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
                             {{ item.letter }}
                           </div>
                           <span class="flex-1">{{ item.text }}</span>
@@ -762,7 +762,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                           :class="{ 'parent-active': isChildRouteActive(item) }"
                         >
                           <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, isChildRouteActive(item))]" />
-                          <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                          <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
                             {{ item.letter }}
                           </div>
                           <span class="flex-1">{{ item.text }}</span>
@@ -780,7 +780,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                         >
                           <div
                             v-if="expandedItems[item.to]"
-                            class="dropdown-list mt-0.5 space-y-0.5 pl-6 ml-2.5 w-full"
+                            class="dropdown-list mt-0.5 space-y-0.5 pl-6 ml-0 w-full"
                             :data-dropdown-id="item.to"
                             :style="{ maxHeight: 'none' }"
                           >
@@ -827,7 +827,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                           <Tooltip v-if="isSidebarCollapsed" :text="item.text" position="right" :dark="isDark" :usePortal="true">
                             <RouterLink :to="item.to" class="group sidebar-links justify-center">
                               <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, route.path === item.to)]" />
-                              <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                              <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
                                 {{ item.letter }}
                               </div>
                             </RouterLink>
@@ -848,7 +848,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                                 :class="{ 'parent-active': isChildRouteActive(item) }"
                               >
                                 <div v-if="item.icon" :class="[item.icon, 'h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700', getIconColor(sectionKey, isChildRouteActive(item))]" />
-                                <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-gray-200 bg-white text-[10px] font-medium text-gray-400 dark:border-gray-700 dark:bg-blue-gray-800">
+                                <div v-else-if="item.letter" class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
                                   {{ item.letter }}
                                 </div>
                               </button>
@@ -998,6 +998,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
   @apply border-l border-gray-200 dark:border-blue-gray-700;
   width: 100%;
   position: relative;
+  padding-left: 0.75rem;
 }
 
 .dropdown-item {
@@ -1008,8 +1009,9 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 .sidebar-child-link {
   @apply flex items-center rounded-md py-0.5 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
   transition: all 0.2s ease;
-  width: 100%;
-  margin-right: 8px;
+  width: calc(100% - 16px);
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .sidebar-child-link.router-link-active {
