@@ -13,7 +13,7 @@ export async function store(request: PaymentRequestType): Promise<PaymentJsonRes
 
   const paymentData: NewPayment = {
     order_id: request.get<number>('order_id'),
-    user_id: request.get<number>('user_id'),
+    customer_id: request.get<number>('user_id'),
     amount: request.get<number>('amount'),
     method: request.get('method'),
     status: request.get('status') || 'PENDING',

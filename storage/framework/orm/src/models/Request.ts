@@ -16,7 +16,7 @@ export interface RequestsTable {
   user_agent?: string
   error_message?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

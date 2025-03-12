@@ -22,7 +22,7 @@ export interface TransactionsTable {
   loyalty_points_redeemed?: number
   uuid?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

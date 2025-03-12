@@ -18,7 +18,7 @@ export interface LoyaltyPointsTable {
   is_used?: boolean
   uuid?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

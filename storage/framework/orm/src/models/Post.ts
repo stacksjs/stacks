@@ -14,7 +14,7 @@ export interface PostsTable {
   title: string
   body: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

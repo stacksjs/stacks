@@ -330,3 +330,15 @@ export interface CouponRedemptionStats {
   year: number
   by_type: Record<string, number>
 }
+export interface FetchOrdersOptions {
+  page?: number
+  limit?: number
+  search?: string
+  status?: string
+  order_type?: string
+  customer_id?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  from_date?: string
+  to_date?: string
+}

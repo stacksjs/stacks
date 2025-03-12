@@ -20,7 +20,7 @@ export interface OrderItemsTable {
   price: number
   special_instructions?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

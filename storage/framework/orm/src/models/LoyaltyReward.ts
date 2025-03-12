@@ -24,7 +24,7 @@ export interface LoyaltyRewardsTable {
   image_url?: string
   uuid?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

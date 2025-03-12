@@ -13,7 +13,7 @@ export interface ErrorsTable {
   status: number
   additional_info?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

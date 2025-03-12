@@ -34,7 +34,7 @@ export interface ProductItemsTable {
   custom_options?: string
   uuid?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

@@ -33,7 +33,7 @@ export interface OrdersTable {
   applied_coupon_id?: string
   uuid?: string
 
-  created_at?: Date
+  created_at: Date
 
   updated_at?: Date
 

@@ -1,24 +1,10 @@
 import type {
-  OrderResponse,
   OrderStats,
   OrderType,
   OrderTypeCount,
   StatusCount,
 } from '../../types'
 import { db } from '@stacksjs/database'
-
-export interface FetchOrdersOptions {
-  page?: number
-  limit?: number
-  search?: string
-  status?: string
-  order_type?: string
-  customer_id?: number
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  from_date?: string
-  to_date?: string
-}
 
 /**
  * Fetch all orders from the database with their items
@@ -55,26 +41,6 @@ export async function fetchById(id: number): Promise<OrderType | undefined> {
     .executeTakeFirst()
 
   return order
-}
-
-/**
- * Fetch orders for a specific customer
- */
-export async function fetchByCustomer(customerId: number, options: FetchOrdersOptions = {}): Promise<OrderResponse> {
-  return fetchPaginated({
-    ...options,
-    customer_id: customerId,
-  })
-}
-
-/**
- * Fetch orders by status
- */
-export async function fetchByStatus(status: string, options: FetchOrdersOptions = {}): Promise<OrderResponse> {
-  return fetchPaginated({
-    ...options,
-    status,
-  })
 }
 
 /**
@@ -136,4 +102,255 @@ export async function fetchStats(): Promise<OrderStats> {
     recent: recentOrders,
     revenue: Number(revenue?.total || 0),
   }
+}
+
+/**
+ * Compare orders between different time periods
+ * @param daysRange Number of days to look back (7, 30, 60, etc.)
+ */
+export async function compareOrdersByPeriod(daysRange: number = 30): Promise<{
+  current_period: number
+  previous_period: number
+  difference: number
+  percentage_change: number
+  days_range: number
+}> {
+  const today = new Date()
+
+  // Current period (last N days)
+  const currentPeriodStart = new Date(today)
+  currentPeriodStart.setDate(today.getDate() - daysRange)
+
+  // Previous period (N days before the current period)
+  const previousPeriodEnd = new Date(currentPeriodStart)
+  previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
+
+  const previousPeriodStart = new Date(previousPeriodEnd)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+
+  // Get orders for current period
+  const currentPeriodOrders = await db
+    .selectFrom('orders')
+    .select(db.fn.count('id').as('count'))
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
+    .executeTakeFirst()
+
+  // Get orders for previous period
+  const previousPeriodOrders = await db
+    .selectFrom('orders')
+    .select(db.fn.count('id').as('count'))
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
+    .executeTakeFirst()
+
+  const currentCount = Number(currentPeriodOrders?.count || 0)
+  const previousCount = Number(previousPeriodOrders?.count || 0)
+  const difference = currentCount - previousCount
+
+  // Calculate percentage change, handling division by zero
+  const percentageChange = previousCount !== 0
+    ? (difference / previousCount) * 100
+    : (currentCount > 0 ? 100 : 0)
+
+  return {
+    current_period: currentCount,
+    previous_period: previousCount,
+    difference,
+    percentage_change: percentageChange,
+    days_range: daysRange,
+  }
+}
+
+/**
+ * Calculate order values and metrics for different time periods
+ * @param daysRange Number of days to look back (7, 30, 60, etc.)
+ */
+export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
+  current_period: {
+    total_orders: number
+    total_revenue: number
+    average_order_value: number
+    orders_by_status: { status: string, count: number }[]
+    orders_by_type: { order_type: string, count: number }[]
+  }
+  previous_period: {
+    total_orders: number
+    total_revenue: number
+    average_order_value: number
+  }
+  comparison: {
+    orders: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+    revenue: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+    average_order_value: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+  }
+  days_range: number
+}> {
+  const today = new Date()
+
+  // Current period (last N days)
+  const currentPeriodStart = new Date(today)
+  currentPeriodStart.setDate(today.getDate() - daysRange)
+
+  // Previous period (N days before the current period)
+  const previousPeriodEnd = new Date(currentPeriodStart)
+  previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
+
+  const previousPeriodStart = new Date(previousPeriodEnd)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+
+  // Get values for current period
+  const currentPeriodValues = await db
+    .selectFrom('orders')
+    .select([
+      db.fn.count('id').as('total_orders'),
+      db.fn.sum('total_amount').as('total_revenue'),
+    ])
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
+    .executeTakeFirst()
+
+  // Get values for previous period
+  const previousPeriodValues = await db
+    .selectFrom('orders')
+    .select([
+      db.fn.count('id').as('total_orders'),
+      db.fn.sum('total_amount').as('total_revenue'),
+    ])
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
+    .executeTakeFirst()
+
+  // Get orders by status for current period
+  const ordersByStatus = await db
+    .selectFrom('orders')
+    .select(['status', db.fn.count('id').as('count')])
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
+    .groupBy('status')
+    .execute()
+
+  // Get orders by type for current period
+  const ordersByType = await db
+    .selectFrom('orders')
+    .select(['order_type', db.fn.count('id').as('count')])
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
+    .groupBy('order_type')
+    .execute()
+
+  // Calculate values for current period
+  const currentTotalOrders = Number(currentPeriodValues?.total_orders || 0)
+  const currentTotalRevenue = Number(currentPeriodValues?.total_revenue || 0)
+  const currentAverageOrderValue = currentTotalOrders > 0
+    ? currentTotalRevenue / currentTotalOrders
+    : 0
+
+  // Calculate values for previous period
+  const previousTotalOrders = Number(previousPeriodValues?.total_orders || 0)
+  const previousTotalRevenue = Number(previousPeriodValues?.total_revenue || 0)
+  const previousAverageOrderValue = previousTotalOrders > 0
+    ? previousTotalRevenue / previousTotalOrders
+    : 0
+
+  // Calculate differences
+  const ordersDifference = currentTotalOrders - previousTotalOrders
+  const revenueDifference = currentTotalRevenue - previousTotalRevenue
+  const aovDifference = currentAverageOrderValue - previousAverageOrderValue
+
+  // Calculate percentage changes
+  const ordersPercentageChange = previousTotalOrders !== 0
+    ? (ordersDifference / previousTotalOrders) * 100
+    : (currentTotalOrders > 0 ? 100 : 0)
+
+  const revenuePercentageChange = previousTotalRevenue !== 0
+    ? (revenueDifference / previousTotalRevenue) * 100
+    : (currentTotalRevenue > 0 ? 100 : 0)
+
+  const aovPercentageChange = previousAverageOrderValue !== 0
+    ? (aovDifference / previousAverageOrderValue) * 100
+    : (currentAverageOrderValue > 0 ? 100 : 0)
+
+  return {
+    current_period: {
+      total_orders: currentTotalOrders,
+      total_revenue: currentTotalRevenue,
+      average_order_value: currentAverageOrderValue,
+      orders_by_status: ordersByStatus.map(item => ({
+        status: item.status,
+        count: Number(item.count),
+      })),
+      orders_by_type: ordersByType.map(item => ({
+        order_type: item.order_type,
+        count: Number(item.count),
+      })),
+    },
+    previous_period: {
+      total_orders: previousTotalOrders,
+      total_revenue: previousTotalRevenue,
+      average_order_value: previousAverageOrderValue,
+    },
+    comparison: {
+      orders: {
+        difference: ordersDifference,
+        percentage: Math.abs(ordersPercentageChange),
+        is_increase: ordersDifference >= 0,
+      },
+      revenue: {
+        difference: revenueDifference,
+        percentage: Math.abs(revenuePercentageChange),
+        is_increase: revenueDifference >= 0,
+      },
+      average_order_value: {
+        difference: aovDifference,
+        percentage: Math.abs(aovPercentageChange),
+        is_increase: aovDifference >= 0,
+      },
+    },
+    days_range: daysRange,
+  }
+}
+
+/**
+ * Get daily order counts for a time period
+ * @param daysRange Number of days to look back
+ */
+export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
+  date: Date
+  order_count: number
+  revenue: number
+}[]> {
+  const today = new Date()
+  const startDate = new Date(today)
+  startDate.setDate(today.getDate() - daysRange)
+
+  // Query to get daily order counts and revenue
+  const dailyOrders = await db
+    .selectFrom('orders')
+    .select([
+      db.fn.count('id').as('order_count'),
+      db.fn.sum('total_amount').as('revenue'),
+      'created_at',
+    ])
+    .where('created_at', '>=', startDate)
+    .where('created_at', '<=', today)
+    .execute()
+
+  return dailyOrders.map(day => ({
+    date: day.created_at,
+    order_count: Number(day.order_count || 0),
+    revenue: Number(day.revenue || 0),
+  }))
 }
