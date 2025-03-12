@@ -62,7 +62,7 @@ export function env(buddy: CLI): void {
 
       if (key) args.push(key)
       if (options.all) args.push('--all')
-      if (options.pretty) args.push('--pretty')
+      if (options.pretty) args.push('--pretty-print')
       if (options.file) args.push('--file', options.file)
       if (options.format) args.push('--format', options.format)
 
@@ -106,6 +106,7 @@ export function env(buddy: CLI): void {
 
       if (options.file) args.push('--file', options.file)
       if (options.format) args.push('--format', options.format)
+      if (options.pretty) args.push('--pretty-print')
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
