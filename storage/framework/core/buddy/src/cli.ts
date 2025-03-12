@@ -70,6 +70,7 @@ async function main() {
   cmd.route(buddy)
   cmd.saas(buddy)
   cmd.search(buddy)
+  cmd.secret(buddy)
   cmd.seed(buddy)
   cmd.setup(buddy)
   cmd.schedule(buddy)
