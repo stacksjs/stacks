@@ -1352,6 +1352,17 @@ export function findCoreModel(modelName: string): string {
   return matches[0] ?? ''
 }
 
+export function findUserModel(modelName: string): string {
+  const rootPath = join(userModelsPath('/'), '/')
+
+  const matches = globSync(`${rootPath}**/${modelName}`, {
+    absolute: true,
+  })
+
+  return matches[0] ?? ''
+}
+
+
 export interface Path {
   actionsPath: (path?: string) => string
   userActionsPath: (path?: string) => string
@@ -1400,6 +1411,7 @@ export interface Path {
   examplesPath: (type?: 'vue-components' | 'web-components') => string
   fakerPath: (path?: string) => string
   findCoreModel: (modelName: string) => string
+  findUserModel: (modelName: string) => string
   frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string
   storagePath: (path?: string) => string
@@ -1532,6 +1544,7 @@ export const path: Path = {
   examplesPath,
   fakerPath,
   findCoreModel,
+  findUserModel,
   frameworkPath,
   browserPath,
   storagePath,
