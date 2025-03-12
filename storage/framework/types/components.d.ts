@@ -117,6 +117,8 @@ declare module 'vue' {
     Sidebar: typeof import('./../defaults/components/Dashboard/Sidebar.vue')['default']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
+    StepperCode: typeof import('./../defaults/components/Docs/Demo/StepperCode.md')['default']
+    StepperDemo: typeof import('./../defaults/components/Docs/Demo/StepperDemo.vue')['default']
     StorageForm: typeof import('./../defaults/components/Dashboard/Settings/Forms/StorageForm.vue')['default']
     SwitchCode: typeof import('./../defaults/components/Docs/Demo/SwitchCode.md')['default']
     SwitchDemo: typeof import('./../defaults/components/Docs/Demo/SwitchDemo.vue')['default']

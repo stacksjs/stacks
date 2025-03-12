@@ -3,7 +3,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 
-type SecretOptions = {
+type EnvOptions = {
   get: string
   set: string
   encrypt: string
@@ -55,7 +55,7 @@ export function env(buddy: CLI): void {
     .example('buddy env:get --format shell')
     .example('buddy env:get --format eval')
     .example('buddy env:get --format json')
-    .action(async (key: string, options: SecretOptions) => {
+    .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:get` ...', options)
 
       const args = ['get']
@@ -94,7 +94,7 @@ export function env(buddy: CLI): void {
     .example('buddy env:set SECRET value')
     .example('buddy env:set SECRET value --file .env.production')
     .example('buddy env:set --format shell')
-    .action(async (key: string, value: string, options: SecretOptions) => {
+    .action(async (key: string, value: string, options: EnvOptions) => {
       log.debug('Running `buddy env:set` ...', options)
 
       const args = ['set']
@@ -131,7 +131,7 @@ export function env(buddy: CLI): void {
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
     .option('-ek, --exclude-key [excludeKey]', descriptions.excludeKey, { default: '' })
-    .action(async (key: string, options: SecretOptions) => {
+    .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:encrypt` ...', options)
 
       const args = ['encrypt']
@@ -165,7 +165,7 @@ export function env(buddy: CLI): void {
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
-    .action(async (key: string, options: SecretOptions) => {
+    .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:decrypt` ...', options)
 
       const args = ['decrypt']
@@ -197,7 +197,7 @@ export function env(buddy: CLI): void {
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
-    .action(async (key: string, options: SecretOptions) => {
+    .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:keypair` ...', options)
 
       const args = ['keypair']
@@ -229,7 +229,7 @@ export function env(buddy: CLI): void {
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
-    .action(async (key: string, options: SecretOptions) => {
+    .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:rotate` ...', options)
 
       const args = ['rotate']
