@@ -9,9 +9,15 @@ export {
   fetchAll,
   fetchByCode,
   fetchById,
-  type FetchCouponsOptions,
   fetchPaginated,
   fetchStats,
+  fetchCouponCounts,
+  fetchCouponCountsByType,
+  fetchRedemptionStats,
+  fetchTopRedeemedCoupons,
+  fetchRedemptionTrend,
+  fetchConversionRate,
+  getActiveCouponsMoMChange,
 } from './fetch'
 
 export {

@@ -29,7 +29,6 @@ export interface Attributes {
   password: string
   title: string
   body: string
-  customer_id: string
   amount: number
   method: string
   date: Date | string

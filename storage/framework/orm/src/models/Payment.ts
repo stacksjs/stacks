@@ -18,7 +18,6 @@ export interface PaymentsTable {
   id: Generated<number>
   order_id: number
   user_id: number
-  customer_id: string
   amount: number
   method: string
   status: string
@@ -69,7 +68,7 @@ interface QueryOptions {
 
 export class PaymentModel {
   private readonly hidden: Array<keyof PaymentJsonResponse> = []
-  private readonly fillable: Array<keyof PaymentJsonResponse> = ['customer_id', 'amount', 'method', 'status', 'date', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
+  private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'date', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
   private readonly guarded: Array<keyof PaymentJsonResponse> = []
   protected attributes = {} as PaymentJsonResponse
   protected originalAttributes = {} as PaymentJsonResponse
@@ -171,10 +170,6 @@ export class PaymentModel {
     return this.attributes.uuid
   }
 
-  get customer_id(): string {
-    return this.attributes.customer_id
-  }
-
   get amount(): number {
     return this.attributes.amount
   }
@@ -237,10 +232,6 @@ export class PaymentModel {
 
   set uuid(value: string) {
     this.attributes.uuid = value
-  }
-
-  set customer_id(value: string) {
-    this.attributes.customer_id = value
   }
 
   set amount(value: number) {
@@ -1242,14 +1233,6 @@ export class PaymentModel {
     return instance
   }
 
-  static whereCustomerId(value: string): PaymentModel {
-    const instance = new PaymentModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('customer_id', '=', value)
-
-    return instance
-  }
-
   static whereAmount(value: string): PaymentModel {
     const instance = new PaymentModel(undefined)
 
@@ -1914,7 +1897,6 @@ export class PaymentModel {
       uuid: this.uuid,
 
       id: this.id,
-      customer_id: this.customer_id,
       amount: this.amount,
       method: this.method,
       status: this.status,
@@ -1985,13 +1967,6 @@ export async function remove(id: number): Promise<void> {
   await DB.instance.deleteFrom('payments')
     .where('id', '=', id)
     .execute()
-}
-
-export async function whereCustomerId(value: string): Promise<PaymentModel[]> {
-  const query = DB.instance.selectFrom('payments').where('customer_id', '=', value)
-  const results: PaymentJsonResponse = await query.execute()
-
-  return results.map((modelItem: PaymentJsonResponse) => new PaymentModel(modelItem))
 }
 
 export async function whereAmount(value: number): Promise<PaymentModel[]> {
