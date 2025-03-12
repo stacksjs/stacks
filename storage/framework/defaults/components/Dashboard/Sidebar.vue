@@ -554,7 +554,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
       :class="isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'"
     >
       <div
-        class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-600 dark:bg-blue-gray-900 transition-all duration-300"
+        class="flex grow flex-col gap-y-3 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-600 dark:bg-blue-gray-900 transition-all duration-300"
         :class="{
           'items-center px-2 pb-4': isSidebarCollapsed,
           'px-6 pb-4': !isSidebarCollapsed
@@ -654,7 +654,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
         </div>
 
         <nav class="flex flex-1 flex-col w-full">
-          <ul role="list" class="flex flex-1 flex-col gap-y-6">
+          <ul role="list" class="flex flex-1 flex-col gap-y-4">
             <!-- Dashboard section -->
             <li>
               <ul role="list" class="mt-1 -mx-2 space-y-1" :class="{ 'mx-0 flex flex-col items-center': isSidebarCollapsed }">
@@ -819,7 +819,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
                   >
                     <div
                       v-if="sections[sectionKey]"
-                      class="w-full flex flex-col items-center space-y-1 accordion-content overflow-hidden"
+                      class="w-full flex flex-col items-center space-y-0.5 accordion-content overflow-hidden"
                     >
                       <template v-for="item in sectionContent[sectionKey]?.items" :key="item.to">
                         <!-- Regular item -->
@@ -955,7 +955,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 <style scoped>
 /* Add transition for sidebar collapse */
 .sidebar-links {
-  @apply flex items-center gap-x-3 p-1.5 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-lg;
+  @apply flex items-center gap-x-2 p-1 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-lg;
   transition: all 0.3s ease;
 }
 
@@ -1006,7 +1006,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 }
 
 .sidebar-child-link {
-  @apply flex items-center rounded-lg py-1 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
+  @apply flex items-center rounded-lg py-0.5 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
   transition: all 0.2s ease;
   width: calc(100% - 8px);
 }
