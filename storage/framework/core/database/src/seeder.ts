@@ -7,6 +7,7 @@ import { findCoreModel, path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
+import { globSync } from 'tinyglobby'
 
 async function seedModel(name: string, modelPath: string, model: Model) {
   if (model?.traits?.useSeeder === false || model?.traits?.seedable === false) {
@@ -168,23 +169,6 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
 }
 
 export async function seed(): Promise<void> {
-  // TODO: need to check other databases too
-  // const dbPath = path.userDatabasePath('stacks.sqlite')
-
-  // if (!fs.existsSync(dbPath)) {
-  //   log.warn('No database found, configuring it...')
-  //   // first, ensure the database is reset
-  //   await resetDatabase()
-
-  //   // then, generate the migrations
-  //   await generateMigrations()
-
-  //   // finally, migrate the database
-  //   await runDatabaseMigration()
-  // } else {
-  //   log.debug('Database configured...')
-  // }
-
   // if a custom seeder exists, use it instead
   const customSeederPath = path.userDatabasePath('seeder.ts')
   if (fs.existsSync(customSeederPath)) {
@@ -192,12 +176,17 @@ export async function seed(): Promise<void> {
     await import(customSeederPath)
   }
 
-  // otherwise, seed all models
+  // Recursively find all .ts model files
   const modelsDir = path.userModelsPath()
   const coreModelsDir = path.storagePath('framework/defaults/models')
-  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
-  const coreModelFiles = fs.readdirSync(coreModelsDir).filter(file => file.endsWith('.ts'))
 
+  // Use glob to find all .ts files recursively in core models
+  const coreModelFiles = globSync(`${coreModelsDir}**/*.ts`, { absolute: true });
+
+  // Original user models seeding
+  const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
+
+  // Seed user models (keeping original implementation)
   for (const file of modelFiles) {
     const modelPath = path.join(modelsDir, file)
     const model = await import(modelPath)
@@ -205,10 +194,10 @@ export async function seed(): Promise<void> {
     await seedModel(file, modelPath, model.default)
   }
 
-  for (const coreModel of coreModelFiles) {
-    const coreModelPath = path.join(coreModelsDir, coreModel)
+  // Seed core models with recursive file finding
+  for (const coreModelPath of coreModelFiles) {
     const modelCore = await import(coreModelPath)
 
-    await seedModel(coreModel, coreModelPath, modelCore.default)
+    await seedModel(path.basename(coreModelPath), coreModelPath, modelCore.default)
   }
 }
