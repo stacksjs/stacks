@@ -298,3 +298,168 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
     days_range: daysRange,
   }
 }
+
+/**
+ * Calculate gift card balances and initial values for different time periods
+ * with clear increase/decrease indicators
+ * @param daysRange Number of days to look back (7, 30, 60, etc.)
+ */
+export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
+  current_period: {
+    total_initial_value: number
+    total_remaining_balance: number
+    utilization_rate: number
+    card_count: number
+    average_initial_value: number
+    average_remaining_balance: number
+  }
+  previous_period: {
+    total_initial_value: number
+    total_remaining_balance: number
+    utilization_rate: number
+    card_count: number
+  }
+  comparison: {
+    initial_value: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+    balance: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+    card_count: {
+      difference: number
+      percentage: number
+      is_increase: boolean
+    }
+  }
+  days_range: number
+}> {
+  const today = new Date()
+
+  // Current period (last N days)
+  const currentPeriodStart = new Date(today)
+  currentPeriodStart.setDate(today.getDate() - daysRange)
+
+  // Previous period (N days before the current period)
+  const previousPeriodEnd = new Date(currentPeriodStart)
+  previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
+
+  const previousPeriodStart = new Date(previousPeriodEnd)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+
+  // Get values for current period
+  const currentPeriodValues = await db
+    .selectFrom('gift_cards')
+    .select([
+      db.fn.sum('initial_balance').as('total_initial'),
+      db.fn.sum('current_balance').as('total_balance'),
+      db.fn.count('id').as('card_count'),
+    ])
+    .where('is_active', '=', true)
+    .where('status', '=', 'ACTIVE')
+    .where(eb => eb.or([
+      eb('expiry_date', '>=', today),
+      eb('expiry_date', 'is', null),
+    ]))
+    .where('created_at', '>=', currentPeriodStart)
+    .where('created_at', '<=', today)
+    .executeTakeFirst()
+
+  // Get values for previous period
+  const previousPeriodValues = await db
+    .selectFrom('gift_cards')
+    .select([
+      db.fn.sum('initial_balance').as('total_initial'),
+      db.fn.sum('current_balance').as('total_balance'),
+      db.fn.count('id').as('card_count'),
+    ])
+    .where('is_active', '=', true)
+    .where('status', '=', 'ACTIVE')
+    .where(eb => eb.or([
+      eb('expiry_date', '>=', previousPeriodStart),
+      eb('expiry_date', 'is', null),
+    ]))
+    .where('created_at', '>=', previousPeriodStart)
+    .where('created_at', '<=', previousPeriodEnd)
+    .executeTakeFirst()
+
+  // Calculate values for current period
+  const currentInitialValue = Number(currentPeriodValues?.total_initial || 0)
+  const currentBalance = Number(currentPeriodValues?.total_balance || 0)
+  const currentCardCount = Number(currentPeriodValues?.card_count || 0)
+
+  // Calculate values for previous period
+  const previousInitialValue = Number(previousPeriodValues?.total_initial || 0)
+  const previousBalance = Number(previousPeriodValues?.total_balance || 0)
+  const previousCardCount = Number(previousPeriodValues?.card_count || 0)
+
+  // Calculate utilization rates (percentage of gift card value that has been spent)
+  const currentUtilizationRate = currentInitialValue > 0
+    ? ((currentInitialValue - currentBalance) / currentInitialValue) * 100
+    : 0
+
+  const previousUtilizationRate = previousInitialValue > 0
+    ? ((previousInitialValue - previousBalance) / previousInitialValue) * 100
+    : 0
+
+  // Calculate averages
+  const currentAverageInitial = currentCardCount > 0 ? currentInitialValue / currentCardCount : 0
+  const currentAverageBalance = currentCardCount > 0 ? currentBalance / currentCardCount : 0
+
+  // Calculate differences
+  const initialValueDifference = currentInitialValue - previousInitialValue
+  const balanceDifference = currentBalance - previousBalance
+  const cardCountDifference = currentCardCount - previousCardCount
+
+  // Calculate percentage changes
+  const initialValuePercentageChange = previousInitialValue !== 0
+    ? (initialValueDifference / previousInitialValue) * 100
+    : (currentInitialValue > 0 ? 100 : 0)
+
+  const balancePercentageChange = previousBalance !== 0
+    ? (balanceDifference / previousBalance) * 100
+    : (currentBalance > 0 ? 100 : 0)
+
+  const cardCountPercentageChange = previousCardCount !== 0
+    ? (cardCountDifference / previousCardCount) * 100
+    : (currentCardCount > 0 ? 100 : 0)
+
+  return {
+    current_period: {
+      total_initial_value: currentInitialValue,
+      total_remaining_balance: currentBalance,
+      utilization_rate: currentUtilizationRate,
+      card_count: currentCardCount,
+      average_initial_value: currentAverageInitial,
+      average_remaining_balance: currentAverageBalance,
+    },
+    previous_period: {
+      total_initial_value: previousInitialValue,
+      total_remaining_balance: previousBalance,
+      utilization_rate: previousUtilizationRate,
+      card_count: previousCardCount,
+    },
+    comparison: {
+      initial_value: {
+        difference: initialValueDifference,
+        percentage: Math.abs(initialValuePercentageChange),
+        is_increase: initialValueDifference >= 0,
+      },
+      balance: {
+        difference: balanceDifference,
+        percentage: Math.abs(balancePercentageChange),
+        is_increase: balanceDifference >= 0,
+      },
+      card_count: {
+        difference: cardCountDifference,
+        percentage: Math.abs(cardCountPercentageChange),
+        is_increase: cardCountDifference >= 0,
+      },
+    },
+    days_range: daysRange,
+  }
+}
