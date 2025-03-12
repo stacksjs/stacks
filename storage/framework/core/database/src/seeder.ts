@@ -3,7 +3,7 @@ import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
 import { fetchOtherModelRelations, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
-import { findCoreModel, path } from '@stacksjs/path'
+import { findCoreModel, findUserModel, path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
@@ -76,7 +76,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   let modelInstance: Model
 
   if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
-    modelInstance = (await import(path.userModelsPath(`${relation?.model}.ts`))).default as Model
+    modelInstance = (await import(findUserModel(`${relation?.model}.ts`))).default as Model
   else
     modelInstance = (await import(findCoreModel(`${relation?.model}.ts`))).default as Model
 

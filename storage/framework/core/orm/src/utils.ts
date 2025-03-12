@@ -16,7 +16,7 @@ import type {
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
-import { findCoreModel, path } from '@stacksjs/path'
+import { findCoreModel, findUserModel, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { camelCase, kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
@@ -122,8 +122,8 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
     throughForeignKey = relationInstance.throughForeignKey || ''
   }
 
-  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
   const coreModelPath = findCoreModel(`${modelName}.ts`)
   const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
@@ -179,8 +179,8 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
     pivotForeign = relationInstance.firstForeignKey || `${formattedModelName}_id`
   }
 
-  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
   const coreModelPath = findCoreModel(`${modelName}.ts`)
   const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
@@ -238,8 +238,8 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
   }
 
   // Load the related model
-  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
   const coreModelPath = findCoreModel(`${modelName}.ts`)
   const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
@@ -291,8 +291,8 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
     relationName = relationInstance.relationName || ''
   }
 
-  const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
-  const userModelPath = path.userModelsPath(`${modelName}.ts`)
+  const modelRelationPath = findUserModel(`${relationModel}.ts`)
+  const userModelPath = findUserModel(`${modelName}.ts`)
   const coreModelPath = findCoreModel(`${modelName}.ts`)
   const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
