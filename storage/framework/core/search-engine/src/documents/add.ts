@@ -9,7 +9,7 @@ import { globSync } from '@stacksjs/storage'
 
 export async function importModelDocuments(modelOption?: string): Promise<Ok<string, never> | Err<string, any>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
     const { addDocument } = useSearchEngine()
 
     for (const model of modelFiles) {

@@ -84,7 +84,7 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
   try {
     log.info('Generating migrations...')
 
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
 
     for (const file of modelFiles) {
       log.debug('Generating migration for:', file)

@@ -31,7 +31,7 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
 }
 
 export async function dropSqliteTables(): Promise<void> {
-  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   for (const table of tables) await db.schema.dropTable(table).ifExists().execute()
