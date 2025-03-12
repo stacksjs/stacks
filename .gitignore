@@ -5,9 +5,8 @@ node_modules
 .cache
 temp
 .temp
-.env
+.env*
 *.local
-.env.production
 updates
 tests/unit/coverage
 dist*
