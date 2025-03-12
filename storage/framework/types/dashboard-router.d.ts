@@ -98,6 +98,7 @@ declare module 'vue-router/auto-routes' {
     '/management/permissions/': RouteRecordInfo<'/management/permissions/', '/management/permissions', Record<never, never>, Record<never, never>>,
     '/marketing/campaigns/': RouteRecordInfo<'/marketing/campaigns/', '/marketing/campaigns', Record<never, never>, Record<never, never>>,
     '/marketing/lists/': RouteRecordInfo<'/marketing/lists/', '/marketing/lists', Record<never, never>, Record<never, never>>,
+    '/marketing/reviews/': RouteRecordInfo<'/marketing/reviews/', '/marketing/reviews', Record<never, never>, Record<never, never>>,
     '/marketing/social-posts/': RouteRecordInfo<'/marketing/social-posts/', '/marketing/social-posts', Record<never, never>, Record<never, never>>,
     '/notifications/dashboard': RouteRecordInfo<'/notifications/dashboard', '/notifications/dashboard', Record<never, never>, Record<never, never>>,
     '/notifications/email': RouteRecordInfo<'/notifications/email', '/notifications/email', Record<never, never>, Record<never, never>>,

@@ -271,11 +271,11 @@ const sectionContent: Record<string, SectionContent> = {
   },
   marketing: {
     items: [
-      { to: '/marketing', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      // { to: '/marketing/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
+      { to: '/marketing/lists', icon: 'i-hugeicons-list-setting', text: 'Lists' },
       { to: '/marketing/social-posts', icon: 'i-hugeicons-time-schedule', text: 'Social Posts' },
       { to: '/marketing/campaigns', icon: 'i-hugeicons-rocket-01', text: 'Campaigns' },
       { to: '/marketing/reviews', icon: 'i-hugeicons-star', text: 'Reviews' },
-      { to: '/marketing/settings', icon: 'i-hugeicons-settings-02', text: 'Settings' }
     ]
   },
   analytics: {
