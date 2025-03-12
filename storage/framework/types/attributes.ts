@@ -46,11 +46,6 @@ export interface Attributes {
   quantity: number
   price: number
   special_instructions: string
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at: Date | string
   phone: string
   total_spent: number
   last_order: string
@@ -70,18 +65,6 @@ export interface Attributes {
   preparation_time: number
   allergens: string
   nutritional_info: string
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default: boolean
-  provider_id: string
-  status_code: number
-  duration_ms: number
-  memory_usage: number
-  user_agent: string
-  error_message: string
   code: string
   initial_balance: number
   current_balance: number
@@ -125,6 +108,29 @@ export interface Attributes {
   source: string
   source_reference_id: string
   is_used: boolean
+  points_required: number
+  reward_type: string
+  discount_percentage: number
+  expiry_days: number
+  parent_category_id: string
+  display_order: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: Date | string
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
+  status_code: number
+  duration_ms: number
+  memory_usage: number
+  user_agent: string
+  error_message: string
   attempts: number
   available_at: number
   reserved_at: Date | string
@@ -136,13 +142,7 @@ export interface Attributes {
   ends_at: string
   key: number
   image: string
-  points_required: number
-  reward_type: string
-  discount_percentage: number
-  expiry_days: number
   message: string
   stack: string
   additional_info: string
-  parent_category_id: string
-  display_order: number
 }

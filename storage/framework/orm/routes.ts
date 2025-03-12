@@ -34,16 +34,6 @@ route.post('products', 'ProductStoreOrmAction')
 
 route.get('products/{id}', 'ProductShowOrmAction')
 
-route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
-
-route.get('requests/{id}', 'storage/framework/actions/src/RequestShowOrmAction.ts')
-
-route.post('requests', 'storage/framework/actions/src/RequestStoreOrmAction.ts')
-
-route.patch('requests/{id}', 'storage/framework/actions/src/RequestUpdateOrmAction.ts')
-
-route.delete('requests/{id}', 'storage/framework/actions/src/RequestDestroyOrmAction.ts')
-
 route.get('gift-cards', 'GiftCardIndexOrmAction')
 
 route.post('gift-cards', 'GiftCardStoreOrmAction')
@@ -85,3 +75,13 @@ route.get('product-categories', 'ProductCategoryIndexOrmAction')
 route.post('product-categories', 'ProductCategoryStoreOrmAction')
 
 route.get('product-categories/{id}', 'ProductCategoryShowOrmAction')
+
+route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
+
+route.get('requests/{id}', 'storage/framework/actions/src/RequestShowOrmAction.ts')
+
+route.post('requests', 'storage/framework/actions/src/RequestStoreOrmAction.ts')
+
+route.patch('requests/{id}', 'storage/framework/actions/src/RequestUpdateOrmAction.ts')
+
+route.delete('requests/{id}', 'storage/framework/actions/src/RequestDestroyOrmAction.ts')

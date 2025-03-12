@@ -16,7 +16,7 @@ import type {
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
-import { path } from '@stacksjs/path'
+import { findCoreModel, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { camelCase, kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
@@ -124,8 +124,8 @@ async function processHasThrough(relationInstance: ModelNames | BaseHasOneThroug
 
   const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
   const userModelPath = path.userModelsPath(`${modelName}.ts`)
-  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
   if (fs.existsSync(modelRelationPath))
     modelRelation = (await import(modelRelationPath)).default as Model
@@ -181,8 +181,8 @@ async function processBelongsToMany(relationInstance: ModelNames | BaseBelongsTo
 
   const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
   const userModelPath = path.userModelsPath(`${modelName}.ts`)
-  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
   if (fs.existsSync(modelRelationPath))
     modelRelation = (await import(modelRelationPath)).default as Model
@@ -240,8 +240,8 @@ async function processMorphOne(relationInstance: ModelNames | MorphOne<ModelName
   // Load the related model
   const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
   const userModelPath = path.userModelsPath(`${modelName}.ts`)
-  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
   let modelRelation: Model
   if (fs.existsSync(modelRelationPath)) {
@@ -293,8 +293,8 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
 
   const modelRelationPath = path.userModelsPath(`${relationModel}.ts`)
   const userModelPath = path.userModelsPath(`${modelName}.ts`)
-  const coreModelPath = path.storagePath(`framework/defaults/models/${modelName}.ts`)
-  const coreModelRelationPath = path.storagePath(`framework/defaults/models/${relationModel}.ts`)
+  const coreModelPath = findCoreModel(`${modelName}.ts`)
+  const coreModelRelationPath = findCoreModel(`${relationModel}.ts`)
 
   if (fs.existsSync(modelRelationPath))
     modelRelation = (await import(modelRelationPath)).default as Model

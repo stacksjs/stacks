@@ -308,30 +308,6 @@ export interface OrderItemRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataFailedJob {
-  id: number
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at: date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface FailedJobRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataFailedJob
-  id: number
-  connection: string
-  queue: string
-  payload: string
-  exception: string
-  failed_at: date
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataCustomer {
   id: number
   name: string
@@ -426,96 +402,6 @@ export interface ProductRequestType extends Request {
   nutritional_info: string
   manufacturer_id: number
   product_category_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataPaymentMethod {
-  id: number
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default: boolean
-  provider_id: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface PaymentMethodRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataPaymentMethod
-  id: number
-  type: string
-  last_four: number
-  brand: string
-  exp_month: number
-  exp_year: number
-  is_default: boolean
-  provider_id: string
-  user_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataPaymentTransaction {
-  id: number
-  name: string
-  description: string
-  amount: number
-  type: string
-  provider_id: string
-  user_id: number
-  payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface PaymentTransactionRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataPaymentTransaction
-  id: number
-  name: string
-  description: string
-  amount: number
-  type: string
-  provider_id: string
-  user_id: number
-  payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-interface RequestDataRequest {
-  id: number
-  method: string[]
-  path: string
-  status_code: number
-  duration_ms: number
-  ip_address: string
-  memory_usage: number
-  user_agent: string
-  error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
-}
-export interface RequestRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataRequest
-  id: number
-  method: string[]
-  path: string
-  status_code: number
-  duration_ms: number
-  ip_address: string
-  memory_usage: number
-  user_agent: string
-  error_message: string
-  deleted_at?: Date
   created_at?: Date
   updated_at?: Date
 }
@@ -704,6 +590,178 @@ export interface LoyaltyPointRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataLoyaltyReward {
+  id: number
+  name: string
+  description: string
+  points_required: number
+  reward_type: string
+  discount_percentage: number
+  free_product_id: string
+  is_active: boolean
+  expiry_days: number
+  image_url: string
+  created_at?: Date
+  updated_at?: Date
+}
+export interface LoyaltyRewardRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataLoyaltyReward
+  id: number
+  name: string
+  description: string
+  points_required: number
+  reward_type: string
+  discount_percentage: number
+  free_product_id: string
+  is_active: boolean
+  expiry_days: number
+  image_url: string
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataProductCategory {
+  id: number
+  name: string
+  description: string
+  image_url: string
+  is_active: boolean
+  parent_category_id: string
+  display_order: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ProductCategoryRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataProductCategory
+  id: number
+  name: string
+  description: string
+  image_url: string
+  is_active: boolean
+  parent_category_id: string
+  display_order: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataFailedJob {
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface FailedJobRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataFailedJob
+  id: number
+  connection: string
+  queue: string
+  payload: string
+  exception: string
+  failed_at: date
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataPaymentMethod {
+  id: number
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PaymentMethodRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataPaymentMethod
+  id: number
+  type: string
+  last_four: number
+  brand: string
+  exp_month: number
+  exp_year: number
+  is_default: boolean
+  provider_id: string
+  user_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataPaymentTransaction {
+  id: number
+  name: string
+  description: string
+  amount: number
+  type: string
+  provider_id: string
+  user_id: number
+  payment_method_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface PaymentTransactionRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataPaymentTransaction
+  id: number
+  name: string
+  description: string
+  amount: number
+  type: string
+  provider_id: string
+  user_id: number
+  payment_method_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
+interface RequestDataRequest {
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+export interface RequestRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataRequest
+  id: number
+  method: string[]
+  path: string
+  status_code: number
+  duration_ms: number
+  ip_address: string
+  memory_usage: number
+  user_agent: string
+  error_message: string
+  deleted_at?: Date
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataJob {
   id: number
   queue: string
@@ -792,38 +850,6 @@ export interface PaymentProductRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataLoyaltyReward {
-  id: number
-  name: string
-  description: string
-  points_required: number
-  reward_type: string
-  discount_percentage: number
-  free_product_id: string
-  is_active: boolean
-  expiry_days: number
-  image_url: string
-  created_at?: Date
-  updated_at?: Date
-}
-export interface LoyaltyRewardRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataLoyaltyReward
-  id: number
-  name: string
-  description: string
-  points_required: number
-  reward_type: string
-  discount_percentage: number
-  free_product_id: string
-  is_active: boolean
-  expiry_days: number
-  image_url: string
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataError {
   id: number
   type: string
@@ -848,30 +874,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataProductCategory {
-  id: number
-  name: string
-  description: string
-  image_url: string
-  is_active: boolean
-  parent_category_id: string
-  display_order: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ProductCategoryRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataProductCategory
-  id: number
-  name: string
-  description: string
-  image_url: string
-  is_active: boolean
-  parent_category_id: string
-  display_order: number
-  created_at?: Date
-  updated_at?: Date
-}
-
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | FailedJobRequestType | CustomerRequestType | ProductReviewRequestType | ProductRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | LoyaltyRewardRequestType | ErrorRequestType | ProductCategoryRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | CustomerRequestType | ProductReviewRequestType | ProductRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | LoyaltyRewardRequestType | ProductCategoryRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType

@@ -74,24 +74,24 @@ export interface Database {
   payments: PaymentsTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
-  failed_jobs: FailedJobsTable
   customers: CustomersTable
   product_reviews: ProductReviewsTable
   products: ProductsTable
-  payment_methods: PaymentMethodsTable
-  payment_transactions: PaymentTransactionsTable
-  requests: RequestsTable
   gift_cards: GiftCardsTable
   orders: OrdersTable
   coupons: CouponsTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
+  loyalty_rewards: LoyaltyRewardsTable
+  product_categories: ProductCategoriesTable
+  failed_jobs: FailedJobsTable
+  payment_methods: PaymentMethodsTable
+  payment_transactions: PaymentTransactionsTable
+  requests: RequestsTable
   jobs: JobsTable
   subscriptions: SubscriptionsTable
   payment_products: PaymentProductsTable
-  loyalty_rewards: LoyaltyRewardsTable
   errors: ErrorsTable
-  product_categories: ProductCategoriesTable
   passkeys: PasskeysTable
   migrations: MigrationsTable
 }

@@ -7,7 +7,6 @@ import {
   components,
   cssEngine,
   devtools,
-  fonts,
   i18n,
   layouts,
   markdown,
@@ -88,7 +87,6 @@ export const viewsConfig: ViteConfig = {
     pwa(),
     devtools(),
     i18n(),
-    fonts(),
     stacks(),
   ],
 
