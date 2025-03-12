@@ -162,7 +162,7 @@ export default {
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.date(),
       },
       factory: (faker) => {
         // Set expiry to 1-3 years in the future
@@ -178,7 +178,7 @@ export default {
       order: 14,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.date(),
       },
       factory: faker => faker.helpers.maybe(() => faker.date.recent().toISOString(), { probability: 0.3 }),
     },

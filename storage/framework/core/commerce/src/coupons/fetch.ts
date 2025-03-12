@@ -380,6 +380,9 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
   return result
 }
 
+/**
+ * Fetch coupon redemption statistics based on usage_count
+ */
 export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   // Total redemptions (sum of all usage_count)
   const totalResult = await db

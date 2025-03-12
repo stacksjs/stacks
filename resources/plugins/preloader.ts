@@ -6,7 +6,6 @@
  * automatically be injected into the Bun process.
  */
 
-// eslint-disable-next-line antfu/no-top-level-await
 // ensures .env file can handle encrypted variables
 // and allows for importing .env* files
 // @ts-expect-error - dtsx does not type this properly yet

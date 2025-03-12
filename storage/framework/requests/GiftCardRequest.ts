@@ -25,8 +25,8 @@ interface RequestDataGiftCard {
   is_digital: boolean
   is_reloadable: boolean
   is_active: boolean
-  expiry_date: string
-  last_used_date: string
+  expiry_date: date
+  last_used_date: date
   template_id: string
   created_at?: Date
   updated_at?: Date

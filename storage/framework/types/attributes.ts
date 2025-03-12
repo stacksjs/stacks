@@ -84,8 +84,8 @@ export interface Attributes {
   is_digital: boolean
   is_reloadable: boolean
   is_active: boolean
-  expiry_date: string
-  last_used_date: string
+  expiry_date: Date | string
+  last_used_date: Date | string
   template_id: string
   total_amount: number
   tax_amount: number

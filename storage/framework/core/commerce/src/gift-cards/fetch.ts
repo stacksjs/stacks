@@ -228,3 +228,73 @@ export async function checkBalance(code: string): Promise<{ valid: boolean, bala
     currency: giftCard.currency,
   }
 }
+
+/**
+ * Compare active gift cards between different time periods
+ * @param daysRange Number of days to look back (7, 30, 60, etc.)
+ */
+export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
+  current_period: number
+  previous_period: number
+  difference: number
+  percentage_change: number
+  days_range: number
+}> {
+  const today = new Date()
+
+  // Current period (last N days)
+  const currentPeriodStart = new Date(today)
+  currentPeriodStart.setDate(today.getDate() - daysRange)
+
+  // Previous period (N days before the current period)
+  const previousPeriodEnd = new Date(currentPeriodStart)
+  previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
+
+  const previousPeriodStart = new Date(previousPeriodEnd)
+  previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+
+  // Get active gift cards for current period
+  const currentPeriodActive = await db
+    .selectFrom('gift_cards')
+    .select(db.fn.count('id').as('count'))
+    .where('is_active', '=', true)
+    .where('status', '=', 'ACTIVE')
+    .where(eb => eb.or([
+      eb('expiry_date', '>=', today),
+      eb('expiry_date', 'is', null),
+    ]))
+    .where('created_at', '>=', currentPeriodStart)
+    .where('created_at', '<=', today)
+    .executeTakeFirst()
+
+  // Get active gift cards for previous period
+  const previousPeriodActive = await db
+    .selectFrom('gift_cards')
+    .select(db.fn.count('id').as('count'))
+    .where('is_active', '=', true)
+    .where('status', '=', 'ACTIVE')
+    .where(eb => eb.or([
+      eb('expiry_date', '>=', previousPeriodStart),
+      eb('expiry_date', 'is', null),
+    ]))
+    .where('created_at', '>=', previousPeriodStart)
+    .where('created_at', '<=', previousPeriodEnd)
+    .executeTakeFirst()
+
+  const currentCount = Number(currentPeriodActive?.count || 0)
+  const previousCount = Number(previousPeriodActive?.count || 0)
+  const difference = currentCount - previousCount
+
+  // Calculate percentage change, handling division by zero
+  const percentageChange = previousCount !== 0
+    ? (difference / previousCount) * 100
+    : (currentCount > 0 ? 100 : 0)
+
+  return {
+    current_period: currentCount,
+    previous_period: previousCount,
+    difference,
+    percentage_change: percentageChange,
+    days_range: daysRange,
+  }
+}
