@@ -18,6 +18,7 @@ type SecretOptions = {
   all: boolean
   project: string
   verbose: boolean
+  file: string
 }
 
 export function secret(buddy: CLI): void {
@@ -57,10 +58,28 @@ export function secret(buddy: CLI): void {
     .action(async (key: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:get` ...', options)
 
-      // use dotenvx to get the secret
-      const secret = Bun.spawn(['dotenvx', 'get', key])
-      console.log(secret)
-      process.exit(ExitCode.Success)
+      const args = ['get']
+
+      if (key) args.push(key)
+      if (options.all) args.push('--all')
+      if (options.pretty) args.push('--pretty')
+      if (options.file) args.push('--file', options.file)
+      if (options.format) args.push('--format', options.format)
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
@@ -72,57 +91,168 @@ export function secret(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .example('buddy secret:set SECRET=value')
-    .example('buddy secret:set SECRET=value --file .env.production')
-    .example('buddy secret:set --all --pretty')
+    .example('buddy secret:set SECRET value')
+    .example('buddy secret:set SECRET value --file .env.production')
     .example('buddy secret:set --format shell')
-    .example('buddy secret:set --format eval')
-    .example('buddy secret:set --format json')
     .action(async (key: string, value: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:set` ...', options)
 
-      // use dotenvx to set the secret
-      const secret = Bun.spawn(['dotenvx', 'set', key, value])
-      console.log(secret)
+      const args = ['set']
+
+      if (key) {
+        args.push(key)
+        if (value) args.push(value)
+      }
+
+      if (options.file) args.push('--file', options.file)
+      if (options.format) args.push('--format', options.format)
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
     .command('secret:encrypt [key]', descriptions.encrypt)
     .option('-f, --file [file]', descriptions.file, { default: '' })
-    .option('-fk, --file-keys [file-keys]', descriptions.fileKeys, { default: '' })
+    .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
-    .option('-ek, --exclude-key [exclude-key]', descriptions.excludeKey, { default: '' })
+    .option('-ek, --exclude-key [excludeKey]', descriptions.excludeKey, { default: '' })
     .action(async (key: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:encrypt` ...', options)
+
+      const args = ['encrypt']
+
+      if (key) args.push(key)
+      if (options.file) args.push('--file', options.file)
+      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
+      if (options.keypair) args.push('--keypair', options.keypair)
+      if (options.stdout) args.push('--stdout')
+      if (options.excludeKey) args.push('--exclude-key', options.excludeKey)
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
     .command('secret:decrypt [key]', descriptions.decrypt)
     .option('-f, --file [file]', descriptions.file, { default: '' })
-    .option('-fk, --file-keys [file-keys]', descriptions.fileKeys, { default: '' })
+    .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
     .action(async (key: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:decrypt` ...', options)
+
+      const args = ['decrypt']
+
+      if (key) args.push(key)
+      if (options.file) args.push('--file', options.file)
+      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
+      if (options.keypair) args.push('--keypair', options.keypair)
+      if (options.stdout) args.push('--stdout')
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
     .command('secret:keypair [key]', descriptions.keypair)
     .option('-f, --file [file]', descriptions.file, { default: '' })
-    .option('-fk, --file-keys [file-keys]', descriptions.fileKeys, { default: '' })
+    .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
     .action(async (key: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:keypair` ...', options)
+
+      const args = ['keypair']
+
+      if (key) args.push(key)
+      if (options.file) args.push('--file', options.file)
+      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
+      if (options.stdout) args.push('--stdout')
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy
     .command('secret:rotate [key]', descriptions.rotate)
     .option('-f, --file [file]', descriptions.file, { default: '' })
-    .option('-fk, --file-keys [file-keys]', descriptions.fileKeys, { default: '' })
+    .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
     .option('-k, --keypair [keypair]', descriptions.keypair, { default: '' })
     .option('-o, --stdout', descriptions.stdout, { default: false })
     .action(async (key: string, options: SecretOptions) => {
       log.debug('Running `buddy secret:rotate` ...', options)
+
+      const args = ['rotate']
+
+      if (key) args.push(key)
+      if (options.file) args.push('--file', options.file)
+      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
+      if (options.keypair) args.push('--keypair', options.keypair)
+      if (options.stdout) args.push('--stdout')
+
+      const result = Bun.spawnSync(['dotenvx', ...args], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+
+      if (result.exitCode === 0) {
+        const output = new TextDecoder().decode(result.stdout)
+        console.log(output)
+        process.exit(ExitCode.Success)
+      } else {
+        const error = new TextDecoder().decode(result.stderr)
+        console.error(error)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy.on('secret:*', () => {
