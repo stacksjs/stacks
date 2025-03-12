@@ -15,51 +15,6 @@ export async function fetchAll(): Promise<GiftCardJsonResponse[]> {
 }
 
 /**
- * Fetch gift cards with pagination, sorting, and filtering options
- */
-export async function fetchPaginated(options: FetchGiftCardsOptions = {}): Promise<GiftCardResponse> {
-  // Set default values
-  const page = options.page || 1
-  const limit = options.limit || 10
-
-  // Start building the query
-  let query = db.selectFrom('gift_cards')
-  let countQuery = db.selectFrom('gift_cards')
-
-  if (options.max_balance !== undefined) {
-    query = query.where('current_balance', '<=', options.max_balance)
-    countQuery = countQuery.where('current_balance', '<=', options.max_balance)
-  }
-
-  // Get total count for pagination
-  const countResult = await countQuery
-    .select(eb => eb.fn.count('id').as('total'))
-    .executeTakeFirst()
-
-  const total = Number(countResult?.total || 0)
-
-  // Apply pagination
-  const giftCards = await query
-    .selectAll()
-    .limit(limit)
-    .offset((page - 1) * limit)
-    .execute()
-
-  // Calculate pagination info
-  const totalPages = Math.ceil(total / limit)
-
-  return {
-    data: giftCards,
-    paging: {
-      total_records: total,
-      page,
-      total_pages: totalPages,
-    },
-    next_cursor: page < totalPages ? page + 1 : null,
-  }
-}
-
-/**
  * Fetch a gift card by ID
  */
 export async function fetchById(id: number): Promise<GiftCardJsonResponse | undefined> {

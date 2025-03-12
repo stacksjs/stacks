@@ -10,8 +10,6 @@ export {
   fetchByCustomer,
   fetchById,
   fetchByStatus,
-  type FetchOrdersOptions,
-  fetchPaginated,
   fetchStats,
 } from './fetch'
 

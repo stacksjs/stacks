@@ -3,46 +3,6 @@ import type { FetchProductManufacturersOptions, ProductManufacturerResponse } fr
 import { db } from '@stacksjs/database'
 
 /**
- * Fetch product manufacturers with pagination
- */
-export async function fetchPaginated(options: FetchProductManufacturersOptions = {}): Promise<ProductManufacturerResponse> {
-  // Set default values
-  const page = options.page || 1
-  const limit = options.limit || 10
-
-  // Start building the query
-  const query = db.selectFrom('manufacturers')
-  const countQuery = db.selectFrom('manufacturers')
-
-  // Get total count for pagination
-  const countResult = await countQuery
-    .select(eb => eb.fn.count('id').as('total'))
-    .executeTakeFirst()
-
-  const total = Number(countResult?.total || 0)
-
-  // Apply pagination
-  const manufacturers = await query
-    .selectAll()
-    .limit(limit)
-    .offset((page - 1) * limit)
-    .execute()
-
-  // Calculate pagination info
-  const totalPages = Math.ceil(total / limit)
-
-  return {
-    data: manufacturers,
-    paging: {
-      total_records: total,
-      page,
-      total_pages: totalPages,
-    },
-    next_cursor: page < totalPages ? page + 1 : null,
-  }
-}
-
-/**
  * Fetch a product manufacturer by ID
  */
 export async function fetchById(id: number): Promise<ManufacturerJsonResponse | undefined> {

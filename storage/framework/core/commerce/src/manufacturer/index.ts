@@ -8,7 +8,6 @@ export {
   fetchById,
   fetchByUuid,
   fetchFeatured,
-  fetchPaginated,
   fetchWithProductCount,
 } from './fetch'
 

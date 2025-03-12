@@ -164,7 +164,6 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
     .executeTakeFirst()
 
   const totalCount = Number(totalStats?.total_count || 0)
-  const totalRevenue = Number(totalStats?.total_revenue || 0)
 
   // Get stats grouped by payment method
   const methodStats = await db

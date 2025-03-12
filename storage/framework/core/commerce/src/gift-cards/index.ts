@@ -6,11 +6,13 @@ export {
 } from './destroy'
 
 export {
+  calculateGiftCardValues,
   checkBalance,
+  compareActiveGiftCards,
   fetchActive,
+  fetchAll,
   fetchByCode,
   fetchById,
-  fetchPaginated,
   fetchStats,
 } from './fetch'
 
