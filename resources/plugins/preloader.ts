@@ -6,9 +6,11 @@
  * automatically be injected into the Bun process.
  */
 
-// allows for importing .env files
 // eslint-disable-next-line antfu/no-top-level-await
-await import('bun-plugin-env')
+// ensures .env file can handle encrypted variables
+// and allows for importing .env* files
+// @ts-expect-error - dtsx does not type this properly yet
+await import('bun-plugin-dotenvx')
 
 // allows for importing .yaml files
 // eslint-disable-next-line antfu/no-top-level-await

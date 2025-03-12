@@ -1341,7 +1341,7 @@
         "@vueuse/math": "^13.0.0",
         "@vueuse/shared": "^13.0.0",
         "ace-builds": "^1.39.0",
-        "bun-plugin-env": "^0.4.1",
+        "bun-plugin-dotenvx": "^0.5.2",
         "bun-plugin-yml": "^0.3.1",
         "defu": "^6.1.4",
         "detect-indent": "^7.0.1",
@@ -3219,9 +3219,9 @@
 
     "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.3.1", "", { "dependencies": { "unimport": "^3.14.6" } }, "sha512-rWgCe/C4yQ31R1MIwhtVgKWwpGN2OFUIkAdvAgX0TxbS2X8kt5Tc5QN8d7NpaeNjbT/v/rEJ1NmqauQjIB9WLQ=="],
 
-    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.9", "", { "dependencies": { "@stacksjs/dtsx": "^0.8.0" } }, "sha512-ZEGVuJllTxvTGGa+fcKst0/FvShPsdll209PVWgGalEeLxsp5NfGbmmPAHsHHLxNlffxizdY+cGwI7ZmmWUpRw=="],
+    "bun-plugin-dotenvx": ["bun-plugin-dotenvx@0.5.2", "", { "dependencies": { "@dotenvx/dotenvx": "^1.38.4" } }, "sha512-7ISpSkMcITWpeqYxi/Z5sTwaXiMwE8wOJKEbm1Kz0lHom7paMh3RqkQa4Xd++/OEu2daWiH4TmxzFQcjkq040g=="],
 
-    "bun-plugin-env": ["bun-plugin-env@0.4.1", "", {}, "sha512-g0CNc7eVw+W8zPQDWccRI8wVNMdeYAURVxWFNAFteWfJaGW7dPkvjug/uB0R0yq7VRkscAYIQzwoGA3SkaQz5A=="],
+    "bun-plugin-dtsx": ["bun-plugin-dtsx@0.21.9", "", { "dependencies": { "@stacksjs/dtsx": "^0.8.0" } }, "sha512-ZEGVuJllTxvTGGa+fcKst0/FvShPsdll209PVWgGalEeLxsp5NfGbmmPAHsHHLxNlffxizdY+cGwI7ZmmWUpRw=="],
 
     "bun-plugin-unocss": ["bun-plugin-unocss@0.1.2", "", {}, "sha512-PEoozLSfJQBMq4IxECPVUVpwGwJuNqoJ34fLgOJA1wPjTTH8CasRHIBL7FtCEZh+P5j4Cb6RVqNQfTDoLJFKeg=="],
 
