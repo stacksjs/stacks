@@ -32,26 +32,6 @@ export default {
   belongsTo: ['Order', 'User'], // For order_id and customer_id
 
   attributes: {
-    order_id: {
-      required: true,
-      order: 1,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: faker => faker.string.uuid(),
-    },
-
-    customer_id: {
-      required: true,
-      order: 2,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: faker => faker.string.uuid(),
-    },
-
     amount: {
       required: true,
       order: 3,

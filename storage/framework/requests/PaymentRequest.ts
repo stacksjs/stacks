@@ -13,7 +13,6 @@ interface CustomAttributes {
 }
 interface RequestDataPayment {
   id: number
-  order_id: string
   customer_id: string
   amount: number
   method: string
@@ -33,7 +32,6 @@ interface RequestDataPayment {
 }
 export class PaymentRequest extends Request<RequestDataPayment> implements PaymentRequestType {
   public id = 1
-  public order_id = ''
   public customer_id = ''
   public amount = 0
   public method = ''

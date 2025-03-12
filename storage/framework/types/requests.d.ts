@@ -226,7 +226,6 @@ export interface PostRequestType extends Request {
 
 interface RequestDataPayment {
   id: number
-  order_id: string
   customer_id: string
   amount: number
   method: string
@@ -249,7 +248,6 @@ export interface PaymentRequestType extends Request {
   get: <T = string>(key: string, defaultValue?: T) => T
   all: () => RequestDataPayment
   id: number
-  order_id: string
   customer_id: string
   amount: number
   method: string
