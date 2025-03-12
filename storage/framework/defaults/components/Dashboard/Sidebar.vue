@@ -955,13 +955,13 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 <style scoped>
 /* Add transition for sidebar collapse */
 .sidebar-links {
-  @apply flex items-center gap-x-2 p-1 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-lg;
+  @apply flex items-center gap-x-2 p-1 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-md;
   transition: all 0.3s ease;
 }
 
 /* When sidebar is collapsed, adjust links */
 :deep(.lg\:w-20) .sidebar-links {
-  @apply justify-center px-0 rounded-lg;
+  @apply justify-center px-0 rounded-md;
   width: 32px;
   height: 32px;
   margin: 0 auto;
@@ -970,11 +970,11 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 
 /* Active state styling */
 .router-link-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 rounded-lg;
+  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 rounded-md;
 }
 
 .router-link-exact-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 font-medium rounded-lg;
+  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 font-medium rounded-md;
 }
 
 .router-link-active div[class^="i-hugeicons"],
@@ -1006,13 +1006,14 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 }
 
 .sidebar-child-link {
-  @apply flex items-center rounded-lg py-0.5 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
+  @apply flex items-center rounded-md py-0.5 px-1.5 text-sm text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800;
   transition: all 0.2s ease;
-  width: calc(100% - 8px);
+  width: 100%;
+  margin-right: 8px;
 }
 
 .sidebar-child-link.router-link-active {
-  @apply text-blue-600 dark:text-blue-400 font-medium;
+  @apply text-blue-600 dark:text-blue-400 font-medium bg-gray-100 dark:bg-blue-gray-800;
 }
 
 /* Dropdown transition */
@@ -1048,7 +1049,7 @@ const getIconColor = (sectionKey: string, isActive: boolean = false) => {
 
 /* Bottom links styling */
 .sidebar-bottom-link {
-  @apply flex items-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-lg;
+  @apply flex items-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-md;
   transition: all 0.2s ease;
 }
 
@@ -1079,7 +1080,7 @@ img.rounded-lg {
 
 /* Special styling for home link */
 .home-link {
-  @apply rounded-xl bg-gray-100;
+  @apply rounded-md bg-gray-100;
 }
 
 .dark .home-link {
