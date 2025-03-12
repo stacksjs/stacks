@@ -218,6 +218,14 @@ buddy generate:all # runs all generators
 # generates your application key
 buddy key:generate # generates your application key
 
+# manage your environment variables
+buddy secret:get # get a secret
+buddy secret:set # set a secret
+buddy secret:encrypt # encrypt a secret
+buddy secret:decrypt # decrypt a secret
+buddy secret:keypair # generate a keypair
+buddy secret:rotate # rotate a keypair
+
 # generate your TypeScript declarations
 buddy types:generate # generates types for your components, functions, & views
 buddy types:fix # auto-fixes types for your components, functions, & views
