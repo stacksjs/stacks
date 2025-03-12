@@ -3,7 +3,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 
-type EnvOptions = {
+interface EnvOptions {
   get: string
   set: string
   encrypt: string
@@ -60,11 +60,16 @@ export function env(buddy: CLI): void {
 
       const args = ['get']
 
-      if (key) args.push(key)
-      if (options.all) args.push('--all')
-      if (options.pretty) args.push('--pretty-print')
-      if (options.file) args.push('--file', options.file)
-      if (options.format) args.push('--format', options.format)
+      if (key)
+        args.push(key)
+      if (options.all)
+        args.push('--all')
+      if (options.pretty)
+        args.push('--pretty-print')
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.format)
+        args.push('--format', options.format)
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -75,7 +80,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)
@@ -101,12 +107,16 @@ export function env(buddy: CLI): void {
 
       if (key) {
         args.push(key)
-        if (value) args.push(value)
+        if (value)
+          args.push(value)
       }
 
-      if (options.file) args.push('--file', options.file)
-      if (options.format) args.push('--format', options.format)
-      if (options.pretty) args.push('--pretty-print')
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.format)
+        args.push('--format', options.format)
+      if (options.pretty)
+        args.push('--pretty-print')
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -117,7 +127,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)
@@ -136,12 +147,18 @@ export function env(buddy: CLI): void {
 
       const args = ['encrypt']
 
-      if (key) args.push(key)
-      if (options.file) args.push('--file', options.file)
-      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
-      if (options.keypair) args.push('--keypair', options.keypair)
-      if (options.stdout) args.push('--stdout')
-      if (options.excludeKey) args.push('--exclude-key', options.excludeKey)
+      if (key)
+        args.push(key)
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.fileKeys)
+        args.push('--file-keys', options.fileKeys)
+      if (options.keypair)
+        args.push('--keypair', options.keypair)
+      if (options.stdout)
+        args.push('--stdout')
+      if (options.excludeKey)
+        args.push('--exclude-key', options.excludeKey)
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -152,7 +169,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)
@@ -170,11 +188,16 @@ export function env(buddy: CLI): void {
 
       const args = ['decrypt']
 
-      if (key) args.push(key)
-      if (options.file) args.push('--file', options.file)
-      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
-      if (options.keypair) args.push('--keypair', options.keypair)
-      if (options.stdout) args.push('--stdout')
+      if (key)
+        args.push(key)
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.fileKeys)
+        args.push('--file-keys', options.fileKeys)
+      if (options.keypair)
+        args.push('--keypair', options.keypair)
+      if (options.stdout)
+        args.push('--stdout')
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -185,7 +208,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)
@@ -202,10 +226,14 @@ export function env(buddy: CLI): void {
 
       const args = ['keypair']
 
-      if (key) args.push(key)
-      if (options.file) args.push('--file', options.file)
-      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
-      if (options.stdout) args.push('--stdout')
+      if (key)
+        args.push(key)
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.fileKeys)
+        args.push('--file-keys', options.fileKeys)
+      if (options.stdout)
+        args.push('--stdout')
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -216,7 +244,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)
@@ -234,11 +263,16 @@ export function env(buddy: CLI): void {
 
       const args = ['rotate']
 
-      if (key) args.push(key)
-      if (options.file) args.push('--file', options.file)
-      if (options.fileKeys) args.push('--file-keys', options.fileKeys)
-      if (options.keypair) args.push('--keypair', options.keypair)
-      if (options.stdout) args.push('--stdout')
+      if (key)
+        args.push(key)
+      if (options.file)
+        args.push('--file', options.file)
+      if (options.fileKeys)
+        args.push('--file-keys', options.fileKeys)
+      if (options.keypair)
+        args.push('--keypair', options.keypair)
+      if (options.stdout)
+        args.push('--stdout')
 
       const result = Bun.spawnSync(['dotenvx', ...args], {
         stdout: 'pipe',
@@ -249,7 +283,8 @@ export function env(buddy: CLI): void {
         const output = new TextDecoder().decode(result.stdout)
         console.log(output)
         process.exit(ExitCode.Success)
-      } else {
+      }
+      else {
         const error = new TextDecoder().decode(result.stderr)
         console.error(error)
         process.exit(ExitCode.FatalError)

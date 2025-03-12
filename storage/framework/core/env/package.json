@@ -32,14 +32,14 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@dotenvx/dotenvx": "^1.38.4"
+  },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "fs-extra": "^11.3.0",
     "std-env": "^3.8.1"
-  },
-  "dependencies": {
-    "@dotenvx/dotenvx": "^1.38.4"
   }
 }
