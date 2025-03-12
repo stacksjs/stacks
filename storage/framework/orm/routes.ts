@@ -1,5 +1,11 @@
 import { route } from '@stacksjs/router'
 
+route.get('payments', 'PaymentIndexOrmAction')
+
+route.post('payments', 'PaymentStoreOrmAction')
+
+route.get('payments/{id}', 'PaymentShowOrmAction')
+
 route.get('product-manufacturers', 'ManufacturerIndexOrmAction')
 
 route.post('product-manufacturers', 'ManufacturerStoreOrmAction')

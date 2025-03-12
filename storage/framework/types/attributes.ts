@@ -29,6 +29,19 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  order_id: string
+  customer_id: string
+  amount: number
+  method: string
+  date: Date | string
+  currency: string
+  reference_number: string
+  card_last_four: string
+  card_brand: string
+  transaction_id: string
+  payment_provider: string
+  refund_amount: number
+  notes: string
   manufacturer: string
   country: string
   featured: boolean
@@ -66,8 +79,6 @@ export interface Attributes {
   exp_year: number
   is_default: boolean
   provider_id: string
-  amount: number
-  method: string | string[]
   status_code: number
   duration_ms: number
   memory_usage: number
@@ -76,7 +87,6 @@ export interface Attributes {
   code: string
   initial_balance: number
   current_balance: number
-  currency: string
   purchaser_id: string
   recipient_email: string
   recipient_name: string

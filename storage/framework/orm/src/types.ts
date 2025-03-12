@@ -11,6 +11,7 @@ import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
 import type { ManufacturersTable } from '../src/models/Manufacturer'
 import type { OrdersTable } from '../src/models/Order'
 import type { OrderItemsTable } from '../src/models/OrderItem'
+import type { PaymentsTable } from '../src/models/Payment'
 import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
@@ -70,6 +71,7 @@ export interface Database {
   releases: ReleasesTable
   users: UsersTable
   posts: PostsTable
+  payments: PaymentsTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
   failed_jobs: FailedJobsTable
