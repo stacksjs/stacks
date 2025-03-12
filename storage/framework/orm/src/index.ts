@@ -38,6 +38,8 @@ export { default as Product } from './Product'
 
 export { default as ProductCategory } from './ProductCategory'
 
+export { default as ProductItem } from './ProductItem'
+
 export { default as ProductReview } from './ProductReview'
 
 export { default as Project } from './Project'

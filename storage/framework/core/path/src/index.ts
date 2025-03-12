@@ -1362,7 +1362,6 @@ export function findUserModel(modelName: string): string {
   return matches[0] ?? ''
 }
 
-
 export interface Path {
   actionsPath: (path?: string) => string
   userActionsPath: (path?: string) => string

@@ -64,6 +64,12 @@ route.post('loyalty-points', 'LoyaltyPointStoreOrmAction')
 
 route.get('loyalty-points/{id}', 'LoyaltyPointShowOrmAction')
 
+route.get('product-items', 'ProductItemIndexOrmAction')
+
+route.post('product-items', 'ProductItemStoreOrmAction')
+
+route.get('product-items/{id}', 'ProductItemShowOrmAction')
+
 route.get('loyalty-rewards', 'LoyaltyRewardIndexOrmAction')
 
 route.post('loyalty-rewards', 'LoyaltyRewardStoreOrmAction')
