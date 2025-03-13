@@ -67,6 +67,8 @@ export interface Attributes {
   variant: string
   type: string
   options: string
+  abbreviation: string
+  is_default: boolean
   code: string
   initial_balance: number
   current_balance: number
@@ -129,7 +131,6 @@ export interface Attributes {
   brand: string
   exp_month: number
   exp_year: number
-  is_default: boolean
   provider_id: string
   status_code: number
   duration_ms: number

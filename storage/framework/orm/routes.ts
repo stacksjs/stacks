@@ -44,6 +44,12 @@ route.patch('product-variants/{id}', 'ProductVariantUpdateOrmAction')
 
 route.delete('product-variants/{id}', 'ProductVariantDestroyOrmAction')
 
+route.get('product-units', 'ProductUnitIndexOrmAction')
+
+route.post('product-units', 'ProductUnitStoreOrmAction')
+
+route.get('product-units/{id}', 'ProductUnitShowOrmAction')
+
 route.get('gift-cards', 'GiftCardIndexOrmAction')
 
 route.post('gift-cards', 'GiftCardStoreOrmAction')

@@ -10,6 +10,7 @@ import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductCategoryModel } from '../orm/src/models/ProductCategory'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductReviewModel } from '../orm/src/models/ProductReview'
+import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
@@ -37,6 +38,9 @@ export interface ModelEvents {
   'product-variant:created': ProductVariantModel
   'product-variant:updated': ProductVariantModel
   'product-variant:deleted': ProductVariantModel
+  'product-unit:created': ProductUnitModel
+  'product-unit:updated': ProductUnitModel
+  'product-unit:deleted': ProductUnitModel
   'gift-card:created': GiftCardModel
   'gift-card:updated': GiftCardModel
   'gift-card:deleted': GiftCardModel
