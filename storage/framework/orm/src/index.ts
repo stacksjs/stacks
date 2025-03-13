@@ -42,6 +42,8 @@ export { default as ProductItem } from './ProductItem'
 
 export { default as ProductReview } from './ProductReview'
 
+export { default as ProductVariant } from './ProductVariant'
+
 export { default as Project } from './Project'
 
 export { default as Release } from './Release'

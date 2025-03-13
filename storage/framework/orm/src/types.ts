@@ -20,6 +20,7 @@ import type { ProductsTable } from '../src/models/Product'
 import type { ProductCategoriesTable } from '../src/models/ProductCategory'
 import type { ProductItemsTable } from '../src/models/ProductItem'
 import type { ProductReviewsTable } from '../src/models/ProductReview'
+import type { ProductVariantsTable } from '../src/models/ProductVariant'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
@@ -78,6 +79,7 @@ export interface Database {
   customers: CustomersTable
   product_reviews: ProductReviewsTable
   products: ProductsTable
+  product_variants: ProductVariantsTable
   gift_cards: GiftCardsTable
   orders: OrdersTable
   coupons: CouponsTable

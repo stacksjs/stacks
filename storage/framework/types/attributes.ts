@@ -64,6 +64,9 @@ export interface Attributes {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  variant: string
+  type: string
+  options: string
   code: string
   initial_balance: number
   current_balance: number
@@ -122,7 +125,6 @@ export interface Attributes {
   payload: string
   exception: string
   failed_at: Date | string
-  type: string
   last_four: number
   brand: string
   exp_month: number

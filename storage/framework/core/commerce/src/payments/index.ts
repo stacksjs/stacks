@@ -1,14 +1,14 @@
-export { destroy, bulkDestroy } from './destroy'
+export { bulkDestroy, destroy } from './destroy'
 
 // Fetch operations - from fetch.ts
-export { 
-  fetchPaymentStats, 
-  fetchPaymentStatsByMethod, 
-  fetchMonthlyPaymentTrends 
+export {
+  fetchMonthlyPaymentTrends,
+  fetchPaymentStats,
+  fetchPaymentStatsByMethod,
 } from './fetch'
-
-// Store operations - from store.ts
-export { store } from './store'
 
 // Export types from fetch.ts
 export type { PaymentStats } from './fetch'
+
+// Store operations - from store.ts
+export { store } from './store'

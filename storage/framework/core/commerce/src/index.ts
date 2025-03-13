@@ -29,13 +29,13 @@ export interface EcommerceNamespace {
 
 // Create the main ecommerce namespace object with explicit type
 export const ecommerce: EcommerceNamespace = {
-  coupons: coupons,
-  customers: customers,
-  giftCards: giftCards,
-  manufacturer: manufacturer,
-  orders: orders,
-  payments: payments,
-  reviews: reviews,
+  coupons,
+  customers,
+  giftCards,
+  manufacturer,
+  orders,
+  payments,
+  reviews,
 }
 
 // Default export for easier import

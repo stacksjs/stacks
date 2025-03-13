@@ -34,6 +34,16 @@ route.post('products', 'ProductStoreOrmAction')
 
 route.get('products/{id}', 'ProductShowOrmAction')
 
+route.get('product-variants', 'ProductVariantIndexOrmAction')
+
+route.post('product-variants', 'ProductVariantStoreOrmAction')
+
+route.get('product-variants/{id}', 'ProductVariantShowOrmAction')
+
+route.patch('product-variants/{id}', 'ProductVariantUpdateOrmAction')
+
+route.delete('product-variants/{id}', 'ProductVariantDestroyOrmAction')
+
 route.get('gift-cards', 'GiftCardIndexOrmAction')
 
 route.post('gift-cards', 'GiftCardStoreOrmAction')
