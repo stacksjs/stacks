@@ -254,15 +254,15 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
   // Calculate values for current period
   const currentTotalOrders = Number(currentPeriodValues?.total_orders || 0)
   const currentTotalRevenue = Number(currentPeriodValues?.total_revenue || 0)
-  const currentAverageOrderValue = currentTotalOrders > 0 
-    ? currentTotalRevenue / currentTotalOrders 
+  const currentAverageOrderValue = currentTotalOrders > 0
+    ? currentTotalRevenue / currentTotalOrders
     : 0
 
   // Calculate values for previous period
   const previousTotalOrders = Number(previousPeriodValues?.total_orders || 0)
   const previousTotalRevenue = Number(previousPeriodValues?.total_revenue || 0)
-  const previousAverageOrderValue = previousTotalOrders > 0 
-    ? previousTotalRevenue / previousTotalOrders 
+  const previousAverageOrderValue = previousTotalOrders > 0
+    ? previousTotalRevenue / previousTotalOrders
     : 0
 
   // Calculate differences
@@ -335,7 +335,7 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
   const today = new Date()
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - daysRange)
-  
+
   // Query to get daily order counts and revenue
   const dailyOrders = await db
     .selectFrom('orders')
@@ -350,7 +350,7 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
     .groupBy('created_at')
     .orderBy('created_at', 'asc')
     .execute()
-  
+
   return dailyOrders.map(day => ({
     date: day.created_at,
     order_count: Number(day.order_count || 0),

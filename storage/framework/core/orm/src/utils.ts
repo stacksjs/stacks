@@ -16,10 +16,12 @@ import type {
 import { generator, parser, traverse } from '@stacksjs/build'
 import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
-import { findCoreModel, findUserModel, path } from '@stacksjs/path'
-import { fs, globSync } from '@stacksjs/storage'
+import { path } from '@stacksjs/path'
+import { fs } from '@stacksjs/storage'
 import { camelCase, kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
+
+import { globSync } from 'tinyglobby'
 import { generateModelString } from './generate'
 
 type ModelPath = string
@@ -1492,4 +1494,24 @@ async function ensureCodeStyle(): Promise<void> {
   else {
     log.debug('Code style fixed successfully.')
   }
+}
+
+export function findCoreModel(modelName: string): string {
+  const rootPath = path.join(path.storagePath('framework/defaults/models'), '/')
+
+  const matches = globSync(`${rootPath}**/${modelName}`, {
+    absolute: true,
+  })
+
+  return matches[0] ?? ''
+}
+
+export function findUserModel(modelName: string): string {
+  const rootPath = path.join(path.userModelsPath('/'), '/')
+
+  const matches = globSync(`${rootPath}**/${modelName}`, {
+    absolute: true,
+  })
+
+  return matches[0] ?? ''
 }

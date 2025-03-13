@@ -19,8 +19,6 @@ import process from 'node:process'
 import { runCommandSync } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 
-import { globSync } from 'tinyglobby'
-
 /**
  * Returns the path to the `actions` directory. The `actions` directory
  * contains the core Stacks' actions.
@@ -1342,26 +1340,6 @@ export function homeDir(path?: string): string {
   return os.homedir() + (path ? (path.startsWith('/') ? '' : '/') + path : '~')
 }
 
-export function findCoreModel(modelName: string): string {
-  const rootPath = join(storagePath('framework/defaults/models'), '/')
-
-  const matches = globSync(`${rootPath}**/${modelName}`, {
-    absolute: true,
-  })
-
-  return matches[0] ?? ''
-}
-
-export function findUserModel(modelName: string): string {
-  const rootPath = join(userModelsPath('/'), '/')
-
-  const matches = globSync(`${rootPath}**/${modelName}`, {
-    absolute: true,
-  })
-
-  return matches[0] ?? ''
-}
-
 export interface Path {
   actionsPath: (path?: string) => string
   userActionsPath: (path?: string) => string
@@ -1409,8 +1387,6 @@ export interface Path {
   healthPath: (path?: string) => string
   examplesPath: (type?: 'vue-components' | 'web-components') => string
   fakerPath: (path?: string) => string
-  findCoreModel: (modelName: string) => string
-  findUserModel: (modelName: string) => string
   frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string
   storagePath: (path?: string) => string
@@ -1542,8 +1518,6 @@ export const path: Path = {
   healthPath,
   examplesPath,
   fakerPath,
-  findCoreModel,
-  findUserModel,
   frameworkPath,
   browserPath,
   storagePath,
