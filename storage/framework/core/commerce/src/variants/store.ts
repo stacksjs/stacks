@@ -17,11 +17,11 @@ export async function store(request: ProductVariantRequestType): Promise<Product
     // Prepare variant data
     const variantData: NewProductVariant = {
       product_id: request.get<number>('product_id'),
-      variant: request.get<string>('variant'),
-      type: request.get<string>('type'),
-      description: request.get<string>('description'),
-      options: request.get<string>('options'),
-      status: request.get<string>('status', 'draft'),
+      variant: request.get('variant'),
+      type: request.get('type'),
+      description: request.get('description'),
+      options: request.get('options'),
+      status: request.get('status', 'draft'),
     }
 
     // Insert the product variant
@@ -71,12 +71,12 @@ export async function bulkStore(requests: ProductVariantRequestType[]): Promise<
 
         // Prepare variant data
         const variantData: NewProductVariant = {
-          product_id: request.get<string>('product_id'),
-          variant: request.get<string>('variant'),
-          type: request.get<string>('type'),
-          description: request.get<string>('description'),
-          options: request.get<string>('options'),
-          status: request.get<string>('status', 'draft'),
+          product_id: request.get('product_id'),
+          variant: request.get('variant'),
+          type: request.get('type'),
+          description: request.get('description'),
+          options: request.get('options'),
+          status: request.get('status', 'draft'),
         }
 
         await trx

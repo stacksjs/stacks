@@ -13,9 +13,9 @@ export async function store(request: ManufacturerRequestType): Promise<Manufactu
   await request.validate()
 
   const manufacturerData: NewManufacturer = {
-    manufacturer: request.get<string>('manufacturer'),
-    description: request.get<string>('description'),
-    country: request.get<string>('country'),
+    manufacturer: request.get('manufacturer'),
+    description: request.get('description'),
+    country: request.get('country'),
     featured: request.get<boolean>('featured') || false,
   }
 
@@ -74,9 +74,9 @@ export async function bulkStore(requests: ManufacturerRequestType[]): Promise<nu
 
         // Prepare manufacturer data
         const manufacturerData: NewManufacturer = {
-          manufacturer: request.get<string>('manufacturer'),
-          description: request.get<string>('description'),
-          country: request.get<string>('country'),
+          manufacturer: request.get('manufacturer'),
+          description: request.get('description'),
+          country: request.get('country'),
           featured: request.get<boolean>('featured') || false,
         }
 

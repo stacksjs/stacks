@@ -1,7 +1,6 @@
-import type { Insertable, Selectable, Updateable } from '@stacksjs/database'
 
-import type { CouponModel } from '../../orm/src/models/Coupon'
 // Import the CustomerTable type from the ORM
+import type { CouponModel } from '../../orm/src/models/Coupon'
 import type {
   CustomerJsonResponse,
   CustomerModel,
@@ -11,8 +10,7 @@ import type {
 } from '../../orm/src/models/Customer'
 import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
 import type { ManufacturerJsonResponse } from '../../orm/src/models/Manufacturer'
-// Import the OrderTable type from the ORM
-import type { OrderJsonResponse, OrdersTable } from '../../orm/src/models/Order'
+import type { OrderJsonResponse } from '../../orm/src/models/Order'
 import type { OrderItemModel } from '../../orm/src/models/OrderItem'
 import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
 
@@ -61,23 +59,6 @@ export interface UpdateCustomerInput {
   user_id?: number
 }
 
-// Re-export the types for consistency
-export type OrderTable = OrdersTable
-
-// Define response structure for paginated orders
-export interface OrderResponse {
-  data: OrderJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
-
-export type OrderType = Selectable<OrdersTable>
-export type NewOrder = Insertable<OrdersTable>
-export type OrderUpdate = Updateable<OrdersTable>
 
 // Define the structure of an order item
 export interface OrderItem {
@@ -104,7 +85,7 @@ export interface OrderStats {
   total: number
   by_status: StatusCount[]
   by_type: OrderTypeCount[]
-  recent: OrderType[]
+  recent: OrderJsonResponse[]
   revenue: number
 }
 

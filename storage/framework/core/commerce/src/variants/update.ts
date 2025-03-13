@@ -17,14 +17,14 @@ export async function update(id: number, request: ProductVariantRequestType): Pr
   try {
     // Prepare variant data for update
     const variantData = {
-      variant: request.get<string>('variant'),
-      type: request.get<string>('type'),
-      description: request.get<string>('description'),
-      options: request.get<string>('options'),
-      status: request.get<string>('status'),
+      variant: request.get('variant'),
+      type: request.get('type'),
+      description: request.get('description'),
+      options: request.get('options'),
+      status: request.get('status'),
       updated_at: new Date(),
     }
-    
+
     // Update the product variant
     await db
       .updateTable('product_variants')

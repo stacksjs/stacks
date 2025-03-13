@@ -12,21 +12,21 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
   await request.validate()
 
   const giftCardData: NewGiftCard = {
-    code: request.get<string>('code'),
+    code: request.get('code'),
     initial_balance: request.get<number>('initial_balance'),
     current_balance: request.get<number>('initial_balance'), // Initially set to same as initial balance
-    currency: request.get<string>('currency'),
-    status: request.get<string>('status') || 'ACTIVE',
+    currency: request.get('currency'),
+    status: request.get('status') || 'ACTIVE',
     user_id: request.get<number>('user_id'),
-    purchaser_id: request.get<string>('purchaser_id'),
-    recipient_email: request.get<string>('recipient_email'),
-    recipient_name: request.get<string>('recipient_name'),
-    personal_message: request.get<string>('personal_message'),
+    purchaser_id: request.get('purchaser_id'),
+    recipient_email: request.get('recipient_email'),
+    recipient_name: request.get('recipient_name'),
+    personal_message: request.get('personal_message'),
     is_digital: request.get<boolean>('is_digital'),
     is_reloadable: request.get<boolean>('is_reloadable'),
     is_active: request.get<boolean>('is_active') ?? true,
-    expiry_date: request.get<string>('expiry_date'),
-    template_id: request.get<string>('template_id'),
+    expiry_date: request.get('expiry_date'),
+    template_id: request.get('template_id'),
   }
 
   try {

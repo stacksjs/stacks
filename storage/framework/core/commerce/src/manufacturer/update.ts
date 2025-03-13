@@ -22,9 +22,9 @@ export async function update(id: number, request: ManufacturerRequestType): Prom
 
   // Create update data object using request fields
   const updateData: Record<string, any> = {
-    manufacturer: request.get<string>('manufacturer'),
-    description: request.get<string>('description'),
-    country: request.get<string>('country'),
+    manufacturer: request.get('manufacturer'),
+    description: request.get('description'),
+    country: request.get('country'),
     featured: request.get<boolean>('featured'),
     updated_at: new Date(),
   }

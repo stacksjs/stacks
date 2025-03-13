@@ -22,18 +22,18 @@ export async function update(id: number, request: CouponRequestType): Promise<Co
 
   // Prepare update data object with proper type
   const updateData: Record<string, any> = {
-    code: request.get<string>('code'),
-    description: request.get<string>('description'),
-    discount_type: request.get<string>('discount_type'),
+    code: request.get('code'),
+    description: request.get('description'),
+    discount_type: request.get('discount_type'),
     discount_value: request.get<number>('discount_value'),
     product_id: request.get<number>('product_id'),
     min_order_amount: request.get<number>('min_order_amount'),
     max_discount_amount: request.get<number>('max_discount_amount'),
-    free_product_id: request.get<string>('free_product_id'),
+    free_product_id: request.get('free_product_id'),
     is_active: request.get<boolean>('is_active'),
     usage_limit: request.get<number>('usage_limit'),
-    start_date: request.get<string>('start_date'),
-    end_date: request.get<string>('end_date'),
+    start_date: request.get('start_date'),
+    end_date: request.get('end_date'),
     updated_at: new Date(),
   }
 

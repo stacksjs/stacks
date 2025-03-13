@@ -1,6 +1,6 @@
 import type { CustomerRequestType } from '@stacksjs/orm'
 import type {
-  CustomerType,
+  CustomerJsonResponse,
   CustomerUpdate,
 } from '../../types'
 import { db } from '@stacksjs/database'
@@ -12,7 +12,7 @@ import { db } from '@stacksjs/database'
  * @param request The updated customer data
  * @returns The updated customer record
  */
-export async function update(id: number, request: CustomerRequestType): Promise<CustomerType | undefined> {
+export async function update(id: number, request: CustomerRequestType): Promise<CustomerJsonResponse | undefined> {
   try {
     await request.validate()
     // Create a single update data object directly from the request
