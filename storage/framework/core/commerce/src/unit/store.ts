@@ -1,58 +1,59 @@
-import type { ProductUnitType } from '../../types'
+// Import dependencies
+import type { ProductUnitRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { v4 as uuidv4 } from 'uuid'
+import type { NewProductUnit, ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
 
 /**
- * Store a new product unit in the database
+ * Create a new product unit
  *
- * @param data The product unit data to store
- * @returns The stored product unit with its ID
+ * @param request Product unit data to store
+ * @returns The newly created product unit record
  */
-export async function store(data: Omit<ProductUnitType, 'id' | 'created_at' | 'updated_at'>): Promise<ProductUnitType> {
+export async function store(request: ProductUnitRequestType): Promise<ProductUnitJsonResponse | undefined> {
+  // Validate the request data
+  await request.validate()
+
   try {
-    const now = new Date()
-    const id = uuidv4()
+    // Prepare product unit data
+    const unitData = {
+      name: request.get<string>('name'),
+      product_id: request.get<number>('product_id'),
+      abbreviation: request.get<string>('abbreviation'),
+      type: request.get<string>('type'),
+      description: request.get<string>('description'),
+      is_default: request.get<boolean>('is_default', false),
+    }
 
-    // Insert the product unit into the database
-    await db
+    // Insert the product unit
+    const result = await db
       .insertInto('product_units')
-      .values({
-        id,
-        name: data.name,
-        abbreviation: data.abbreviation,
-        type: data.type,
-        description: data.description || null,
-        is_default: data.is_default || false,
-        created_at: now,
-        updated_at: now,
-      })
-      .execute()
+      .values(unitData)
+      .executeTakeFirst()
 
-    // If this unit is set as default, update all other units of the same type to not be default
-    if (data.is_default) {
+    const unitId = Number(result.insertId)
+
+    // If this unit is set as default, update all other units of the same type
+    if (unitData.is_default) {
       await db
         .updateTable('product_units')
         .set({ is_default: false })
-        .where('type', '=', data.type)
-        .where('id', '!=', id)
+        .where('type', '=', unitData.type)
+        .where('id', '!=', unitId)
         .execute()
     }
 
-    // Return the stored product unit
-    return {
-      id,
-      name: data.name,
-      abbreviation: data.abbreviation,
-      type: data.type,
-      description: data.description || null,
-      is_default: data.is_default || false,
-      created_at: now,
-      updated_at: now,
-    }
+    // Retrieve the newly created product unit
+    const unit = await db
+      .selectFrom('product_units')
+      .where('id', '=', unitId)
+      .selectAll()
+      .executeTakeFirst()
+
+    return unit
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to store product unit: ${error.message}`)
+      throw new TypeError(`Failed to create product unit: ${error.message}`)
     }
 
     throw error
@@ -60,66 +61,61 @@ export async function store(data: Omit<ProductUnitType, 'id' | 'created_at' | 'u
 }
 
 /**
- * Store multiple product units at once
+ * Create multiple product units at once
  *
- * @param units Array of product unit data to store
- * @returns Array of stored product units with their IDs
+ * @param requests Array of product unit data to store
+ * @returns Number of product units created
  */
-export async function bulkStore(units: Array<Omit<ProductUnitType, 'id' | 'created_at' | 'updated_at'>>): Promise<ProductUnitType[]> {
-  if (!units.length)
-    return []
+export async function bulkStore(requests: ProductUnitRequestType[]): Promise<number> {
+  if (!requests.length)
+    return 0
+
+  let createdCount = 0
 
   try {
-    const now = new Date()
-    const storedUnits: ProductUnitType[] = []
+    // Process each product unit
+    await db.transaction().execute(async (trx) => {
+      for (const request of requests) {
+        // Validate request data
+        request.validate()
 
-    // For each unit in the input array
-    for (const unit of units) {
-      const id = uuidv4()
+        // Prepare product unit data
+        const unitData: NewProductUnit = {
+          name: request.get('name'),
+          product_id: request.get<number>('product_id'),
+          abbreviation: request.get('abbreviation'),
+          type: request.get('type'),
+          description: request.get('description'),
+          is_default: request.get('is_default') || false,
+        }
 
-      // Insert the product unit
-      await db
-        .insertInto('product_units')
-        .values({
-          id,
-          name: unit.name,
-          abbreviation: unit.abbreviation,
-          type: unit.type,
-          description: unit.description || null,
-          is_default: unit.is_default || false,
-          created_at: now,
-          updated_at: now,
-        })
-        .execute()
+        // Insert the product unit
+        const result = await trx
+          .insertInto('product_units')
+          .values(unitData)
+          .executeTakeFirst()
 
-      // If this unit is set as default, update all other units of the same type
-      if (unit.is_default) {
-        await db
-          .updateTable('product_units')
-          .set({ is_default: false })
-          .where('type', '=', unit.type)
-          .where('id', '!=', id)
-          .execute()
+        const unitId = Number(result.insertId)
+        
+        // If this unit is set as default, update all other units of the same type
+        if (unitData.is_default) {
+          await trx
+            .updateTable('product_units')
+            .set({ is_default: false })
+            .where('type', '=', unitData.type)
+            .where('id', '!=', unitId)
+            .execute()
+        }
+
+        createdCount++
       }
+    })
 
-      // Add the stored unit to our result array
-      storedUnits.push({
-        id,
-        name: unit.name,
-        abbreviation: unit.abbreviation,
-        type: unit.type,
-        description: unit.description || null,
-        is_default: unit.is_default || false,
-        created_at: now,
-        updated_at: now,
-      })
-    }
-
-    return storedUnits
+    return createdCount
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to bulk store product units: ${error.message}`)
+      throw new TypeError(`Failed to create product units in bulk: ${error.message}`)
     }
 
     throw error
@@ -127,17 +123,14 @@ export async function bulkStore(units: Array<Omit<ProductUnitType, 'id' | 'creat
 }
 
 /**
- * Format product unit options for dropdown menus or form selection
- * 
+ * Format product unit options for dropdown menus or selectors
+ *
  * @param type Optional filter by unit type
  * @returns Array of formatted unit options with id, name, and abbreviation
  */
-export async function formatUnitOptions(type?: string): Promise<Array<{
-  id: string
-  name: string
-  abbreviation: string
-  is_default: boolean
-}>> {
+export function formatUnitOptions(
+  type?: string,
+): Promise<{ id: string, name: string, abbreviation: string, is_default: boolean | undefined }[] | []> {
   try {
     let query = db
       .selectFrom('product_units')
@@ -148,9 +141,15 @@ export async function formatUnitOptions(type?: string): Promise<Array<{
     if (type)
       query = query.where('type', '=', type)
 
-    const units = await query.execute()
-
-    return units
+    // Convert db results to ensure id is string and handle potentially undefined is_default
+    return query.execute().then(results => 
+      results.map(result => ({
+        id: String(result.id), // Convert id to string
+        name: result.name,
+        abbreviation: result.abbreviation,
+        is_default: result.is_default
+      }))
+    )
   }
   catch (error) {
     if (error instanceof Error) {
@@ -167,7 +166,7 @@ export async function formatUnitOptions(type?: string): Promise<Array<{
  * @param type The unit type to get the default for
  * @returns The default unit or undefined if none found
  */
-export async function getDefaultUnit(type: string): Promise<ProductUnitType | undefined> {
+export async function getDefaultUnit(type: string): Promise<ProductUnitJsonResponse | undefined> {
   try {
     const defaultUnit = await db
       .selectFrom('product_units')
