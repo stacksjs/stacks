@@ -1,5 +1,5 @@
 import type { ManufacturerJsonResponse } from '../../../../orm/src/models/Manufacturer'
-import type { FetchProductManufacturersOptions, ProductManufacturerResponse } from '../../types'
+import type { FetchProductManufacturersOptions, ProductManufacturerResponse } from '../types'
 import { db } from '@stacksjs/database'
 
 /**

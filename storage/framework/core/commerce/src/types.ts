@@ -1,17 +1,17 @@
 // Import the CustomerTable type from the ORM
-import type { CouponModel } from '../../orm/src/models/Coupon'
+import type { CouponModel } from '../../../orm/src/models/Coupon'
 import type {
   CustomerJsonResponse,
   CustomerModel,
   CustomersTable,
   CustomerUpdate,
   NewCustomer,
-} from '../../orm/src/models/Customer'
-import type { GiftCardJsonResponse } from '../../orm/src/models/GiftCard'
-import type { ManufacturerJsonResponse } from '../../orm/src/models/Manufacturer'
-import type { OrderJsonResponse } from '../../orm/src/models/Order'
-import type { OrderItemModel } from '../../orm/src/models/OrderItem'
-import type { ProductReviewJsonResponse } from '../../orm/src/models/ProductReview'
+} from '../../../orm/src/models/Customer'
+import type { GiftCardJsonResponse } from '../../../orm/src/models/GiftCard'
+import type { ManufacturerJsonResponse } from '../../../orm/src/models/Manufacturer'
+import type { OrderJsonResponse } from '../../../orm/src/models/Order'
+import type { OrderItemModel } from '../../../orm/src/models/OrderItem'
+import type { ProductReviewJsonResponse } from '../../../orm/src/models/ProductReview'
 
 // Re-export the types
 export type {

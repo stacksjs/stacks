@@ -1,5 +1,5 @@
 import type { GiftCardJsonResponse } from '../../../../orm/src/models/GiftCard'
-import type { GiftCardStats } from '../../types'
+import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
 
 /**

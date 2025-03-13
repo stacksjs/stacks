@@ -1,4 +1,4 @@
-import type { CustomerJsonResponse, CustomersTable } from '../../types'
+import type { CustomerJsonResponse, CustomersTable } from '../types'
 import { db } from '@stacksjs/database'
 
 export interface FetchCustomersOptions {

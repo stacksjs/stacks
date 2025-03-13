@@ -1,5 +1,5 @@
 import type { ProductReviewJsonResponse } from '../../../../orm/src/models/ProductReview'
-import type { FetchProductReviewsOptions, ProductReviewResponse, ProductReviewStats } from '../../types'
+import type { FetchProductReviewsOptions, ProductReviewResponse, ProductReviewStats } from '../types'
 import { db } from '@stacksjs/database'
 
 /**

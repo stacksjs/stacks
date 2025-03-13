@@ -2,7 +2,7 @@ import type { CustomerRequestType } from '@stacksjs/orm'
 import type {
   CustomerJsonResponse,
   CustomerUpdate,
-} from '../../types'
+} from '../types'
 import { db } from '@stacksjs/database'
 
 /**

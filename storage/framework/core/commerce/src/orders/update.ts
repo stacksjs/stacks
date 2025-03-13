@@ -1,6 +1,6 @@
 // Import dependencies
 import type { OrderRequestType } from '@stacksjs/orm'
-import type { OrderType } from '../../types'
+import type { OrderType } from '../types'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

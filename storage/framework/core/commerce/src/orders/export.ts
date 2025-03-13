@@ -1,5 +1,5 @@
 import type { SpreadsheetWrapper } from 'ts-spreadsheets'
-import type { OrderWithTotals } from '../../types'
+import type { OrderWithTotals } from '../types'
 import { db } from '@stacksjs/database'
 import { createSpreadsheet } from 'ts-spreadsheets'
 

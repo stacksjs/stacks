@@ -3,7 +3,7 @@ import type {
   OrderStats,
   OrderTypeCount,
   StatusCount,
-} from '../../types'
+} from '../types'
 import { db } from '@stacksjs/database'
 
 /**

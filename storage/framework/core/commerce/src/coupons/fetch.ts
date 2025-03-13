@@ -1,5 +1,5 @@
 import type { CouponJsonResponse, CouponResponse } from '../../../../orm/src/models/Coupon'
-import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats, FetchCouponsOptions } from '../../types'
+import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats, FetchCouponsOptions } from '../types'
 import { db } from '@stacksjs/database'
 
 /**
