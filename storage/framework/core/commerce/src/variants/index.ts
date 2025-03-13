@@ -1,17 +1,17 @@
 export {
-    store, 
-    bulkStore,
-    formatVariantOptions,
-    generateVariantCombinations
-  } from './store'
-  
-  export {
-    update,
-    bulkUpdate,
-    updateStatus
-  } from './update'
-  
-  export {
-    destroy,
-    bulkDestroy
-  } from './destroy'
+  bulkDestroy,
+  destroy,
+} from './destroy'
+
+export {
+  bulkStore,
+  formatVariantOptions,
+  generateVariantCombinations,
+  store,
+} from './store'
+
+export {
+  bulkUpdate,
+  update,
+  updateStatus,
+} from './update'

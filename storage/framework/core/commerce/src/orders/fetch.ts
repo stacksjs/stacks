@@ -1,6 +1,6 @@
+import type { OrderJsonResponse } from '../../../../orm/src/models/Order'
 import type {
   OrderStats,
-  OrderType,
   OrderTypeCount,
   StatusCount,
 } from '../../types'
@@ -9,7 +9,7 @@ import { db } from '@stacksjs/database'
 /**
  * Fetch all orders from the database with their items
  */
-export async function fetchAll(): Promise<OrderType[]> {
+export async function fetchAll(): Promise<OrderJsonResponse[]> {
   const orders = await db
     .selectFrom('orders')
     .selectAll()
@@ -33,7 +33,7 @@ export async function fetchAll(): Promise<OrderType[]> {
 /**
  * Fetch an order by ID
  */
-export async function fetchById(id: number): Promise<OrderType | undefined> {
+export async function fetchById(id: number): Promise<OrderJsonResponse | undefined> {
   const order = await db
     .selectFrom('orders')
     .where('id', '=', id)
@@ -352,7 +352,7 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
     .execute()
 
   return dailyOrders.map(day => ({
-    date: day.created_at,
+    date: day.created_at!,
     order_count: Number(day.order_count || 0),
     revenue: Number(day.revenue || 0),
   }))

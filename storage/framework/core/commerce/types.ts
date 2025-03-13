@@ -1,4 +1,3 @@
-
 // Import the CustomerTable type from the ORM
 import type { CouponModel } from '../../orm/src/models/Coupon'
 import type {
@@ -58,7 +57,6 @@ export interface UpdateCustomerInput {
   avatar?: string
   user_id?: number
 }
-
 
 // Define the structure of an order item
 export interface OrderItem {

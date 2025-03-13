@@ -1,5 +1,5 @@
 import type { GiftCardJsonResponse } from '../../../../orm/src/models/GiftCard'
-import type { FetchGiftCardsOptions, GiftCardResponse, GiftCardStats } from '../../types'
+import type { GiftCardStats } from '../../types'
 import { db, sql } from '@stacksjs/database'
 
 /**
@@ -39,12 +39,14 @@ export async function fetchByCode(code: string): Promise<GiftCardJsonResponse | 
 /**
  * Fetch active gift cards (is_active = true and not expired)
  */
-export async function fetchActive(options: FetchGiftCardsOptions = {}): Promise<GiftCardResponse> {
-  return fetchPaginated({
-    ...options,
-    is_active: true,
-    status: 'ACTIVE',
-  })
+export async function fetchActive(): Promise<GiftCardJsonResponse> {
+  const giftCards = await db
+    .selectFrom('gift_cards')
+    .where('is_active', '=', true)
+    .selectAll()
+    .execute()
+
+  return giftCards
 }
 
 /**

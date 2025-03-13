@@ -29,7 +29,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['User'], // For purchaser_id
+  belongsTo: ['Customer'],
   hasMany: ['Order'],
 
   attributes: {
