@@ -27,15 +27,15 @@ export interface ModelEvents {
   'customer:created': CustomerModel
   'customer:updated': CustomerModel
   'customer:deleted': CustomerModel
-  'productreview:created': ProductReviewModel
-  'productreview:updated': ProductReviewModel
-  'productreview:deleted': ProductReviewModel
+  'product-review:created': ProductReviewModel
+  'product-review:updated': ProductReviewModel
+  'product-review:deleted': ProductReviewModel
   'product:created': ProductModel
   'product:updated': ProductModel
   'product:deleted': ProductModel
-  'giftcard:created': GiftCardModel
-  'giftcard:updated': GiftCardModel
-  'giftcard:deleted': GiftCardModel
+  'gift-card:created': GiftCardModel
+  'gift-card:updated': GiftCardModel
+  'gift-card:deleted': GiftCardModel
   'order:created': OrderModel
   'order:updated': OrderModel
   'order:deleted': OrderModel
@@ -45,17 +45,17 @@ export interface ModelEvents {
   'transaction:created': TransactionModel
   'transaction:updated': TransactionModel
   'transaction:deleted': TransactionModel
-  'loyaltypoint:created': LoyaltyPointModel
-  'loyaltypoint:updated': LoyaltyPointModel
-  'loyaltypoint:deleted': LoyaltyPointModel
-  'productitem:created': ProductItemModel
-  'productitem:updated': ProductItemModel
-  'productitem:deleted': ProductItemModel
-  'loyaltyreward:created': LoyaltyRewardModel
-  'loyaltyreward:updated': LoyaltyRewardModel
-  'loyaltyreward:deleted': LoyaltyRewardModel
-  'productcategory:created': ProductCategoryModel
-  'productcategory:updated': ProductCategoryModel
-  'productcategory:deleted': ProductCategoryModel
+  'loyalty-point:created': LoyaltyPointModel
+  'loyalty-point:updated': LoyaltyPointModel
+  'loyalty-point:deleted': LoyaltyPointModel
+  'product-item:created': ProductItemModel
+  'product-item:updated': ProductItemModel
+  'product-item:deleted': ProductItemModel
+  'loyalty-reward:created': LoyaltyRewardModel
+  'loyalty-reward:updated': LoyaltyRewardModel
+  'loyalty-reward:deleted': LoyaltyRewardModel
+  'product-category:created': ProductCategoryModel
+  'product-category:updated': ProductCategoryModel
+  'product-category:deleted': ProductCategoryModel
 
 }

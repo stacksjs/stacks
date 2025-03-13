@@ -18,7 +18,7 @@ import { italic, log } from '@stacksjs/cli'
 import { handleError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
-import { camelCase, kebabCase, plural, singular, snakeCase } from '@stacksjs/strings'
+import { camelCase, kebabCase, plural, singular, slugify, snakeCase } from '@stacksjs/strings'
 import { isString } from '@stacksjs/validation'
 
 import { globSync } from 'tinyglobby'
@@ -620,7 +620,7 @@ export async function writeModelEvents(): Promise<void> {
 
     const modelName = getModelName(model, modelPath)
 
-    const formattedModelName = modelName.toLocaleLowerCase()
+    const formattedModelName = slugify(modelName)
 
     const observer = model?.traits?.observe
 
