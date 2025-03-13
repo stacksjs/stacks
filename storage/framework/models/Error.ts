@@ -1,5 +1,4 @@
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -22,7 +21,7 @@ export default {
           maxLength: 'type must have a maximum of 255 characters',
         },
       },
-      factory: () => faker.system.fileType(),
+      factory: faker => faker.system.fileType(),
     },
 
     message: {
@@ -34,7 +33,7 @@ export default {
           string: 'message must be a string',
         },
       },
-      factory: () => faker.lorem.sentence(),
+      factory: faker => faker.lorem.sentence(),
     },
 
     stack: {
@@ -45,7 +44,7 @@ export default {
           string: 'stack must be a text',
         },
       },
-      factory: () => faker.system.filePath(),
+      factory: faker => faker.system.filePath(),
     },
 
     status: {
@@ -57,7 +56,7 @@ export default {
           string: 'status must be a number',
         },
       },
-      factory: () => faker.number.int({ min: 400, max: 500 }),
+      factory: faker => faker.number.int({ min: 400, max: 500 }),
     },
 
     additional_info: {
@@ -68,7 +67,7 @@ export default {
           string: 'additional_info must be a text',
         },
       },
-      factory: () => faker.lorem.paragraph(),
+      factory: faker => faker.lorem.paragraph(),
     },
   },
 } satisfies Model

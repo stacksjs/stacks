@@ -26,7 +26,7 @@ export default {
           required: 'method is required',
         },
       },
-      factory: () => faker.helpers.arrayElement(['GET', 'POST', 'PUT', 'DELETE']),
+      factory: faker => faker.helpers.arrayElement(['GET', 'POST', 'PUT', 'DELETE']),
     },
 
     path: {
@@ -38,7 +38,7 @@ export default {
           required: 'path is required',
         },
       },
-      factory: () => faker.internet.url(),
+      factory: faker => faker.internet.url(),
     },
 
     status_code: {
@@ -50,7 +50,7 @@ export default {
           required: 'status_code is required',
         },
       },
-      factory: () => faker.helpers.arrayElement([200, 201, 400, 401, 403, 404, 500]),
+      factory: faker => faker.helpers.arrayElement([200, 201, 400, 401, 403, 404, 500]),
     },
 
     duration_ms: {
@@ -62,7 +62,7 @@ export default {
           required: 'duration_ms is required',
         },
       },
-      factory: () => faker.number.int({ min: 50, max: 1000 }),
+      factory: faker => faker.number.int({ min: 50, max: 1000 }),
     },
 
     ip_address: {
@@ -74,7 +74,7 @@ export default {
           required: 'ip_address is required',
         },
       },
-      factory: () => faker.internet.ip(),
+      factory: faker => faker.internet.ip(),
     },
 
     memory_usage: {
@@ -86,7 +86,7 @@ export default {
           required: 'memory_usage is required',
         },
       },
-      factory: () => faker.number.int({ min: 50, max: 512 }),
+      factory: faker => faker.number.int({ min: 50, max: 512 }),
     },
 
     user_agent: {
@@ -97,7 +97,7 @@ export default {
           string: 'user_agent must be a string',
         },
       },
-      factory: () => faker.internet.userAgent(),
+      factory: faker => faker.internet.userAgent(),
     },
 
     error_message: {
@@ -108,7 +108,7 @@ export default {
           string: 'error_message must be a string',
         },
       },
-      factory: () => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
+      factory: faker => faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.2 }),
     },
   },
 } satisfies Model

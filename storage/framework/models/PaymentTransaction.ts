@@ -1,6 +1,5 @@
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
-import { faker } from '@stacksjs/faker'
 
 import { schema } from '@stacksjs/validation'
 
@@ -39,7 +38,7 @@ export default {
           string: 'description must be a string',
         },
       },
-      factory: () => faker.lorem.lines(2),
+      factory: faker => faker.lorem.lines(2),
     },
 
     amount: {
@@ -52,7 +51,7 @@ export default {
           required: 'amount is required',
         },
       },
-      factory: () => faker.number.int({ min: 1000, max: 10000 }),
+      factory: faker => faker.number.int({ min: 1000, max: 10000 }),
     },
 
     type: {
@@ -76,7 +75,7 @@ export default {
           required: 'provider_id is required',
         },
       },
-      factory: () => faker.string.alphanumeric(10),
+      factory: faker => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model

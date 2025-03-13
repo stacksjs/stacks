@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -19,6 +18,7 @@ export default {
   attributes: {
     subscribed: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.boolean(),
         message: {
@@ -27,7 +27,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.datatype.boolean(),
+      factory: faker => faker.datatype.boolean(),
     },
   },
 

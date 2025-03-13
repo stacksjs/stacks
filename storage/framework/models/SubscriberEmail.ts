@@ -1,5 +1,4 @@
 // soon, these will be auto-imported
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -25,6 +24,7 @@ export default {
     email: {
       unique: true,
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -33,7 +33,7 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.email(),
+      factory: faker => faker.internet.email(),
     },
   },
 } satisfies Model

@@ -1,5 +1,4 @@
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -31,7 +30,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: faker => faker.lorem.sentence(),
     },
 
     attempts: {
@@ -42,7 +41,7 @@ export default {
           number: 'attempts must be a number',
         },
       },
-      factory: () => faker.number.int({ min: 0, max: 10 }),
+      factory: faker => faker.number.int({ min: 0, max: 10 }),
     },
 
     available_at: {
@@ -50,7 +49,7 @@ export default {
       validation: {
         rule: schema.number(),
       },
-      factory: () => faker.number.int({ min: 1000000, max: 1999999 }),
+      factory: faker => faker.number.int({ min: 1000000, max: 1999999 }),
     },
     reserved_at: {
       fillable: true,

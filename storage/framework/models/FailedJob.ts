@@ -1,5 +1,4 @@
 import type { Model } from '@stacksjs/types'
-import { faker } from '@stacksjs/faker'
 import { schema } from '@stacksjs/validation'
 
 export default {
@@ -44,7 +43,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: faker => faker.lorem.sentence(),
     },
 
     exception: {
@@ -53,7 +52,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: () => faker.lorem.sentence(),
+      factory: faker => faker.lorem.sentence(),
     },
 
     failed_at: {

@@ -23,6 +23,7 @@ export default {
   attributes: {
     name: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -36,6 +37,7 @@ export default {
 
     companyName: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -49,6 +51,7 @@ export default {
 
     email: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -62,6 +65,7 @@ export default {
 
     billingEmail: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string().email(),
         message: {
@@ -75,6 +79,7 @@ export default {
 
     status: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -88,6 +93,7 @@ export default {
 
     description: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -101,6 +107,7 @@ export default {
 
     path: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -114,6 +121,7 @@ export default {
 
     isPersonal: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.boolean(),
         message: {

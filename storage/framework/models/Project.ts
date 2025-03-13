@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
 import { schema } from '@stacksjs/validation'
@@ -20,6 +19,7 @@ export default {
   attributes: {
     name: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -28,11 +28,12 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 3, max: 6 }),
+      factory: faker => faker.lorem.sentence({ min: 3, max: 6 }),
     },
 
     description: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -41,11 +42,12 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.lorem.sentence({ min: 10, max: 25 }),
+      factory: faker => faker.lorem.sentence({ min: 10, max: 25 }),
     },
 
     url: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -54,11 +56,12 @@ export default {
         },
       },
 
-      factory: (faker: Faker) => faker.internet.url(),
+      factory: faker => faker.internet.url(),
     },
 
     status: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {

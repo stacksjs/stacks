@@ -19,6 +19,7 @@ export default {
   attributes: {
     name: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string(),
         message: {
@@ -31,6 +32,7 @@ export default {
 
     token: {
       fillable: true,
+      required: true,
       unique: true,
       validation: {
         rule: schema.string().maxLength(512),
@@ -45,6 +47,7 @@ export default {
 
     plainTextToken: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.string().maxLength(512),
         message: {
@@ -58,6 +61,7 @@ export default {
 
     abilities: {
       fillable: true,
+      required: true,
       validation: {
         rule: schema.enum(['read', 'write', 'admin', 'read|write', 'read|admin', 'write|admin', 'read|write|admin']),
         message: {

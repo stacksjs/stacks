@@ -1,6 +1,5 @@
 import type { Model } from '@stacksjs/types'
 import { collect } from '@stacksjs/collections'
-import { faker } from '@stacksjs/faker'
 
 import { schema } from '@stacksjs/validation'
 
@@ -42,7 +41,7 @@ export default {
           required: 'last_four is required',
         },
       },
-      factory: () => faker.string.numeric(4),
+      factory: faker => faker.string.numeric(4),
     },
 
     brand: {
@@ -68,7 +67,7 @@ export default {
           required: 'exp_month is required',
         },
       },
-      factory: () => faker.number.int({ min: 1, max: 12 }),
+      factory: faker => faker.number.int({ min: 1, max: 12 }),
     },
 
     expYear: {
@@ -81,7 +80,7 @@ export default {
           required: 'exp_year is required',
         },
       },
-      factory: () => faker.number.int({ min: 2024, max: 2050 }),
+      factory: faker => faker.number.int({ min: 2024, max: 2050 }),
     },
     isDefault: {
       fillable: true,
@@ -98,7 +97,7 @@ export default {
           required: 'provider_id is required',
         },
       },
-      factory: () => faker.string.alphanumeric(10),
+      factory: faker => faker.string.alphanumeric(10),
     },
   },
 } satisfies Model
