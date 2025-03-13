@@ -13,5 +13,4 @@ export {
 export {
   bulkUpdate,
   update,
-  updateStatus,
 } from './update'
