@@ -20,7 +20,7 @@ export interface ProductVariantsTable {
   status: string | string[]
   uuid?: string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

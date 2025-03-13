@@ -12,7 +12,7 @@ export interface ProjectsTable {
   url: string
   status: string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

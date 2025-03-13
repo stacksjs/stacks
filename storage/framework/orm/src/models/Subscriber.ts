@@ -9,7 +9,7 @@ export interface SubscribersTable {
   id: Generated<number>
   subscribed: boolean
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

@@ -19,7 +19,7 @@ export interface TeamsTable {
   path: string
   is_personal: boolean
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

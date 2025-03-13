@@ -10,7 +10,7 @@ export interface ReleasesTable {
   name: string
   version: string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

@@ -27,7 +27,7 @@ export interface PersonalAccessTokensTable {
   device_name?: string
   is_single_use?: boolean
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

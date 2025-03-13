@@ -871,7 +871,7 @@ export async function generateModelString(
 
   if (useTimestamps) {
     fieldString += `
-        created_at: Date\n
+        created_at?: Date\n
         updated_at?: Date
       `
   }

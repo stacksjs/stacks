@@ -21,7 +21,7 @@ export interface DeploymentsTable {
   terminal_output: string
   uuid?: string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

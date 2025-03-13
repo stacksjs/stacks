@@ -13,7 +13,7 @@ export interface JobsTable {
   available_at?: number
   reserved_at?: Date | string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

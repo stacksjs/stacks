@@ -13,7 +13,7 @@ export interface FailedJobsTable {
   exception: string
   failed_at?: Date | string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 

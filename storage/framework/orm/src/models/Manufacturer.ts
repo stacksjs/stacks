@@ -16,7 +16,7 @@ export interface ManufacturersTable {
   featured?: boolean
   uuid?: string
 
-  created_at: Date
+  created_at?: Date
 
   updated_at?: Date
 
