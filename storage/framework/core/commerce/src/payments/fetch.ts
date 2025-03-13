@@ -53,8 +53,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
       db.fn.count('id').as('transaction_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('date', '>=', currentPeriodStart)
-    .where('date', '<=', today)
+    .where('created_at', '>=', currentPeriodStart)
+    .where('created_at', '<=', today)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -65,8 +65,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
       db.fn.count('id').as('transaction_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('date', '>=', previousPeriodStart)
-    .where('date', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStart)
+    .where('created_at', '<=', previousPeriodEnd)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -74,8 +74,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   const totalTransactions = await db
     .selectFrom('payments')
     .select(db.fn.count('id').as('count'))
-    .where('date', '>=', currentPeriodStart)
-    .where('date', '<=', today)
+    .where('created_at', '>=', currentPeriodStart)
+    .where('created_at', '<=', today)
     .executeTakeFirst()
 
   // Calculate current period stats
@@ -158,8 +158,8 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
       db.fn.count('id').as('total_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('date', '>=', startDate)
-    .where('date', '<=', today)
+    .where('created_at', '>=', startDate)
+    .where('created_at', '<=', today)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -173,8 +173,8 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
       db.fn.count('id').as('count'),
       db.fn.sum('amount').as('revenue'),
     ])
-    .where('date', '>=', startDate)
-    .where('date', '<=', today)
+    .where('created_at', '>=', startDate)
+    .where('created_at', '<=', today)
     .where('status', '=', 'completed')
     .groupBy('method')
     .execute()
@@ -228,7 +228,7 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
       db.fn.count('id').as('transactions'),
       db.fn.sum('amount').as('revenue'),
     ])
-    .where('date', '>=', twelveMonthsAgo)
+    .where('created_at', '>=', twelveMonthsAgo)
     .where('status', '=', 'completed')
     .groupBy(sql`year`)
     .groupBy(sql`month`)
