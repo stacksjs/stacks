@@ -40,6 +40,6 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@vinejs/vine": "^3.0.0"
+    "@vinejs/vine": "^3.0.1"
   }
 }

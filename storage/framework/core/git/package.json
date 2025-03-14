@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*",
-    "bumpp": "^10.0.3",
+    "bumpp": "^10.1.0",
     "bun-git-hooks": "^0.1.0",
     "changelogen": "^0.6.1",
     "commitizen": "^4.3.1",
