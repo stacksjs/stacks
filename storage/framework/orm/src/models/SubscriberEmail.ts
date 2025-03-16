@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscriberEmailsTable {
   id: Generated<number>
@@ -44,11 +44,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriberEmailModel {
+export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
   protected attributes = {} as SubscriberEmailJsonResponse
+  protected tableName = 'subscriber_emails'
   protected originalAttributes = {} as SubscriberEmailJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
@@ -60,6 +61,7 @@ export class SubscriberEmailModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(subscriberEmail: SubscriberEmailJsonResponse | undefined) {
+    super()
     if (subscriberEmail) {
       this.attributes = { ...subscriberEmail }
       this.originalAttributes = { ...subscriberEmail }

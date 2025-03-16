@@ -8,7 +8,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -57,11 +57,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class CustomerModel {
+export class CustomerModel extends BaseOrm<CustomerModel> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
   protected attributes = {} as CustomerJsonResponse
+  protected tableName = 'customers'
   protected originalAttributes = {} as CustomerJsonResponse
 
   protected selectFromQuery: any
@@ -73,6 +74,7 @@ export class CustomerModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(customer: CustomerJsonResponse | undefined) {
+    super()
     if (customer) {
       this.attributes = { ...customer }
       this.originalAttributes = { ...customer }

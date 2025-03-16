@@ -6,7 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Order from './Order'
 
@@ -53,11 +53,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class OrderItemModel {
+export class OrderItemModel extends BaseOrm<OrderItemModel> {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
   private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes = {} as OrderItemJsonResponse
+  protected tableName = 'order_items'
   protected originalAttributes = {} as OrderItemJsonResponse
 
   protected selectFromQuery: any
@@ -69,6 +70,7 @@ export class OrderItemModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(orderItem: OrderItemJsonResponse | undefined) {
+    super()
     if (orderItem) {
       this.attributes = { ...orderItem }
       this.originalAttributes = { ...orderItem }

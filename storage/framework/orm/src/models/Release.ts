@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ReleasesTable {
   id: Generated<number>
@@ -43,11 +43,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ReleaseModel {
+export class ReleaseModel extends BaseOrm<ReleaseModel> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
   protected attributes = {} as ReleaseJsonResponse
+  protected tableName = 'releases'
   protected originalAttributes = {} as ReleaseJsonResponse
 
   protected selectFromQuery: any
@@ -59,6 +60,7 @@ export class ReleaseModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(release: ReleaseJsonResponse | undefined) {
+    super()
     if (release) {
       this.attributes = { ...release }
       this.originalAttributes = { ...release }

@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface RequestsTable {
   id: Generated<number>
@@ -51,11 +51,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class RequestModel {
+export class RequestModel extends BaseOrm<RequestModel> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []
   protected attributes = {} as RequestJsonResponse
+  protected tableName = 'requests'
   protected originalAttributes = {} as RequestJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
@@ -67,6 +68,7 @@ export class RequestModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(request: RequestJsonResponse | undefined) {
+    super()
     if (request) {
       this.attributes = { ...request }
       this.originalAttributes = { ...request }

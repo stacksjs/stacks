@@ -5,7 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -57,11 +57,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriptionModel {
+export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
   protected attributes = {} as SubscriptionJsonResponse
+  protected tableName = 'subscriptions'
   protected originalAttributes = {} as SubscriptionJsonResponse
 
   protected selectFromQuery: any
@@ -73,6 +74,7 @@ export class SubscriptionModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(subscription: SubscriptionJsonResponse | undefined) {
+    super()
     if (subscription) {
       this.attributes = { ...subscription }
       this.originalAttributes = { ...subscription }

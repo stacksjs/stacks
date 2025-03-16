@@ -8,7 +8,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Customer from './Customer'
 
@@ -62,11 +62,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductReviewModel {
+export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   private readonly hidden: Array<keyof ProductReviewJsonResponse> = []
   private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid']
   private readonly guarded: Array<keyof ProductReviewJsonResponse> = []
   protected attributes = {} as ProductReviewJsonResponse
+  protected tableName = 'product_reviews'
   protected originalAttributes = {} as ProductReviewJsonResponse
 
   protected selectFromQuery: any
@@ -78,6 +79,7 @@ export class ProductReviewModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productReview: ProductReviewJsonResponse | undefined) {
+    super()
     if (productReview) {
       this.attributes = { ...productReview }
       this.originalAttributes = { ...productReview }

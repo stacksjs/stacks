@@ -8,7 +8,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Customer from './Customer'
 
@@ -65,11 +65,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class PaymentModel {
+export class PaymentModel extends BaseOrm<PaymentModel> {
   private readonly hidden: Array<keyof PaymentJsonResponse> = []
   private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
   private readonly guarded: Array<keyof PaymentJsonResponse> = []
   protected attributes = {} as PaymentJsonResponse
+  protected tableName = 'payments'
   protected originalAttributes = {} as PaymentJsonResponse
 
   protected selectFromQuery: any
@@ -81,6 +82,7 @@ export class PaymentModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(payment: PaymentJsonResponse | undefined) {
+    super()
     if (payment) {
       this.attributes = { ...payment }
       this.originalAttributes = { ...payment }

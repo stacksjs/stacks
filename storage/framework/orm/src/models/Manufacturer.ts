@@ -6,7 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ManufacturersTable {
   id: Generated<number>
@@ -49,11 +49,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ManufacturerModel {
+export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
   private readonly guarded: Array<keyof ManufacturerJsonResponse> = []
   protected attributes = {} as ManufacturerJsonResponse
+  protected tableName = 'manufacturers'
   protected originalAttributes = {} as ManufacturerJsonResponse
 
   protected selectFromQuery: any
@@ -65,6 +66,7 @@ export class ManufacturerModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(manufacturer: ManufacturerJsonResponse | undefined) {
+    super()
     if (manufacturer) {
       this.attributes = { ...manufacturer }
       this.originalAttributes = { ...manufacturer }

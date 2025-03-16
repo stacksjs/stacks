@@ -853,7 +853,6 @@ export async function generateModelString(
 
   jsonFields += jsonRelations
   jsonFields += `...this.customColumns,\n`
-  jsonFields += '}'
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
@@ -863,12 +862,12 @@ export async function generateModelString(
   }
 
   if (usePasskey && tableName === 'users') {
-    jsonFields += 'public_passkey: this.public_passkey\n'
+    jsonFields += 'public_passkey: this.public_passkey,\n'
     fieldString += 'public_passkey?: string \n'
   }
 
   if (useBillable && tableName === 'users') {
-    jsonFields += 'stripe_id: this.stripe_id\n'
+    jsonFields += 'stripe_id: this.stripe_id, \n'
     fieldString += 'stripe_id?: string \n'
   }
 
@@ -888,6 +887,8 @@ export async function generateModelString(
       `
   }
 
+  jsonFields += '}'
+
   const hidden = JSON.stringify(getHiddenAttributes(model.attributes))
   const fillable = JSON.stringify(getFillableAttributes(model, otherModelRelations))
   const guarded = JSON.stringify(getGuardedAttributes(model))
@@ -895,7 +896,7 @@ export async function generateModelString(
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
-      import { DB, SubqueryBuilder } from '@stacksjs/orm'
+      import { DB, BaseOrm, SubqueryBuilder } from '@stacksjs/orm'
       import type { Operator } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
@@ -909,7 +910,7 @@ export async function generateModelString(
   
       export interface ${formattedTableName}Table {
         id: Generated<number>
-       ${fieldString}
+        ${fieldString}
       }
   
       export interface ${modelName}Response {
@@ -939,11 +940,12 @@ export async function generateModelString(
         page?: number
       }
   
-      export class ${modelName}Model {
+      export class ${modelName}Model extends BaseOrm<${modelName}Model> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
         protected attributes = {} as ${modelName}JsonResponse
+        protected tableName = '${tableName}'
         protected originalAttributes = {} as ${modelName}JsonResponse
         ${privateSoftDeletes}
         protected selectFromQuery: any
@@ -955,6 +957,7 @@ export async function generateModelString(
         private customColumns: Record<string, unknown> = {}
        
         constructor(${formattedModelName}: ${modelName}JsonResponse | undefined) {
+          super()
           if (${formattedModelName}) {
 
             this.attributes = { ...${formattedModelName} }

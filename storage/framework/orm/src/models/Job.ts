@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface JobsTable {
   id: Generated<number>
@@ -46,11 +46,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class JobModel {
+export class JobModel extends BaseOrm<JobModel> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
   protected attributes = {} as JobJsonResponse
+  protected tableName = 'jobs'
   protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
@@ -62,6 +63,7 @@ export class JobModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(job: JobJsonResponse | undefined) {
+    super()
     if (job) {
       this.attributes = { ...job }
       this.originalAttributes = { ...job }

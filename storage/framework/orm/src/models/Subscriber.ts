@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface SubscribersTable {
   id: Generated<number>
@@ -42,11 +42,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriberModel {
+export class SubscriberModel extends BaseOrm<SubscriberModel> {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
   protected attributes = {} as SubscriberJsonResponse
+  protected tableName = 'subscribers'
   protected originalAttributes = {} as SubscriberJsonResponse
 
   protected selectFromQuery: any
@@ -58,6 +59,7 @@ export class SubscriberModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(subscriber: SubscriberJsonResponse | undefined) {
+    super()
     if (subscriber) {
       this.attributes = { ...subscriber }
       this.originalAttributes = { ...subscriber }

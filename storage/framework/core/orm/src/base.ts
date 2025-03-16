@@ -1,10 +1,10 @@
 import { cache } from '@stacksjs/cache'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
-export class BaseOrm {
+export class BaseOrm<T> {
   // Method to find a record by ID
-  static async find<T>(tableName: string, id: number): Promise<T | undefined> {
+  // The protected helper method that does the actual work
+  protected async applyFind(tableName: string, id: number): Promise<T | undefined> {
     const model = await DB.instance.selectFrom(tableName)
       .where('id', '=', id)
       .selectAll()
@@ -13,24 +13,22 @@ export class BaseOrm {
     if (!model)
       return undefined
 
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
     cache.getOrSet(`${tableName}:${id}`, JSON.stringify(model))
 
-    return model as T
+    return model
   }
 
-  // Method to find a record by ID or fail
-  static async findOrFail<T>(tableName: string, modelName: string, id: number): Promise<T> {
-    const model = await DB.instance.selectFrom(tableName)
-      .where('id', '=', id)
-      .selectAll()
-      .executeTakeFirst()
+  // Methods to be implemented by child classes
+  protected mapCustomGetters(model: any): void {
+    // Child classes will override this
+  }
 
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ${modelName} results for ${id}`)
-
-    cache.getOrSet(`${tableName}:${id}`, JSON.stringify(model))
-
-    return model as T
+  protected async loadRelations(model: any): Promise<void> {
+    // Child classes will override this
   }
 
   // // Method to get the first record

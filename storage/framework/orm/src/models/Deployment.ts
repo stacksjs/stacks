@@ -5,7 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -54,11 +54,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class DeploymentModel {
+export class DeploymentModel extends BaseOrm<DeploymentModel> {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DeploymentJsonResponse> = []
   protected attributes = {} as DeploymentJsonResponse
+  protected tableName = 'deployments'
   protected originalAttributes = {} as DeploymentJsonResponse
 
   protected selectFromQuery: any
@@ -70,6 +71,7 @@ export class DeploymentModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(deployment: DeploymentJsonResponse | undefined) {
+    super()
     if (deployment) {
       this.attributes = { ...deployment }
       this.originalAttributes = { ...deployment }

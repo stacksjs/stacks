@@ -8,7 +8,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Manufacturer from './Manufacturer'
 
@@ -63,11 +63,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductModel {
+export class ProductModel extends BaseOrm<ProductModel> {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'manufacturer_id', 'product_category_id']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
   protected attributes = {} as ProductJsonResponse
+  protected tableName = 'products'
   protected originalAttributes = {} as ProductJsonResponse
 
   protected selectFromQuery: any
@@ -79,6 +80,7 @@ export class ProductModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(product: ProductJsonResponse | undefined) {
+    super()
     if (product) {
       this.attributes = { ...product }
       this.originalAttributes = { ...product }

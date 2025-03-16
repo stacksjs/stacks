@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
   id: Generated<number>
@@ -46,11 +46,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class FailedJobModel {
+export class FailedJobModel extends BaseOrm<FailedJobModel> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
   protected attributes = {} as FailedJobJsonResponse
+  protected tableName = 'failed_jobs'
   protected originalAttributes = {} as FailedJobJsonResponse
 
   protected selectFromQuery: any
@@ -62,6 +63,7 @@ export class FailedJobModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(failedJob: FailedJobJsonResponse | undefined) {
+    super()
     if (failedJob) {
       this.attributes = { ...failedJob }
       this.originalAttributes = { ...failedJob }

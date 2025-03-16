@@ -13,6 +13,7 @@
 // }
 
 export * from '../../../orm/src/types'
+export * from './base'
 export * from './db'
 export * from './requests'
 export * from './subquery'

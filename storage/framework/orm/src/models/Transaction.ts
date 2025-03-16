@@ -6,7 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Order from './Order'
 
@@ -55,11 +55,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class TransactionModel {
+export class TransactionModel extends BaseOrm<TransactionModel> {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
   protected attributes = {} as TransactionJsonResponse
+  protected tableName = 'transactions'
   protected originalAttributes = {} as TransactionJsonResponse
 
   protected selectFromQuery: any
@@ -71,6 +72,7 @@ export class TransactionModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(transaction: TransactionJsonResponse | undefined) {
+    super()
     if (transaction) {
       this.attributes = { ...transaction }
       this.originalAttributes = { ...transaction }

@@ -4,7 +4,7 @@ import type { AccessTokenModel } from './AccessToken'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -52,11 +52,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class TeamModel {
+export class TeamModel extends BaseOrm<TeamModel> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
   protected attributes = {} as TeamJsonResponse
+  protected tableName = 'teams'
   protected originalAttributes = {} as TeamJsonResponse
 
   protected selectFromQuery: any
@@ -68,6 +69,7 @@ export class TeamModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(team: TeamJsonResponse | undefined) {
+    super()
     if (team) {
       this.attributes = { ...team }
       this.originalAttributes = { ...team }

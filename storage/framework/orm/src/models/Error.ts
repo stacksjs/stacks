@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ErrorsTable {
   id: Generated<number>
@@ -46,11 +46,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ErrorModel {
+export class ErrorModel extends BaseOrm<ErrorModel> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
   protected attributes = {} as ErrorJsonResponse
+  protected tableName = 'errors'
   protected originalAttributes = {} as ErrorJsonResponse
 
   protected selectFromQuery: any
@@ -62,6 +63,7 @@ export class ErrorModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(error: ErrorJsonResponse | undefined) {
+    super()
     if (error) {
       this.attributes = { ...error }
       this.originalAttributes = { ...error }

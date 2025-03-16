@@ -6,7 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Product from './Product'
 
@@ -57,11 +57,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class LoyaltyRewardModel {
+export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyRewardJsonResponse> = ['name', 'description', 'points_required', 'reward_type', 'discount_percentage', 'free_product_id', 'is_active', 'expiry_days', 'image_url', 'uuid']
   private readonly guarded: Array<keyof LoyaltyRewardJsonResponse> = []
   protected attributes = {} as LoyaltyRewardJsonResponse
+  protected tableName = 'loyalty_rewards'
   protected originalAttributes = {} as LoyaltyRewardJsonResponse
 
   protected selectFromQuery: any
@@ -73,6 +74,7 @@ export class LoyaltyRewardModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(loyaltyReward: LoyaltyRewardJsonResponse | undefined) {
+    super()
     if (loyaltyReward) {
       this.attributes = { ...loyaltyReward }
       this.originalAttributes = { ...loyaltyReward }

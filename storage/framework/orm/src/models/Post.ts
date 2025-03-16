@@ -4,7 +4,7 @@ import type { UserModel } from './User'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import User from './User'
 
@@ -47,11 +47,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class PostModel {
+export class PostModel extends BaseOrm<PostModel> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
+  protected tableName = 'posts'
   protected originalAttributes = {} as PostJsonResponse
 
   protected selectFromQuery: any
@@ -63,6 +64,7 @@ export class PostModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(post: PostJsonResponse | undefined) {
+    super()
     if (post) {
       this.attributes = { ...post }
       this.originalAttributes = { ...post }

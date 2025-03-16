@@ -8,7 +8,7 @@ import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 import Product from './Product'
 
@@ -64,11 +64,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class CouponModel {
+export class CouponModel extends BaseOrm<CouponModel> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
   protected attributes = {} as CouponJsonResponse
+  protected tableName = 'coupons'
   protected originalAttributes = {} as CouponJsonResponse
 
   protected selectFromQuery: any
@@ -80,6 +81,7 @@ export class CouponModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(coupon: CouponJsonResponse | undefined) {
+    super()
     if (coupon) {
       this.attributes = { ...coupon }
       this.originalAttributes = { ...coupon }

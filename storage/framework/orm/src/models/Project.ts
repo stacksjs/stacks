@@ -3,7 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProjectsTable {
   id: Generated<number>
@@ -45,11 +45,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProjectModel {
+export class ProjectModel extends BaseOrm<ProjectModel> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
   protected attributes = {} as ProjectJsonResponse
+  protected tableName = 'projects'
   protected originalAttributes = {} as ProjectJsonResponse
 
   protected selectFromQuery: any
@@ -61,6 +62,7 @@ export class ProjectModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(project: ProjectJsonResponse | undefined) {
+    super()
     if (project) {
       this.attributes = { ...project }
       this.originalAttributes = { ...project }

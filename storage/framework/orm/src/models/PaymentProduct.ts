@@ -4,7 +4,7 @@ import { randomUUIDv7 } from 'bun'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
   id: Generated<number>
@@ -50,11 +50,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class PaymentProductModel {
+export class PaymentProductModel extends BaseOrm<PaymentProductModel> {
   private readonly hidden: Array<keyof PaymentProductJsonResponse> = []
   private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []
   protected attributes = {} as PaymentProductJsonResponse
+  protected tableName = 'payment_products'
   protected originalAttributes = {} as PaymentProductJsonResponse
 
   protected selectFromQuery: any
@@ -66,6 +67,7 @@ export class PaymentProductModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(paymentProduct: PaymentProductJsonResponse | undefined) {
+    super()
     if (paymentProduct) {
       this.attributes = { ...paymentProduct }
       this.originalAttributes = { ...paymentProduct }

@@ -6,7 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { DB, SubqueryBuilder } from '@stacksjs/orm'
+import { BaseOrm, DB, SubqueryBuilder } from '@stacksjs/orm'
 
 export interface ProductCategoriesTable {
   id: Generated<number>
@@ -51,11 +51,12 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductCategoryModel {
+export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
   private readonly hidden: Array<keyof ProductCategoryJsonResponse> = []
   private readonly fillable: Array<keyof ProductCategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof ProductCategoryJsonResponse> = []
   protected attributes = {} as ProductCategoryJsonResponse
+  protected tableName = 'product_categories'
   protected originalAttributes = {} as ProductCategoryJsonResponse
 
   protected selectFromQuery: any
@@ -67,6 +68,7 @@ export class ProductCategoryModel {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productCategory: ProductCategoryJsonResponse | undefined) {
+    super()
     if (productCategory) {
       this.attributes = { ...productCategory }
       this.originalAttributes = { ...productCategory }
