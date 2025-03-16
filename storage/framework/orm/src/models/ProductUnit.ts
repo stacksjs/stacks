@@ -274,7 +274,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
   }
 
   async first(): Promise<ProductUnitModel | undefined> {
-    let model: ProductUnitJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

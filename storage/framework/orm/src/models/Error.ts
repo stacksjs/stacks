@@ -251,7 +251,7 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
   }
 
   async first(): Promise<ErrorModel | undefined> {
-    let model: ErrorJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

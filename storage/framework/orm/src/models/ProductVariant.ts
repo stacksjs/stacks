@@ -274,7 +274,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
   }
 
   async first(): Promise<ProductVariantModel | undefined> {
-    let model: ProductVariantJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

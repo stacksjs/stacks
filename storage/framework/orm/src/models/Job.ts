@@ -251,7 +251,7 @@ export class JobModel extends BaseOrm<JobModel> {
   }
 
   async first(): Promise<JobModel | undefined> {
-    let model: JobJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

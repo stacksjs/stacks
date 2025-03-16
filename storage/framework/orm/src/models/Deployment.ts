@@ -291,7 +291,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    let model: DeploymentJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

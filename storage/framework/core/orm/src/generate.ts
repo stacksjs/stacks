@@ -1096,7 +1096,7 @@ export async function generateModelString(
         }
 
         async first(): Promise<${modelName}Model | undefined> {
-          let model: ${modelName}JsonResponse | undefined
+          let model
 
           if (this.hasSelect) {
             model = await this.selectFromQuery.executeTakeFirst()

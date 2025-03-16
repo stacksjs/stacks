@@ -288,7 +288,7 @@ export class RequestModel extends BaseOrm<RequestModel> {
   }
 
   async first(): Promise<RequestModel | undefined> {
-    let model: RequestJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

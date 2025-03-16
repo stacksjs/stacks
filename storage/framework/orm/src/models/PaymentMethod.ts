@@ -297,7 +297,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel> {
   }
 
   async first(): Promise<PaymentMethodModel | undefined> {
-    let model: PaymentMethodJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

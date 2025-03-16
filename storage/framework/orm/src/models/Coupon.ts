@@ -361,7 +361,7 @@ export class CouponModel extends BaseOrm<CouponModel> {
   }
 
   async first(): Promise<CouponModel | undefined> {
-    let model: CouponJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

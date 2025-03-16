@@ -292,7 +292,7 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
   }
 
   async first(): Promise<TransactionModel | undefined> {
-    let model: TransactionJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

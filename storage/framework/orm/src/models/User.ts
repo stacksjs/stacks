@@ -321,7 +321,7 @@ export class UserModel extends BaseOrm<UserModel> {
   }
 
   async first(): Promise<UserModel | undefined> {
-    let model: UserJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

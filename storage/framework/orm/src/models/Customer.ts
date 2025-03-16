@@ -306,7 +306,7 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
   }
 
   async first(): Promise<CustomerModel | undefined> {
-    let model: CustomerJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

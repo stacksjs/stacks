@@ -321,7 +321,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    let model: AccessTokenJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

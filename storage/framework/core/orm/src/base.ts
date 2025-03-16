@@ -8,7 +8,6 @@ export class BaseOrm<T> {
     this.tableName = tableName
   }
 
-  // Method to find a record by ID
   // The protected helper method that does the actual work
   protected async applyFind(id: number): Promise<T | undefined> {
     const model = await DB.instance.selectFrom(this.tableName)
@@ -34,7 +33,7 @@ export class BaseOrm<T> {
 
   // Methods to be implemented by child classes
   protected mapCustomGetters(model: any): void {
-    
+
   }
 
   protected async loadRelations(model: any): Promise<void> {

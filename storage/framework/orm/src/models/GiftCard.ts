@@ -370,7 +370,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel> {
   }
 
   async first(): Promise<GiftCardModel | undefined> {
-    let model: GiftCardJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

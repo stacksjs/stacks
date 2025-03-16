@@ -258,7 +258,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel> {
   }
 
   async first(): Promise<OrderItemModel | undefined> {
-    let model: OrderItemJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

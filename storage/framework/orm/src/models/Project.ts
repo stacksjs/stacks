@@ -242,7 +242,7 @@ export class ProjectModel extends BaseOrm<ProjectModel> {
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    let model: ProjectJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

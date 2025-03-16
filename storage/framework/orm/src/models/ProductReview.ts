@@ -323,7 +323,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   }
 
   async first(): Promise<ProductReviewModel | undefined> {
-    let model: ProductReviewJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

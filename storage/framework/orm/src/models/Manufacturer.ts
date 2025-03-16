@@ -258,7 +258,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   }
 
   async first(): Promise<ManufacturerModel | undefined> {
-    let model: ManufacturerJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

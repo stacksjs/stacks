@@ -225,7 +225,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    let model: SubscriberEmailJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

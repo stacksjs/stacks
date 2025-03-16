@@ -236,7 +236,7 @@ export class PostModel extends BaseOrm<PostModel> {
   }
 
   async first(): Promise<PostModel | undefined> {
-    let model: PostJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

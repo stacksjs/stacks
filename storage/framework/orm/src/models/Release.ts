@@ -224,7 +224,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
   }
 
   async first(): Promise<ReleaseModel | undefined> {
-    let model: ReleaseJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

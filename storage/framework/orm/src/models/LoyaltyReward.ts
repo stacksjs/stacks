@@ -310,7 +310,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
   }
 
   async first(): Promise<LoyaltyRewardModel | undefined> {
-    let model: LoyaltyRewardJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()

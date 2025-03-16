@@ -285,7 +285,7 @@ export class TeamModel extends BaseOrm<TeamModel> {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    let model: TeamJsonResponse | undefined
+    let model
 
     if (this.hasSelect) {
       model = await this.selectFromQuery.executeTakeFirst()
