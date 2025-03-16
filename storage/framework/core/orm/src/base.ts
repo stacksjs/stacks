@@ -6,12 +6,16 @@ export class BaseOrm<T, C> {
   protected tableName: string
 
   protected selectFromQuery: any
+  protected updateFromQuery: any
+  protected deleteFromQuery: any
   protected hasSelect: boolean = false
 
   constructor(tableName: string) {
     this.tableName = tableName
 
     this.selectFromQuery = DB.instance.selectFrom(this.tableName)
+    this.updateFromQuery = DB.instance.updateTable(this.tableName)
+    this.deleteFromQuery = DB.instance.deleteFrom(this.tableName)
   }
 
   // The protected helper method that does the actual work
@@ -51,7 +55,7 @@ export class BaseOrm<T, C> {
     return model
   }
 
-  applyWhere<V>(column: keyof C, ...args: [V] | [Operator, V]): T {
+  applyWhere<V>(column: keyof C, ...args: [V] | [Operator, V]): this {
     if (args.length === 1) {
       const [value] = args
       this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
@@ -66,6 +70,10 @@ export class BaseOrm<T, C> {
     }
 
     return this
+  }
+
+  where<V = string>(column: keyof C, ...args: [V] | [Operator, V]): this {
+    return this.applyWhere<V>(column, ...args)
   }
 
   async find(id: number): Promise<T | undefined> {

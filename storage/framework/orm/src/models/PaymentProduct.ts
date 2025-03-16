@@ -910,27 +910,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .execute()
   }
 
-  applyWhere<V>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]): PaymentProductModel {
-    if (args.length === 1) {
-      const [value] = args
-      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-    }
-    else {
-      const [operator, value] = args as [Operator, V]
-      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-    }
-
-    return this
-  }
-
-  where<V = string>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]): PaymentProductModel {
-    return this.applyWhere<V>(column, ...args)
-  }
-
   static where<V = string>(column: keyof PaymentProductsTable, ...args: [V] | [Operator, V]): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 

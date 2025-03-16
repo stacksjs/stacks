@@ -1739,26 +1739,6 @@ export async function generateModelString(
             .where('id', '=', id)
             .execute()
         }
-  
-        applyWhere<V>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
-          if (args.length === 1) {
-            const [value] = args
-            this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-            this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-            this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-          } else {
-            const [operator, value] = args as [Operator, V]
-            this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-            this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-            this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-          }
-
-          return this
-        }
-
-        where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
-          return this.applyWhere<V>(column, ...args)
-        }
 
         static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)

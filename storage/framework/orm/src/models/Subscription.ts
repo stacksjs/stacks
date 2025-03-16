@@ -949,27 +949,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .execute()
   }
 
-  applyWhere<V>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
-    if (args.length === 1) {
-      const [value] = args
-      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-    }
-    else {
-      const [operator, value] = args as [Operator, V]
-      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-    }
-
-    return this
-  }
-
-  where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
-    return this.applyWhere<V>(column, ...args)
-  }
-
   static where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 

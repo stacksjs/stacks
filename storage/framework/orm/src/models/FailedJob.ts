@@ -878,27 +878,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
       .execute()
   }
 
-  applyWhere<V>(column: keyof FailedJobsTable, ...args: [V] | [Operator, V]): FailedJobModel {
-    if (args.length === 1) {
-      const [value] = args
-      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-    }
-    else {
-      const [operator, value] = args as [Operator, V]
-      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-    }
-
-    return this
-  }
-
-  where<V = string>(column: keyof FailedJobsTable, ...args: [V] | [Operator, V]): FailedJobModel {
-    return this.applyWhere<V>(column, ...args)
-  }
-
   static where<V = string>(column: keyof FailedJobsTable, ...args: [V] | [Operator, V]): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 

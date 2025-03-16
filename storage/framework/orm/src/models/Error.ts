@@ -878,27 +878,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
       .execute()
   }
 
-  applyWhere<V>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]): ErrorModel {
-    if (args.length === 1) {
-      const [value] = args
-      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-    }
-    else {
-      const [operator, value] = args as [Operator, V]
-      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-    }
-
-    return this
-  }
-
-  where<V = string>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]): ErrorModel {
-    return this.applyWhere<V>(column, ...args)
-  }
-
   static where<V = string>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]): ErrorModel {
     const instance = new ErrorModel(undefined)
 

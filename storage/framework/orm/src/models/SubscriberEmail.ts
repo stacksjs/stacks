@@ -871,27 +871,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
       .execute()
   }
 
-  applyWhere<V>(column: keyof SubscriberEmailsTable, ...args: [V] | [Operator, V]): SubscriberEmailModel {
-    if (args.length === 1) {
-      const [value] = args
-      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
-      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
-    }
-    else {
-      const [operator, value] = args as [Operator, V]
-      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
-      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
-      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
-    }
-
-    return this
-  }
-
-  where<V = string>(column: keyof SubscriberEmailsTable, ...args: [V] | [Operator, V]): SubscriberEmailModel {
-    return this.applyWhere<V>(column, ...args)
-  }
-
   static where<V = string>(column: keyof SubscriberEmailsTable, ...args: [V] | [Operator, V]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
