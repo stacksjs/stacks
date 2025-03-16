@@ -70,7 +70,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
   protected originalAttributes = {} as ProductReviewJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1277,12 +1276,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     }
   }
 
-  with(relations: string[]): ProductReviewModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
@@ -1292,19 +1285,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
   }
 
   async last(): Promise<ProductReviewModel | undefined> {
-    let model: ProductReviewJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new ProductReviewModel(model)
 
@@ -1312,7 +1293,9 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
   }
 
   static async last(): Promise<ProductReviewModel | undefined> {
-    const model = await DB.instance.selectFrom('product_reviews').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new ProductReviewModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1322,46 +1305,22 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return data
   }
 
-  orderBy(column: keyof ProductReviewsTable, order: 'asc' | 'desc'): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof ProductReviewsTable, order: 'asc' | 'desc'): ProductReviewModel {
-    const instance = new ProductReviewModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ProductReviewsTable): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof ProductReviewsTable): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof ProductReviewsTable, operator: Operator, value: V): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof ProductReviewsTable, operator: Operator, value: V): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): ProductReviewModel {

@@ -10,6 +10,7 @@ export class BaseOrm<T, C> {
   protected selectFromQuery: any
   protected updateFromQuery: any
   protected deleteFromQuery: any
+  protected withRelations: string[]
   protected hasSelect: boolean = false
 
   constructor(tableName: string) {
@@ -18,6 +19,8 @@ export class BaseOrm<T, C> {
     this.selectFromQuery = DB.instance.selectFrom(this.tableName)
     this.updateFromQuery = DB.instance.updateTable(this.tableName)
     this.deleteFromQuery = DB.instance.deleteFrom(this.tableName)
+
+    this.withRelations = []
   }
 
   // The protected helper method that does the actual work
@@ -252,6 +255,73 @@ export class BaseOrm<T, C> {
 
   whereNotIn<V>(column: keyof C, values: V[]): this {
     return this.applyWhereNotIn<V>(column, values)
+  }
+
+  async exists(): Promise<boolean> {
+    let model
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    return model !== null && model !== undefined
+  }
+
+  with(relations: string[]): this {
+    this.withRelations = relations
+
+    return this
+  }
+
+  async applyLast(): Promise<T | undefined> {
+    let model
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
+    }
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    return model
+  }
+
+  applyOrderBy(column: keyof C, order: 'asc' | 'desc'): this {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
+
+    return this
+  }
+
+  orderBy(column: keyof C, order: 'asc' | 'desc'): this {
+    return this.orderBy(column, order)
+  }
+
+  applyGroupBy(column: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.groupBy(column)
+
+    return this
+  }
+
+  groupBy(column: keyof C): this {
+    return this.applyGroupBy(column)
+  }
+
+  applyHaving<V = string>(column: keyof C, operator: Operator, value: V): this {
+    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
+
+    return this
+  }
+
+  having<V = string>(column: keyof C, operator: Operator, value: V): this {
+    return this.applyHaving<V>(column, operator, value)
   }
 
   // Methods to be implemented by child classes

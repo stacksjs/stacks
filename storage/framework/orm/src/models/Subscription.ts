@@ -65,7 +65,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   protected originalAttributes = {} as SubscriptionJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1267,12 +1266,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     }
   }
 
-  with(relations: string[]): SubscriptionModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
@@ -1282,19 +1275,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   }
 
   async last(): Promise<SubscriptionModel | undefined> {
-    let model: SubscriptionJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new SubscriptionModel(model)
 
@@ -1302,7 +1283,9 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   }
 
   static async last(): Promise<SubscriptionModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriptions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new SubscriptionModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1312,46 +1295,22 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return data
   }
 
-  orderBy(column: keyof SubscriptionsTable, order: 'asc' | 'desc'): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof SubscriptionsTable, order: 'asc' | 'desc'): SubscriptionModel {
-    const instance = new SubscriptionModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof SubscriptionsTable): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof SubscriptionsTable): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof SubscriptionsTable, operator: Operator, value: V): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): SubscriptionModel {

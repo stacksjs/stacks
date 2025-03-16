@@ -55,7 +55,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
   protected originalAttributes = {} as PostJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1117,12 +1116,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
     }
   }
 
-  with(relations: string[]): PostModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): PostModel {
     const instance = new PostModel(undefined)
 
@@ -1132,19 +1125,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
   }
 
   async last(): Promise<PostModel | undefined> {
-    let model: PostJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new PostModel(model)
 
@@ -1152,7 +1133,9 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
   }
 
   static async last(): Promise<PostModel | undefined> {
-    const model = await DB.instance.selectFrom('posts').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new PostModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1162,46 +1145,22 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
     return data
   }
 
-  orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
-    const instance = new PostModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof PostsTable): PostModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof PostsTable): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): PostModel {

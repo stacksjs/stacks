@@ -58,7 +58,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   protected originalAttributes = {} as PaymentProductJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1204,12 +1203,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     }
   }
 
-  with(relations: string[]): PaymentProductModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
@@ -1219,19 +1212,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   }
 
   async last(): Promise<PaymentProductModel | undefined> {
-    let model: PaymentProductJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new PaymentProductModel(model)
 
@@ -1239,7 +1220,9 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   }
 
   static async last(): Promise<PaymentProductModel | undefined> {
-    const model = await DB.instance.selectFrom('payment_products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new PaymentProductModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1249,46 +1232,22 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return data
   }
 
-  orderBy(column: keyof PaymentProductsTable, order: 'asc' | 'desc'): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof PaymentProductsTable, order: 'asc' | 'desc'): PaymentProductModel {
-    const instance = new PaymentProductModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof PaymentProductsTable): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof PaymentProductsTable): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof PaymentProductsTable, operator: Operator, value: V): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof PaymentProductsTable, operator: Operator, value: V): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): PaymentProductModel {

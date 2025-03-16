@@ -71,7 +71,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
   protected originalAttributes = {} as ProductJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1294,12 +1293,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
     }
   }
 
-  with(relations: string[]): ProductModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): ProductModel {
     const instance = new ProductModel(undefined)
 
@@ -1309,19 +1302,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
   }
 
   async last(): Promise<ProductModel | undefined> {
-    let model: ProductJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new ProductModel(model)
 
@@ -1329,7 +1310,9 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
   }
 
   static async last(): Promise<ProductModel | undefined> {
-    const model = await DB.instance.selectFrom('products').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new ProductModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1339,46 +1322,22 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
     return data
   }
 
-  orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
-    const instance = new ProductModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ProductsTable): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
     const instance = new ProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): ProductModel {

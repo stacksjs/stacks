@@ -63,7 +63,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   protected originalAttributes = {} as TransactionJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1230,12 +1229,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     }
   }
 
-  with(relations: string[]): TransactionModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): TransactionModel {
     const instance = new TransactionModel(undefined)
 
@@ -1245,19 +1238,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   }
 
   async last(): Promise<TransactionModel | undefined> {
-    let model: TransactionJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new TransactionModel(model)
 
@@ -1265,7 +1246,9 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   }
 
   static async last(): Promise<TransactionModel | undefined> {
-    const model = await DB.instance.selectFrom('transactions').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new TransactionModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1275,46 +1258,22 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return data
   }
 
-  orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
-    const instance = new TransactionModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof TransactionsTable): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): TransactionModel {

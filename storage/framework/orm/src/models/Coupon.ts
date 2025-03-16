@@ -72,7 +72,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
   protected originalAttributes = {} as CouponJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1355,12 +1354,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
     }
   }
 
-  with(relations: string[]): CouponModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): CouponModel {
     const instance = new CouponModel(undefined)
 
@@ -1370,19 +1363,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
   }
 
   async last(): Promise<CouponModel | undefined> {
-    let model: CouponJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new CouponModel(model)
 
@@ -1390,7 +1371,9 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
   }
 
   static async last(): Promise<CouponModel | undefined> {
-    const model = await DB.instance.selectFrom('coupons').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new CouponModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1400,46 +1383,22 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
     return data
   }
 
-  orderBy(column: keyof CouponsTable, order: 'asc' | 'desc'): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof CouponsTable, order: 'asc' | 'desc'): CouponModel {
-    const instance = new CouponModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof CouponsTable): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof CouponsTable): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof CouponsTable, operator: Operator, value: V): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof CouponsTable, operator: Operator, value: V): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): CouponModel {

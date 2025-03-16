@@ -68,7 +68,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   protected originalAttributes = {} as AccessTokenJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1266,12 +1265,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
   }
 
-  with(relations: string[]): AccessTokenModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
@@ -1281,19 +1274,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   }
 
   async last(): Promise<AccessTokenModel | undefined> {
-    let model: AccessTokenJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new AccessTokenModel(model)
 
@@ -1301,7 +1282,9 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   }
 
   static async last(): Promise<AccessTokenModel | undefined> {
-    const model = await DB.instance.selectFrom('personal_access_tokens').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new AccessTokenModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1311,46 +1294,22 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return data
   }
 
-  orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): AccessTokenModel {

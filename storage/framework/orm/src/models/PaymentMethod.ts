@@ -64,7 +64,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   protected originalAttributes = {} as PaymentMethodJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1222,12 +1221,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     }
   }
 
-  with(relations: string[]): PaymentMethodModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
@@ -1237,19 +1230,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   }
 
   async last(): Promise<PaymentMethodModel | undefined> {
-    let model: PaymentMethodJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new PaymentMethodModel(model)
 
@@ -1257,7 +1238,9 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
   }
 
   static async last(): Promise<PaymentMethodModel | undefined> {
-    const model = await DB.instance.selectFrom('payment_methods').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new PaymentMethodModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1267,46 +1250,22 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return data
   }
 
-  orderBy(column: keyof PaymentMethodsTable, order: 'asc' | 'desc'): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof PaymentMethodsTable, order: 'asc' | 'desc'): PaymentMethodModel {
-    const instance = new PaymentMethodModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof PaymentMethodsTable): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof PaymentMethodsTable): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof PaymentMethodsTable, operator: Operator, value: V): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof PaymentMethodsTable, operator: Operator, value: V): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): PaymentMethodModel {

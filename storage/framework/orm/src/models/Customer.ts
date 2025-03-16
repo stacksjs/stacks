@@ -65,7 +65,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
   protected originalAttributes = {} as CustomerJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1244,12 +1243,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
     }
   }
 
-  with(relations: string[]): CustomerModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): CustomerModel {
     const instance = new CustomerModel(undefined)
 
@@ -1259,19 +1252,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
   }
 
   async last(): Promise<CustomerModel | undefined> {
-    let model: CustomerJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new CustomerModel(model)
 
@@ -1279,7 +1260,9 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
   }
 
   static async last(): Promise<CustomerModel | undefined> {
-    const model = await DB.instance.selectFrom('customers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new CustomerModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1289,46 +1272,22 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
     return data
   }
 
-  orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
-    const instance = new CustomerModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof CustomersTable): CustomerModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof CustomersTable): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): CustomerModel {

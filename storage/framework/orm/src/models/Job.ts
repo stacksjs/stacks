@@ -54,7 +54,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
   protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1156,12 +1155,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
     }
   }
 
-  with(relations: string[]): JobModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): JobModel {
     const instance = new JobModel(undefined)
 
@@ -1171,19 +1164,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
   }
 
   async last(): Promise<JobModel | undefined> {
-    let model: JobJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new JobModel(model)
 
@@ -1191,7 +1172,9 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
   }
 
   static async last(): Promise<JobModel | undefined> {
-    const model = await DB.instance.selectFrom('jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new JobModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1201,46 +1184,22 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
     return data
   }
 
-  orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
-    const instance = new JobModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof JobsTable): JobModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof JobsTable): JobModel {
     const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
     const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): JobModel {

@@ -948,7 +948,6 @@ export async function generateModelString(
         protected originalAttributes = {} as ${modelName}JsonResponse
         ${privateSoftDeletes}
         protected selectFromQuery: any
-        protected withRelations: string[]
         protected updateFromQuery: any
         protected deleteFromQuery: any
         protected hasSelect: boolean
@@ -1977,12 +1976,6 @@ export async function generateModelString(
           }
         }
   
-        with(relations: string[]): ${modelName}Model {
-          this.withRelations = relations
-            
-          return this
-        }
-  
         static with(relations: string[]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
     
@@ -1992,19 +1985,7 @@ export async function generateModelString(
         }
   
         async last(): Promise<${modelName}Model | undefined> {
-          let model: ${modelName}JsonResponse | undefined
-
-          if (this.hasSelect) {
-            model = await this.selectFromQuery.executeTakeFirst()
-          }
-          else {
-            model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-          }
-
-          if (model) {
-            this.mapCustomGetters(model)
-            await this.loadRelations(model)
-          }
+          const model = await this.applyLast()
 
           const data = new ${modelName}Model(model)
   
@@ -2012,7 +1993,9 @@ export async function generateModelString(
         }
   
         static async last(): Promise<${modelName}Model | undefined> {
-          const model = await DB.instance.selectFrom('${tableName}').selectAll().orderBy('id', 'desc').executeTakeFirst()
+          const instance = new ${modelName}Model(undefined)
+
+          const model = await instance.applyLast()
   
           if (!model)
             return undefined
@@ -2022,46 +2005,22 @@ export async function generateModelString(
           return data
         }
 
-        orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-  
-          return this
-        }
-  
         static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
-          const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-  
-          return instance
+          const instance = new UserModel(undefined)
+
+          return instance.applyOrderBy(column, order)
         }
 
-        groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.groupBy(column)
-  
-          return this
-        }
-  
         static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-  
-          return instance
-        }
 
-        having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-  
-          return this
+          return instance.applyGroupBy(column)
         }
 
         static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-  
-          return instance
+
+          return instance.applyHaving(column, operator, value)
         }
 
         inRandomOrder(): ${modelName}Model {

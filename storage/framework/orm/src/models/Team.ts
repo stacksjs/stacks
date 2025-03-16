@@ -62,7 +62,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
   protected originalAttributes = {} as TeamJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1216,12 +1215,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
     }
   }
 
-  with(relations: string[]): TeamModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): TeamModel {
     const instance = new TeamModel(undefined)
 
@@ -1231,19 +1224,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
   }
 
   async last(): Promise<TeamModel | undefined> {
-    let model: TeamJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new TeamModel(model)
 
@@ -1251,7 +1232,9 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
   }
 
   static async last(): Promise<TeamModel | undefined> {
-    const model = await DB.instance.selectFrom('teams').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new TeamModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1261,46 +1244,22 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
     return data
   }
 
-  orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof TeamsTable, order: 'asc' | 'desc'): TeamModel {
-    const instance = new TeamModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof TeamsTable): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof TeamsTable): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): TeamModel {

@@ -51,7 +51,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
   protected originalAttributes = {} as ReleaseJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1105,12 +1104,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     }
   }
 
-  with(relations: string[]): ReleaseModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
@@ -1120,19 +1113,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
   }
 
   async last(): Promise<ReleaseModel | undefined> {
-    let model: ReleaseJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new ReleaseModel(model)
 
@@ -1140,7 +1121,9 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
   }
 
   static async last(): Promise<ReleaseModel | undefined> {
-    const model = await DB.instance.selectFrom('releases').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new ReleaseModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1150,46 +1133,22 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     return data
   }
 
-  orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
-    const instance = new ReleaseModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ReleasesTable): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): ReleaseModel {

@@ -57,7 +57,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
   protected originalAttributes = {} as ManufacturerJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1172,12 +1171,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }
   }
 
-  with(relations: string[]): ManufacturerModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
@@ -1187,19 +1180,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
   }
 
   async last(): Promise<ManufacturerModel | undefined> {
-    let model: ManufacturerJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new ManufacturerModel(model)
 
@@ -1207,7 +1188,9 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
   }
 
   static async last(): Promise<ManufacturerModel | undefined> {
-    const model = await DB.instance.selectFrom('manufacturers').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new ManufacturerModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1217,46 +1200,22 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return data
   }
 
-  orderBy(column: keyof ManufacturersTable, order: 'asc' | 'desc'): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof ManufacturersTable, order: 'asc' | 'desc'): ManufacturerModel {
-    const instance = new ManufacturerModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ManufacturersTable): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof ManufacturersTable): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof ManufacturersTable, operator: Operator, value: V): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof ManufacturersTable, operator: Operator, value: V): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): ManufacturerModel {

@@ -52,7 +52,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
   protected originalAttributes = {} as SubscriberEmailJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1117,12 +1116,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     }
   }
 
-  with(relations: string[]): SubscriberEmailModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
@@ -1132,19 +1125,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
   }
 
   async last(): Promise<SubscriberEmailModel | undefined> {
-    let model: SubscriberEmailJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new SubscriberEmailModel(model)
 
@@ -1152,7 +1133,9 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
   }
 
   static async last(): Promise<SubscriberEmailModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriber_emails').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new SubscriberEmailModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1162,46 +1145,22 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return data
   }
 
-  orderBy(column: keyof SubscriberEmailsTable, order: 'asc' | 'desc'): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof SubscriberEmailsTable, order: 'asc' | 'desc'): SubscriberEmailModel {
-    const instance = new SubscriberEmailModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof SubscriberEmailsTable, operator: Operator, value: V): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof SubscriberEmailsTable, operator: Operator, value: V): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): SubscriberEmailModel {

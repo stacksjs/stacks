@@ -73,7 +73,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
   protected originalAttributes = {} as GiftCardJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1372,12 +1371,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
     }
   }
 
-  with(relations: string[]): GiftCardModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
@@ -1387,19 +1380,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
   }
 
   async last(): Promise<GiftCardModel | undefined> {
-    let model: GiftCardJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new GiftCardModel(model)
 
@@ -1407,7 +1388,9 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
   }
 
   static async last(): Promise<GiftCardModel | undefined> {
-    const model = await DB.instance.selectFrom('gift_cards').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new GiftCardModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1417,46 +1400,22 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
     return data
   }
 
-  orderBy(column: keyof GiftCardsTable, order: 'asc' | 'desc'): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof GiftCardsTable, order: 'asc' | 'desc'): GiftCardModel {
-    const instance = new GiftCardModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof GiftCardsTable): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof GiftCardsTable): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof GiftCardsTable, operator: Operator, value: V): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof GiftCardsTable, operator: Operator, value: V): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): GiftCardModel {

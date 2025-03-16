@@ -74,7 +74,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
   protected originalAttributes = {} as UserJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1235,12 +1234,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
     }
   }
 
-  with(relations: string[]): UserModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): UserModel {
     const instance = new UserModel(undefined)
 
@@ -1250,19 +1243,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
   }
 
   async last(): Promise<UserModel | undefined> {
-    let model: UserJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new UserModel(model)
 
@@ -1270,7 +1251,9 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
   }
 
   static async last(): Promise<UserModel | undefined> {
-    const model = await DB.instance.selectFrom('users').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new UserModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1280,46 +1263,22 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
     return data
   }
 
-  orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof UsersTable): UserModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof UsersTable): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): UserModel {

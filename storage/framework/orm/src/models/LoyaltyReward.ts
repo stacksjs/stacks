@@ -65,7 +65,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
   protected originalAttributes = {} as LoyaltyRewardJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1264,12 +1263,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     }
   }
 
-  with(relations: string[]): LoyaltyRewardModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
@@ -1279,19 +1272,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
   }
 
   async last(): Promise<LoyaltyRewardModel | undefined> {
-    let model: LoyaltyRewardJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new LoyaltyRewardModel(model)
 
@@ -1299,7 +1280,9 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
   }
 
   static async last(): Promise<LoyaltyRewardModel | undefined> {
-    const model = await DB.instance.selectFrom('loyalty_rewards').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new LoyaltyRewardModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1309,46 +1292,22 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return data
   }
 
-  orderBy(column: keyof LoyaltyRewardsTable, order: 'asc' | 'desc'): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof LoyaltyRewardsTable, order: 'asc' | 'desc'): LoyaltyRewardModel {
-    const instance = new LoyaltyRewardModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof LoyaltyRewardsTable, operator: Operator, value: V): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof LoyaltyRewardsTable, operator: Operator, value: V): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): LoyaltyRewardModel {

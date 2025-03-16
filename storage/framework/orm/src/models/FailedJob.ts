@@ -54,7 +54,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
   protected originalAttributes = {} as FailedJobJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1156,12 +1155,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
     }
   }
 
-  with(relations: string[]): FailedJobModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
@@ -1171,19 +1164,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
   }
 
   async last(): Promise<FailedJobModel | undefined> {
-    let model: FailedJobJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new FailedJobModel(model)
 
@@ -1191,7 +1172,9 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
   }
 
   static async last(): Promise<FailedJobModel | undefined> {
-    const model = await DB.instance.selectFrom('failed_jobs').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new FailedJobModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1201,46 +1184,22 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
     return data
   }
 
-  orderBy(column: keyof FailedJobsTable, order: 'asc' | 'desc'): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof FailedJobsTable, order: 'asc' | 'desc'): FailedJobModel {
-    const instance = new FailedJobModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof FailedJobsTable): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): FailedJobModel {

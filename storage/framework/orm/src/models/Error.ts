@@ -54,7 +54,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
   protected originalAttributes = {} as ErrorJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1156,12 +1155,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
     }
   }
 
-  with(relations: string[]): ErrorModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): ErrorModel {
     const instance = new ErrorModel(undefined)
 
@@ -1171,19 +1164,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
   }
 
   async last(): Promise<ErrorModel | undefined> {
-    let model: ErrorJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new ErrorModel(model)
 
@@ -1191,7 +1172,9 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
   }
 
   static async last(): Promise<ErrorModel | undefined> {
-    const model = await DB.instance.selectFrom('errors').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new ErrorModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1201,46 +1184,22 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
     return data
   }
 
-  orderBy(column: keyof ErrorsTable, order: 'asc' | 'desc'): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof ErrorsTable, order: 'asc' | 'desc'): ErrorModel {
-    const instance = new ErrorModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof ErrorsTable): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof ErrorsTable, operator: Operator, value: V): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof ErrorsTable, operator: Operator, value: V): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): ErrorModel {

@@ -62,7 +62,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
   protected originalAttributes = {} as DeploymentJsonResponse
 
   protected selectFromQuery: any
-  protected withRelations: string[]
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
@@ -1216,12 +1215,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
     }
   }
 
-  with(relations: string[]): DeploymentModel {
-    this.withRelations = relations
-
-    return this
-  }
-
   static with(relations: string[]): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
@@ -1231,19 +1224,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
   }
 
   async last(): Promise<DeploymentModel | undefined> {
-    let model: DeploymentJsonResponse | undefined
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().orderBy('id', 'desc').executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyLast()
 
     const data = new DeploymentModel(model)
 
@@ -1251,7 +1232,9 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
   }
 
   static async last(): Promise<DeploymentModel | undefined> {
-    const model = await DB.instance.selectFrom('deployments').selectAll().orderBy('id', 'desc').executeTakeFirst()
+    const instance = new DeploymentModel(undefined)
+
+    const model = await instance.applyLast()
 
     if (!model)
       return undefined
@@ -1261,46 +1244,22 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
     return data
   }
 
-  orderBy(column: keyof DeploymentsTable, order: 'asc' | 'desc'): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
-
-    return this
-  }
-
   static orderBy(column: keyof DeploymentsTable, order: 'asc' | 'desc'): DeploymentModel {
-    const instance = new DeploymentModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, order)
-
-    return instance
-  }
-
-  groupBy(column: keyof DeploymentsTable): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.groupBy(column)
-
-    return this
+    return instance.applyOrderBy(column, order)
   }
 
   static groupBy(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.groupBy(column)
-
-    return instance
-  }
-
-  having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.having(column, operator, value)
-
-    return this
+    return instance.applyGroupBy(column)
   }
 
   static having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.having(column, operator, value)
-
-    return instance
+    return instance.applyHaving(column, operator, value)
   }
 
   inRandomOrder(): DeploymentModel {
