@@ -53,7 +53,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
+export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable> {
   private readonly hidden: Array<keyof ProductUnitJsonResponse> = []
   private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid']
   private readonly guarded: Array<keyof ProductUnitJsonResponse> = []

@@ -49,7 +49,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
+export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
   private readonly guarded: Array<keyof ManufacturerJsonResponse> = []

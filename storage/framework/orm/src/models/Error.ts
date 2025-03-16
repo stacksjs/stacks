@@ -46,7 +46,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ErrorModel extends BaseOrm<ErrorModel> {
+export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []

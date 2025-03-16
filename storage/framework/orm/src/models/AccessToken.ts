@@ -60,7 +60,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
+export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable> {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []

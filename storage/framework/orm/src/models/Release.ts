@@ -43,7 +43,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ReleaseModel extends BaseOrm<ReleaseModel> {
+export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []

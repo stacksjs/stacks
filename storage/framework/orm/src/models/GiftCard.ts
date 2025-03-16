@@ -65,7 +65,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class GiftCardModel extends BaseOrm<GiftCardModel> {
+export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []
   private readonly fillable: Array<keyof GiftCardJsonResponse> = ['code', 'initial_balance', 'current_balance', 'currency', 'status', 'purchaser_id', 'recipient_email', 'recipient_name', 'personal_message', 'is_digital', 'is_reloadable', 'is_active', 'expiry_date', 'last_used_date', 'template_id', 'uuid']
   private readonly guarded: Array<keyof GiftCardJsonResponse> = []

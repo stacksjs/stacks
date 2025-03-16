@@ -66,7 +66,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class OrderModel extends BaseOrm<OrderModel> {
+export class OrderModel extends BaseOrm<OrderModel, OrdersTable> {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
   private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
   private readonly guarded: Array<keyof OrderJsonResponse> = []

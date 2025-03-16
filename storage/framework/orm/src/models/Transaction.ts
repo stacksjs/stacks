@@ -55,7 +55,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class TransactionModel extends BaseOrm<TransactionModel> {
+export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable> {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []

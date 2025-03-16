@@ -54,7 +54,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class DeploymentModel extends BaseOrm<DeploymentModel> {
+export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DeploymentJsonResponse> = []

@@ -51,7 +51,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
+export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable> {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
   private readonly guarded: Array<keyof LoyaltyPointJsonResponse> = []

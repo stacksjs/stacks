@@ -51,7 +51,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
+export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductCategoriesTable> {
   private readonly hidden: Array<keyof ProductCategoryJsonResponse> = []
   private readonly fillable: Array<keyof ProductCategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof ProductCategoryJsonResponse> = []

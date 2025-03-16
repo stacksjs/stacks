@@ -50,7 +50,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class PaymentProductModel extends BaseOrm<PaymentProductModel> {
+export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentProductsTable> {
   private readonly hidden: Array<keyof PaymentProductJsonResponse> = []
   private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []

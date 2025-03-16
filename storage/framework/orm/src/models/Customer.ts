@@ -57,7 +57,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class CustomerModel extends BaseOrm<CustomerModel> {
+export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []

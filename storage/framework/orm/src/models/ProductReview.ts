@@ -62,7 +62,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
+export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductReviewsTable> {
   private readonly hidden: Array<keyof ProductReviewJsonResponse> = []
   private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid']
   private readonly guarded: Array<keyof ProductReviewJsonResponse> = []

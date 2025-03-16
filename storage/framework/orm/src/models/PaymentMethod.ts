@@ -56,7 +56,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class PaymentMethodModel extends BaseOrm<PaymentMethodModel> {
+export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMethodsTable> {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PaymentMethodJsonResponse> = []

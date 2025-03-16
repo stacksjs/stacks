@@ -47,7 +47,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class PostModel extends BaseOrm<PostModel> {
+export class PostModel extends BaseOrm<PostModel, PostsTable> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []

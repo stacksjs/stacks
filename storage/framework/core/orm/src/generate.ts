@@ -940,7 +940,7 @@ export async function generateModelString(
         page?: number
       }
   
-      export class ${modelName}Model extends BaseOrm<${modelName}Model> {
+      export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}

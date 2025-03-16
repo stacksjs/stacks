@@ -46,7 +46,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class JobModel extends BaseOrm<JobModel> {
+export class JobModel extends BaseOrm<JobModel, JobsTable> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []

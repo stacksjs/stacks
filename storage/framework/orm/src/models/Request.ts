@@ -51,7 +51,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class RequestModel extends BaseOrm<RequestModel> {
+export class RequestModel extends BaseOrm<RequestModel, RequestsTable> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []

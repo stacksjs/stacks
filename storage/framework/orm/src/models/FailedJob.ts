@@ -46,7 +46,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class FailedJobModel extends BaseOrm<FailedJobModel> {
+export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []

@@ -1,7 +1,8 @@
+import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { DB } from '@stacksjs/orm'
 
-export class BaseOrm<T> {
+export class BaseOrm<T, C> {
   protected tableName: string
 
   protected selectFromQuery: any
@@ -48,6 +49,23 @@ export class BaseOrm<T> {
     }
 
     return model
+  }
+
+  applyWhere<V>(column: keyof C, ...args: [V] | [Operator, V]): T {
+    if (args.length === 1) {
+      const [value] = args
+      this.selectFromQuery = this.selectFromQuery.where(column, '=', value)
+      this.updateFromQuery = this.updateFromQuery.where(column, '=', value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, '=', value)
+    }
+    else {
+      const [operator, value] = args as [Operator, V]
+      this.selectFromQuery = this.selectFromQuery.where(column, operator, value)
+      this.updateFromQuery = this.updateFromQuery.where(column, operator, value)
+      this.deleteFromQuery = this.deleteFromQuery.where(column, operator, value)
+    }
+
+    return this
   }
 
   async find(id: number): Promise<T | undefined> {

@@ -53,7 +53,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
+export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVariantsTable> {
   private readonly hidden: Array<keyof ProductVariantJsonResponse> = []
   private readonly fillable: Array<keyof ProductVariantJsonResponse> = ['variant', 'type', 'description', 'options', 'status', 'uuid']
   private readonly guarded: Array<keyof ProductVariantJsonResponse> = []

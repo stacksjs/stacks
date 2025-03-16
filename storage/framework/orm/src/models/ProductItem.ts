@@ -67,7 +67,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProductItemModel extends BaseOrm<ProductItemModel> {
+export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTable> {
   private readonly hidden: Array<keyof ProductItemJsonResponse> = []
   private readonly fillable: Array<keyof ProductItemJsonResponse> = ['name', 'size', 'color', 'price', 'image_url', 'is_available', 'inventory_count', 'sku', 'custom_options', 'uuid']
   private readonly guarded: Array<keyof ProductItemJsonResponse> = []

@@ -42,7 +42,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriberModel extends BaseOrm<SubscriberModel> {
+export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
