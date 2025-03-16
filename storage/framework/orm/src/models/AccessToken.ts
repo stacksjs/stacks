@@ -321,19 +321,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
   }
 
   async first(): Promise<AccessTokenModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new AccessTokenModel(model)
 
@@ -341,13 +329,9 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
   }
 
   static async first(): Promise<AccessTokenModel | undefined> {
-    const instance = new AccessTokenJsonResponse(null)
+    const instance = new AccessTokenModel(undefined)
 
-    const model = await DB.instance.selectFrom('personal_access_tokens')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new AccessTokenModel(model)
 

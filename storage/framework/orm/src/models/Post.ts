@@ -236,19 +236,7 @@ export class PostModel extends BaseOrm<PostModel> {
   }
 
   async first(): Promise<PostModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new PostModel(model)
 
@@ -256,13 +244,9 @@ export class PostModel extends BaseOrm<PostModel> {
   }
 
   static async first(): Promise<PostModel | undefined> {
-    const instance = new PostJsonResponse(null)
+    const instance = new PostModel(undefined)
 
-    const model = await DB.instance.selectFrom('posts')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new PostModel(model)
 

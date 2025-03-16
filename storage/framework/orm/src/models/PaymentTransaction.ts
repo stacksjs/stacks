@@ -286,19 +286,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel> {
   }
 
   async first(): Promise<PaymentTransactionModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new PaymentTransactionModel(model)
 
@@ -306,13 +294,9 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel> {
   }
 
   static async first(): Promise<PaymentTransactionModel | undefined> {
-    const instance = new PaymentTransactionJsonResponse(null)
+    const instance = new PaymentTransactionModel(undefined)
 
-    const model = await DB.instance.selectFrom('payment_transactions')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new PaymentTransactionModel(model)
 

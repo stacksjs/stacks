@@ -251,19 +251,7 @@ export class JobModel extends BaseOrm<JobModel> {
   }
 
   async first(): Promise<JobModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new JobModel(model)
 
@@ -271,13 +259,9 @@ export class JobModel extends BaseOrm<JobModel> {
   }
 
   static async first(): Promise<JobModel | undefined> {
-    const instance = new JobJsonResponse(null)
+    const instance = new JobModel(undefined)
 
-    const model = await DB.instance.selectFrom('jobs')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new JobModel(model)
 

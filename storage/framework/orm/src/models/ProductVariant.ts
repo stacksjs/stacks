@@ -274,19 +274,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
   }
 
   async first(): Promise<ProductVariantModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new ProductVariantModel(model)
 
@@ -294,13 +282,9 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
   }
 
   static async first(): Promise<ProductVariantModel | undefined> {
-    const instance = new ProductVariantJsonResponse(null)
+    const instance = new ProductVariantModel(undefined)
 
-    const model = await DB.instance.selectFrom('product_variants')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new ProductVariantModel(model)
 

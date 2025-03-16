@@ -291,19 +291,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
   }
 
   async first(): Promise<DeploymentModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new DeploymentModel(model)
 
@@ -311,13 +299,9 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentJsonResponse(null)
+    const instance = new DeploymentModel(undefined)
 
-    const model = await DB.instance.selectFrom('deployments')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new DeploymentModel(model)
 

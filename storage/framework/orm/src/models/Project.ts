@@ -242,19 +242,7 @@ export class ProjectModel extends BaseOrm<ProjectModel> {
   }
 
   async first(): Promise<ProjectModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new ProjectModel(model)
 
@@ -262,13 +250,9 @@ export class ProjectModel extends BaseOrm<ProjectModel> {
   }
 
   static async first(): Promise<ProjectModel | undefined> {
-    const instance = new ProjectJsonResponse(null)
+    const instance = new ProjectModel(undefined)
 
-    const model = await DB.instance.selectFrom('projects')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new ProjectModel(model)
 

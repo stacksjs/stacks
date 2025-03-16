@@ -258,19 +258,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   }
 
   async first(): Promise<ManufacturerModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new ManufacturerModel(model)
 
@@ -278,13 +266,9 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   }
 
   static async first(): Promise<ManufacturerModel | undefined> {
-    const instance = new ManufacturerJsonResponse(null)
+    const instance = new ManufacturerModel(undefined)
 
-    const model = await DB.instance.selectFrom('manufacturers')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new ManufacturerModel(model)
 

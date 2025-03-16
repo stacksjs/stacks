@@ -1096,36 +1096,20 @@ export async function generateModelString(
         }
 
         async first(): Promise<${modelName}Model | undefined> {
-          let model
-
-          if (this.hasSelect) {
-            model = await this.selectFromQuery.executeTakeFirst()
-          }
-          else {
-            model = await this.selectFromQuery.selectAll().executeTakeFirst()
-          }
-
-          if (model) {
-            this.mapCustomGetters(model)
-            await this.loadRelations(model)
-          }
+          const model = await this.applyFirst()
 
           const data = new ${modelName}Model(model)
-  
+
           return data
         }
         
         static async first(): Promise<${modelName}Model | undefined> {
-          const instance = new ${modelName}JsonResponse(null)
+          const instance = new ${modelName}Model(undefined)
 
-          const model = await DB.instance.selectFrom('${tableName}')
-            .selectAll()
-            .executeTakeFirst()
-
-          instance.mapCustomGetters(model)
+          const model = await instance.applyFirst()
 
           const data = new ${modelName}Model(model)
-  
+
           return data
         }
 

@@ -285,19 +285,7 @@ export class TeamModel extends BaseOrm<TeamModel> {
   }
 
   async first(): Promise<TeamModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new TeamModel(model)
 
@@ -305,13 +293,9 @@ export class TeamModel extends BaseOrm<TeamModel> {
   }
 
   static async first(): Promise<TeamModel | undefined> {
-    const instance = new TeamJsonResponse(null)
+    const instance = new TeamModel(undefined)
 
-    const model = await DB.instance.selectFrom('teams')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new TeamModel(model)
 

@@ -274,19 +274,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
   }
 
   async first(): Promise<ProductUnitModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new ProductUnitModel(model)
 
@@ -294,13 +282,9 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
   }
 
   static async first(): Promise<ProductUnitModel | undefined> {
-    const instance = new ProductUnitJsonResponse(null)
+    const instance = new ProductUnitModel(undefined)
 
-    const model = await DB.instance.selectFrom('product_units')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new ProductUnitModel(model)
 

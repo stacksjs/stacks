@@ -225,19 +225,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   }
 
   async first(): Promise<SubscriberEmailModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new SubscriberEmailModel(model)
 
@@ -245,13 +233,9 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   }
 
   static async first(): Promise<SubscriberEmailModel | undefined> {
-    const instance = new SubscriberEmailJsonResponse(null)
+    const instance = new SubscriberEmailModel(undefined)
 
-    const model = await DB.instance.selectFrom('subscriber_emails')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new SubscriberEmailModel(model)
 

@@ -361,19 +361,7 @@ export class CouponModel extends BaseOrm<CouponModel> {
   }
 
   async first(): Promise<CouponModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new CouponModel(model)
 
@@ -381,13 +369,9 @@ export class CouponModel extends BaseOrm<CouponModel> {
   }
 
   static async first(): Promise<CouponModel | undefined> {
-    const instance = new CouponJsonResponse(null)
+    const instance = new CouponModel(undefined)
 
-    const model = await DB.instance.selectFrom('coupons')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new CouponModel(model)
 

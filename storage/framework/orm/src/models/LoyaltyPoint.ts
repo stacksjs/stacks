@@ -280,19 +280,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
   }
 
   async first(): Promise<LoyaltyPointModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new LoyaltyPointModel(model)
 
@@ -300,13 +288,9 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
   }
 
   static async first(): Promise<LoyaltyPointModel | undefined> {
-    const instance = new LoyaltyPointJsonResponse(null)
+    const instance = new LoyaltyPointModel(undefined)
 
-    const model = await DB.instance.selectFrom('loyalty_points')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new LoyaltyPointModel(model)
 

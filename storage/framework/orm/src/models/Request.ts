@@ -288,19 +288,7 @@ export class RequestModel extends BaseOrm<RequestModel> {
   }
 
   async first(): Promise<RequestModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new RequestModel(model)
 
@@ -308,13 +296,9 @@ export class RequestModel extends BaseOrm<RequestModel> {
   }
 
   static async first(): Promise<RequestModel | undefined> {
-    const instance = new RequestJsonResponse(null)
+    const instance = new RequestModel(undefined)
 
-    const model = await DB.instance.selectFrom('requests')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new RequestModel(model)
 

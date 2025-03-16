@@ -323,19 +323,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   }
 
   async first(): Promise<ProductReviewModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new ProductReviewModel(model)
 
@@ -343,13 +331,9 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   }
 
   static async first(): Promise<ProductReviewModel | undefined> {
-    const instance = new ProductReviewJsonResponse(null)
+    const instance = new ProductReviewModel(undefined)
 
-    const model = await DB.instance.selectFrom('product_reviews')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new ProductReviewModel(model)
 

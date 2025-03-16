@@ -370,19 +370,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel> {
   }
 
   async first(): Promise<GiftCardModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new GiftCardModel(model)
 
@@ -390,13 +378,9 @@ export class GiftCardModel extends BaseOrm<GiftCardModel> {
   }
 
   static async first(): Promise<GiftCardModel | undefined> {
-    const instance = new GiftCardJsonResponse(null)
+    const instance = new GiftCardModel(undefined)
 
-    const model = await DB.instance.selectFrom('gift_cards')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new GiftCardModel(model)
 

@@ -251,19 +251,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel> {
   }
 
   async first(): Promise<FailedJobModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new FailedJobModel(model)
 
@@ -271,13 +259,9 @@ export class FailedJobModel extends BaseOrm<FailedJobModel> {
   }
 
   static async first(): Promise<FailedJobModel | undefined> {
-    const instance = new FailedJobJsonResponse(null)
+    const instance = new FailedJobModel(undefined)
 
-    const model = await DB.instance.selectFrom('failed_jobs')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new FailedJobModel(model)
 

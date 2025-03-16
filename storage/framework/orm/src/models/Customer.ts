@@ -306,19 +306,7 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
   }
 
   async first(): Promise<CustomerModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new CustomerModel(model)
 
@@ -326,13 +314,9 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
   }
 
   static async first(): Promise<CustomerModel | undefined> {
-    const instance = new CustomerJsonResponse(null)
+    const instance = new CustomerModel(undefined)
 
-    const model = await DB.instance.selectFrom('customers')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new CustomerModel(model)
 

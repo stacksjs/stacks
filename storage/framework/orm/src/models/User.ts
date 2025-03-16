@@ -321,19 +321,7 @@ export class UserModel extends BaseOrm<UserModel> {
   }
 
   async first(): Promise<UserModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new UserModel(model)
 
@@ -341,13 +329,9 @@ export class UserModel extends BaseOrm<UserModel> {
   }
 
   static async first(): Promise<UserModel | undefined> {
-    const instance = new UserJsonResponse(null)
+    const instance = new UserModel(undefined)
 
-    const model = await DB.instance.selectFrom('users')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new UserModel(model)
 

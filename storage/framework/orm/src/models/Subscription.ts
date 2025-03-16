@@ -318,19 +318,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
   }
 
   async first(): Promise<SubscriptionModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new SubscriptionModel(model)
 
@@ -338,13 +326,9 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionJsonResponse(null)
+    const instance = new SubscriptionModel(undefined)
 
-    const model = await DB.instance.selectFrom('subscriptions')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new SubscriptionModel(model)
 

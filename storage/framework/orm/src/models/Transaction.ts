@@ -292,19 +292,7 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
   }
 
   async first(): Promise<TransactionModel | undefined> {
-    let model
-
-    if (this.hasSelect) {
-      model = await this.selectFromQuery.executeTakeFirst()
-    }
-    else {
-      model = await this.selectFromQuery.selectAll().executeTakeFirst()
-    }
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
+    const model = await this.applyFirst()
 
     const data = new TransactionModel(model)
 
@@ -312,13 +300,9 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
   }
 
   static async first(): Promise<TransactionModel | undefined> {
-    const instance = new TransactionJsonResponse(null)
+    const instance = new TransactionModel(undefined)
 
-    const model = await DB.instance.selectFrom('transactions')
-      .selectAll()
-      .executeTakeFirst()
-
-    instance.mapCustomGetters(model)
+    const model = await instance.applyFirst()
 
     const data = new TransactionModel(model)
 

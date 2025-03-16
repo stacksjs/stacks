@@ -4,8 +4,13 @@ import { DB } from '@stacksjs/orm'
 export class BaseOrm<T> {
   protected tableName: string
 
+  protected selectFromQuery: any
+  protected hasSelect: boolean = false
+
   constructor(tableName: string) {
     this.tableName = tableName
+
+    this.selectFromQuery = DB.instance.selectFrom(this.tableName)
   }
 
   // The protected helper method that does the actual work
@@ -27,18 +32,32 @@ export class BaseOrm<T> {
     return model
   }
 
+  async applyFirst(): Promise<T | undefined> {
+    let model
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    return model
+  }
+
   async find(id: number): Promise<T | undefined> {
     return await this.applyFind(id)
   }
 
   // Methods to be implemented by child classes
-  protected mapCustomGetters(model: any): void {
+  protected mapCustomGetters(_model: T): void {}
 
-  }
-
-  protected async loadRelations(model: any): Promise<void> {
-    // Child classes will override this
-  }
+  protected async loadRelations(_model: T): Promise<void> {}
 
   // // Method to get the first record
   // static async first<T>(tableName: string): Promise<T | undefined> {
