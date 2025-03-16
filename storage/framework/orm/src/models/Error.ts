@@ -46,7 +46,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
+export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
@@ -333,29 +333,18 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ErrorModel[]> {
-    let query = DB.instance.selectFrom('errors').where('id', 'in', ids)
-
-    const instance = new ErrorModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: ErrorJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<ErrorModel[]> {
     const instance = new ErrorModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<ErrorModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ErrorModel(modelItem)))
   }
 
   skip(count: number): ErrorModel {

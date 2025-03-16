@@ -49,7 +49,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable> {
+export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
   private readonly guarded: Array<keyof ManufacturerJsonResponse> = []
@@ -340,29 +340,18 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ManufacturerModel[]> {
-    let query = DB.instance.selectFrom('manufacturers').where('id', 'in', ids)
-
-    const instance = new ManufacturerModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: ManufacturerJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<ManufacturerModel[]> {
     const instance = new ManufacturerModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<ManufacturerModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ManufacturerModel(modelItem)))
   }
 
   skip(count: number): ManufacturerModel {

@@ -66,7 +66,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class OrderModel extends BaseOrm<OrderModel, OrdersTable> {
+export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonResponse> {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
   private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
   private readonly guarded: Array<keyof OrderJsonResponse> = []
@@ -429,29 +429,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<OrderModel[]> {
-    let query = DB.instance.selectFrom('orders').where('id', 'in', ids)
-
-    const instance = new OrderModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: OrderJsonResponse) => instance.parseResult(new OrderModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<OrderModel[]> {
     const instance = new OrderModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new OrderModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<OrderModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new OrderModel(modelItem)))
   }
 
   skip(count: number): OrderModel {

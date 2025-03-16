@@ -57,7 +57,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable> {
+export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable, LoyaltyRewardJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyRewardJsonResponse> = ['name', 'description', 'points_required', 'reward_type', 'discount_percentage', 'free_product_id', 'is_active', 'expiry_days', 'image_url', 'uuid']
   private readonly guarded: Array<keyof LoyaltyRewardJsonResponse> = []
@@ -392,29 +392,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
-    let query = DB.instance.selectFrom('loyalty_rewards').where('id', 'in', ids)
-
-    const instance = new LoyaltyRewardModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: LoyaltyRewardJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
     const instance = new LoyaltyRewardModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new LoyaltyRewardModel(modelItem)))
   }
 
   skip(count: number): LoyaltyRewardModel {

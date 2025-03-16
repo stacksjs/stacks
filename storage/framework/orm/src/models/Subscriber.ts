@@ -42,7 +42,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> {
+export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, SubscriberJsonResponse> {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
@@ -297,29 +297,18 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> 
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<SubscriberModel[]> {
-    let query = DB.instance.selectFrom('subscribers').where('id', 'in', ids)
-
-    const instance = new SubscriberModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: SubscriberJsonResponse) => instance.parseResult(new SubscriberModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<SubscriberModel[]> {
     const instance = new SubscriberModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<SubscriberModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new SubscriberModel(modelItem)))
   }
 
   skip(count: number): SubscriberModel {

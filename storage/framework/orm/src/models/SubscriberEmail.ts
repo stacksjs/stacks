@@ -44,7 +44,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, SubscriberEmailsTable> {
+export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, SubscriberEmailsTable, SubscriberEmailJsonResponse> {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
@@ -311,33 +311,20 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    let query = DB.instance.selectFrom('subscriber_emails').where('id', 'in', ids)
-
+  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
     const instance = new SubscriberEmailModel(undefined)
-
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
+    const models = await instance.applyFindMany(ids)
 
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: SubscriberEmailJsonResponse) => instance.parseResult(new SubscriberEmailModel(modelItem)))
-  }
-
-  static async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    const instance = new SubscriberEmailModel(undefined)
-
-    return await instance.applyFindMany(ids)
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<SubscriberEmailModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
   skip(count: number): SubscriberEmailModel {

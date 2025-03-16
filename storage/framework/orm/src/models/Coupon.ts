@@ -64,7 +64,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
+export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
@@ -443,29 +443,18 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<CouponModel[]> {
-    let query = DB.instance.selectFrom('coupons').where('id', 'in', ids)
-
-    const instance = new CouponModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: CouponJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<CouponModel[]> {
     const instance = new CouponModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<CouponModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new CouponModel(modelItem)))
   }
 
   skip(count: number): CouponModel {

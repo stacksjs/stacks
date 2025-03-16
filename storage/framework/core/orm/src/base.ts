@@ -1,10 +1,11 @@
+import type { RawBuilder } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { DB } from '@stacksjs/orm'
 
-export class BaseOrm<T, C> {
+export class BaseOrm<T, C, J> {
   protected tableName: string
 
   protected selectFromQuery: any
@@ -15,12 +16,20 @@ export class BaseOrm<T, C> {
 
   constructor(tableName: string) {
     this.tableName = tableName
-
+    // TODO: bring back new instantiation from the this parent class
     this.selectFromQuery = DB.instance.selectFrom(this.tableName)
     this.updateFromQuery = DB.instance.updateTable(this.tableName)
     this.deleteFromQuery = DB.instance.deleteFrom(this.tableName)
 
     this.withRelations = []
+  }
+
+  select(params: (keyof J)[] | RawBuilder<string> | string): this {
+    this.selectFromQuery = this.selectFromQuery.select(params)
+
+    this.hasSelect = true
+
+    return this
   }
 
   // The protected helper method that does the actual work
@@ -40,6 +49,28 @@ export class BaseOrm<T, C> {
     cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
+  }
+
+  async applyFindMany(ids: number[]): Promise<T[]> {
+    let query = DB.instance.selectFrom('users').where('id', 'in', ids)
+
+    query = query.selectAll()
+
+    // TODO: Properly implement soft deletes
+    // if (this.childClass.hasSelect) {
+    //   query = query.where('deleted_at', 'is', null)
+    // }
+
+    const models = await query.execute()
+
+    this.mapCustomGetters(models)
+    await this.loadRelations(models)
+
+    return models
+  }
+
+  async findMany(ids: number[]): Promise<T[]> {
+    return await this.applyFindMany(ids)
   }
 
   async applyFirst(): Promise<T | undefined> {

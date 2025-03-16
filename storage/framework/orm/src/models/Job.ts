@@ -46,7 +46,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class JobModel extends BaseOrm<JobModel, JobsTable> {
+export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
@@ -333,29 +333,18 @@ export class JobModel extends BaseOrm<JobModel, JobsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<JobModel[]> {
-    let query = DB.instance.selectFrom('jobs').where('id', 'in', ids)
-
-    const instance = new JobModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<JobModel[]> {
     const instance = new JobModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new JobModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<JobModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new JobModel(modelItem)))
   }
 
   skip(count: number): JobModel {

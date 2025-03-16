@@ -43,7 +43,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
+export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJsonResponse> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
@@ -306,29 +306,18 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ReleaseModel[]> {
-    let query = DB.instance.selectFrom('releases').where('id', 'in', ids)
-
-    const instance = new ReleaseModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: ReleaseJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<ReleaseModel[]> {
     const instance = new ReleaseModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<ReleaseModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ReleaseModel(modelItem)))
   }
 
   skip(count: number): ReleaseModel {

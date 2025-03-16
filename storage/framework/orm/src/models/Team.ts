@@ -54,7 +54,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
+export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
@@ -369,29 +369,18 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<TeamModel[]> {
-    let query = DB.instance.selectFrom('teams').where('id', 'in', ids)
-
-    const instance = new TeamModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: TeamJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<TeamModel[]> {
     const instance = new TeamModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<TeamModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new TeamModel(modelItem)))
   }
 
   skip(count: number): TeamModel {

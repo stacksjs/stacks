@@ -47,7 +47,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class PostModel extends BaseOrm<PostModel, PostsTable> {
+export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
@@ -318,29 +318,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<PostModel[]> {
-    let query = DB.instance.selectFrom('posts').where('id', 'in', ids)
-
-    const instance = new PostModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: PostJsonResponse) => instance.parseResult(new PostModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<PostModel[]> {
     const instance = new PostModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PostModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<PostModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new PostModel(modelItem)))
   }
 
   skip(count: number): PostModel {

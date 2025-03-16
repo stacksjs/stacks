@@ -45,7 +45,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable> {
+export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJsonResponse> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
@@ -324,29 +324,18 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<ProjectModel[]> {
-    let query = DB.instance.selectFrom('projects').where('id', 'in', ids)
-
-    const instance = new ProjectModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: ProjectJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<ProjectModel[]> {
     const instance = new ProjectModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<ProjectModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProjectModel(modelItem)))
   }
 
   skip(count: number): ProjectModel {

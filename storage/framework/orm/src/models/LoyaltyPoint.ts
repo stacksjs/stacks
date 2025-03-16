@@ -51,7 +51,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable> {
+export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable, LoyaltyPointJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
   private readonly guarded: Array<keyof LoyaltyPointJsonResponse> = []
@@ -362,29 +362,18 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<LoyaltyPointModel[]> {
-    let query = DB.instance.selectFrom('loyalty_points').where('id', 'in', ids)
-
-    const instance = new LoyaltyPointModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: LoyaltyPointJsonResponse) => instance.parseResult(new LoyaltyPointModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<LoyaltyPointModel[]> {
     const instance = new LoyaltyPointModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<LoyaltyPointModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
   skip(count: number): LoyaltyPointModel {

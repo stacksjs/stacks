@@ -940,7 +940,7 @@ export async function generateModelString(
         page?: number
       }
   
-      export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table> {
+      export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table, ${modelName}JsonResponse> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
@@ -1180,31 +1180,18 @@ export async function generateModelString(
           return await instance.applyFindOrFail(id)
         }
 
-        async applyFindMany(ids: number[]): Promise<${modelName}Model[]> {
-          let query = DB.instance.selectFrom('${tableName}').where('id', 'in', ids)
-  
-          const instance = new ${modelName}Model(undefined)
-  
-          ${instanceSoftDeleteStatements}
-  
-          query = query.selectAll()
-  
-          const models = await query.execute()
-
-          instance.mapCustomGetters(models)
-          await instance.loadRelations(models)
-  
-          return models.map((modelItem: ${modelName}JsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
-        }
-  
         static async findMany(ids: number[]): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(undefined)
+           ${instanceSoftDeleteStatements}
+          const models = await instance.applyFindMany(ids)
 
-          return await instance.applyFindMany(ids)
+          return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
 
         async findMany(ids: number[]): Promise<${modelName}Model[]> {
-          return await this.applyFindMany(ids)
+          const models = await this.applyFindMany(ids)
+
+          return models.map((modelItem: UserJsonResponse) => this.parseResult(new ${modelName}Model(modelItem)))
         }
 
         skip(count: number): ${modelName}Model {

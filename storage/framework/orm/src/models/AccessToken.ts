@@ -60,7 +60,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable> {
+export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable, AccessTokenJsonResponse> {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
   private readonly guarded: Array<keyof AccessTokenJsonResponse> = []
@@ -403,29 +403,18 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<AccessTokenModel[]> {
-    let query = DB.instance.selectFrom('personal_access_tokens').where('id', 'in', ids)
-
-    const instance = new AccessTokenModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: AccessTokenJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<AccessTokenModel[]> {
     const instance = new AccessTokenModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<AccessTokenModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new AccessTokenModel(modelItem)))
   }
 
   skip(count: number): AccessTokenModel {

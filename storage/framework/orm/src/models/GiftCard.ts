@@ -65,7 +65,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
+export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []
   private readonly fillable: Array<keyof GiftCardJsonResponse> = ['code', 'initial_balance', 'current_balance', 'currency', 'status', 'purchaser_id', 'recipient_email', 'recipient_name', 'personal_message', 'is_digital', 'is_reloadable', 'is_active', 'expiry_date', 'last_used_date', 'template_id', 'uuid']
   private readonly guarded: Array<keyof GiftCardJsonResponse> = []
@@ -452,29 +452,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<GiftCardModel[]> {
-    let query = DB.instance.selectFrom('gift_cards').where('id', 'in', ids)
-
-    const instance = new GiftCardModel(undefined)
-
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: GiftCardJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
-  }
-
   static async findMany(ids: number[]): Promise<GiftCardModel[]> {
     const instance = new GiftCardModel(undefined)
 
-    return await instance.applyFindMany(ids)
+    const models = await instance.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<GiftCardModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new GiftCardModel(modelItem)))
   }
 
   skip(count: number): GiftCardModel {

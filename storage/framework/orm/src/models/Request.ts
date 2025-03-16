@@ -51,7 +51,7 @@ interface QueryOptions {
   page?: number
 }
 
-export class RequestModel extends BaseOrm<RequestModel, RequestsTable> {
+export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []
@@ -374,33 +374,20 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable> {
     return await instance.applyFindOrFail(id)
   }
 
-  async applyFindMany(ids: number[]): Promise<RequestModel[]> {
-    let query = DB.instance.selectFrom('requests').where('id', 'in', ids)
-
+  static async findMany(ids: number[]): Promise<RequestModel[]> {
     const instance = new RequestModel(undefined)
-
     if (instance.softDeletes) {
       query = query.where('deleted_at', 'is', null)
     }
+    const models = await instance.applyFindMany(ids)
 
-    query = query.selectAll()
-
-    const models = await query.execute()
-
-    instance.mapCustomGetters(models)
-    await instance.loadRelations(models)
-
-    return models.map((modelItem: RequestJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
-  }
-
-  static async findMany(ids: number[]): Promise<RequestModel[]> {
-    const instance = new RequestModel(undefined)
-
-    return await instance.applyFindMany(ids)
+    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
   }
 
   async findMany(ids: number[]): Promise<RequestModel[]> {
-    return await this.applyFindMany(ids)
+    const models = await this.applyFindMany(ids)
+
+    return models.map((modelItem: UserJsonResponse) => this.parseResult(new RequestModel(modelItem)))
   }
 
   skip(count: number): RequestModel {
