@@ -1218,46 +1218,22 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ManufacturersTable): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ManufacturersTable): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ManufacturersTable): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ManufacturersTable): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {

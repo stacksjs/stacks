@@ -2023,46 +2023,22 @@ export async function generateModelString(
           return instance.applyHaving(column, operator, value)
         }
 
-        inRandomOrder(): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
-
-          return this
-        }
-        
         static inRandomOrder(): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.orderBy(sql\` \${sql.raw('RANDOM()')} \`)
-
-          return instance
-        }
-
-        orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-  
-          return this
+          return instance.applyInRandomOrder()
         }
 
         static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-  
-          return instance
+
+          return instance.applyOrderByDesc(column)
         }
-          
-        orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-  
-          return this
-        }
-  
+
         static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-  
-          return instance
+
+          return instance.applyOrderByAsc(column)
         }
 
         async update(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {

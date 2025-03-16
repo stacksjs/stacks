@@ -1282,46 +1282,22 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable> {
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): RequestModel {
     const instance = new RequestModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof RequestsTable): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof RequestsTable): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof RequestsTable): RequestModel {
     const instance = new RequestModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newRequest: RequestUpdate): Promise<RequestModel | undefined> {

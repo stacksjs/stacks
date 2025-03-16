@@ -1252,46 +1252,22 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ProductCategoriesTable): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ProductCategoriesTable): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ProductCategoriesTable): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ProductCategoriesTable): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newProductCategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {

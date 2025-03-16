@@ -1242,46 +1242,22 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ProductVariantModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ProductVariantsTable): ProductVariantModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ProductVariantsTable): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ProductVariantsTable): ProductVariantModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ProductVariantsTable): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newProductVariant: ProductVariantUpdate): Promise<ProductVariantModel | undefined> {

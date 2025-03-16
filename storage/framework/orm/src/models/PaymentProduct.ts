@@ -1250,46 +1250,22 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof PaymentProductsTable): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof PaymentProductsTable): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof PaymentProductsTable): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof PaymentProductsTable): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newPaymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {

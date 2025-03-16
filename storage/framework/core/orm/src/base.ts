@@ -324,79 +324,38 @@ export class BaseOrm<T, C> {
     return this.applyHaving<V>(column, operator, value)
   }
 
+  applyInRandomOrder(): this {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
+  inRandomOrder(): this {
+    return this.applyInRandomOrder()
+  }
+
+  applyOrderByDesc(column: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
+
+    return this
+  }
+
+  applyOrderByAsc(column: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
+
+    return this
+  }
+
+  orderByDesc(column: keyof C): this {
+    return this.applyOrderByDesc(column)
+  }
+
+  orderByAsc(column: keyof C): this {
+    return this.applyOrderByAsc(column)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 
   protected async loadRelations(_model: T): Promise<void> {}
-
-  // // Method to get the first record
-  // static async first<T>(tableName: string): Promise<T | undefined> {
-  //   const model = await DB.instance.selectFrom(tableName)
-  //     .selectAll()
-  //     .executeTakeFirst()
-
-  //   return model as T | undefined
-  // }
-
-  // // Method to get the first record or fail
-  // static async firstOrFail<T>(tableName: string, modelName: string): Promise<T> {
-  //   const model = await DB.instance.selectFrom(tableName)
-  //     .selectAll()
-  //     .executeTakeFirst()
-
-  //   if (model === undefined)
-  //     throw new ModelNotFoundException(404, `No ${modelName} results found for query`)
-
-  //   return model as T
-  // }
-
-  // // Method to get all records
-  // static async all<T>(tableName: string): Promise<T[]> {
-  //   const models = await DB.instance.selectFrom(tableName)
-  //     .selectAll()
-  //     .execute()
-
-  //   return models as T[]
-  // }
-
-  // // Method to create a record
-  // static async create<T>(tableName: string, data: any, eventName?: string): Promise<T> {
-  //   const result = await DB.instance.insertInto(tableName)
-  //     .values(data)
-  //     .executeTakeFirst()
-
-  //   const model = await this.find<T>(tableName, Number(result.numInsertedOrUpdatedRows))
-
-  //   if (model && eventName)
-  //     dispatch(eventName, model)
-
-  //   return model as T
-  // }
-
-  // // Method to update a record
-  // static async update<T>(tableName: string, id: number, data: any, eventName?: string): Promise<T | undefined> {
-  //   await DB.instance.updateTable(tableName)
-  //     .set(data)
-  //     .where('id', '=', id)
-  //     .executeTakeFirst()
-
-  //   const model = await this.find<T>(tableName, id)
-
-  //   if (model && eventName)
-  //     dispatch(eventName, model)
-
-  //   return model
-  // }
-
-  // // Method to delete a record
-  // static async delete(tableName: string, id: number, eventName?: string): Promise<any> {
-  //   const model = await this.find(tableName, id)
-
-  //   if (model && eventName)
-  //     dispatch(eventName, model)
-
-  //   return await DB.instance.deleteFrom(tableName)
-  //     .where('id', '=', id)
-  //     .execute()
-  // }
 }

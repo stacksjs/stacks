@@ -1185,46 +1185,22 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable> {
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ProjectsTable): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ProjectsTable): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {

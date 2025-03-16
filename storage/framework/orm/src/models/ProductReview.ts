@@ -1323,46 +1323,22 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ProductReviewsTable): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ProductReviewsTable): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ProductReviewsTable): ProductReviewModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ProductReviewsTable): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newProductReview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {

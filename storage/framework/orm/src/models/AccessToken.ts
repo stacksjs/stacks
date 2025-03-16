@@ -1312,46 +1312,22 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {

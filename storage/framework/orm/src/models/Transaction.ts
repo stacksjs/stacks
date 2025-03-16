@@ -1276,46 +1276,22 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof TransactionsTable): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof TransactionsTable): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof TransactionsTable): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {

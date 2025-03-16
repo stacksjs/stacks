@@ -1264,46 +1264,22 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newLoyaltyPoint: LoyaltyPointUpdate): Promise<LoyaltyPointModel | undefined> {

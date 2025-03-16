@@ -1202,46 +1202,22 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable> {
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof FailedJobsTable): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof FailedJobsTable): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof FailedJobsTable): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {

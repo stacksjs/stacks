@@ -1262,46 +1262,22 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable> 
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof DeploymentsTable): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof DeploymentsTable): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof DeploymentsTable): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {

@@ -1151,46 +1151,22 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof ReleasesTable): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof ReleasesTable): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof ReleasesTable): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newRelease: ReleaseUpdate): Promise<ReleaseModel | undefined> {

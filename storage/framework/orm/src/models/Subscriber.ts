@@ -1134,46 +1134,22 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> 
     return instance.applyHaving(column, operator, value)
   }
 
-  inRandomOrder(): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
   static inRandomOrder(): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return instance
-  }
-
-  orderByDesc(column: keyof SubscribersTable): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
-
-    return this
+    return instance.applyInRandomOrder()
   }
 
   static orderByDesc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'desc')
-
-    return instance
-  }
-
-  orderByAsc(column: keyof SubscribersTable): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
-
-    return this
+    return instance.applyOrderByDesc(column)
   }
 
   static orderByAsc(column: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.orderBy(column, 'asc')
-
-    return instance
+    return instance.applyOrderByAsc(column)
   }
 
   async update(newSubscriber: SubscriberUpdate): Promise<SubscriberModel | undefined> {
