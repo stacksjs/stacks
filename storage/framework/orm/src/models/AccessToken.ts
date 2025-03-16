@@ -976,123 +976,28 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  orWhere(...conditions: [string, any][]): AccessTokenModel {
-    return this.applyOrWhere(...conditions)
-  }
-
   static orWhere(...conditions: [string, any][]): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  when(
-    condition: boolean,
-    callback: (query: AccessTokenModel) => AccessTokenModel,
-  ): AccessTokenModel {
-    return AccessTokenModel.when(condition, callback)
-  }
+  static when(condition: boolean, callback: (query: AccessTokenModel) => AccessTokenModel): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
 
-  static when(
-    condition: boolean,
-    callback: (query: AccessTokenModel) => AccessTokenModel,
-  ): AccessTokenModel {
-    let instance = new AccessTokenModel(undefined)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return this
+    return instance.applyWhen(condition, callback)
   }
 
   static whereNotNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    const instance = new AccessTokenModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return instance
-  }
-
-  whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return instance.applyWhereNotNull(column)
   }
 
   static whereNull(column: keyof PersonalAccessTokensTable): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
+    return instance.applyWhereNull(column)
   }
 
   static whereName(value: string): AccessTokenModel {

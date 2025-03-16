@@ -945,123 +945,28 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): PaymentTransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  orWhere(...conditions: [string, any][]): PaymentTransactionModel {
-    return this.applyOrWhere(...conditions)
-  }
-
   static orWhere(...conditions: [string, any][]): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  when(
-    condition: boolean,
-    callback: (query: PaymentTransactionModel) => PaymentTransactionModel,
-  ): PaymentTransactionModel {
-    return PaymentTransactionModel.when(condition, callback)
-  }
+  static when(condition: boolean, callback: (query: PaymentTransactionModel) => PaymentTransactionModel): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(undefined)
 
-  static when(
-    condition: boolean,
-    callback: (query: PaymentTransactionModel) => PaymentTransactionModel,
-  ): PaymentTransactionModel {
-    let instance = new PaymentTransactionModel(undefined)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNotNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return this
+    return instance.applyWhen(condition, callback)
   }
 
   static whereNotNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    const instance = new PaymentTransactionModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return instance
-  }
-
-  whereNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return instance.applyWhereNotNull(column)
   }
 
   static whereNull(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
+    return instance.applyWhereNull(column)
   }
 
   static whereName(value: string): PaymentTransactionModel {

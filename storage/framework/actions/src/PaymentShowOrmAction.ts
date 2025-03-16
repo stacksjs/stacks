@@ -1,9 +1,9 @@
 import type { PaymentRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import Payment from '../../orm/src/models/Payment'
-
 import { response } from '@stacksjs/router'
+
+import Payment from '../../orm/src/models/Payment'
 
 export default new Action({
   name: 'Payment Show',

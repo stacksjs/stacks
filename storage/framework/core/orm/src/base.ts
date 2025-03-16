@@ -115,6 +115,84 @@ export class BaseOrm<T, C> {
     return this.applyWhereRaw(sqlStatement)
   }
 
+  applyOrWhere(...conditions: [string, any][]): this {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
+      return eb.or(
+        conditions.map(([column, value]) => eb(column, '=', value)),
+      )
+    })
+
+    return this
+  }
+
+  orWhere(...conditions: [string, any][]): this {
+    return this.applyOrWhere(...conditions)
+  }
+
+  applyWhen(condition: boolean, callback: (query: this) => T): this {
+    if (condition)
+      callback(this)
+
+    return this
+  }
+
+  when(condition: boolean, callback: (query: this) => T,
+  ): this {
+    return this.applyWhen(condition, callback)
+  }
+
+  applyWhereNotNull(column: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is not', null),
+    )
+
+    return this
+  }
+
+  whereNotNull(column: keyof C): this {
+    return this.applyWhereNotNull(column)
+  }
+
+  applyWhereNull(column: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
+      eb(column, '=', '').or(column, 'is', null),
+    )
+
+    return this
+  }
+
+  whereNull(column: keyof C): this {
+    return this.applyWhereNull(column)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 

@@ -952,123 +952,28 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  orWhere(...conditions: [string, any][]): LoyaltyPointModel {
-    return this.applyOrWhere(...conditions)
-  }
-
   static orWhere(...conditions: [string, any][]): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  when(
-    condition: boolean,
-    callback: (query: LoyaltyPointModel) => LoyaltyPointModel,
-  ): LoyaltyPointModel {
-    return LoyaltyPointModel.when(condition, callback)
-  }
+  static when(condition: boolean, callback: (query: LoyaltyPointModel) => LoyaltyPointModel): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
 
-  static when(
-    condition: boolean,
-    callback: (query: LoyaltyPointModel) => LoyaltyPointModel,
-  ): LoyaltyPointModel {
-    let instance = new LoyaltyPointModel(undefined)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNotNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return this
+    return instance.applyWhen(condition, callback)
   }
 
   static whereNotNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
-    const instance = new LoyaltyPointModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return instance
-  }
-
-  whereNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return instance.applyWhereNotNull(column)
   }
 
   static whereNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
+    return instance.applyWhereNull(column)
   }
 
   static whereWalletId(value: string): LoyaltyPointModel {

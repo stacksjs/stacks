@@ -897,123 +897,28 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable> {
     return instance
   }
 
-  applyOrWhere(...conditions: [string, any][]): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-      return eb.or(
-        conditions.map(([column, value]) => eb(column, '=', value)),
-      )
-    })
-
-    return this
-  }
-
-  orWhere(...conditions: [string, any][]): ProjectModel {
-    return this.applyOrWhere(...conditions)
-  }
-
   static orWhere(...conditions: [string, any][]): ProjectModel {
     const instance = new ProjectModel(undefined)
 
     return instance.applyOrWhere(...conditions)
   }
 
-  when(
-    condition: boolean,
-    callback: (query: ProjectModel) => ProjectModel,
-  ): ProjectModel {
-    return ProjectModel.when(condition, callback)
-  }
+  static when(condition: boolean, callback: (query: ProjectModel) => ProjectModel): ProjectModel {
+    const instance = new ProjectModel(undefined)
 
-  static when(
-    condition: boolean,
-    callback: (query: ProjectModel) => ProjectModel,
-  ): ProjectModel {
-    let instance = new ProjectModel(undefined)
-
-    if (condition)
-      instance = callback(instance)
-
-    return instance
-  }
-
-  whereNotNull(column: keyof ProjectsTable): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return this
+    return instance.applyWhen(condition, callback)
   }
 
   static whereNotNull(column: keyof ProjectsTable): ProjectModel {
-    const instance = new ProjectModel(undefined)
+    const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is not', null),
-    )
-
-    return instance
-  }
-
-  whereNull(column: keyof ProjectsTable): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return this
+    return instance.applyWhereNotNull(column)
   }
 
   static whereNull(column: keyof ProjectsTable): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-      eb(column, '=', '').or(column, 'is', null),
-    )
-
-    return instance
+    return instance.applyWhereNull(column)
   }
 
   static whereName(value: string): ProjectModel {

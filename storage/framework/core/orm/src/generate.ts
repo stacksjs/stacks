@@ -1768,123 +1768,28 @@ export async function generateModelString(
           return instance
         }
 
-        applyOrWhere(...conditions: [string, any][]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) => {
-            return eb.or(
-              conditions.map(([column, value]) => eb(column, '=', value))
-            )
-          })
-
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) => {
-            return eb.or(
-              conditions.map(([column, value]) => eb(column, '=', value))
-            )
-          })
-
-          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) => {
-            return eb.or(
-              conditions.map(([column, value]) => eb(column, '=', value))
-            )
-          })
-
-          return this
-        }
-  
-        orWhere(...conditions: [string, any][]): ${modelName}Model {
-          return this.applyOrWhere(...conditions)
-        }
-
         static orWhere(...conditions: [string, any][]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyOrWhere(...conditions)
         }
 
-        when(
-          condition: boolean,
-          callback: (query: ${modelName}Model) => ${modelName}Model,
-        ): ${modelName}Model {
-          return ${modelName}Model.when(condition, callback)
-        }
-  
-        static when(
-          condition: boolean,
-          callback: (query: ${modelName}Model) => ${modelName}Model,
-        ): ${modelName}Model {
+        static when(condition: boolean, callback: (query: ${modelName}Model) => ${modelName}Model): ${modelName}Model {
           let instance = new ${modelName}Model(undefined)
-  
-          if (condition)
-            instance = callback(instance)
-  
-          return instance
+
+          return instance.applyWhen(condition, callback)
         }
 
-        whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
-  
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
-
-          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
-  
-          return this
-        }
-  
         static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
-  
-          instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
-          
-          instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is not', null)
-          )
+          const instance = new UserModel(undefined)
 
-          return instance
+          return instance.applyWhereNotNull(column)
         }
 
-        whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          this.updateFromQuery = this.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-
-          this.deleteFromQuery = this.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          return this
-        }
-  
         static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
-          instance.selectFromQuery = instance.selectFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-  
-          instance.updateFromQuery = instance.updateFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
-          
-          instance.deleteFromQuery = instance.deleteFromQuery.where((eb: any) =>
-            eb(column, '=', '').or(column, 'is', null)
-          )
 
-          return instance
+          return instance.applyWhereNull(column)
         }
   
         ${whereStatements}
