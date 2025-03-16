@@ -1186,42 +1186,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
     return instance
   }
 
-  applyWhereIn<V>(column: keyof GiftCardsTable, values: V[]) {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
-  }
-
-  whereIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
-    return this.applyWhereIn<V>(column, values)
-  }
-
   static whereIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  applyWhereBetween<V>(column: keyof GiftCardsTable, range: [V, V]): GiftCardModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
-  }
-
-  whereBetween<V = number>(column: keyof GiftCardsTable, range: [V, V]): GiftCardModel {
-    return this.applyWhereBetween<V>(column, range)
   }
 
   static whereBetween<V = number>(column: keyof GiftCardsTable, range: [V, V]): GiftCardModel {
@@ -1230,38 +1198,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable> {
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return this
-  }
-
-  whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
-    return this.applyWhereLike(column, value)
-  }
-
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereLike(column, value)
-  }
-
-  applyWhereNotIn<V>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  whereNotIn<V>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
-    return this.applyWhereNotIn<V>(column, values)
   }
 
   static whereNotIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {

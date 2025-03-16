@@ -1793,43 +1793,11 @@ export async function generateModelString(
         }
   
         ${whereStatements}
-
-        applyWhereIn<V>(column: keyof ${formattedTableName}Table, values: V[]) {
-          this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-  
-          this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-  
-          return this
-        }
-
-        whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
-          return this.applyWhereIn<V>(column, values)
-        }
   
         static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   
           return instance.applyWhereIn<V>(column, values)
-        }
-
-        applyWhereBetween<V>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
-          if (range.length !== 2) {
-            throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-          }
-  
-          const query = sql\` \${sql.raw(column as string)} between \${range[0]} and \${range[1]} \`
-  
-          this.selectFromQuery = this.selectFromQuery.where(query)
-          this.updateFromQuery = this.updateFromQuery.where(query)
-          this.deleteFromQuery = this.deleteFromQuery.where(query)
-  
-          return this
-        }
-
-        whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
-          return this.applyWhereBetween<V>(column, range)
         }
 
         static whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
@@ -1838,38 +1806,10 @@ export async function generateModelString(
           return instance.applyWhereBetween<V>(column, range)
         }
 
-        applyWhereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          this.updateFromQuery = this.updateFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(sql\` \${sql.raw(column as string)} LIKE \${value}\`)
-  
-          return this
-        }
-
-        whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
-          return this.applyWhereLike(column, value)
-        }
-          
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   
           return instance.applyWhereLike(column, value)
-        }
-  
-        applyWhereNotIn<V>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-  
-          this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-  
-          this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-  
-          return this
-        }
-
-        whereNotIn<V>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
-          return this.applyWhereNotIn<V>(column, values)
         }
   
         static whereNotIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
@@ -1878,7 +1818,7 @@ export async function generateModelString(
           return instance.applyWhereNotIn<V>(column, values)
         }
   
-         async exists(): Promise<boolean> {
+        async exists(): Promise<boolean> {
           let model
 
           if (this.hasSelect) {

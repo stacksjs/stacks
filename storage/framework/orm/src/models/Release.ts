@@ -919,42 +919,10 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     return instance
   }
 
-  applyWhereIn<V>(column: keyof ReleasesTable, values: V[]) {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
-  }
-
-  whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
-    return this.applyWhereIn<V>(column, values)
-  }
-
   static whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  applyWhereBetween<V>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
-  }
-
-  whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
-    return this.applyWhereBetween<V>(column, range)
   }
 
   static whereBetween<V = number>(column: keyof ReleasesTable, range: [V, V]): ReleaseModel {
@@ -963,38 +931,10 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable> {
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return this
-  }
-
-  whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
-    return this.applyWhereLike(column, value)
-  }
-
   static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereLike(column, value)
-  }
-
-  applyWhereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  whereNotIn<V>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
-    return this.applyWhereNotIn<V>(column, values)
   }
 
   static whereNotIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {

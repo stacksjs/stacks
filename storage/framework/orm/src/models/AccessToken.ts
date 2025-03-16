@@ -1080,42 +1080,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance
   }
 
-  applyWhereIn<V>(column: keyof PersonalAccessTokensTable, values: V[]) {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
-  }
-
-  whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
-    return this.applyWhereIn<V>(column, values)
-  }
-
   static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  applyWhereBetween<V>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
-  }
-
-  whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
-    return this.applyWhereBetween<V>(column, range)
   }
 
   static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
@@ -1124,38 +1092,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return this
-  }
-
-  whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
-    return this.applyWhereLike(column, value)
-  }
-
   static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyWhereLike(column, value)
-  }
-
-  applyWhereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  whereNotIn<V>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
-    return this.applyWhereNotIn<V>(column, values)
   }
 
   static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {

@@ -1032,42 +1032,10 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance
   }
 
-  applyWhereIn<V>(column: keyof LoyaltyPointsTable, values: V[]) {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'in', values)
-
-    return this
-  }
-
-  whereIn<V = number>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
-    return this.applyWhereIn<V>(column, values)
-  }
-
   static whereIn<V = number>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
-  }
-
-  applyWhereBetween<V>(column: keyof LoyaltyPointsTable, range: [V, V]): LoyaltyPointModel {
-    if (range.length !== 2) {
-      throw new HttpError(500, 'Range must have exactly two values: [min, max]')
-    }
-
-    const query = sql` ${sql.raw(column as string)} between ${range[0]} and ${range[1]} `
-
-    this.selectFromQuery = this.selectFromQuery.where(query)
-    this.updateFromQuery = this.updateFromQuery.where(query)
-    this.deleteFromQuery = this.deleteFromQuery.where(query)
-
-    return this
-  }
-
-  whereBetween<V = number>(column: keyof LoyaltyPointsTable, range: [V, V]): LoyaltyPointModel {
-    return this.applyWhereBetween<V>(column, range)
   }
 
   static whereBetween<V = number>(column: keyof LoyaltyPointsTable, range: [V, V]): LoyaltyPointModel {
@@ -1076,38 +1044,10 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  applyWhereLike(column: keyof LoyaltyPointsTable, value: string): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.updateFromQuery = this.updateFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(sql` ${sql.raw(column as string)} LIKE ${value}`)
-
-    return this
-  }
-
-  whereLike(column: keyof LoyaltyPointsTable, value: string): LoyaltyPointModel {
-    return this.applyWhereLike(column, value)
-  }
-
   static whereLike(column: keyof LoyaltyPointsTable, value: string): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyWhereLike(column, value)
-  }
-
-  applyWhereNotIn<V>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.where(column, 'not in', values)
-
-    this.updateFromQuery = this.updateFromQuery.where(column, 'not in', values)
-
-    this.deleteFromQuery = this.deleteFromQuery.where(column, 'not in', values)
-
-    return this
-  }
-
-  whereNotIn<V>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
-    return this.applyWhereNotIn<V>(column, values)
   }
 
   static whereNotIn<V = number>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
