@@ -93,7 +93,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): void {
+  protected mapCustomGetters(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -308,26 +308,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<SubscriptionModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new SubscriptionModel(model)
-
-    cache.getOrSet(`subscription:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<SubscriptionModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Subscription by ID
@@ -1471,7 +1451,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel> {
     }
   }
 
-  async loadRelations(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

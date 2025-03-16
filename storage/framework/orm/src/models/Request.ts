@@ -87,7 +87,7 @@ export class RequestModel extends BaseOrm<RequestModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: RequestJsonResponse | RequestJsonResponse[]): void {
+  protected mapCustomGetters(models: RequestJsonResponse | RequestJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -278,26 +278,6 @@ export class RequestModel extends BaseOrm<RequestModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<RequestModel | undefined> {
-    const model = await DB.instance.selectFrom('requests').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new RequestModel(model)
-
-    cache.getOrSet(`request:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<RequestModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Request by ID
@@ -1440,7 +1420,7 @@ export class RequestModel extends BaseOrm<RequestModel> {
     }
   }
 
-  async loadRelations(models: RequestJsonResponse | RequestJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: RequestJsonResponse | RequestJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

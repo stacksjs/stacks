@@ -103,7 +103,7 @@ export class ProductItemModel extends BaseOrm<ProductItemModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ProductItemJsonResponse | ProductItemJsonResponse[]): void {
+  protected mapCustomGetters(models: ProductItemJsonResponse | ProductItemJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -326,26 +326,6 @@ export class ProductItemModel extends BaseOrm<ProductItemModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<ProductItemModel | undefined> {
-    const model = await DB.instance.selectFrom('product_items').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProductItemModel(model)
-
-    cache.getOrSet(`productItem:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<ProductItemModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a ProductItem by ID
@@ -1494,7 +1474,7 @@ export class ProductItemModel extends BaseOrm<ProductItemModel> {
     }
   }
 
-  async loadRelations(models: ProductItemJsonResponse | ProductItemJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: ProductItemJsonResponse | ProductItemJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

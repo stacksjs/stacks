@@ -79,7 +79,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
+  protected mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -214,26 +214,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<ReleaseModel | undefined> {
-    const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ReleaseModel(model)
-
-    cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<ReleaseModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Release by ID
@@ -1309,7 +1289,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
     }
   }
 
-  async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

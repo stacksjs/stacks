@@ -82,7 +82,7 @@ export class JobModel extends BaseOrm<JobModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
+  protected mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -241,26 +241,6 @@ export class JobModel extends BaseOrm<JobModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<JobModel | undefined> {
-    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new JobModel(model)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<JobModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Job by ID
@@ -1360,7 +1340,7 @@ export class JobModel extends BaseOrm<JobModel> {
     }
   }
 
-  async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

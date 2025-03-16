@@ -96,7 +96,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
+  protected mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -311,26 +311,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<AccessTokenModel | undefined> {
-    const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new AccessTokenModel(model)
-
-    cache.getOrSet(`accessToken:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<AccessTokenModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a AccessToken by ID
@@ -1470,7 +1450,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel> {
     }
   }
 
-  async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

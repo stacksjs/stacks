@@ -93,7 +93,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): void {
+  protected mapCustomGetters(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -300,26 +300,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<LoyaltyRewardModel | undefined> {
-    const model = await DB.instance.selectFrom('loyalty_rewards').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new LoyaltyRewardModel(model)
-
-    cache.getOrSet(`loyaltyReward:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<LoyaltyRewardModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a LoyaltyReward by ID
@@ -1468,7 +1448,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
     }
   }
 
-  async loadRelations(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

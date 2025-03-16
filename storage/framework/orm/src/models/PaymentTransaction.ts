@@ -93,7 +93,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): void {
+  protected mapCustomGetters(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -276,26 +276,6 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<PaymentTransactionModel | undefined> {
-    const model = await DB.instance.selectFrom('payment_transactions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new PaymentTransactionModel(model)
-
-    cache.getOrSet(`paymentTransaction:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<PaymentTransactionModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a PaymentTransaction by ID
@@ -1399,7 +1379,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel> {
     }
   }
 
-  async loadRelations(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

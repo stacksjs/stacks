@@ -80,7 +80,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): void {
+  protected mapCustomGetters(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -215,26 +215,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<SubscriberEmailModel | undefined> {
-    const model = await DB.instance.selectFrom('subscriber_emails').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new SubscriberEmailModel(model)
-
-    cache.getOrSet(`subscriberEmail:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<SubscriberEmailModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a SubscriberEmail by ID
@@ -1321,7 +1301,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
     }
   }
 
-  async loadRelations(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

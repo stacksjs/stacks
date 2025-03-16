@@ -102,7 +102,7 @@ export class OrderModel extends BaseOrm<OrderModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: OrderJsonResponse | OrderJsonResponse[]): void {
+  protected mapCustomGetters(models: OrderJsonResponse | OrderJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -337,26 +337,6 @@ export class OrderModel extends BaseOrm<OrderModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<OrderModel | undefined> {
-    const model = await DB.instance.selectFrom('orders').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new OrderModel(model)
-
-    cache.getOrSet(`order:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<OrderModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Order by ID
@@ -1521,7 +1501,7 @@ export class OrderModel extends BaseOrm<OrderModel> {
     }
   }
 
-  async loadRelations(models: OrderJsonResponse | OrderJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: OrderJsonResponse | OrderJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

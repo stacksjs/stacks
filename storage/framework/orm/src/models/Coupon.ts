@@ -100,7 +100,7 @@ export class CouponModel extends BaseOrm<CouponModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: CouponJsonResponse | CouponJsonResponse[]): void {
+  protected mapCustomGetters(models: CouponJsonResponse | CouponJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -351,26 +351,6 @@ export class CouponModel extends BaseOrm<CouponModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<CouponModel | undefined> {
-    const model = await DB.instance.selectFrom('coupons').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new CouponModel(model)
-
-    cache.getOrSet(`coupon:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<CouponModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Coupon by ID
@@ -1559,7 +1539,7 @@ export class CouponModel extends BaseOrm<CouponModel> {
     }
   }
 
-  async loadRelations(models: CouponJsonResponse | CouponJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: CouponJsonResponse | CouponJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

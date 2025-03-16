@@ -90,7 +90,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: DeploymentJsonResponse | DeploymentJsonResponse[]): void {
+  protected mapCustomGetters(models: DeploymentJsonResponse | DeploymentJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -281,26 +281,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<DeploymentModel | undefined> {
-    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new DeploymentModel(model)
-
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<DeploymentModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Deployment by ID
@@ -1420,7 +1400,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
     }
   }
 
-  async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

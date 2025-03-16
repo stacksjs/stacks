@@ -93,7 +93,7 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: CustomerJsonResponse | CustomerJsonResponse[]): void {
+  protected mapCustomGetters(models: CustomerJsonResponse | CustomerJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -296,26 +296,6 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<CustomerModel | undefined> {
-    const model = await DB.instance.selectFrom('customers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new CustomerModel(model)
-
-    cache.getOrSet(`customer:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<CustomerModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Customer by ID
@@ -1448,7 +1428,7 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
     }
   }
 
-  async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

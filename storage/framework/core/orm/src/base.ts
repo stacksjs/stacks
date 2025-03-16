@@ -28,9 +28,13 @@ export class BaseOrm<T> {
     return model
   }
 
+  async find(id: number): Promise<T | undefined> {
+    return await this.applyFind(id)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(model: any): void {
-    // Child classes will override this
+    
   }
 
   protected async loadRelations(model: any): Promise<void> {

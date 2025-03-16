@@ -87,7 +87,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): void {
+  protected mapCustomGetters(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -270,26 +270,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<LoyaltyPointModel | undefined> {
-    const model = await DB.instance.selectFrom('loyalty_points').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new LoyaltyPointModel(model)
-
-    cache.getOrSet(`loyaltyPoint:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<LoyaltyPointModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a LoyaltyPoint by ID
@@ -1422,7 +1402,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
     }
   }
 
-  async loadRelations(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

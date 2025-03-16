@@ -78,7 +78,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
+  protected mapCustomGetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -205,26 +205,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<SubscriberModel | undefined> {
-    const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new SubscriberModel(model)
-
-    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<SubscriberModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Subscriber by ID
@@ -1292,7 +1272,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel> {
     }
   }
 
-  async loadRelations(models: SubscriberJsonResponse | SubscriberJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: SubscriberJsonResponse | SubscriberJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

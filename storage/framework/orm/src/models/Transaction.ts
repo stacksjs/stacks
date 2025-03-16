@@ -91,7 +91,7 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
+  protected mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -282,26 +282,6 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<TransactionModel | undefined> {
-    const model = await DB.instance.selectFrom('transactions').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new TransactionModel(model)
-
-    cache.getOrSet(`transaction:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<TransactionModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Transaction by ID
@@ -1434,7 +1414,7 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
     }
   }
 
-  async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

@@ -83,7 +83,7 @@ export class PostModel extends BaseOrm<PostModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
+  protected mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -226,26 +226,6 @@ export class PostModel extends BaseOrm<PostModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<PostModel | undefined> {
-    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new PostModel(model)
-
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<PostModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Post by ID
@@ -1321,7 +1301,7 @@ export class PostModel extends BaseOrm<PostModel> {
     }
   }
 
-  async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

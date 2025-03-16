@@ -88,7 +88,7 @@ export class TeamModel extends BaseOrm<TeamModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
+  protected mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -275,26 +275,6 @@ export class TeamModel extends BaseOrm<TeamModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<TeamModel | undefined> {
-    const model = await DB.instance.selectFrom('teams').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new TeamModel(model)
-
-    cache.getOrSet(`team:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<TeamModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Team by ID
@@ -1418,7 +1398,7 @@ export class TeamModel extends BaseOrm<TeamModel> {
     }
   }
 
-  async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

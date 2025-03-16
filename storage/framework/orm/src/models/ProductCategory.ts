@@ -87,7 +87,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): void {
+  protected mapCustomGetters(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -266,26 +266,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<ProductCategoryModel | undefined> {
-    const model = await DB.instance.selectFrom('product_categories').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProductCategoryModel(model)
-
-    cache.getOrSet(`productCategory:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<ProductCategoryModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a ProductCategory by ID
@@ -1410,7 +1390,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
     }
   }
 
-  async loadRelations(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)

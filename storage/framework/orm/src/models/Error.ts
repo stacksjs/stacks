@@ -82,7 +82,7 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
     this.hasSaved = false
   }
 
-  mapCustomGetters(models: ErrorJsonResponse | ErrorJsonResponse[]): void {
+  protected mapCustomGetters(models: ErrorJsonResponse | ErrorJsonResponse[]): void {
     const data = models
 
     if (Array.isArray(data)) {
@@ -241,26 +241,6 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
     instance.hasSelect = true
 
     return instance
-  }
-
-  async applyFind(id: number): Promise<ErrorModel | undefined> {
-    const model = await DB.instance.selectFrom('errors').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (!model)
-      return undefined
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ErrorModel(model)
-
-    cache.getOrSet(`error:${id}`, JSON.stringify(model))
-
-    return data
-  }
-
-  async find(id: number): Promise<ErrorModel | undefined> {
-    return await this.applyFind(id)
   }
 
   // Method to find a Error by ID
@@ -1360,7 +1340,7 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
     }
   }
 
-  async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {
+  protected async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {
     // Handle both single model and array of models
     const modelArray = Array.isArray(models) ? models : [models]
     if (!modelArray.length)
