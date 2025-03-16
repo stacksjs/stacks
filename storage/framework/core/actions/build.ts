@@ -61,6 +61,18 @@ const result = await Bun.build({
     './src/upgrade.ts',
   ],
 
+  external: [
+    '@stacksjs/ai',
+    '@stacksjs/cli',
+    '@stacksjs/config',
+    '@stacksjs/enums',
+    '@stacksjs/error-handling',
+    '@stacksjs/logging',
+    '@stacksjs/path',
+    '@stacksjs/storage',
+    '@stacksjs/utils',
+  ],
+
   plugins: [
     dts({
       root: './src',
