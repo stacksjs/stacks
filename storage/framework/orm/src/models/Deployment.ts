@@ -59,7 +59,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DeploymentJsonResponse> = []
   protected attributes = {} as DeploymentJsonResponse
-  protected tableName = 'deployments'
   protected originalAttributes = {} as DeploymentJsonResponse
 
   protected selectFromQuery: any
@@ -71,7 +70,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(deployment: DeploymentJsonResponse | undefined) {
-    super()
+    super('deployments')
     if (deployment) {
       this.attributes = { ...deployment }
       this.originalAttributes = { ...deployment }

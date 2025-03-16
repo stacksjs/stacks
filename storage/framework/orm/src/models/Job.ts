@@ -51,7 +51,6 @@ export class JobModel extends BaseOrm<JobModel> {
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
   private readonly guarded: Array<keyof JobJsonResponse> = []
   protected attributes = {} as JobJsonResponse
-  protected tableName = 'jobs'
   protected originalAttributes = {} as JobJsonResponse
 
   protected selectFromQuery: any
@@ -63,7 +62,7 @@ export class JobModel extends BaseOrm<JobModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(job: JobJsonResponse | undefined) {
-    super()
+    super('jobs')
     if (job) {
       this.attributes = { ...job }
       this.originalAttributes = { ...job }

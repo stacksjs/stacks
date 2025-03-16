@@ -48,7 +48,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
   private readonly guarded: Array<keyof ReleaseJsonResponse> = []
   protected attributes = {} as ReleaseJsonResponse
-  protected tableName = 'releases'
   protected originalAttributes = {} as ReleaseJsonResponse
 
   protected selectFromQuery: any
@@ -60,7 +59,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(release: ReleaseJsonResponse | undefined) {
-    super()
+    super('releases')
     if (release) {
       this.attributes = { ...release }
       this.originalAttributes = { ...release }

@@ -51,7 +51,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel> {
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
   private readonly guarded: Array<keyof FailedJobJsonResponse> = []
   protected attributes = {} as FailedJobJsonResponse
-  protected tableName = 'failed_jobs'
   protected originalAttributes = {} as FailedJobJsonResponse
 
   protected selectFromQuery: any
@@ -63,7 +62,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(failedJob: FailedJobJsonResponse | undefined) {
-    super()
+    super('failed_jobs')
     if (failedJob) {
       this.attributes = { ...failedJob }
       this.originalAttributes = { ...failedJob }

@@ -70,7 +70,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel> {
   private readonly fillable: Array<keyof GiftCardJsonResponse> = ['code', 'initial_balance', 'current_balance', 'currency', 'status', 'purchaser_id', 'recipient_email', 'recipient_name', 'personal_message', 'is_digital', 'is_reloadable', 'is_active', 'expiry_date', 'last_used_date', 'template_id', 'uuid']
   private readonly guarded: Array<keyof GiftCardJsonResponse> = []
   protected attributes = {} as GiftCardJsonResponse
-  protected tableName = 'gift_cards'
   protected originalAttributes = {} as GiftCardJsonResponse
 
   protected selectFromQuery: any
@@ -82,7 +81,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(giftCard: GiftCardJsonResponse | undefined) {
-    super()
+    super('gift_cards')
     if (giftCard) {
       this.attributes = { ...giftCard }
       this.originalAttributes = { ...giftCard }

@@ -55,7 +55,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel> {
   private readonly fillable: Array<keyof PaymentProductJsonResponse> = ['name', 'description', 'key', 'unit_price', 'status', 'image', 'provider_id', 'uuid']
   private readonly guarded: Array<keyof PaymentProductJsonResponse> = []
   protected attributes = {} as PaymentProductJsonResponse
-  protected tableName = 'payment_products'
   protected originalAttributes = {} as PaymentProductJsonResponse
 
   protected selectFromQuery: any
@@ -67,7 +66,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(paymentProduct: PaymentProductJsonResponse | undefined) {
-    super()
+    super('payment_products')
     if (paymentProduct) {
       this.attributes = { ...paymentProduct }
       this.originalAttributes = { ...paymentProduct }

@@ -71,7 +71,6 @@ export class UserModel extends BaseOrm<UserModel> {
   private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
-  protected tableName = 'users'
   protected originalAttributes = {} as UserJsonResponse
 
   protected selectFromQuery: any
@@ -83,7 +82,7 @@ export class UserModel extends BaseOrm<UserModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(user: UserJsonResponse | undefined) {
-    super()
+    super('users')
     if (user) {
       this.attributes = { ...user }
       this.originalAttributes = { ...user }

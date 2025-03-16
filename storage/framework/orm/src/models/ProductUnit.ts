@@ -58,7 +58,6 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
   private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid']
   private readonly guarded: Array<keyof ProductUnitJsonResponse> = []
   protected attributes = {} as ProductUnitJsonResponse
-  protected tableName = 'product_units'
   protected originalAttributes = {} as ProductUnitJsonResponse
 
   protected selectFromQuery: any
@@ -70,7 +69,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productUnit: ProductUnitJsonResponse | undefined) {
-    super()
+    super('product_units')
     if (productUnit) {
       this.attributes = { ...productUnit }
       this.originalAttributes = { ...productUnit }

@@ -58,7 +58,6 @@ export class OrderItemModel extends BaseOrm<OrderItemModel> {
   private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
   private readonly guarded: Array<keyof OrderItemJsonResponse> = []
   protected attributes = {} as OrderItemJsonResponse
-  protected tableName = 'order_items'
   protected originalAttributes = {} as OrderItemJsonResponse
 
   protected selectFromQuery: any
@@ -70,7 +69,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(orderItem: OrderItemJsonResponse | undefined) {
-    super()
+    super('order_items')
     if (orderItem) {
       this.attributes = { ...orderItem }
       this.originalAttributes = { ...orderItem }

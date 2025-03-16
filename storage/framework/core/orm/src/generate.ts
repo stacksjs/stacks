@@ -945,7 +945,6 @@ export async function generateModelString(
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
         private readonly guarded: Array<keyof ${modelName}JsonResponse> = ${guarded}
         protected attributes = {} as ${modelName}JsonResponse
-        protected tableName = '${tableName}'
         protected originalAttributes = {} as ${modelName}JsonResponse
         ${privateSoftDeletes}
         protected selectFromQuery: any
@@ -957,7 +956,7 @@ export async function generateModelString(
         private customColumns: Record<string, unknown> = {}
        
         constructor(${formattedModelName}: ${modelName}JsonResponse | undefined) {
-          super()
+          super('${tableName}')
           if (${formattedModelName}) {
 
             this.attributes = { ...${formattedModelName} }

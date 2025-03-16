@@ -61,7 +61,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel> {
   private readonly fillable: Array<keyof PaymentMethodJsonResponse> = ['type', 'last_four', 'brand', 'exp_month', 'exp_year', 'is_default', 'provider_id', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PaymentMethodJsonResponse> = []
   protected attributes = {} as PaymentMethodJsonResponse
-  protected tableName = 'payment_methods'
   protected originalAttributes = {} as PaymentMethodJsonResponse
 
   protected selectFromQuery: any
@@ -73,7 +72,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(paymentMethod: PaymentMethodJsonResponse | undefined) {
-    super()
+    super('payment_methods')
     if (paymentMethod) {
       this.attributes = { ...paymentMethod }
       this.originalAttributes = { ...paymentMethod }

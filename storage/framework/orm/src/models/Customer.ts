@@ -62,7 +62,6 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
   protected attributes = {} as CustomerJsonResponse
-  protected tableName = 'customers'
   protected originalAttributes = {} as CustomerJsonResponse
 
   protected selectFromQuery: any
@@ -74,7 +73,7 @@ export class CustomerModel extends BaseOrm<CustomerModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(customer: CustomerJsonResponse | undefined) {
-    super()
+    super('customers')
     if (customer) {
       this.attributes = { ...customer }
       this.originalAttributes = { ...customer }

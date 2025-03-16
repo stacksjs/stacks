@@ -60,7 +60,6 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
   private readonly guarded: Array<keyof TransactionJsonResponse> = []
   protected attributes = {} as TransactionJsonResponse
-  protected tableName = 'transactions'
   protected originalAttributes = {} as TransactionJsonResponse
 
   protected selectFromQuery: any
@@ -72,7 +71,7 @@ export class TransactionModel extends BaseOrm<TransactionModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(transaction: TransactionJsonResponse | undefined) {
-    super()
+    super('transactions')
     if (transaction) {
       this.attributes = { ...transaction }
       this.originalAttributes = { ...transaction }

@@ -50,7 +50,6 @@ export class ProjectModel extends BaseOrm<ProjectModel> {
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
   private readonly guarded: Array<keyof ProjectJsonResponse> = []
   protected attributes = {} as ProjectJsonResponse
-  protected tableName = 'projects'
   protected originalAttributes = {} as ProjectJsonResponse
 
   protected selectFromQuery: any
@@ -62,7 +61,7 @@ export class ProjectModel extends BaseOrm<ProjectModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(project: ProjectJsonResponse | undefined) {
-    super()
+    super('projects')
     if (project) {
       this.attributes = { ...project }
       this.originalAttributes = { ...project }

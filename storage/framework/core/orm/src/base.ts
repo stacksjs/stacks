@@ -2,10 +2,16 @@ import { cache } from '@stacksjs/cache'
 import { DB } from '@stacksjs/orm'
 
 export class BaseOrm<T> {
+  protected tableName: string
+
+  constructor(tableName: string) {
+    this.tableName = tableName
+  }
+
   // Method to find a record by ID
   // The protected helper method that does the actual work
-  protected async applyFind(tableName: string, id: number): Promise<T | undefined> {
-    const model = await DB.instance.selectFrom(tableName)
+  protected async applyFind(id: number): Promise<T | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -17,7 +23,7 @@ export class BaseOrm<T> {
 
     await this.loadRelations(model)
 
-    cache.getOrSet(`${tableName}:${id}`, JSON.stringify(model))
+    cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
   }

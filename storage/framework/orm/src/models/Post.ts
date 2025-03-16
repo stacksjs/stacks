@@ -52,7 +52,6 @@ export class PostModel extends BaseOrm<PostModel> {
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
   private readonly guarded: Array<keyof PostJsonResponse> = []
   protected attributes = {} as PostJsonResponse
-  protected tableName = 'posts'
   protected originalAttributes = {} as PostJsonResponse
 
   protected selectFromQuery: any
@@ -64,7 +63,7 @@ export class PostModel extends BaseOrm<PostModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(post: PostJsonResponse | undefined) {
-    super()
+    super('posts')
     if (post) {
       this.attributes = { ...post }
       this.originalAttributes = { ...post }

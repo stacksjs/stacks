@@ -58,7 +58,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
   private readonly fillable: Array<keyof ProductVariantJsonResponse> = ['variant', 'type', 'description', 'options', 'status', 'uuid']
   private readonly guarded: Array<keyof ProductVariantJsonResponse> = []
   protected attributes = {} as ProductVariantJsonResponse
-  protected tableName = 'product_variants'
   protected originalAttributes = {} as ProductVariantJsonResponse
 
   protected selectFromQuery: any
@@ -70,7 +69,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productVariant: ProductVariantJsonResponse | undefined) {
-    super()
+    super('product_variants')
     if (productVariant) {
       this.attributes = { ...productVariant }
       this.originalAttributes = { ...productVariant }

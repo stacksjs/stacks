@@ -47,7 +47,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel> {
   private readonly fillable: Array<keyof SubscriberJsonResponse> = ['subscribed', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriberJsonResponse> = []
   protected attributes = {} as SubscriberJsonResponse
-  protected tableName = 'subscribers'
   protected originalAttributes = {} as SubscriberJsonResponse
 
   protected selectFromQuery: any
@@ -59,7 +58,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(subscriber: SubscriberJsonResponse | undefined) {
-    super()
+    super('subscribers')
     if (subscriber) {
       this.attributes = { ...subscriber }
       this.originalAttributes = { ...subscriber }

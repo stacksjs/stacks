@@ -57,7 +57,6 @@ export class TeamModel extends BaseOrm<TeamModel> {
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
   private readonly guarded: Array<keyof TeamJsonResponse> = []
   protected attributes = {} as TeamJsonResponse
-  protected tableName = 'teams'
   protected originalAttributes = {} as TeamJsonResponse
 
   protected selectFromQuery: any
@@ -69,7 +68,7 @@ export class TeamModel extends BaseOrm<TeamModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(team: TeamJsonResponse | undefined) {
-    super()
+    super('teams')
     if (team) {
       this.attributes = { ...team }
       this.originalAttributes = { ...team }

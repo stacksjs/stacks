@@ -62,7 +62,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
   private readonly fillable: Array<keyof LoyaltyRewardJsonResponse> = ['name', 'description', 'points_required', 'reward_type', 'discount_percentage', 'free_product_id', 'is_active', 'expiry_days', 'image_url', 'uuid']
   private readonly guarded: Array<keyof LoyaltyRewardJsonResponse> = []
   protected attributes = {} as LoyaltyRewardJsonResponse
-  protected tableName = 'loyalty_rewards'
   protected originalAttributes = {} as LoyaltyRewardJsonResponse
 
   protected selectFromQuery: any
@@ -74,7 +73,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(loyaltyReward: LoyaltyRewardJsonResponse | undefined) {
-    super()
+    super('loyalty_rewards')
     if (loyaltyReward) {
       this.attributes = { ...loyaltyReward }
       this.originalAttributes = { ...loyaltyReward }

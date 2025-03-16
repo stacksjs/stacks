@@ -49,7 +49,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
   private readonly guarded: Array<keyof SubscriberEmailJsonResponse> = []
   protected attributes = {} as SubscriberEmailJsonResponse
-  protected tableName = 'subscriber_emails'
   protected originalAttributes = {} as SubscriberEmailJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
@@ -61,7 +60,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(subscriberEmail: SubscriberEmailJsonResponse | undefined) {
-    super()
+    super('subscriber_emails')
     if (subscriberEmail) {
       this.attributes = { ...subscriberEmail }
       this.originalAttributes = { ...subscriberEmail }

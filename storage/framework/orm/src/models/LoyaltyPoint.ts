@@ -56,7 +56,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
   private readonly guarded: Array<keyof LoyaltyPointJsonResponse> = []
   protected attributes = {} as LoyaltyPointJsonResponse
-  protected tableName = 'loyalty_points'
   protected originalAttributes = {} as LoyaltyPointJsonResponse
 
   protected selectFromQuery: any
@@ -68,7 +67,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(loyaltyPoint: LoyaltyPointJsonResponse | undefined) {
-    super()
+    super('loyalty_points')
     if (loyaltyPoint) {
       this.attributes = { ...loyaltyPoint }
       this.originalAttributes = { ...loyaltyPoint }

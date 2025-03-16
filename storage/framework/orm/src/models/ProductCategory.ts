@@ -56,7 +56,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
   private readonly fillable: Array<keyof ProductCategoryJsonResponse> = ['name', 'description', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'uuid']
   private readonly guarded: Array<keyof ProductCategoryJsonResponse> = []
   protected attributes = {} as ProductCategoryJsonResponse
-  protected tableName = 'product_categories'
   protected originalAttributes = {} as ProductCategoryJsonResponse
 
   protected selectFromQuery: any
@@ -68,7 +67,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productCategory: ProductCategoryJsonResponse | undefined) {
-    super()
+    super('product_categories')
     if (productCategory) {
       this.attributes = { ...productCategory }
       this.originalAttributes = { ...productCategory }

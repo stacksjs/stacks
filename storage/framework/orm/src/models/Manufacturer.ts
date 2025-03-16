@@ -54,7 +54,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
   private readonly guarded: Array<keyof ManufacturerJsonResponse> = []
   protected attributes = {} as ManufacturerJsonResponse
-  protected tableName = 'manufacturers'
   protected originalAttributes = {} as ManufacturerJsonResponse
 
   protected selectFromQuery: any
@@ -66,7 +65,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(manufacturer: ManufacturerJsonResponse | undefined) {
-    super()
+    super('manufacturers')
     if (manufacturer) {
       this.attributes = { ...manufacturer }
       this.originalAttributes = { ...manufacturer }

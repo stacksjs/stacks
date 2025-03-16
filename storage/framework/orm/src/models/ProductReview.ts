@@ -67,7 +67,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid']
   private readonly guarded: Array<keyof ProductReviewJsonResponse> = []
   protected attributes = {} as ProductReviewJsonResponse
-  protected tableName = 'product_reviews'
   protected originalAttributes = {} as ProductReviewJsonResponse
 
   protected selectFromQuery: any
@@ -79,7 +78,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(productReview: ProductReviewJsonResponse | undefined) {
-    super()
+    super('product_reviews')
     if (productReview) {
       this.attributes = { ...productReview }
       this.originalAttributes = { ...productReview }

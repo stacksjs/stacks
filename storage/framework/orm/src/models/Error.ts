@@ -51,7 +51,6 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
   private readonly guarded: Array<keyof ErrorJsonResponse> = []
   protected attributes = {} as ErrorJsonResponse
-  protected tableName = 'errors'
   protected originalAttributes = {} as ErrorJsonResponse
 
   protected selectFromQuery: any
@@ -63,7 +62,7 @@ export class ErrorModel extends BaseOrm<ErrorModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(error: ErrorJsonResponse | undefined) {
-    super()
+    super('errors')
     if (error) {
       this.attributes = { ...error }
       this.originalAttributes = { ...error }

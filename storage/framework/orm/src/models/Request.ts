@@ -56,7 +56,6 @@ export class RequestModel extends BaseOrm<RequestModel> {
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
   private readonly guarded: Array<keyof RequestJsonResponse> = []
   protected attributes = {} as RequestJsonResponse
-  protected tableName = 'requests'
   protected originalAttributes = {} as RequestJsonResponse
   private softDeletes = false
   protected selectFromQuery: any
@@ -68,7 +67,7 @@ export class RequestModel extends BaseOrm<RequestModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(request: RequestJsonResponse | undefined) {
-    super()
+    super('requests')
     if (request) {
       this.attributes = { ...request }
       this.originalAttributes = { ...request }

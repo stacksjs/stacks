@@ -69,7 +69,6 @@ export class CouponModel extends BaseOrm<CouponModel> {
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid']
   private readonly guarded: Array<keyof CouponJsonResponse> = []
   protected attributes = {} as CouponJsonResponse
-  protected tableName = 'coupons'
   protected originalAttributes = {} as CouponJsonResponse
 
   protected selectFromQuery: any
@@ -81,7 +80,7 @@ export class CouponModel extends BaseOrm<CouponModel> {
   private customColumns: Record<string, unknown> = {}
 
   constructor(coupon: CouponJsonResponse | undefined) {
-    super()
+    super('coupons')
     if (coupon) {
       this.attributes = { ...coupon }
       this.originalAttributes = { ...coupon }
