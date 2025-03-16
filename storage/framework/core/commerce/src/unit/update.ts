@@ -145,11 +145,11 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
       .select('type')
       .where('id', '=', id)
       .executeTakeFirst()
-    
+
     if (!unit) {
       return false
     }
-    
+
     const result = await db
       .updateTable('product_units')
       .set({

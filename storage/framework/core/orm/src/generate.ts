@@ -857,14 +857,20 @@ export async function generateModelString(
 
   const otherModelRelations = await fetchOtherModelRelations(modelName)
 
-  if (useTwoFactor && tableName === 'users')
+  if (useTwoFactor && tableName === 'users') {
+    jsonFields += 'two_factor_secret: this.two_factor_secret\n'
     fieldString += 'two_factor_secret?: string \n'
+  }
 
-  if (usePasskey && tableName === 'users')
+  if (usePasskey && tableName === 'users') {
+    jsonFields += 'public_passkey: this.public_passkey\n'
     fieldString += 'public_passkey?: string \n'
+  }
 
-  if (useBillable && tableName === 'users')
+  if (useBillable && tableName === 'users') {
+    jsonFields += 'stripe_id: this.stripe_id\n'
     fieldString += 'stripe_id?: string \n'
+  }
 
   if (useUuid)
     fieldString += 'uuid?: string \n'

@@ -1,7 +1,7 @@
 // Import dependencies
 import type { ProductUnitRequestType } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
 import type { NewProductUnit, ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
+import { db } from '@stacksjs/database'
 
 /**
  * Create a new product unit
@@ -96,7 +96,7 @@ export async function bulkStore(requests: ProductUnitRequestType[]): Promise<num
           .executeTakeFirst()
 
         const unitId = Number(result.insertId)
-        
+
         // If this unit is set as default, update all other units of the same type
         if (unitData.is_default) {
           await trx
@@ -142,13 +142,13 @@ export function formatUnitOptions(
       query = query.where('type', '=', type)
 
     // Convert db results to ensure id is string and handle potentially undefined is_default
-    return query.execute().then(results => 
+    return query.execute().then(results =>
       results.map(result => ({
         id: String(result.id), // Convert id to string
         name: result.name,
         abbreviation: result.abbreviation,
-        is_default: result.is_default
-      }))
+        is_default: result.is_default,
+      })),
     )
   }
   catch (error) {
@@ -162,7 +162,7 @@ export function formatUnitOptions(
 
 /**
  * Get the default unit for a specific type
- * 
+ *
  * @param type The unit type to get the default for
  * @returns The default unit or undefined if none found
  */
