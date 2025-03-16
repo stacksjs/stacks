@@ -960,33 +960,12 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof LoyaltyRewardsTable, operator: Operator, second: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof LoyaltyRewardsTable, operator: Operator, second: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof LoyaltyRewardsTable, ...args: string[]): LoyaltyRewardModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new LoyaltyRewardModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof LoyaltyRewardsTable, ...args: string[]): LoyaltyRewardModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof LoyaltyRewardsTable, ...args: string[]): LoyaltyRewardModel {
@@ -995,16 +974,10 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

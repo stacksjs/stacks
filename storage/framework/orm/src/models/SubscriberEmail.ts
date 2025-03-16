@@ -877,33 +877,12 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new SubscriberEmailModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
@@ -912,16 +891,10 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): SubscriberEmailModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

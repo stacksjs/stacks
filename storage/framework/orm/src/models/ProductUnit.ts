@@ -924,33 +924,12 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductUnitsTable, operator: Operator, second: keyof ProductUnitsTable): ProductUnitModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof ProductUnitsTable, operator: Operator, second: keyof ProductUnitsTable): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof ProductUnitsTable, ...args: string[]): ProductUnitModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new ProductUnitModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof ProductUnitsTable, ...args: string[]): ProductUnitModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof ProductUnitsTable, ...args: string[]): ProductUnitModel {
@@ -959,16 +938,10 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ProductUnitModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

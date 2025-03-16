@@ -848,33 +848,12 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> 
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof SubscribersTable, operator: Operator, second: keyof SubscribersTable): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new SubscriberModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof SubscribersTable, ...args: string[]): SubscriberModel {
@@ -883,16 +862,10 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable> 
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

@@ -1011,33 +1011,12 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof CouponsTable, operator: Operator, second: keyof CouponsTable): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof CouponsTable, operator: Operator, second: keyof CouponsTable): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof CouponsTable, ...args: string[]): CouponModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new CouponModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof CouponsTable, ...args: string[]): CouponModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof CouponsTable, ...args: string[]): CouponModel {
@@ -1046,16 +1025,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable> {
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

@@ -926,33 +926,12 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductCategoriesTable, operator: Operator, second: keyof ProductCategoriesTable): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof ProductCategoriesTable, operator: Operator, second: keyof ProductCategoriesTable): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof ProductCategoriesTable, ...args: string[]): ProductCategoryModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new ProductCategoryModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof ProductCategoriesTable, ...args: string[]): ProductCategoryModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof ProductCategoriesTable, ...args: string[]): ProductCategoryModel {
@@ -961,16 +940,10 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

@@ -1000,33 +1000,12 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable> {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof PaymentsTable, operator: Operator, second: keyof PaymentsTable): PaymentModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof PaymentsTable, operator: Operator, second: keyof PaymentsTable): PaymentModel {
     const instance = new PaymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof PaymentsTable, ...args: string[]): PaymentModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new PaymentModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof PaymentsTable, ...args: string[]): PaymentModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof PaymentsTable, ...args: string[]): PaymentModel {
@@ -1035,16 +1014,10 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable> {
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): PaymentModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): PaymentModel {
     const instance = new PaymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

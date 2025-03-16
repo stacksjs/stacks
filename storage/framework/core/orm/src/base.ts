@@ -1,5 +1,6 @@
 import type { Operator } from '@stacksjs/orm'
 import { cache } from '@stacksjs/cache'
+import { sql } from '@stacksjs/database'
 import { DB } from '@stacksjs/orm'
 
 export class BaseOrm<T, C> {
@@ -78,6 +79,40 @@ export class BaseOrm<T, C> {
 
   async find(id: number): Promise<T | undefined> {
     return await this.applyFind(id)
+  }
+
+  applyWhereColumn(first: keyof C, operator: Operator, second: keyof C): this {
+    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
+
+    return this
+  }
+
+  whereColumn(first: keyof C, operator: Operator, second: keyof C): this {
+    return this.applyWhereColumn(first, operator, second)
+  }
+
+  applyWhereRef(column: keyof C, ...args: string[]): this {
+    const [operatorOrValue, value] = args
+    const operator = value === undefined ? '=' : operatorOrValue
+    const actualValue = value === undefined ? operatorOrValue : value
+
+    this.selectFromQuery = this.selectFromQuery.whereRef(column, operator, actualValue)
+
+    return this
+  }
+
+  whereRef(column: keyof C, ...args: string[]): this {
+    return this.applyWhereRef(column, ...args)
+  }
+
+  applyWhereRaw(sqlStatement: string): this {
+    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
+
+    return this
+  }
+
+  whereRaw(sqlStatement: string): this {
+    return this.applyWhereRaw(sqlStatement)
   }
 
   // Methods to be implemented by child classes

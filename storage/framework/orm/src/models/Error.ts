@@ -884,33 +884,12 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof ErrorsTable, operator: Operator, second: keyof ErrorsTable): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new ErrorModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof ErrorsTable, ...args: string[]): ErrorModel {
@@ -919,16 +898,10 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable> {
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

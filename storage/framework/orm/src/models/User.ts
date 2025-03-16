@@ -971,33 +971,12 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof UsersTable, ...args: string[]): UserModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new UserModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
@@ -1006,16 +985,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable> {
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): UserModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }

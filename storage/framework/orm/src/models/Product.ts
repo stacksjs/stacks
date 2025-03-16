@@ -982,33 +982,12 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
     return instance.applyWhere<V>(column, ...args)
   }
 
-  whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.whereRef(first, operator, second)
-
-    return this
-  }
-
   static whereColumn(first: keyof ProductsTable, operator: Operator, second: keyof ProductsTable): ProductModel {
     const instance = new ProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(first, operator, second)
+    instance.selectFromQuery = instance.applyWhereColumn(first, operator, second)
 
     return instance
-  }
-
-  applyWhereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
-    const [operatorOrValue, value] = args
-    const operator = value === undefined ? '=' : operatorOrValue
-    const actualValue = value === undefined ? operatorOrValue : value
-
-    const instance = new ProductModel(undefined)
-    instance.selectFromQuery = instance.selectFromQuery.whereRef(column, operator, actualValue)
-
-    return instance
-  }
-
-  whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
-    return this.applyWhereRef(column, ...args)
   }
 
   static whereRef(column: keyof ProductsTable, ...args: string[]): ProductModel {
@@ -1017,16 +996,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable> {
     return instance.applyWhereRef(column, ...args)
   }
 
-  whereRaw(sqlStatement: string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.where(sql`${sqlStatement}`)
-
-    return this
-  }
-
   static whereRaw(sqlStatement: string): ProductModel {
     const instance = new ProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where(sql`${sqlStatement}`)
+    instance.selectFromQuery = instance.applyWhereRaw(sqlStatement)
 
     return instance
   }
