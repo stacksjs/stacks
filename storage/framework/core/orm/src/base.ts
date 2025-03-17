@@ -758,6 +758,34 @@ export class BaseOrm<T, C, J> {
     await this.applyChunk(size, callback)
   }
 
+  isDirty(column?: keyof T): boolean {
+    if (!('attributes' in this) || !('originalAttributes' in this)) {
+      throw new Error('Child class must define attributes and originalAttributes properties')
+    }
+
+    if (column) {
+      return (this as any).attributes[column as string] !== (this as any).originalAttributes[column as string]
+    }
+
+    return Object.entries((this as any).originalAttributes).some(([key, originalValue]) => {
+      const currentValue = (this as any).attributes[key]
+
+      return currentValue !== originalValue
+    })
+  }
+
+  isClean(column?: keyof T): boolean {
+    return !this.isDirty(column)
+  }
+
+  wasChanged(column?: keyof T): boolean {
+    if (!('hasSaved' in this)) {
+      throw new Error('Child class must define hasSaved property')
+    }
+
+    return (this as any).hasSaved && this.isDirty(column)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 

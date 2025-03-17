@@ -215,26 +215,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     }, {})
   }
 
-  isDirty(column?: keyof SubscriberEmailJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof SubscriberEmailJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof SubscriberEmailJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof SubscriberEmailJsonResponse)[] | RawBuilder<string> | string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 

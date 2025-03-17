@@ -248,26 +248,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }, {})
   }
 
-  isDirty(column?: keyof ManufacturerJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ManufacturerJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ManufacturerJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 

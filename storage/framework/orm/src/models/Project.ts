@@ -232,26 +232,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     }, {})
   }
 
-  isDirty(column?: keyof ProjectJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ProjectJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ProjectJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
     const instance = new ProjectModel(undefined)
 

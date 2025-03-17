@@ -264,26 +264,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     }, {})
   }
 
-  isDirty(column?: keyof ProductVariantJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ProductVariantJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ProductVariantJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 

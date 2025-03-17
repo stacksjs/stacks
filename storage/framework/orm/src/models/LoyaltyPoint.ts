@@ -270,26 +270,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     }, {})
   }
 
-  isDirty(column?: keyof LoyaltyPointJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof LoyaltyPointJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof LoyaltyPointJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof LoyaltyPointJsonResponse)[] | RawBuilder<string> | string): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 

@@ -311,26 +311,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }, {})
   }
 
-  isDirty(column?: keyof AccessTokenJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof AccessTokenJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof AccessTokenJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof AccessTokenJsonResponse)[] | RawBuilder<string> | string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 

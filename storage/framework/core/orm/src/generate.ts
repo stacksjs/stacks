@@ -1094,26 +1094,6 @@ export async function generateModelString(
           }, {})
         }
 
-        isDirty(column?: keyof ${modelName}JsonResponse): boolean {
-          if (column) {
-            return this.attributes[column] !== this.originalAttributes[column]
-          }
-
-          return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-            const currentValue = (this.attributes as any)[key]
-
-            return currentValue !== originalValue
-          })
-        }
-
-        isClean(column?: keyof ${modelName}JsonResponse): boolean {
-          return !this.isDirty(column)
-        }
-
-        wasChanged(column?: keyof ${modelName}JsonResponse): boolean {
-          return this.hasSaved && this.isDirty(column)
-        }
-
         static select(params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   

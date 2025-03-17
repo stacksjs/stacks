@@ -266,26 +266,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     }, {})
   }
 
-  isDirty(column?: keyof ProductCategoryJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ProductCategoryJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ProductCategoryJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ProductCategoryJsonResponse)[] | RawBuilder<string> | string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 

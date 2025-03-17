@@ -287,26 +287,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     }, {})
   }
 
-  isDirty(column?: keyof PaymentMethodJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof PaymentMethodJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof PaymentMethodJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof PaymentMethodJsonResponse)[] | RawBuilder<string> | string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 

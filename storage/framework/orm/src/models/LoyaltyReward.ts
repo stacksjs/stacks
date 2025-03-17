@@ -300,26 +300,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     }, {})
   }
 
-  isDirty(column?: keyof LoyaltyRewardJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof LoyaltyRewardJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof LoyaltyRewardJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof LoyaltyRewardJsonResponse)[] | RawBuilder<string> | string): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 

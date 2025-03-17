@@ -313,26 +313,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     }, {})
   }
 
-  isDirty(column?: keyof ProductReviewJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ProductReviewJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ProductReviewJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ProductReviewJsonResponse)[] | RawBuilder<string> | string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 

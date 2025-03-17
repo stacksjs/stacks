@@ -308,26 +308,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     }, {})
   }
 
-  isDirty(column?: keyof SubscriptionJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof SubscriptionJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof SubscriptionJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof SubscriptionJsonResponse)[] | RawBuilder<string> | string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 

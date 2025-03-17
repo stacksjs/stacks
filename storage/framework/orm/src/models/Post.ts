@@ -226,26 +226,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }, {})
   }
 
-  isDirty(column?: keyof PostJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof PostJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof PostJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     const instance = new PostModel(undefined)
 

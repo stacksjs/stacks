@@ -282,26 +282,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     }, {})
   }
 
-  isDirty(column?: keyof TransactionJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof TransactionJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof TransactionJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string): TransactionModel {
     const instance = new TransactionModel(undefined)
 

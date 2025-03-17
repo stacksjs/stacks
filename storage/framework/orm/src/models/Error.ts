@@ -241,26 +241,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     }, {})
   }
 
-  isDirty(column?: keyof ErrorJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof ErrorJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof ErrorJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string): ErrorModel {
     const instance = new ErrorModel(undefined)
 

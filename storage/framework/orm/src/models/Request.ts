@@ -278,26 +278,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }, {})
   }
 
-  isDirty(column?: keyof RequestJsonResponse): boolean {
-    if (column) {
-      return this.attributes[column] !== this.originalAttributes[column]
-    }
-
-    return Object.entries(this.originalAttributes).some(([key, originalValue]) => {
-      const currentValue = (this.attributes as any)[key]
-
-      return currentValue !== originalValue
-    })
-  }
-
-  isClean(column?: keyof RequestJsonResponse): boolean {
-    return !this.isDirty(column)
-  }
-
-  wasChanged(column?: keyof RequestJsonResponse): boolean {
-    return this.hasSaved && this.isDirty(column)
-  }
-
   static select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
     const instance = new RequestModel(undefined)
 
