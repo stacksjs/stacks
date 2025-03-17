@@ -315,6 +315,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ProductUnitsTable, values: V[]): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ProductUnitsTable, value: string): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 

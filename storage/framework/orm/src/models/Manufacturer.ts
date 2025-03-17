@@ -300,6 +300,18 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 

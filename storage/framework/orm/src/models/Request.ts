@@ -332,6 +332,18 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof RequestsTable, values: V[]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof RequestsTable, value: string): RequestModel {
     const instance = new RequestModel(undefined)
 

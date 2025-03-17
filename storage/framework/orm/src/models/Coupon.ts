@@ -402,6 +402,18 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof CouponsTable, value: string): CouponModel {
     const instance = new CouponModel(undefined)
 

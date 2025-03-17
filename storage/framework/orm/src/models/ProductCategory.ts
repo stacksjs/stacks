@@ -318,6 +318,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ProductCategoriesTable, values: V[]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ProductCategoriesTable, value: string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 

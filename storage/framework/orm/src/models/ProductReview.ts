@@ -362,6 +362,18 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ProductReviewsTable, values: V[]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ProductReviewsTable, value: string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 

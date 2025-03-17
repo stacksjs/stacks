@@ -351,6 +351,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof LoyaltyRewardsTable, values: V[]): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof LoyaltyRewardsTable, value: string): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 

@@ -284,6 +284,18 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     const instance = new ProjectModel(undefined)
 

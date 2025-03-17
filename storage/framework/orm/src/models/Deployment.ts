@@ -332,6 +332,18 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 

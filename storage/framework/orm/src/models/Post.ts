@@ -277,6 +277,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof PostsTable, value: string): PostModel {
     const instance = new PostModel(undefined)
 

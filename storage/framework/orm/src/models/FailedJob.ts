@@ -293,6 +293,18 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 

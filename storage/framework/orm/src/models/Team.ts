@@ -326,6 +326,18 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof TeamsTable, value: string): TeamModel {
     const instance = new TeamModel(undefined)
 

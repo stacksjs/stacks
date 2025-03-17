@@ -359,6 +359,18 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 

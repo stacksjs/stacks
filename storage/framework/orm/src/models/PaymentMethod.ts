@@ -338,6 +338,18 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof PaymentMethodsTable, values: V[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 

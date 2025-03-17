@@ -1145,6 +1145,24 @@ export async function generateModelString(
           return instance.applyWhere<V>(column, ...args)
         }
 
+        static orWhere(...conditions: [string, any][]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyOrWhere(...conditions)
+        }
+
+        static whereNotIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereNotIn<V>(column, values)
+        }
+
+        static whereBetween<V = number>(column: keyof ${formattedTableName}Table, range: [V, V]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereBetween<V>(column, range)
+        }
+
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 

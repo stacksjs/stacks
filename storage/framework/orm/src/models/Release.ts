@@ -266,6 +266,18 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 

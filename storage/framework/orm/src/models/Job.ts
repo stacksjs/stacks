@@ -293,6 +293,18 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof JobsTable, value: string): JobModel {
     const instance = new JobModel(undefined)
 

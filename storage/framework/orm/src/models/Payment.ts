@@ -389,6 +389,18 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof PaymentsTable, values: V[]): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof PaymentsTable, value: string): PaymentModel {
     const instance = new PaymentModel(undefined)
 

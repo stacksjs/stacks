@@ -386,6 +386,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof OrdersTable, values: V[]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof OrdersTable, value: string): OrderModel {
     const instance = new OrderModel(undefined)
 

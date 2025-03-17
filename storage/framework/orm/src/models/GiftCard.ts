@@ -411,6 +411,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 

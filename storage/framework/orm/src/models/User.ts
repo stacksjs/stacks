@@ -361,6 +361,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof UsersTable, value: string): UserModel {
     const instance = new UserModel(undefined)
 

@@ -257,6 +257,18 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof SubscribersTable, values: V[]): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 

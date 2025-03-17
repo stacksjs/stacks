@@ -347,6 +347,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
     const instance = new CustomerModel(undefined)
 

@@ -293,6 +293,18 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof ErrorsTable, values: V[]): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof ErrorsTable, value: string): ErrorModel {
     const instance = new ErrorModel(undefined)
 

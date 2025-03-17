@@ -360,6 +360,18 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyWhere<V>(column, ...args)
   }
 
+  static orWhere(...conditions: [string, any][]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyOrWhere(...conditions)
+  }
+
+  static whereNotIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereNotIn<V>(column, values)
+  }
+
   static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
