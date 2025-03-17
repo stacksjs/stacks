@@ -46,16 +46,6 @@ export interface PaymentTransactionJsonResponse extends Omit<Selectable<PaymentT
 export type NewPaymentTransaction = Insertable<PaymentTransactionsTable>
 export type PaymentTransactionUpdate = Updateable<PaymentTransactionsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PaymentTransactionJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, PaymentTransactionsTable, PaymentTransactionJsonResponse> {
   private readonly hidden: Array<keyof PaymentTransactionJsonResponse> = []
   private readonly fillable: Array<keyof PaymentTransactionJsonResponse> = ['name', 'description', 'amount', 'type', 'provider_id', 'uuid', 'user_id', 'payment_method_id']
@@ -532,13 +522,15 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
   }
 
   // Method to remove a PaymentTransaction
-  async delete(): Promise<PaymentTransactionsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('payment_transactions')
+    const deleted = await DB.instance.deleteFrom('payment_transactions')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

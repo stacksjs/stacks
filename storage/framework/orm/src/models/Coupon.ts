@@ -53,16 +53,6 @@ export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'pass
 export type NewCoupon = Insertable<CouponsTable>
 export type CouponUpdate = Updateable<CouponsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: CouponJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
   private readonly fillable: Array<keyof CouponJsonResponse> = ['code', 'description', 'discount_type', 'discount_value', 'min_order_amount', 'max_discount_amount', 'free_product_id', 'is_active', 'usage_limit', 'usage_count', 'start_date', 'end_date', 'applicable_products', 'applicable_categories', 'uuid']
@@ -619,7 +609,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   }
 
   // Method to remove a Coupon
-  async delete(): Promise<CouponsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -627,9 +617,11 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     if (model)
       dispatch('coupon:deleted', model)
 
-    await DB.instance.deleteFrom('coupons')
+    const deleted = await DB.instance.deleteFrom('coupons')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

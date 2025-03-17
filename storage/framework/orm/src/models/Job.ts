@@ -35,16 +35,6 @@ export interface JobJsonResponse extends Omit<Selectable<JobsTable>, 'password'>
 export type NewJob = Insertable<JobsTable>
 export type JobUpdate = Updateable<JobsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: JobJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
   private readonly fillable: Array<keyof JobJsonResponse> = ['queue', 'payload', 'attempts', 'available_at', 'reserved_at', 'uuid']
@@ -493,13 +483,15 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   }
 
   // Method to remove a Job
-  async delete(): Promise<JobsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('jobs')
+    const deleted = await DB.instance.deleteFrom('jobs')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

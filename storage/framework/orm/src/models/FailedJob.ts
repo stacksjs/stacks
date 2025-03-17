@@ -35,16 +35,6 @@ export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobsTable>,
 export type NewFailedJob = Insertable<FailedJobsTable>
 export type FailedJobUpdate = Updateable<FailedJobsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: FailedJobJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
   private readonly fillable: Array<keyof FailedJobJsonResponse> = ['connection', 'queue', 'payload', 'exception', 'failed_at', 'uuid']
@@ -493,13 +483,15 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
   }
 
   // Method to remove a FailedJob
-  async delete(): Promise<FailedJobsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('failed_jobs')
+    const deleted = await DB.instance.deleteFrom('failed_jobs')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

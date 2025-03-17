@@ -42,16 +42,6 @@ export interface OrderItemJsonResponse extends Omit<Selectable<OrderItemsTable>,
 export type NewOrderItem = Insertable<OrderItemsTable>
 export type OrderItemUpdate = Updateable<OrderItemsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: OrderItemJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, OrderItemJsonResponse> {
   private readonly hidden: Array<keyof OrderItemJsonResponse> = []
   private readonly fillable: Array<keyof OrderItemJsonResponse> = ['quantity', 'price', 'special_instructions', 'uuid', 'order_id']
@@ -500,13 +490,15 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   }
 
   // Method to remove a OrderItem
-  async delete(): Promise<OrderItemsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('order_items')
+    const deleted = await DB.instance.deleteFrom('order_items')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

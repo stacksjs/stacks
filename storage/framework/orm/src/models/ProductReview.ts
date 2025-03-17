@@ -51,16 +51,6 @@ export interface ProductReviewJsonResponse extends Omit<Selectable<ProductReview
 export type NewProductReview = Insertable<ProductReviewsTable>
 export type ProductReviewUpdate = Updateable<ProductReviewsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductReviewJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductReviewsTable, ProductReviewJsonResponse> {
   private readonly hidden: Array<keyof ProductReviewJsonResponse> = []
   private readonly fillable: Array<keyof ProductReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid']
@@ -581,7 +571,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
   }
 
   // Method to remove a ProductReview
-  async delete(): Promise<ProductReviewsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -589,9 +579,11 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     if (model)
       dispatch('productReview:deleted', model)
 
-    await DB.instance.deleteFrom('product_reviews')
+    const deleted = await DB.instance.deleteFrom('product_reviews')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

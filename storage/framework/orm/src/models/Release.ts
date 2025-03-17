@@ -32,16 +32,6 @@ export interface ReleaseJsonResponse extends Omit<Selectable<ReleasesTable>, 'pa
 export type NewRelease = Insertable<ReleasesTable>
 export type ReleaseUpdate = Updateable<ReleasesTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ReleaseJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJsonResponse> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
   private readonly fillable: Array<keyof ReleaseJsonResponse> = ['version', 'uuid']
@@ -466,13 +456,15 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
   }
 
   // Method to remove a Release
-  async delete(): Promise<ReleasesTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('releases')
+    const deleted = await DB.instance.deleteFrom('releases')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

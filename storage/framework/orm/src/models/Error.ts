@@ -35,16 +35,6 @@ export interface ErrorJsonResponse extends Omit<Selectable<ErrorsTable>, 'passwo
 export type NewError = Insertable<ErrorsTable>
 export type ErrorUpdate = Updateable<ErrorsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ErrorJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
   private readonly fillable: Array<keyof ErrorJsonResponse> = ['type', 'message', 'stack', 'status', 'additional_info', 'uuid']
@@ -493,13 +483,15 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
   }
 
   // Method to remove a Error
-  async delete(): Promise<ErrorsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('errors')
+    const deleted = await DB.instance.deleteFrom('errors')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

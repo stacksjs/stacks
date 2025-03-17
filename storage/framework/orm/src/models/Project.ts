@@ -34,16 +34,6 @@ export interface ProjectJsonResponse extends Omit<Selectable<ProjectsTable>, 'pa
 export type NewProject = Insertable<ProjectsTable>
 export type ProjectUpdate = Updateable<ProjectsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProjectJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJsonResponse> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
   private readonly fillable: Array<keyof ProjectJsonResponse> = ['name', 'description', 'url', 'status', 'uuid']
@@ -484,13 +474,15 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
   }
 
   // Method to remove a Project
-  async delete(): Promise<ProjectsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('projects')
+    const deleted = await DB.instance.deleteFrom('projects')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

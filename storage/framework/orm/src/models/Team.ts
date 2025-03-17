@@ -41,16 +41,6 @@ export interface TeamJsonResponse extends Omit<Selectable<TeamsTable>, 'password
 export type NewTeam = Insertable<TeamsTable>
 export type TeamUpdate = Updateable<TeamsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: TeamJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
   private readonly fillable: Array<keyof TeamJsonResponse> = ['name', 'company_name', 'email', 'billing_email', 'status', 'description', 'path', 'is_personal', 'uuid']
@@ -527,13 +517,15 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
   }
 
   // Method to remove a Team
-  async delete(): Promise<TeamsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('teams')
+    const deleted = await DB.instance.deleteFrom('teams')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

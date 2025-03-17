@@ -42,16 +42,6 @@ export interface ProductVariantJsonResponse extends Omit<Selectable<ProductVaria
 export type NewProductVariant = Insertable<ProductVariantsTable>
 export type ProductVariantUpdate = Updateable<ProductVariantsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductVariantJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVariantsTable, ProductVariantJsonResponse> {
   private readonly hidden: Array<keyof ProductVariantJsonResponse> = []
   private readonly fillable: Array<keyof ProductVariantJsonResponse> = ['variant', 'type', 'description', 'options', 'status', 'uuid']
@@ -532,7 +522,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
   }
 
   // Method to remove a ProductVariant
-  async delete(): Promise<ProductVariantsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -540,9 +530,11 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     if (model)
       dispatch('productVariant:deleted', model)
 
-    await DB.instance.deleteFrom('product_variants')
+    const deleted = await DB.instance.deleteFrom('product_variants')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

@@ -54,16 +54,6 @@ export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, '
 export type NewGiftCard = Insertable<GiftCardsTable>
 export type GiftCardUpdate = Updateable<GiftCardsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: GiftCardJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []
   private readonly fillable: Array<keyof GiftCardJsonResponse> = ['code', 'initial_balance', 'current_balance', 'currency', 'status', 'purchaser_id', 'recipient_email', 'recipient_name', 'personal_message', 'is_digital', 'is_reloadable', 'is_active', 'expiry_date', 'last_used_date', 'template_id', 'uuid']
@@ -628,7 +618,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
   }
 
   // Method to remove a GiftCard
-  async delete(): Promise<GiftCardsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -636,9 +626,11 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     if (model)
       dispatch('giftCard:deleted', model)
 
-    await DB.instance.deleteFrom('gift_cards')
+    const deleted = await DB.instance.deleteFrom('gift_cards')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

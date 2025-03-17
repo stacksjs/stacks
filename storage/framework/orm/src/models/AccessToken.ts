@@ -49,16 +49,6 @@ export interface AccessTokenJsonResponse extends Omit<Selectable<PersonalAccessT
 export type NewAccessToken = Insertable<PersonalAccessTokensTable>
 export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: AccessTokenJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable, AccessTokenJsonResponse> {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
   private readonly fillable: Array<keyof AccessTokenJsonResponse> = ['name', 'token', 'plain_text_token', 'abilities', 'last_used_at', 'expires_at', 'revoked_at', 'ip_address', 'device_name', 'is_single_use', 'uuid', 'team_id']
@@ -563,13 +553,15 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   }
 
   // Method to remove a AccessToken
-  async delete(): Promise<PersonalAccessTokensTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('personal_access_tokens')
+    const deleted = await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

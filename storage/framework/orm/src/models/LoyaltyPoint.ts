@@ -40,16 +40,6 @@ export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointsT
 export type NewLoyaltyPoint = Insertable<LoyaltyPointsTable>
 export type LoyaltyPointUpdate = Updateable<LoyaltyPointsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: LoyaltyPointJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable, LoyaltyPointJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
   private readonly fillable: Array<keyof LoyaltyPointJsonResponse> = ['wallet_id', 'points', 'source', 'source_reference_id', 'description', 'expiry_date', 'is_used', 'uuid']
@@ -538,7 +528,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
   }
 
   // Method to remove a LoyaltyPoint
-  async delete(): Promise<LoyaltyPointsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -546,9 +536,11 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     if (model)
       dispatch('loyaltyPoint:deleted', model)
 
-    await DB.instance.deleteFrom('loyalty_points')
+    const deleted = await DB.instance.deleteFrom('loyalty_points')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

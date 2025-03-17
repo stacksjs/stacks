@@ -33,16 +33,6 @@ export interface SubscriberEmailJsonResponse extends Omit<Selectable<SubscriberE
 export type NewSubscriberEmail = Insertable<SubscriberEmailsTable>
 export type SubscriberEmailUpdate = Updateable<SubscriberEmailsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: SubscriberEmailJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, SubscriberEmailsTable, SubscriberEmailJsonResponse> {
   private readonly hidden: Array<keyof SubscriberEmailJsonResponse> = []
   private readonly fillable: Array<keyof SubscriberEmailJsonResponse> = ['email', 'uuid']
@@ -473,7 +463,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
   }
 
   // Method to remove a SubscriberEmail
-  async delete(): Promise<SubscriberEmailsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
@@ -481,9 +471,11 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
       query = query.where('deleted_at', 'is', null)
     }
 
-    await DB.instance.deleteFrom('subscriber_emails')
+    const deleted = await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

@@ -939,16 +939,6 @@ export async function generateModelString(
       export type New${modelName} = Insertable<${formattedTableName}Table>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
   
-      type SortDirection = 'asc' | 'desc'
-      interface SortOptions { column: ${modelName}JsonResponse, order: SortDirection }
-      // Define a type for the options parameter
-      interface QueryOptions {
-        sort?: SortOptions
-        limit?: number
-        offset?: number
-        page?: number
-      }
-  
       export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table, ${modelName}JsonResponse> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
@@ -1360,16 +1350,18 @@ export async function generateModelString(
         }
   
         // Method to remove a ${modelName}
-        async delete(): Promise<${formattedTableName}Table> {
+        async delete(): Promise<number> {
           if (this.id === undefined)
             this.deleteFromQuery.execute()
           ${mittDeleteFindStatement}
           ${instanceSoftDeleteStatements}
           ${mittDeleteStatement}
 
-          await DB.instance.deleteFrom('${tableName}')
+          const deleted = await DB.instance.deleteFrom('${tableName}')
             .where('id', '=', this.id)
             .execute()
+
+          return deleted.numDeletedRows
         }
 
         static async remove(id: number): Promise<any> {

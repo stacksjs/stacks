@@ -38,16 +38,6 @@ export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturersT
 export type NewManufacturer = Insertable<ManufacturersTable>
 export type ManufacturerUpdate = Updateable<ManufacturersTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ManufacturerJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
   private readonly fillable: Array<keyof ManufacturerJsonResponse> = ['manufacturer', 'description', 'country', 'featured', 'uuid']
@@ -516,7 +506,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
   }
 
   // Method to remove a Manufacturer
-  async delete(): Promise<ManufacturersTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -524,9 +514,11 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     if (model)
       dispatch('manufacturer:deleted', model)
 
-    await DB.instance.deleteFrom('manufacturers')
+    const deleted = await DB.instance.deleteFrom('manufacturers')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

@@ -36,16 +36,6 @@ export interface PostJsonResponse extends Omit<Selectable<PostsTable>, 'password
 export type NewPost = Insertable<PostsTable>
 export type PostUpdate = Updateable<PostsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: PostJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
   private readonly fillable: Array<keyof PostJsonResponse> = ['title', 'body', 'uuid', 'user_id']
@@ -478,13 +468,15 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
   }
 
   // Method to remove a Post
-  async delete(): Promise<PostsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('posts')
+    const deleted = await DB.instance.deleteFrom('posts')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

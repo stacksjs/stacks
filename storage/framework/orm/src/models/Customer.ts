@@ -46,16 +46,6 @@ export interface CustomerJsonResponse extends Omit<Selectable<CustomersTable>, '
 export type NewCustomer = Insertable<CustomersTable>
 export type CustomerUpdate = Updateable<CustomersTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: CustomerJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
   private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
@@ -564,7 +554,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
   }
 
   // Method to remove a Customer
-  async delete(): Promise<CustomersTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -572,9 +562,11 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     if (model)
       dispatch('customer:deleted', model)
 
-    await DB.instance.deleteFrom('customers')
+    const deleted = await DB.instance.deleteFrom('customers')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

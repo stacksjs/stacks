@@ -52,16 +52,6 @@ export interface ProductJsonResponse extends Omit<Selectable<ProductsTable>, 'pa
 export type NewProduct = Insertable<ProductsTable>
 export type ProductUpdate = Updateable<ProductsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: ProductJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJsonResponse> {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
   private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'manufacturer_id', 'product_category_id']
@@ -590,7 +580,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
   }
 
   // Method to remove a Product
-  async delete(): Promise<ProductsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -598,9 +588,11 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     if (model)
       dispatch('product:deleted', model)
 
-    await DB.instance.deleteFrom('products')
+    const deleted = await DB.instance.deleteFrom('products')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

@@ -55,16 +55,6 @@ export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password
 export type NewUser = Insertable<UsersTable>
 export type UserUpdate = Updateable<UsersTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: UserJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
   private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
@@ -579,7 +569,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   }
 
   // Method to remove a User
-  async delete(): Promise<UsersTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -587,9 +577,11 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     if (model)
       dispatch('user:deleted', model)
 
-    await DB.instance.deleteFrom('users')
+    const deleted = await DB.instance.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

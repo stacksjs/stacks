@@ -55,16 +55,6 @@ export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'passwo
 export type NewOrder = Insertable<OrdersTable>
 export type OrderUpdate = Updateable<OrdersTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: OrderJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonResponse> {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
   private readonly fillable: Array<keyof OrderJsonResponse> = ['status', 'total_amount', 'tax_amount', 'discount_amount', 'delivery_fee', 'tip_amount', 'order_type', 'delivery_address', 'special_instructions', 'estimated_delivery_time', 'applied_coupon_id', 'uuid', 'customer_id', 'gift_card_id', 'coupon_id']
@@ -605,7 +595,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
   }
 
   // Method to remove a Order
-  async delete(): Promise<OrdersTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -613,9 +603,11 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     if (model)
       dispatch('order:deleted', model)
 
-    await DB.instance.deleteFrom('orders')
+    const deleted = await DB.instance.deleteFrom('orders')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

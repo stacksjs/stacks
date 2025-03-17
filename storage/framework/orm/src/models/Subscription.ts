@@ -46,16 +46,6 @@ export interface SubscriptionJsonResponse extends Omit<Selectable<SubscriptionsT
 export type NewSubscription = Insertable<SubscriptionsTable>
 export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: SubscriptionJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsTable, SubscriptionJsonResponse> {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
   private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
@@ -564,13 +554,15 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   }
 
   // Method to remove a Subscription
-  async delete(): Promise<SubscriptionsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('subscriptions')
+    const deleted = await DB.instance.deleteFrom('subscriptions')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

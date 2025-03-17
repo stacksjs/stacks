@@ -43,16 +43,6 @@ export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable
 export type NewDeployment = Insertable<DeploymentsTable>
 export type DeploymentUpdate = Updateable<DeploymentsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: DeploymentJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, DeploymentJsonResponse> {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
   private readonly fillable: Array<keyof DeploymentJsonResponse> = ['commit_sha', 'commit_message', 'branch', 'status', 'execution_time', 'deploy_script', 'terminal_output', 'uuid', 'user_id']
@@ -537,13 +527,15 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   }
 
   // Method to remove a Deployment
-  async delete(): Promise<DeploymentsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    await DB.instance.deleteFrom('deployments')
+    const deleted = await DB.instance.deleteFrom('deployments')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

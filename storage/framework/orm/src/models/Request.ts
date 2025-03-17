@@ -40,16 +40,6 @@ export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'pa
 export type NewRequest = Insertable<RequestsTable>
 export type RequestUpdate = Updateable<RequestsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: RequestJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
   private readonly fillable: Array<keyof RequestJsonResponse> = ['method', 'path', 'status_code', 'duration_ms', 'ip_address', 'memory_usage', 'user_agent', 'error_message', 'uuid']
@@ -536,7 +526,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
   }
 
   // Method to remove a Request
-  async delete(): Promise<RequestsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
@@ -544,9 +534,11 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
       query = query.where('deleted_at', 'is', null)
     }
 
-    await DB.instance.deleteFrom('requests')
+    const deleted = await DB.instance.deleteFrom('requests')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {

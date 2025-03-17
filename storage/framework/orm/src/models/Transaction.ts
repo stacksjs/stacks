@@ -44,16 +44,6 @@ export interface TransactionJsonResponse extends Omit<Selectable<TransactionsTab
 export type NewTransaction = Insertable<TransactionsTable>
 export type TransactionUpdate = Updateable<TransactionsTable>
 
-      type SortDirection = 'asc' | 'desc'
-interface SortOptions { column: TransactionJsonResponse, order: SortDirection }
-// Define a type for the options parameter
-interface QueryOptions {
-  sort?: SortOptions
-  limit?: number
-  offset?: number
-  page?: number
-}
-
 export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable, TransactionJsonResponse> {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
   private readonly fillable: Array<keyof TransactionJsonResponse> = ['amount', 'status', 'payment_method', 'payment_details', 'transaction_reference', 'loyalty_points_earned', 'loyalty_points_redeemed', 'uuid']
@@ -550,7 +540,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
   }
 
   // Method to remove a Transaction
-  async delete(): Promise<TransactionsTable> {
+  async delete(): Promise<number> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
@@ -558,9 +548,11 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     if (model)
       dispatch('transaction:deleted', model)
 
-    await DB.instance.deleteFrom('transactions')
+    const deleted = await DB.instance.deleteFrom('transactions')
       .where('id', '=', this.id)
       .execute()
+
+    return deleted.numDeletedRows
   }
 
   static async remove(id: number): Promise<any> {
