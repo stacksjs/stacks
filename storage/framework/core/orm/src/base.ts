@@ -434,10 +434,14 @@ export class BaseOrm<T, C, J> {
     return await this.applyGet()
   }
 
-  skip(count: number): this {
+  applySkip(count: number): this {
     this.selectFromQuery = this.selectFromQuery.offset(count)
 
     return this
+  }
+
+  skip(count: number): this {
+    return this.applySkip(count)
   }
 
   applyTake(count: number): this {
@@ -459,7 +463,7 @@ export class BaseOrm<T, C, J> {
   }
 
   async count(): Promise<number> {
-    return this.applyCount()
+    return await this.applyCount()
   }
 
   applyOrderBy(column: keyof C, order: 'asc' | 'desc'): this {
@@ -520,6 +524,28 @@ export class BaseOrm<T, C, J> {
 
   orderByAsc(column: keyof C): this {
     return this.applyOrderByAsc(column)
+  }
+
+  applyDistinct(column: keyof J): this {
+    this.selectFromQuery = this.selectFromQuery.select(column).distinct()
+
+    this.hasSelect = true
+
+    return this
+  }
+
+  distinct(column: keyof J): this {
+    return this.applyDistinct(column)
+  }
+
+  applyJoin(table: string, firstCol: string, secondCol: string): this {
+    this.selectFromQuery = this.selectFromQuery.innerJoin(table, firstCol, secondCol)
+
+    return this
+  }
+
+  join(table: string, firstCol: string, secondCol: string): this {
+    return this.applyJoin(table, firstCol, secondCol)
   }
 
   // Methods to be implemented by child classes
