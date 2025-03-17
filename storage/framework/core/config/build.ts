@@ -20,6 +20,7 @@ const result = await Bun.build({
     '@stacksjs/path',
     '@stacksjs/validation',
     '@stacksjs/strings',
+    '~/config/*',
   ],
   plugins: [
     dts({
