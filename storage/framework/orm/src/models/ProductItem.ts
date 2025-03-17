@@ -308,23 +308,10 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductItemJsonResponse)[] | RawBuilder<string> | string): ProductItemModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof ProductItemJsonResponse)[] | RawBuilder<string> | string): ProductItemModel {
     const instance = new ProductItemModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a ProductItem by ID

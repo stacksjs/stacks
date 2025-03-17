@@ -278,23 +278,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Customer by ID

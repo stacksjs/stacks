@@ -230,23 +230,10 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Manufacturer by ID

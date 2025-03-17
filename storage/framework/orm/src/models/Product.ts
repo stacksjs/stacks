@@ -304,23 +304,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string): ProductModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string): ProductModel {
     const instance = new ProductModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Product by ID

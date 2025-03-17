@@ -251,23 +251,10 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string): PaymentProductModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof PaymentProductJsonResponse)[] | RawBuilder<string> | string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a PaymentProduct by ID

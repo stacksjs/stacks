@@ -260,23 +260,10 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
     const instance = new RequestModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Request by ID

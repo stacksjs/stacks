@@ -259,23 +259,10 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
     const instance = new TeamModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Team by ID

@@ -208,23 +208,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     const instance = new PostModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Post by ID

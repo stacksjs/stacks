@@ -214,23 +214,10 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Project by ID

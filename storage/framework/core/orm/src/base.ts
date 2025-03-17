@@ -24,12 +24,16 @@ export class BaseOrm<T, C, J> {
     this.withRelations = []
   }
 
-  select(params: (keyof J)[] | RawBuilder<string> | string): this {
+  applySelect(params: (keyof J)[] | RawBuilder<string> | string): this {
     this.selectFromQuery = this.selectFromQuery.select(params)
 
     this.hasSelect = true
 
     return this
+  }
+
+  select(params: (keyof J)[] | RawBuilder<string> | string): this {
+    return this.applySelect(params)
   }
 
   // The protected helper method that does the actual work

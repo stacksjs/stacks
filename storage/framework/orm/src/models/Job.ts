@@ -223,23 +223,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
     const instance = new JobModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a Job by ID

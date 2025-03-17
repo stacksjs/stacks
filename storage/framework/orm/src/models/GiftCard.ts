@@ -342,23 +342,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a GiftCard by ID

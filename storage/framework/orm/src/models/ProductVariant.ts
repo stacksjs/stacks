@@ -246,23 +246,10 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return this.hasSaved && this.isDirty(column)
   }
 
-  select(params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string): ProductVariantModel {
-    this.selectFromQuery = this.selectFromQuery.select(params)
-
-    this.hasSelect = true
-
-    return this
-  }
-
   static select(params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
-    // Initialize a query with the table name and selected fields
-    instance.selectFromQuery = instance.selectFromQuery.select(params)
-
-    instance.hasSelect = true
-
-    return instance
+    return instance.applySelect(params)
   }
 
   // Method to find a ProductVariant by ID
