@@ -1094,6 +1094,16 @@ export async function generateModelString(
           return data
         }
 
+        static async last(): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(undefined)
+
+          const model = await instance.applyLast()
+
+          if (!model) return undefined
+
+          return new ${modelName}Model(model)
+        }
+
         static async firstOrFail(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
 
@@ -1238,6 +1248,18 @@ export async function generateModelString(
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyOrderByDesc(column)
+        }
+
+        static groupBy(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyGroupBy(column)
+        }
+
+        static having<V = string>(column: keyof ${formattedTableName}Table, operator: Operator, value: V): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyHaving<V>(column, operator, value)
         }
 
         static inRandomOrder(): ${modelName}Model {
@@ -1444,6 +1466,32 @@ export async function generateModelString(
           }
 
           return undefined
+        }
+  
+        async save(): Promise<${modelName}Model> {
+          // If the model has an ID, update it; otherwise, create a new record
+          if (this.id) {
+            // Update existing record
+            await DB.instance.updateTable('${tableName}')
+              .set(this.attributes as ${modelName}Update)
+              .where('id', '=', this.id)
+              .executeTakeFirst()
+              
+            const model = await this.find(this.id) as ${modelName}Model
+            ${mittUpdateStatement.replace('model', 'this')}
+            
+            return model
+          } else {
+            // Create new record
+            const result = await DB.instance.insertInto('${tableName}')
+              .values(this.attributes as New${modelName})
+              .executeTakeFirst()
+              
+            const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ${modelName}Model
+            ${mittCreateStatement.replace('model', 'this')}
+            
+            return model
+          }
         }
   
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {

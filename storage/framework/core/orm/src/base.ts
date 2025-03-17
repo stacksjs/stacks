@@ -824,6 +824,42 @@ export class BaseOrm<T, C, J> {
     }, {} as Partial<T>)
   }
 
+  applyFill(data: Partial<any>): this {
+    if (!('attributes' in this) || !('fillable' in this) || !('guarded' in this)) {
+      throw new Error('Child class must define attributes, fillable, and guarded properties')
+    }
+
+    // Filter the data based on fillable and guarded properties
+    for (const [key, value] of Object.entries(data)) {
+      if (!(this as any).guarded.includes(key) && (this as any).fillable.includes(key)) {
+        (this as any).attributes[key] = value
+      }
+    }
+
+    return this
+  }
+
+  fill(data: Partial<any>): this {
+    return this.applyFill(data)
+  }
+
+  applyForceFill(data: Partial<any>): this {
+    if (!('attributes' in this)) {
+      throw new Error('Child class must define attributes property')
+    }
+
+    // Directly merge all data into attributes
+    for (const [key, value] of Object.entries(data)) {
+      (this as any).attributes[key] = value
+    }
+
+    return this
+  }
+
+  forceFill(data: Partial<any>): this {
+    return this.applyForceFill(data)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 

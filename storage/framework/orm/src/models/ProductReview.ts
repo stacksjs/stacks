@@ -311,6 +311,17 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return data
   }
 
+  static async last(): Promise<ProductReviewModel | undefined> {
+    const instance = new ProductReviewModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProductReviewModel(model)
+  }
+
   static async firstOrFail(): Promise<ProductReviewModel | undefined> {
     const instance = new ProductReviewModel(undefined)
 
@@ -457,6 +468,18 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProductReviewsTable, operator: Operator, value: V): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ProductReviewModel {
@@ -666,6 +689,35 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     }
 
     return undefined
+  }
+
+  async save(): Promise<ProductReviewModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('product_reviews')
+        .set(this.attributes as ProductReviewUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ProductReviewModel
+      if (this)
+        dispatch('productReview:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('product_reviews')
+        .values(this.attributes as NewProductReview)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductReviewModel
+      if (this)
+        dispatch('productReview:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newProductReview: NewProductReview[]): Promise<void> {

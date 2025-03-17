@@ -233,6 +233,17 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return data
   }
 
+  static async last(): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProjectModel(model)
+  }
+
   static async firstOrFail(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 
@@ -379,6 +390,18 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const instance = new ProjectModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProjectsTable, operator: Operator, value: V): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ProjectModel {
@@ -577,6 +600,31 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     }
 
     return undefined
+  }
+
+  async save(): Promise<ProjectModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('projects')
+        .set(this.attributes as ProjectUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ProjectModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('projects')
+        .values(this.attributes as NewProject)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProjectModel
+
+      return model
+    }
   }
 
   static async createMany(newProject: NewProject[]): Promise<void> {

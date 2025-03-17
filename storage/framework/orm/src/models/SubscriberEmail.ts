@@ -216,6 +216,17 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return data
   }
 
+  static async last(): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new SubscriberEmailModel(model)
+  }
+
   static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(undefined)
 
@@ -364,6 +375,18 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof SubscriberEmailsTable, operator: Operator, value: V): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): SubscriberEmailModel {
@@ -562,6 +585,31 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     }
 
     return undefined
+  }
+
+  async save(): Promise<SubscriberEmailModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('subscriber_emails')
+        .set(this.attributes as SubscriberEmailUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as SubscriberEmailModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('subscriber_emails')
+        .values(this.attributes as NewSubscriberEmail)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberEmailModel
+
+      return model
+    }
   }
 
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {

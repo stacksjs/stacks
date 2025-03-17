@@ -310,6 +310,17 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return data
   }
 
+  static async last(): Promise<UserModel | undefined> {
+    const instance = new UserModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new UserModel(model)
+  }
+
   static async firstOrFail(): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 
@@ -456,6 +467,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof UsersTable, operator: Operator, value: V): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): UserModel {
@@ -665,6 +688,35 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     }
 
     return undefined
+  }
+
+  async save(): Promise<UserModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('users')
+        .set(this.attributes as UserUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as UserModel
+      if (this)
+        dispatch('user:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('users')
+        .values(this.attributes as NewUser)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
+      if (this)
+        dispatch('user:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newUser: NewUser[]): Promise<void> {

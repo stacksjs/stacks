@@ -281,6 +281,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return data
   }
 
+  static async last(): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new DeploymentModel(model)
+  }
+
   static async firstOrFail(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 
@@ -427,6 +438,18 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof DeploymentsTable): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof DeploymentsTable, operator: Operator, value: V): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): DeploymentModel {
@@ -627,6 +650,31 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     }
 
     return undefined
+  }
+
+  async save(): Promise<DeploymentModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('deployments')
+        .set(this.attributes as DeploymentUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as DeploymentModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('deployments')
+        .values(this.attributes as NewDeployment)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+
+      return model
+    }
   }
 
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {

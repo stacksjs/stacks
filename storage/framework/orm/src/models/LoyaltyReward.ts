@@ -300,6 +300,17 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return data
   }
 
+  static async last(): Promise<LoyaltyRewardModel | undefined> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyRewardModel(model)
+  }
+
   static async firstOrFail(): Promise<LoyaltyRewardModel | undefined> {
     const instance = new LoyaltyRewardModel(undefined)
 
@@ -446,6 +457,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof LoyaltyRewardsTable, operator: Operator, value: V): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): LoyaltyRewardModel {
@@ -655,6 +678,35 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     }
 
     return undefined
+  }
+
+  async save(): Promise<LoyaltyRewardModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('loyalty_rewards')
+        .set(this.attributes as LoyaltyRewardUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as LoyaltyRewardModel
+      if (this)
+        dispatch('loyaltyReward:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('loyalty_rewards')
+        .values(this.attributes as NewLoyaltyReward)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyRewardModel
+      if (this)
+        dispatch('loyaltyReward:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newLoyaltyReward: NewLoyaltyReward[]): Promise<void> {

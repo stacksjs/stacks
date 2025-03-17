@@ -275,6 +275,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return data
   }
 
+  static async last(): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new TeamModel(model)
+  }
+
   static async firstOrFail(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(undefined)
 
@@ -421,6 +432,18 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof TeamsTable): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof TeamsTable, operator: Operator, value: V): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): TeamModel {
@@ -619,6 +642,31 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     }
 
     return undefined
+  }
+
+  async save(): Promise<TeamModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('teams')
+        .set(this.attributes as TeamUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as TeamModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('teams')
+        .values(this.attributes as NewTeam)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+
+      return model
+    }
   }
 
   static async createMany(newTeam: NewTeam[]): Promise<void> {

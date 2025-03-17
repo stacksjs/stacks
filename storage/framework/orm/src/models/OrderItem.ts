@@ -246,6 +246,17 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return data
   }
 
+  static async last(): Promise<OrderItemModel | undefined> {
+    const instance = new OrderItemModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new OrderItemModel(model)
+  }
+
   static async firstOrFail(): Promise<OrderItemModel | undefined> {
     const instance = new OrderItemModel(undefined)
 
@@ -392,6 +403,18 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     const instance = new OrderItemModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof OrderItemsTable): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof OrderItemsTable, operator: Operator, value: V): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): OrderItemModel {
@@ -590,6 +613,31 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     }
 
     return undefined
+  }
+
+  async save(): Promise<OrderItemModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('order_items')
+        .set(this.attributes as OrderItemUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as OrderItemModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('order_items')
+        .values(this.attributes as NewOrderItem)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as OrderItemModel
+
+      return model
+    }
   }
 
   static async createMany(newOrderItem: NewOrderItem[]): Promise<void> {

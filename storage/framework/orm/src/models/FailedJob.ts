@@ -242,6 +242,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return data
   }
 
+  static async last(): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new FailedJobModel(model)
+  }
+
   static async firstOrFail(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(undefined)
 
@@ -388,6 +399,18 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof FailedJobsTable): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof FailedJobsTable, operator: Operator, value: V): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): FailedJobModel {
@@ -586,6 +609,31 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     }
 
     return undefined
+  }
+
+  async save(): Promise<FailedJobModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('failed_jobs')
+        .set(this.attributes as FailedJobUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as FailedJobModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('failed_jobs')
+        .values(this.attributes as NewFailedJob)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+
+      return model
+    }
   }
 
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {

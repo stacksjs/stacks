@@ -215,6 +215,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return data
   }
 
+  static async last(): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ReleaseModel(model)
+  }
+
   static async firstOrFail(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 
@@ -361,6 +372,18 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const instance = new ReleaseModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ReleasesTable, operator: Operator, value: V): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ReleaseModel {
@@ -559,6 +582,31 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     }
 
     return undefined
+  }
+
+  async save(): Promise<ReleaseModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('releases')
+        .set(this.attributes as ReleaseUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ReleaseModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('releases')
+        .values(this.attributes as NewRelease)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+
+      return model
+    }
   }
 
   static async createMany(newRelease: NewRelease[]): Promise<void> {

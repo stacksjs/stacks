@@ -309,6 +309,17 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return data
   }
 
+  static async last(): Promise<AccessTokenModel | undefined> {
+    const instance = new AccessTokenModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new AccessTokenModel(model)
+  }
+
   static async firstOrFail(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 
@@ -455,6 +466,18 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof PersonalAccessTokensTable, operator: Operator, value: V): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): AccessTokenModel {
@@ -653,6 +676,31 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }
 
     return undefined
+  }
+
+  async save(): Promise<AccessTokenModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('personal_access_tokens')
+        .set(this.attributes as AccessTokenUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as AccessTokenModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('personal_access_tokens')
+        .values(this.attributes as NewAccessToken)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as AccessTokenModel
+
+      return model
+    }
   }
 
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {

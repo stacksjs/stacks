@@ -296,6 +296,17 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return data
   }
 
+  static async last(): Promise<CustomerModel | undefined> {
+    const instance = new CustomerModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new CustomerModel(model)
+  }
+
   static async firstOrFail(): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 
@@ -442,6 +453,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const instance = new CustomerModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof CustomersTable, operator: Operator, value: V): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): CustomerModel {
@@ -651,6 +674,35 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }
 
     return undefined
+  }
+
+  async save(): Promise<CustomerModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('customers')
+        .set(this.attributes as CustomerUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as CustomerModel
+      if (this)
+        dispatch('customer:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('customers')
+        .values(this.attributes as NewCustomer)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as CustomerModel
+      if (this)
+        dispatch('customer:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newCustomer: NewCustomer[]): Promise<void> {

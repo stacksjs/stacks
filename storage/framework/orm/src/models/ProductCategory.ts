@@ -267,6 +267,17 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return data
   }
 
+  static async last(): Promise<ProductCategoryModel | undefined> {
+    const instance = new ProductCategoryModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProductCategoryModel(model)
+  }
+
   static async firstOrFail(): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 
@@ -413,6 +424,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const instance = new ProductCategoryModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProductCategoriesTable): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProductCategoriesTable, operator: Operator, value: V): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ProductCategoryModel {
@@ -622,6 +645,35 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     }
 
     return undefined
+  }
+
+  async save(): Promise<ProductCategoryModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('product_categories')
+        .set(this.attributes as ProductCategoryUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ProductCategoryModel
+      if (this)
+        dispatch('productCategory:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('product_categories')
+        .values(this.attributes as NewProductCategory)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
+      if (this)
+        dispatch('productCategory:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newProductCategory: NewProductCategory[]): Promise<void> {

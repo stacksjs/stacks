@@ -279,6 +279,17 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return data
   }
 
+  static async last(): Promise<RequestModel | undefined> {
+    const instance = new RequestModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new RequestModel(model)
+  }
+
   static async firstOrFail(): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 
@@ -427,6 +438,18 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const instance = new RequestModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof RequestsTable): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof RequestsTable, operator: Operator, value: V): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): RequestModel {
@@ -625,6 +648,31 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }
 
     return undefined
+  }
+
+  async save(): Promise<RequestModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('requests')
+        .set(this.attributes as RequestUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as RequestModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('requests')
+        .values(this.attributes as NewRequest)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as RequestModel
+
+      return model
+    }
   }
 
   static async createMany(newRequest: NewRequest[]): Promise<void> {

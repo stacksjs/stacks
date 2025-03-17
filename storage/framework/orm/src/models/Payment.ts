@@ -338,6 +338,17 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return data
   }
 
+  static async last(): Promise<PaymentModel | undefined> {
+    const instance = new PaymentModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new PaymentModel(model)
+  }
+
   static async firstOrFail(): Promise<PaymentModel | undefined> {
     const instance = new PaymentModel(undefined)
 
@@ -484,6 +495,18 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     const instance = new PaymentModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof PaymentsTable): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof PaymentsTable, operator: Operator, value: V): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): PaymentModel {
@@ -693,6 +716,35 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     }
 
     return undefined
+  }
+
+  async save(): Promise<PaymentModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('payments')
+        .set(this.attributes as PaymentUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as PaymentModel
+      if (this)
+        dispatch('payment:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('payments')
+        .values(this.attributes as NewPayment)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentModel
+      if (this)
+        dispatch('payment:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newPayment: NewPayment[]): Promise<void> {

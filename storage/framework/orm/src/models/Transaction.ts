@@ -282,6 +282,17 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return data
   }
 
+  static async last(): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new TransactionModel(model)
+  }
+
   static async firstOrFail(): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(undefined)
 
@@ -428,6 +439,18 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const instance = new TransactionModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof TransactionsTable, operator: Operator, value: V): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): TransactionModel {
@@ -637,6 +660,35 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     }
 
     return undefined
+  }
+
+  async save(): Promise<TransactionModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('transactions')
+        .set(this.attributes as TransactionUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as TransactionModel
+      if (this)
+        dispatch('transaction:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('transactions')
+        .values(this.attributes as NewTransaction)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TransactionModel
+      if (this)
+        dispatch('transaction:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {

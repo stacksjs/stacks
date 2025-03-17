@@ -360,6 +360,17 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return data
   }
 
+  static async last(): Promise<GiftCardModel | undefined> {
+    const instance = new GiftCardModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new GiftCardModel(model)
+  }
+
   static async firstOrFail(): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 
@@ -506,6 +517,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof GiftCardsTable, operator: Operator, value: V): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): GiftCardModel {
@@ -715,6 +738,35 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     }
 
     return undefined
+  }
+
+  async save(): Promise<GiftCardModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('gift_cards')
+        .set(this.attributes as GiftCardUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as GiftCardModel
+      if (this)
+        dispatch('giftCard:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('gift_cards')
+        .values(this.attributes as NewGiftCard)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
+      if (this)
+        dispatch('giftCard:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newGiftCard: NewGiftCard[]): Promise<void> {

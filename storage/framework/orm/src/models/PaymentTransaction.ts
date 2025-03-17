@@ -274,6 +274,17 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return data
   }
 
+  static async last(): Promise<PaymentTransactionModel | undefined> {
+    const instance = new PaymentTransactionModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new PaymentTransactionModel(model)
+  }
+
   static async firstOrFail(): Promise<PaymentTransactionModel | undefined> {
     const instance = new PaymentTransactionModel(undefined)
 
@@ -420,6 +431,18 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof PaymentTransactionsTable): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof PaymentTransactionsTable, operator: Operator, value: V): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): PaymentTransactionModel {
@@ -620,6 +643,31 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     }
 
     return undefined
+  }
+
+  async save(): Promise<PaymentTransactionModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('payment_transactions')
+        .set(this.attributes as PaymentTransactionUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as PaymentTransactionModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('payment_transactions')
+        .values(this.attributes as NewPaymentTransaction)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentTransactionModel
+
+      return model
+    }
   }
 
   static async createMany(newPaymentTransaction: NewPaymentTransaction[]): Promise<void> {

@@ -271,6 +271,17 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return data
   }
 
+  static async last(): Promise<LoyaltyPointModel | undefined> {
+    const instance = new LoyaltyPointModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyPointModel(model)
+  }
+
   static async firstOrFail(): Promise<LoyaltyPointModel | undefined> {
     const instance = new LoyaltyPointModel(undefined)
 
@@ -417,6 +428,18 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof LoyaltyPointsTable, operator: Operator, value: V): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): LoyaltyPointModel {
@@ -626,6 +649,35 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     }
 
     return undefined
+  }
+
+  async save(): Promise<LoyaltyPointModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('loyalty_points')
+        .set(this.attributes as LoyaltyPointUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as LoyaltyPointModel
+      if (this)
+        dispatch('loyaltyPoint:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('loyalty_points')
+        .values(this.attributes as NewLoyaltyPoint)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyPointModel
+      if (this)
+        dispatch('loyaltyPoint:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newLoyaltyPoint: NewLoyaltyPoint[]): Promise<void> {

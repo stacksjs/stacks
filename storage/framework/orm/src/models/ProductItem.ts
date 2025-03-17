@@ -322,6 +322,17 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return data
   }
 
+  static async last(): Promise<ProductItemModel | undefined> {
+    const instance = new ProductItemModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProductItemModel(model)
+  }
+
   static async firstOrFail(): Promise<ProductItemModel | undefined> {
     const instance = new ProductItemModel(undefined)
 
@@ -468,6 +479,18 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     const instance = new ProductItemModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProductItemsTable): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProductItemsTable, operator: Operator, value: V): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ProductItemModel {
@@ -677,6 +700,35 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     }
 
     return undefined
+  }
+
+  async save(): Promise<ProductItemModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('product_items')
+        .set(this.attributes as ProductItemUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ProductItemModel
+      if (this)
+        dispatch('productItem:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('product_items')
+        .values(this.attributes as NewProductItem)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductItemModel
+      if (this)
+        dispatch('productItem:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newProductItem: NewProductItem[]): Promise<void> {

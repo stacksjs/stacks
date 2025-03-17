@@ -242,6 +242,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return data
   }
 
+  static async last(): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new JobModel(model)
+  }
+
   static async firstOrFail(): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 
@@ -388,6 +399,18 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof JobsTable, operator: Operator, value: V): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): JobModel {
@@ -586,6 +609,31 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     }
 
     return undefined
+  }
+
+  async save(): Promise<JobModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('jobs')
+        .set(this.attributes as JobUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as JobModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('jobs')
+        .values(this.attributes as NewJob)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+
+      return model
+    }
   }
 
   static async createMany(newJob: NewJob[]): Promise<void> {

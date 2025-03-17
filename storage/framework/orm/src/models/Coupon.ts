@@ -351,6 +351,17 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return data
   }
 
+  static async last(): Promise<CouponModel | undefined> {
+    const instance = new CouponModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new CouponModel(model)
+  }
+
   static async firstOrFail(): Promise<CouponModel | undefined> {
     const instance = new CouponModel(undefined)
 
@@ -497,6 +508,18 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const instance = new CouponModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof CouponsTable): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof CouponsTable, operator: Operator, value: V): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): CouponModel {
@@ -706,6 +729,35 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
 
     return undefined
+  }
+
+  async save(): Promise<CouponModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('coupons')
+        .set(this.attributes as CouponUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as CouponModel
+      if (this)
+        dispatch('coupon:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('coupons')
+        .values(this.attributes as NewCoupon)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as CouponModel
+      if (this)
+        dispatch('coupon:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newCoupon: NewCoupon[]): Promise<void> {

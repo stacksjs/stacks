@@ -320,6 +320,17 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return data
   }
 
+  static async last(): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ProductModel(model)
+  }
+
   static async firstOrFail(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 
@@ -466,6 +477,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const instance = new ProductModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ProductsTable, operator: Operator, value: V): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ProductModel {
@@ -675,6 +698,35 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     }
 
     return undefined
+  }
+
+  async save(): Promise<ProductModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('products')
+        .set(this.attributes as ProductUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ProductModel
+      if (this)
+        dispatch('product:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('products')
+        .values(this.attributes as NewProduct)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+      if (this)
+        dispatch('product:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newProduct: NewProduct[]): Promise<void> {

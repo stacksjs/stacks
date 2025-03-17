@@ -249,6 +249,17 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return data
   }
 
+  static async last(): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new ManufacturerModel(model)
+  }
+
   static async firstOrFail(): Promise<ManufacturerModel | undefined> {
     const instance = new ManufacturerModel(undefined)
 
@@ -395,6 +406,18 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof ManufacturersTable, operator: Operator, value: V): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): ManufacturerModel {
@@ -604,6 +627,35 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }
 
     return undefined
+  }
+
+  async save(): Promise<ManufacturerModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('manufacturers')
+        .set(this.attributes as ManufacturerUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as ManufacturerModel
+      if (this)
+        dispatch('manufacturer:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('manufacturers')
+        .values(this.attributes as NewManufacturer)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ManufacturerModel
+      if (this)
+        dispatch('manufacturer:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newManufacturer: NewManufacturer[]): Promise<void> {

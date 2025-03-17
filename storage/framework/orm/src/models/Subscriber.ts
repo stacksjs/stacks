@@ -206,6 +206,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return data
   }
 
+  static async last(): Promise<SubscriberModel | undefined> {
+    const instance = new SubscriberModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new SubscriberModel(model)
+  }
+
   static async firstOrFail(): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(undefined)
 
@@ -352,6 +363,18 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const instance = new SubscriberModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof SubscribersTable): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof SubscribersTable, operator: Operator, value: V): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): SubscriberModel {
@@ -550,6 +573,31 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     }
 
     return undefined
+  }
+
+  async save(): Promise<SubscriberModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('subscribers')
+        .set(this.attributes as SubscriberUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as SubscriberModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('subscribers')
+        .values(this.attributes as NewSubscriber)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+
+      return model
+    }
   }
 
   static async createMany(newSubscriber: NewSubscriber[]): Promise<void> {

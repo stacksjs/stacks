@@ -226,6 +226,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return data
   }
 
+  static async last(): Promise<PostModel | undefined> {
+    const instance = new PostModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new PostModel(model)
+  }
+
   static async firstOrFail(): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 
@@ -372,6 +383,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof PostsTable, operator: Operator, value: V): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): PostModel {
@@ -570,6 +593,31 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }
 
     return undefined
+  }
+
+  async save(): Promise<PostModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('posts')
+        .set(this.attributes as PostUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as PostModel
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('posts')
+        .values(this.attributes as NewPost)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+
+      return model
+    }
   }
 
   static async createMany(newPost: NewPost[]): Promise<void> {

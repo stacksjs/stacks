@@ -335,6 +335,17 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return data
   }
 
+  static async last(): Promise<OrderModel | undefined> {
+    const instance = new OrderModel(undefined)
+
+    const model = await instance.applyLast()
+
+    if (!model)
+      return undefined
+
+    return new OrderModel(model)
+  }
+
   static async firstOrFail(): Promise<OrderModel | undefined> {
     const instance = new OrderModel(undefined)
 
@@ -481,6 +492,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static groupBy(column: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyGroupBy(column)
+  }
+
+  static having<V = string>(column: keyof OrdersTable, operator: Operator, value: V): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyHaving<V>(column, operator, value)
   }
 
   static inRandomOrder(): OrderModel {
@@ -690,6 +713,35 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     }
 
     return undefined
+  }
+
+  async save(): Promise<OrderModel> {
+    // If the model has an ID, update it; otherwise, create a new record
+    if (this.id) {
+      // Update existing record
+      await DB.instance.updateTable('orders')
+        .set(this.attributes as OrderUpdate)
+        .where('id', '=', this.id)
+        .executeTakeFirst()
+
+      const model = await this.find(this.id) as OrderModel
+      if (this)
+        dispatch('order:updated', model)
+
+      return model
+    }
+    else {
+      // Create new record
+      const result = await DB.instance.insertInto('orders')
+        .values(this.attributes as NewOrder)
+        .executeTakeFirst()
+
+      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as OrderModel
+      if (this)
+        dispatch('order:created', model)
+
+      return model
+    }
   }
 
   static async createMany(newOrder: NewOrder[]): Promise<void> {
