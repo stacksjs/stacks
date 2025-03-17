@@ -370,7 +370,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductReviewModel results found for query')
+      throw new ModelNotFoundException(404, `No ProductReviewModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1021,6 +1021,12 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance
   }
 
+  static whereIn<V = number>(column: keyof ProductReviewsTable, values: V[]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async productBelong(): Promise<ProductModel> {
     if (this.product_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1061,18 +1067,10 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     }
   }
 
-  distinct(column: keyof ProductReviewJsonResponse): ProductReviewModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof ProductReviewJsonResponse): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ProductReviewModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProductReviewModel {

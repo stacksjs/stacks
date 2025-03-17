@@ -333,7 +333,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PaymentTransactionModel results found for query')
+      throw new ModelNotFoundException(404, `No PaymentTransactionModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -943,6 +943,12 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return instance
   }
 
+  static whereIn<V = number>(column: keyof PaymentTransactionsTable, values: V[]): PaymentTransactionModel {
+    const instance = new PaymentTransactionModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -971,18 +977,10 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return model
   }
 
-  distinct(column: keyof PaymentTransactionJsonResponse): PaymentTransactionModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof PaymentTransactionJsonResponse): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): PaymentTransactionModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): PaymentTransactionModel {

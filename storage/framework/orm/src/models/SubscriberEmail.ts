@@ -272,7 +272,7 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriberEmailModel results found for query')
+      throw new ModelNotFoundException(404, `No SubscriberEmailModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -861,18 +861,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance
   }
 
-  distinct(column: keyof SubscriberEmailJsonResponse): SubscriberEmailModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof SubscriberEmailsTable, values: V[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof SubscriberEmailJsonResponse): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriberEmailModel {

@@ -321,7 +321,7 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductUnitModel results found for query')
+      throw new ModelNotFoundException(404, `No ProductUnitModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -940,6 +940,12 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return instance
   }
 
+  static whereIn<V = number>(column: keyof ProductUnitsTable, values: V[]): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async productBelong(): Promise<ProductModel> {
     if (this.product_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -965,18 +971,10 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     }
   }
 
-  distinct(column: keyof ProductUnitJsonResponse): ProductUnitModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof ProductUnitJsonResponse): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ProductUnitModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProductUnitModel {

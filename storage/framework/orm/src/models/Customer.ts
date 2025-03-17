@@ -353,7 +353,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No CustomerModel results found for query')
+      throw new ModelNotFoundException(404, `No CustomerModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -988,6 +988,12 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance
   }
 
+  static whereIn<V = number>(column: keyof CustomersTable, values: V[]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1012,18 +1018,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }
   }
 
-  distinct(column: keyof CustomerJsonResponse): CustomerModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof CustomerJsonResponse): CustomerModel {
     const instance = new CustomerModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): CustomerModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): CustomerModel {

@@ -365,7 +365,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No SubscriptionModel results found for query')
+      throw new ModelNotFoundException(404, `No SubscriptionModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1015,6 +1015,12 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance
   }
 
+  static whereIn<V = number>(column: keyof SubscriptionsTable, values: V[]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1029,18 +1035,10 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return model
   }
 
-  distinct(column: keyof SubscriptionJsonResponse): SubscriptionModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof SubscriptionJsonResponse): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): SubscriptionModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): SubscriptionModel {

@@ -368,7 +368,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No UserModel results found for query')
+      throw new ModelNotFoundException(404, `No UserModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -979,6 +979,12 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance
   }
 
+  static whereIn<V = number>(column: keyof UsersTable, values: V[]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userTeams() {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1250,18 +1256,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return await manageCheckout.create(this, mergedOptions)
   }
 
-  distinct(column: keyof UserJsonResponse): UserModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof UserJsonResponse): UserModel {
     const instance = new UserModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): UserModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): UserModel {

@@ -1142,7 +1142,7 @@ export async function generateModelString(
           const model = await this.selectFromQuery.executeTakeFirst()
   
           if (model === undefined)
-            throw new ModelNotFoundException(404, 'No ${modelName}Model results found for query')
+            throw new ModelNotFoundException(404, \`No ${modelName}Model results found for query\`)
           
           if (model) {
             this.mapCustomGetters(model)
@@ -1720,6 +1720,12 @@ export async function generateModelString(
   
         ${whereStatements}
         
+        static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+          
+          return instance.applyWhereIn<V>(column, values)
+        }
+        
         ${relationMethods}
   
         ${displayableStatements}
@@ -1728,18 +1734,10 @@ export async function generateModelString(
 
         ${likeableStatements}
   
-        distinct(column: keyof ${modelName}JsonResponse): ${modelName}Model {
-          return this.applyDistinct(column)
-        }
-  
         static distinct(column: keyof ${modelName}JsonResponse): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   
           return instance.applyDistinct(column)
-        }
-  
-        join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
-          return this.applyJoin(table, firstCol, secondCol)
         }
   
         static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {

@@ -332,7 +332,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TeamModel results found for query')
+      throw new ModelNotFoundException(404, `No TeamModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -962,6 +962,12 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return instance
   }
 
+  static whereIn<V = number>(column: keyof TeamsTable, values: V[]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async teamUsers() {
     if (this.id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -981,18 +987,10 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return relationResults
   }
 
-  distinct(column: keyof TeamJsonResponse): TeamModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof TeamJsonResponse): TeamModel {
     const instance = new TeamModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): TeamModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): TeamModel {

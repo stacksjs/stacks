@@ -298,7 +298,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ErrorModel results found for query')
+      throw new ModelNotFoundException(404, `No ErrorModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -904,18 +904,16 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return instance
   }
 
-  distinct(column: keyof ErrorJsonResponse): ErrorModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof ErrorsTable, values: V[]): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof ErrorJsonResponse): ErrorModel {
     const instance = new ErrorModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ErrorModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ErrorModel {

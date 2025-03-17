@@ -271,7 +271,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ReleaseModel results found for query')
+      throw new ModelNotFoundException(404, `No ReleaseModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -853,18 +853,16 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return instance
   }
 
-  distinct(column: keyof ReleaseJsonResponse): ReleaseModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof ReleasesTable, values: V[]): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof ReleaseJsonResponse): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ReleaseModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ReleaseModel {

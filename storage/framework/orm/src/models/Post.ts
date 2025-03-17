@@ -283,7 +283,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PostModel results found for query')
+      throw new ModelNotFoundException(404, `No PostModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -865,6 +865,12 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance
   }
 
+  static whereIn<V = number>(column: keyof PostsTable, values: V[]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -879,18 +885,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return model
   }
 
-  distinct(column: keyof PostJsonResponse): PostModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof PostJsonResponse): PostModel {
     const instance = new PostModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): PostModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): PostModel {

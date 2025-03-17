@@ -368,7 +368,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No AccessTokenModel results found for query')
+      throw new ModelNotFoundException(404, `No AccessTokenModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1014,6 +1014,12 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance
   }
 
+  static whereIn<V = number>(column: keyof PersonalAccessTokensTable, values: V[]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async teamBelong(): Promise<TeamModel> {
     if (this.team_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1042,18 +1048,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return model
   }
 
-  distinct(column: keyof AccessTokenJsonResponse): AccessTokenModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof AccessTokenJsonResponse): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): AccessTokenModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): AccessTokenModel {

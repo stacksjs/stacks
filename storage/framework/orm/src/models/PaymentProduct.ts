@@ -326,7 +326,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No PaymentProductModel results found for query')
+      throw new ModelNotFoundException(404, `No PaymentProductModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -952,18 +952,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return instance
   }
 
-  distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof PaymentProductsTable, values: V[]): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): PaymentProductModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): PaymentProductModel {

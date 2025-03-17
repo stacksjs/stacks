@@ -417,7 +417,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No GiftCardModel results found for query')
+      throw new ModelNotFoundException(404, `No GiftCardModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1116,6 +1116,12 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return instance
   }
 
+  static whereIn<V = number>(column: keyof GiftCardsTable, values: V[]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async customerBelong(): Promise<CustomerModel> {
     if (this.customer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1142,18 +1148,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     }
   }
 
-  distinct(column: keyof GiftCardJsonResponse): GiftCardModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof GiftCardJsonResponse): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): GiftCardModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): GiftCardModel {

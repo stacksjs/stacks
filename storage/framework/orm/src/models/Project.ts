@@ -289,7 +289,7 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProjectModel results found for query')
+      throw new ModelNotFoundException(404, `No ProjectModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -887,18 +887,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return instance
   }
 
-  distinct(column: keyof ProjectJsonResponse): ProjectModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof ProjectsTable, values: V[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof ProjectJsonResponse): ProjectModel {
     const instance = new ProjectModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ProjectModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProjectModel {

@@ -335,7 +335,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No RequestModel results found for query')
+      throw new ModelNotFoundException(404, `No RequestModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -980,18 +980,16 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return instance
   }
 
-  distinct(column: keyof RequestJsonResponse): RequestModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof RequestsTable, values: V[]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof RequestJsonResponse): RequestModel {
     const instance = new RequestModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): RequestModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): RequestModel {

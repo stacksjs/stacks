@@ -394,7 +394,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No OrderModel results found for query')
+      throw new ModelNotFoundException(404, `No OrderModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1061,6 +1061,12 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return instance
   }
 
+  static whereIn<V = number>(column: keyof OrdersTable, values: V[]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async customerBelong(): Promise<CustomerModel> {
     if (this.customer_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1100,18 +1106,10 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     }
   }
 
-  distinct(column: keyof OrderJsonResponse): OrderModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof OrderJsonResponse): OrderModel {
     const instance = new OrderModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): OrderModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): OrderModel {

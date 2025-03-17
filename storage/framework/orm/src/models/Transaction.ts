@@ -339,7 +339,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No TransactionModel results found for query')
+      throw new ModelNotFoundException(404, `No TransactionModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -974,6 +974,12 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return instance
   }
 
+  static whereIn<V = number>(column: keyof TransactionsTable, values: V[]): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async orderBelong(): Promise<OrderModel> {
     if (this.order_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -999,18 +1005,10 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     }
   }
 
-  distinct(column: keyof TransactionJsonResponse): TransactionModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof TransactionJsonResponse): TransactionModel {
     const instance = new TransactionModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): TransactionModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): TransactionModel {

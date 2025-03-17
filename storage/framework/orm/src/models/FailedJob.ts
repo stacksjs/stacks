@@ -298,7 +298,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No FailedJobModel results found for query')
+      throw new ModelNotFoundException(404, `No FailedJobModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -904,18 +904,16 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return instance
   }
 
-  distinct(column: keyof FailedJobJsonResponse): FailedJobModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof FailedJobsTable, values: V[]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof FailedJobJsonResponse): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): FailedJobModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): FailedJobModel {

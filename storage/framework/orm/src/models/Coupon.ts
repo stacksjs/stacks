@@ -408,7 +408,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No CouponModel results found for query')
+      throw new ModelNotFoundException(404, `No CouponModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -1099,6 +1099,12 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance
   }
 
+  static whereIn<V = number>(column: keyof CouponsTable, values: V[]): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async productBelong(): Promise<ProductModel> {
     if (this.product_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -1125,18 +1131,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }
   }
 
-  distinct(column: keyof CouponJsonResponse): CouponModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof CouponJsonResponse): CouponModel {
     const instance = new CouponModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): CouponModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): CouponModel {

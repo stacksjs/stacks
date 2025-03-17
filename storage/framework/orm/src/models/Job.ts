@@ -298,7 +298,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No JobModel results found for query')
+      throw new ModelNotFoundException(404, `No JobModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -904,18 +904,16 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return instance
   }
 
-  distinct(column: keyof JobJsonResponse): JobModel {
-    return this.applyDistinct(column)
+  static whereIn<V = number>(column: keyof JobsTable, values: V[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
   }
 
   static distinct(column: keyof JobJsonResponse): JobModel {
     const instance = new JobModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): JobModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): JobModel {

@@ -323,7 +323,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ProductCategoryModel results found for query')
+      throw new ModelNotFoundException(404, `No ProductCategoryModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -950,6 +950,12 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance
   }
 
+  static whereIn<V = number>(column: keyof ProductCategoriesTable, values: V[]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   toSearchableObject(): Partial<ProductCategoryJsonResponse> {
     return {
       id: this.id,
@@ -961,18 +967,10 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     }
   }
 
-  distinct(column: keyof ProductCategoryJsonResponse): ProductCategoryModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof ProductCategoryJsonResponse): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ProductCategoryModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ProductCategoryModel {

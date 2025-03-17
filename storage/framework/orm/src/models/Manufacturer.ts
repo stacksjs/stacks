@@ -305,7 +305,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No ManufacturerModel results found for query')
+      throw new ModelNotFoundException(404, `No ManufacturerModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -916,6 +916,12 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance
   }
 
+  static whereIn<V = number>(column: keyof ManufacturersTable, values: V[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   toSearchableObject(): Partial<ManufacturerJsonResponse> {
     return {
       id: this.id,
@@ -926,18 +932,10 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }
   }
 
-  distinct(column: keyof ManufacturerJsonResponse): ManufacturerModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof ManufacturerJsonResponse): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): ManufacturerModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): ManufacturerModel {

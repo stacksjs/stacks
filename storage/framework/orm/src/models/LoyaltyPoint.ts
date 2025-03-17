@@ -327,7 +327,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No LoyaltyPointModel results found for query')
+      throw new ModelNotFoundException(404, `No LoyaltyPointModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -962,6 +962,12 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance
   }
 
+  static whereIn<V = number>(column: keyof LoyaltyPointsTable, values: V[]): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   toSearchableObject(): Partial<LoyaltyPointJsonResponse> {
     return {
       id: this.id,
@@ -974,18 +980,10 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     }
   }
 
-  distinct(column: keyof LoyaltyPointJsonResponse): LoyaltyPointModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof LoyaltyPointJsonResponse): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): LoyaltyPointModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): LoyaltyPointModel {

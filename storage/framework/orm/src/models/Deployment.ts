@@ -338,7 +338,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const model = await this.selectFromQuery.executeTakeFirst()
 
     if (model === undefined)
-      throw new ModelNotFoundException(404, 'No DeploymentModel results found for query')
+      throw new ModelNotFoundException(404, `No DeploymentModel results found for query`)
 
     if (model) {
       this.mapCustomGetters(model)
@@ -964,6 +964,12 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return instance
   }
 
+  static whereIn<V = number>(column: keyof DeploymentsTable, values: V[]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereIn<V>(column, values)
+  }
+
   async userBelong(): Promise<UserModel> {
     if (this.user_id === undefined)
       throw new HttpError(500, 'Relation Error!')
@@ -978,18 +984,10 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return model
   }
 
-  distinct(column: keyof DeploymentJsonResponse): DeploymentModel {
-    return this.applyDistinct(column)
-  }
-
   static distinct(column: keyof DeploymentJsonResponse): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
     return instance.applyDistinct(column)
-  }
-
-  join(table: string, firstCol: string, secondCol: string): DeploymentModel {
-    return this.applyJoin(table, firstCol, secondCol)
   }
 
   static join(table: string, firstCol: string, secondCol: string): DeploymentModel {
