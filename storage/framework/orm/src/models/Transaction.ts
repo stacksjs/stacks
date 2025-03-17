@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -316,6 +316,36 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
+  static async latest(column: keyof TransactionsTable = 'created_at'): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new TransactionModel(model)
+  }
+
+  static async oldest(column: keyof TransactionsTable = 'created_at'): Promise<TransactionModel | undefined> {
+    const instance = new TransactionModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new TransactionModel(model)
+  }
+
   static skip(count: number): TransactionModel {
     const instance = new TransactionModel(undefined)
 
@@ -362,6 +392,18 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const instance = new TransactionModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
@@ -520,6 +562,30 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
 
     if (existingRecord) {
       return new TransactionModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewTransaction
+    return await TransactionModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<TransactionsTable>, values: NewTransaction = {} as NewTransaction): Promise<TransactionModel> {
+    // First try to find a record matching the search criteria
+    const instance = new TransactionModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new TransactionModel(existingRecord)
+      await model.update(values as TransactionUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

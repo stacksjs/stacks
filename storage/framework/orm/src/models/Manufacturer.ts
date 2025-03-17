@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -283,6 +283,36 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
   }
 
+  static async latest(column: keyof ManufacturersTable = 'created_at'): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ManufacturerModel(model)
+  }
+
+  static async oldest(column: keyof ManufacturersTable = 'created_at'): Promise<ManufacturerModel | undefined> {
+    const instance = new ManufacturerModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ManufacturerModel(model)
+  }
+
   static skip(count: number): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
@@ -329,6 +359,18 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
@@ -487,6 +529,30 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
 
     if (existingRecord) {
       return new ManufacturerModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewManufacturer
+    return await ManufacturerModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ManufacturersTable>, values: NewManufacturer = {} as NewManufacturer): Promise<ManufacturerModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ManufacturerModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ManufacturerModel(existingRecord)
+      await model.update(values as ManufacturerUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

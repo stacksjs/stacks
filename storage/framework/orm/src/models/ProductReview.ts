@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -345,6 +345,36 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductReviewModel(modelItem)))
   }
 
+  static async latest(column: keyof ProductReviewsTable = 'created_at'): Promise<ProductReviewModel | undefined> {
+    const instance = new ProductReviewModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductReviewModel(model)
+  }
+
+  static async oldest(column: keyof ProductReviewsTable = 'created_at'): Promise<ProductReviewModel | undefined> {
+    const instance = new ProductReviewModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductReviewModel(model)
+  }
+
   static skip(count: number): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
@@ -391,6 +421,18 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ProductReviewsTable, value: string): ProductReviewModel {
@@ -549,6 +591,30 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
 
     if (existingRecord) {
       return new ProductReviewModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductReview
+    return await ProductReviewModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProductReviewsTable>, values: NewProductReview = {} as NewProductReview): Promise<ProductReviewModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductReviewModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ProductReviewModel(existingRecord)
+      await model.update(values as ProductReviewUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

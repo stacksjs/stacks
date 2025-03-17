@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -276,6 +276,36 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new JobModel(modelItem)))
   }
 
+  static async latest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new JobModel(model)
+  }
+
+  static async oldest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {
+    const instance = new JobModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new JobModel(model)
+  }
+
   static skip(count: number): JobModel {
     const instance = new JobModel(undefined)
 
@@ -322,6 +352,18 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof JobsTable, value: string): JobModel {
@@ -475,6 +517,30 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     if (existingRecord) {
       return new JobModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new JobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new JobModel(existingRecord)
+      await model.update(values as JobUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

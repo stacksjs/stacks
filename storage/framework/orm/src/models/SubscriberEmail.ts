@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -252,6 +252,36 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriberEmailModel(modelItem)))
   }
 
+  static async latest(column: keyof SubscriberEmailsTable = 'created_at'): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new SubscriberEmailModel(model)
+  }
+
+  static async oldest(column: keyof SubscriberEmailsTable = 'created_at'): Promise<SubscriberEmailModel | undefined> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new SubscriberEmailModel(model)
+  }
+
   static skip(count: number): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
@@ -298,6 +328,18 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof SubscriberEmailsTable): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
@@ -451,6 +493,30 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
 
     if (existingRecord) {
       return new SubscriberEmailModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewSubscriberEmail
+    return await SubscriberEmailModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<SubscriberEmailsTable>, values: NewSubscriberEmail = {} as NewSubscriberEmail): Promise<SubscriberEmailModel> {
+    // First try to find a record matching the search criteria
+    const instance = new SubscriberEmailModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new SubscriberEmailModel(existingRecord)
+      await model.update(values as SubscriberEmailUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -267,6 +267,36 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
+  static async latest(column: keyof ProjectsTable = 'created_at'): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProjectModel(model)
+  }
+
+  static async oldest(column: keyof ProjectsTable = 'created_at'): Promise<ProjectModel | undefined> {
+    const instance = new ProjectModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProjectModel(model)
+  }
+
   static skip(count: number): ProjectModel {
     const instance = new ProjectModel(undefined)
 
@@ -313,6 +343,18 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const instance = new ProjectModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
@@ -466,6 +508,30 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
 
     if (existingRecord) {
       return new ProjectModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProject
+    return await ProjectModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProjectsTable>, values: NewProject = {} as NewProject): Promise<ProjectModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProjectModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ProjectModel(existingRecord)
+      await model.update(values as ProjectUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

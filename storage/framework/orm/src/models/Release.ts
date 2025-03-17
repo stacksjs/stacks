@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -249,6 +249,36 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
+  static async latest(column: keyof ReleasesTable = 'created_at'): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ReleaseModel(model)
+  }
+
+  static async oldest(column: keyof ReleasesTable = 'created_at'): Promise<ReleaseModel | undefined> {
+    const instance = new ReleaseModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ReleaseModel(model)
+  }
+
   static skip(count: number): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
@@ -295,6 +325,18 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const instance = new ReleaseModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
@@ -448,6 +490,30 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
     if (existingRecord) {
       return new ReleaseModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewRelease
+    return await ReleaseModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ReleasesTable>, values: NewRelease = {} as NewRelease): Promise<ReleaseModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ReleaseModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ReleaseModel(existingRecord)
+      await model.update(values as ReleaseUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

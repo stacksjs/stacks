@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductCategoryModel } from './ProductCategory'
 import { randomUUIDv7 } from 'bun'
@@ -354,6 +354,36 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductModel(modelItem)))
   }
 
+  static async latest(column: keyof ProductsTable = 'created_at'): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductModel(model)
+  }
+
+  static async oldest(column: keyof ProductsTable = 'created_at'): Promise<ProductModel | undefined> {
+    const instance = new ProductModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductModel(model)
+  }
+
   static skip(count: number): ProductModel {
     const instance = new ProductModel(undefined)
 
@@ -400,6 +430,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const instance = new ProductModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ProductsTable, value: string): ProductModel {
@@ -558,6 +600,30 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     if (existingRecord) {
       return new ProductModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProduct
+    return await ProductModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProductsTable>, values: NewProduct = {} as NewProduct): Promise<ProductModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ProductModel(existingRecord)
+      await model.update(values as ProductUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

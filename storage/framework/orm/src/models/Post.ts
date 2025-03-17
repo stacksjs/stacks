@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -260,6 +260,36 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PostModel(modelItem)))
   }
 
+  static async latest(column: keyof PostsTable = 'created_at'): Promise<PostModel | undefined> {
+    const instance = new PostModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new PostModel(model)
+  }
+
+  static async oldest(column: keyof PostsTable = 'created_at'): Promise<PostModel | undefined> {
+    const instance = new PostModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new PostModel(model)
+  }
+
   static skip(count: number): PostModel {
     const instance = new PostModel(undefined)
 
@@ -306,6 +336,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof PostsTable, value: string): PostModel {
@@ -459,6 +501,30 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     if (existingRecord) {
       return new PostModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewPost
+    return await PostModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<PostsTable>, values: NewPost = {} as NewPost): Promise<PostModel> {
+    // First try to find a record matching the search criteria
+    const instance = new PostModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new PostModel(existingRecord)
+      await model.update(values as PostUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

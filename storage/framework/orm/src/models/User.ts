@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
-import type { CheckoutLineItem, CheckoutOptions, Operator, StripeCustomerOptions } from '@stacksjs/types'
+import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
@@ -343,6 +344,36 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new UserModel(modelItem)))
   }
 
+  static async latest(column: keyof UsersTable = 'created_at'): Promise<UserModel | undefined> {
+    const instance = new UserModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new UserModel(model)
+  }
+
+  static async oldest(column: keyof UsersTable = 'created_at'): Promise<UserModel | undefined> {
+    const instance = new UserModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new UserModel(model)
+  }
+
   static skip(count: number): UserModel {
     const instance = new UserModel(undefined)
 
@@ -389,6 +420,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof UsersTable, value: string): UserModel {
@@ -547,6 +590,30 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
     if (existingRecord) {
       return new UserModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewUser
+    return await UserModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<UsersTable>, values: NewUser = {} as NewUser): Promise<UserModel> {
+    // First try to find a record matching the search criteria
+    const instance = new UserModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new UserModel(existingRecord)
+      await model.update(values as UserUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

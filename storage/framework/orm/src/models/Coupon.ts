@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -385,6 +385,36 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
   }
 
+  static async latest(column: keyof CouponsTable = 'created_at'): Promise<CouponModel | undefined> {
+    const instance = new CouponModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new CouponModel(model)
+  }
+
+  static async oldest(column: keyof CouponsTable = 'created_at'): Promise<CouponModel | undefined> {
+    const instance = new CouponModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new CouponModel(model)
+  }
+
   static skip(count: number): CouponModel {
     const instance = new CouponModel(undefined)
 
@@ -431,6 +461,18 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const instance = new CouponModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof CouponsTable): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof CouponsTable): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof CouponsTable, value: string): CouponModel {
@@ -589,6 +631,30 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     if (existingRecord) {
       return new CouponModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewCoupon
+    return await CouponModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<CouponsTable>, values: NewCoupon = {} as NewCoupon): Promise<CouponModel> {
+    // First try to find a record matching the search criteria
+    const instance = new CouponModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new CouponModel(existingRecord)
+      await model.update(values as CouponUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

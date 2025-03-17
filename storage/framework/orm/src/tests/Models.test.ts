@@ -776,7 +776,7 @@ describe('Models test', () => {
   })
 
   it('should handle fill and forceFill operations', async () => {
-    const user = new User({})
+    const user = new User(undefined)
 
     user.fill({
       name: 'Chris Breuer',

@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -276,6 +276,36 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
+  static async latest(column: keyof FailedJobsTable = 'created_at'): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new FailedJobModel(model)
+  }
+
+  static async oldest(column: keyof FailedJobsTable = 'created_at'): Promise<FailedJobModel | undefined> {
+    const instance = new FailedJobModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new FailedJobModel(model)
+  }
+
   static skip(count: number): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
@@ -322,6 +352,18 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof FailedJobsTable): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof FailedJobsTable): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
@@ -475,6 +517,30 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     if (existingRecord) {
       return new FailedJobModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewFailedJob
+    return await FailedJobModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<FailedJobsTable>, values: NewFailedJob = {} as NewFailedJob): Promise<FailedJobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new FailedJobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new FailedJobModel(existingRecord)
+      await model.update(values as FailedJobUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

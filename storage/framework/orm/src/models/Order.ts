@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import type { OrderItemModel } from './OrderItem'
@@ -369,6 +369,36 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new OrderModel(modelItem)))
   }
 
+  static async latest(column: keyof OrdersTable = 'created_at'): Promise<OrderModel | undefined> {
+    const instance = new OrderModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new OrderModel(model)
+  }
+
+  static async oldest(column: keyof OrdersTable = 'created_at'): Promise<OrderModel | undefined> {
+    const instance = new OrderModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new OrderModel(model)
+  }
+
   static skip(count: number): OrderModel {
     const instance = new OrderModel(undefined)
 
@@ -415,6 +445,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof OrdersTable, value: string): OrderModel {
@@ -573,6 +615,30 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     if (existingRecord) {
       return new OrderModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewOrder
+    return await OrderModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<OrdersTable>, values: NewOrder = {} as NewOrder): Promise<OrderModel> {
+    // First try to find a record matching the search criteria
+    const instance = new OrderModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new OrderModel(existingRecord)
+      await model.update(values as OrderUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

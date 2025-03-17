@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
@@ -394,6 +394,36 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
   }
 
+  static async latest(column: keyof GiftCardsTable = 'created_at'): Promise<GiftCardModel | undefined> {
+    const instance = new GiftCardModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new GiftCardModel(model)
+  }
+
+  static async oldest(column: keyof GiftCardsTable = 'created_at'): Promise<GiftCardModel | undefined> {
+    const instance = new GiftCardModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new GiftCardModel(model)
+  }
+
   static skip(count: number): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
@@ -440,6 +470,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
@@ -598,6 +640,30 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
     if (existingRecord) {
       return new GiftCardModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewGiftCard
+    return await GiftCardModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<GiftCardsTable>, values: NewGiftCard = {} as NewGiftCard): Promise<GiftCardModel> {
+    // First try to find a record matching the search criteria
+    const instance = new GiftCardModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new GiftCardModel(existingRecord)
+      await model.update(values as GiftCardUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

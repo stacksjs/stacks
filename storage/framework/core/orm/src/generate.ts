@@ -904,7 +904,8 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
       import { DB, BaseOrm } from '@stacksjs/orm'
-      import type { CheckoutLineItem, CheckoutOptions, Operator, StripeCustomerOptions } from '@stacksjs/types'
+      import type { Operator } from '@stacksjs/orm'
+      import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
       import { generateTwoFactorSecret } from '@stacksjs/auth'
@@ -1127,6 +1128,34 @@ export async function generateModelString(
           return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
 
+        static async latest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(undefined)
+          
+          const model = await instance.selectFromQuery
+            .selectAll()
+            .orderBy(column, 'desc')
+            .limit(1)
+            .executeTakeFirst()
+            
+          if (!model) return undefined
+          
+          return new ${modelName}Model(model)
+        }
+        
+        static async oldest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
+          const instance = new ${modelName}Model(undefined)
+          
+          const model = await instance.selectFromQuery
+            .selectAll()
+            .orderBy(column, 'asc')
+            .limit(1)
+            .executeTakeFirst()
+            
+          if (!model) return undefined
+          
+          return new ${modelName}Model(model)
+        }
+
         static skip(count: number): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
@@ -1173,6 +1202,18 @@ export async function generateModelString(
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyWhen(condition, callback as any)
+        }
+
+        static whereNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereNull(column)
+        }
+
+        static whereNotNull(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereNotNull(column)
         }
 
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
@@ -1330,6 +1371,30 @@ export async function generateModelString(
           
           if (existingRecord) {
             return new ${modelName}Model(existingRecord)
+          }
+          
+          // If no record exists, create a new one with combined search criteria and values
+          const createData = { ...search, ...values } as New${modelName}
+          return await ${modelName}Model.create(createData)
+        }
+  
+        static async updateOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
+          // First try to find a record matching the search criteria
+          const instance = new ${modelName}Model(undefined)
+          
+          // Apply all search conditions
+          for (const [key, value] of Object.entries(search)) {
+            instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+          }
+          
+          // Try to find the record
+          const existingRecord = await instance.applyFirst()
+          
+          if (existingRecord) {
+            // If record exists, update it with the new values
+            const model = new ${modelName}Model(existingRecord)
+            await model.update(values as ${modelName}Update)
+            return model
           }
           
           // If no record exists, create a new one with combined search criteria and values

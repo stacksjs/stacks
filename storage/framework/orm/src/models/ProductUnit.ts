@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -298,6 +298,36 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductUnitModel(modelItem)))
   }
 
+  static async latest(column: keyof ProductUnitsTable = 'created_at'): Promise<ProductUnitModel | undefined> {
+    const instance = new ProductUnitModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductUnitModel(model)
+  }
+
+  static async oldest(column: keyof ProductUnitsTable = 'created_at'): Promise<ProductUnitModel | undefined> {
+    const instance = new ProductUnitModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductUnitModel(model)
+  }
+
   static skip(count: number): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
@@ -344,6 +374,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     const instance = new ProductUnitModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProductUnitsTable): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProductUnitsTable): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ProductUnitsTable, value: string): ProductUnitModel {
@@ -502,6 +544,30 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
 
     if (existingRecord) {
       return new ProductUnitModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductUnit
+    return await ProductUnitModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProductUnitsTable>, values: NewProductUnit = {} as NewProductUnit): Promise<ProductUnitModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductUnitModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ProductUnitModel(existingRecord)
+      await model.update(values as ProductUnitUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

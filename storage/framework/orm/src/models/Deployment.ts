@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -315,6 +315,36 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
+  static async latest(column: keyof DeploymentsTable = 'created_at'): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new DeploymentModel(model)
+  }
+
+  static async oldest(column: keyof DeploymentsTable = 'created_at'): Promise<DeploymentModel | undefined> {
+    const instance = new DeploymentModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new DeploymentModel(model)
+  }
+
   static skip(count: number): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
@@ -361,6 +391,18 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof DeploymentsTable): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof DeploymentsTable): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
@@ -516,6 +558,30 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
     if (existingRecord) {
       return new DeploymentModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewDeployment
+    return await DeploymentModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<DeploymentsTable>, values: NewDeployment = {} as NewDeployment): Promise<DeploymentModel> {
+    // First try to find a record matching the search criteria
+    const instance = new DeploymentModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new DeploymentModel(existingRecord)
+      await model.update(values as DeploymentUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { dispatch } from '@stacksjs/events'
@@ -305,6 +305,36 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
+  static async latest(column: keyof LoyaltyPointsTable = 'created_at'): Promise<LoyaltyPointModel | undefined> {
+    const instance = new LoyaltyPointModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyPointModel(model)
+  }
+
+  static async oldest(column: keyof LoyaltyPointsTable = 'created_at'): Promise<LoyaltyPointModel | undefined> {
+    const instance = new LoyaltyPointModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyPointModel(model)
+  }
+
   static skip(count: number): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
@@ -351,6 +381,18 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof LoyaltyPointsTable, value: string): LoyaltyPointModel {
@@ -509,6 +551,30 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
     if (existingRecord) {
       return new LoyaltyPointModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewLoyaltyPoint
+    return await LoyaltyPointModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<LoyaltyPointsTable>, values: NewLoyaltyPoint = {} as NewLoyaltyPoint): Promise<LoyaltyPointModel> {
+    // First try to find a record matching the search criteria
+    const instance = new LoyaltyPointModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new LoyaltyPointModel(existingRecord)
+      await model.update(values as LoyaltyPointUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { PaymentTransactionModel } from './PaymentTransaction'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -321,6 +321,36 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
+  static async latest(column: keyof PaymentMethodsTable = 'created_at'): Promise<PaymentMethodModel | undefined> {
+    const instance = new PaymentMethodModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new PaymentMethodModel(model)
+  }
+
+  static async oldest(column: keyof PaymentMethodsTable = 'created_at'): Promise<PaymentMethodModel | undefined> {
+    const instance = new PaymentMethodModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new PaymentMethodModel(model)
+  }
+
   static skip(count: number): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
@@ -367,6 +397,18 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     const instance = new PaymentMethodModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof PaymentMethodsTable): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
@@ -522,6 +564,30 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
 
     if (existingRecord) {
       return new PaymentMethodModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewPaymentMethod
+    return await PaymentMethodModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<PaymentMethodsTable>, values: NewPaymentMethod = {} as NewPaymentMethod): Promise<PaymentMethodModel> {
+    // First try to find a record matching the search criteria
+    const instance = new PaymentMethodModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new PaymentMethodModel(existingRecord)
+      await model.update(values as PaymentMethodUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

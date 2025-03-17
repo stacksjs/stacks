@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -334,6 +334,36 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
   }
 
+  static async latest(column: keyof LoyaltyRewardsTable = 'created_at'): Promise<LoyaltyRewardModel | undefined> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyRewardModel(model)
+  }
+
+  static async oldest(column: keyof LoyaltyRewardsTable = 'created_at'): Promise<LoyaltyRewardModel | undefined> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new LoyaltyRewardModel(model)
+  }
+
   static skip(count: number): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
@@ -380,6 +410,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof LoyaltyRewardsTable, value: string): LoyaltyRewardModel {
@@ -538,6 +580,30 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
 
     if (existingRecord) {
       return new LoyaltyRewardModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewLoyaltyReward
+    return await LoyaltyRewardModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<LoyaltyRewardsTable>, values: NewLoyaltyReward = {} as NewLoyaltyReward): Promise<LoyaltyRewardModel> {
+    // First try to find a record matching the search criteria
+    const instance = new LoyaltyRewardModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new LoyaltyRewardModel(existingRecord)
+      await model.update(values as LoyaltyRewardUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

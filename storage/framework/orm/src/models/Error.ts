@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -276,6 +276,36 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
+  static async latest(column: keyof ErrorsTable = 'created_at'): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ErrorModel(model)
+  }
+
+  static async oldest(column: keyof ErrorsTable = 'created_at'): Promise<ErrorModel | undefined> {
+    const instance = new ErrorModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ErrorModel(model)
+  }
+
   static skip(count: number): ErrorModel {
     const instance = new ErrorModel(undefined)
 
@@ -322,6 +352,18 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const instance = new ErrorModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ErrorsTable): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ErrorsTable): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ErrorsTable, value: string): ErrorModel {
@@ -475,6 +517,30 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
     if (existingRecord) {
       return new ErrorModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewError
+    return await ErrorModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ErrorsTable>, values: NewError = {} as NewError): Promise<ErrorModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ErrorModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ErrorModel(existingRecord)
+      await model.update(values as ErrorUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

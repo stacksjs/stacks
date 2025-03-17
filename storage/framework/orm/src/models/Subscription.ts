@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -342,6 +342,36 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriptionModel(modelItem)))
   }
 
+  static async latest(column: keyof SubscriptionsTable = 'created_at'): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new SubscriptionModel(model)
+  }
+
+  static async oldest(column: keyof SubscriptionsTable = 'created_at'): Promise<SubscriptionModel | undefined> {
+    const instance = new SubscriptionModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new SubscriptionModel(model)
+  }
+
   static skip(count: number): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
@@ -388,6 +418,18 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof SubscriptionsTable): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof SubscriptionsTable): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
@@ -543,6 +585,30 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     if (existingRecord) {
       return new SubscriptionModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewSubscription
+    return await SubscriptionModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<SubscriptionsTable>, values: NewSubscription = {} as NewSubscription): Promise<SubscriptionModel> {
+    // First try to find a record matching the search criteria
+    const instance = new SubscriptionModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new SubscriptionModel(existingRecord)
+      await model.update(values as SubscriptionUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

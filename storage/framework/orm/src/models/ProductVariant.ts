@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -298,6 +298,36 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductVariantModel(modelItem)))
   }
 
+  static async latest(column: keyof ProductVariantsTable = 'created_at'): Promise<ProductVariantModel | undefined> {
+    const instance = new ProductVariantModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductVariantModel(model)
+  }
+
+  static async oldest(column: keyof ProductVariantsTable = 'created_at'): Promise<ProductVariantModel | undefined> {
+    const instance = new ProductVariantModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new ProductVariantModel(model)
+  }
+
   static skip(count: number): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
@@ -344,6 +374,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const instance = new ProductVariantModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof ProductVariantsTable): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof ProductVariantsTable): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof ProductVariantsTable, value: string): ProductVariantModel {
@@ -502,6 +544,30 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     if (existingRecord) {
       return new ProductVariantModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductVariant
+    return await ProductVariantModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<ProductVariantsTable>, values: NewProductVariant = {} as NewProductVariant): Promise<ProductVariantModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductVariantModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new ProductVariantModel(existingRecord)
+      await model.update(values as ProductVariantUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values

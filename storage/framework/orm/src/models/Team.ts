@@ -1,5 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import type { Operator } from '@stacksjs/types'
+import type { Operator } from '@stacksjs/orm'
 import type { AccessTokenModel } from './AccessToken'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -309,6 +309,36 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
   }
 
+  static async latest(column: keyof TeamsTable = 'created_at'): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'desc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new TeamModel(model)
+  }
+
+  static async oldest(column: keyof TeamsTable = 'created_at'): Promise<TeamModel | undefined> {
+    const instance = new TeamModel(undefined)
+
+    const model = await instance.selectFromQuery
+      .selectAll()
+      .orderBy(column, 'asc')
+      .limit(1)
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    return new TeamModel(model)
+  }
+
   static skip(count: number): TeamModel {
     const instance = new TeamModel(undefined)
 
@@ -355,6 +385,18 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return instance.applyWhen(condition, callback as any)
+  }
+
+  static whereNull(column: keyof TeamsTable): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereNull(column)
+  }
+
+  static whereNotNull(column: keyof TeamsTable): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereNotNull(column)
   }
 
   static whereLike(column: keyof TeamsTable, value: string): TeamModel {
@@ -508,6 +550,30 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     if (existingRecord) {
       return new TeamModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewTeam
+    return await TeamModel.create(createData)
+  }
+
+  static async updateOrCreate(search: Partial<TeamsTable>, values: NewTeam = {} as NewTeam): Promise<TeamModel> {
+    // First try to find a record matching the search criteria
+    const instance = new TeamModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      // If record exists, update it with the new values
+      const model = new TeamModel(existingRecord)
+      await model.update(values as TeamUpdate)
+      return model
     }
 
     // If no record exists, create a new one with combined search criteria and values
