@@ -8,7 +8,7 @@ const { startTime } = await intro({
 const result = await Bun.build({
   entrypoints: [
     './src/index.ts',
-    './src/cli.ts'
+    './src/cli.ts',
   ],
 
   outdir: './dist',
