@@ -291,10 +291,34 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof OrderItemsTable, ...args: [V] | [Operator, V]): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof OrderItemsTable, value: string): OrderItemModel {
     const instance = new OrderItemModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof OrderItemsTable, order: 'asc' | 'desc'): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof OrderItemsTable): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof OrderItemsTable): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof OrderItemsTable): Promise<number> {

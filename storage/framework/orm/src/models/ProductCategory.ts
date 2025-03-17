@@ -312,10 +312,34 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProductCategoriesTable, ...args: [V] | [Operator, V]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProductCategoriesTable, value: string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProductCategoriesTable, order: 'asc' | 'desc'): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProductCategoriesTable): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProductCategoriesTable): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProductCategoriesTable): Promise<number> {

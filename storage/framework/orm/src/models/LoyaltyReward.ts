@@ -345,10 +345,34 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof LoyaltyRewardsTable, ...args: [V] | [Operator, V]): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof LoyaltyRewardsTable, value: string): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof LoyaltyRewardsTable, order: 'asc' | 'desc'): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof LoyaltyRewardsTable): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof LoyaltyRewardsTable): Promise<number> {

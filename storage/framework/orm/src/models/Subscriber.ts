@@ -251,10 +251,34 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof SubscribersTable, ...args: [V] | [Operator, V]): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof SubscribersTable, order: 'asc' | 'desc'): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof SubscribersTable): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof SubscribersTable): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof SubscribersTable): Promise<number> {

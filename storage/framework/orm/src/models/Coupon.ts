@@ -396,10 +396,34 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof CouponsTable, ...args: [V] | [Operator, V]): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof CouponsTable, value: string): CouponModel {
     const instance = new CouponModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof CouponsTable, order: 'asc' | 'desc'): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof CouponsTable): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof CouponsTable): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof CouponsTable): Promise<number> {

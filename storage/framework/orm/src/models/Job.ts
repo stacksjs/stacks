@@ -287,10 +287,34 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof JobsTable, ...args: [V] | [Operator, V]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof JobsTable, value: string): JobModel {
     const instance = new JobModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof JobsTable, order: 'asc' | 'desc'): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof JobsTable): Promise<number> {

@@ -294,10 +294,34 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ManufacturersTable, ...args: [V] | [Operator, V]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ManufacturersTable, order: 'asc' | 'desc'): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ManufacturersTable): Promise<number> {

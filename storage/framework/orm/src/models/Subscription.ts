@@ -353,10 +353,34 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof SubscriptionsTable, ...args: [V] | [Operator, V]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof SubscriptionsTable, order: 'asc' | 'desc'): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof SubscriptionsTable): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof SubscriptionsTable): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof SubscriptionsTable): Promise<number> {

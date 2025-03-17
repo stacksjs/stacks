@@ -356,10 +356,34 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProductReviewsTable, ...args: [V] | [Operator, V]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProductReviewsTable, value: string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProductReviewsTable, order: 'asc' | 'desc'): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProductReviewsTable): Promise<number> {

@@ -405,10 +405,34 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof GiftCardsTable, ...args: [V] | [Operator, V]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof GiftCardsTable, order: 'asc' | 'desc'): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof GiftCardsTable): Promise<number> {

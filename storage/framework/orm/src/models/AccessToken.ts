@@ -354,10 +354,34 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof PersonalAccessTokensTable, ...args: [V] | [Operator, V]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof PersonalAccessTokensTable, order: 'asc' | 'desc'): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof PersonalAccessTokensTable): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof PersonalAccessTokensTable): Promise<number> {

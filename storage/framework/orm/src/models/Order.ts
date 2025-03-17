@@ -380,10 +380,34 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof OrdersTable, ...args: [V] | [Operator, V]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof OrdersTable, value: string): OrderModel {
     const instance = new OrderModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof OrdersTable, order: 'asc' | 'desc'): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof OrdersTable): Promise<number> {

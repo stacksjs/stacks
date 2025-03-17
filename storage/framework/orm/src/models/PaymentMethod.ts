@@ -332,10 +332,34 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof PaymentMethodsTable, ...args: [V] | [Operator, V]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof PaymentMethodsTable, value: string): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof PaymentMethodsTable, order: 'asc' | 'desc'): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof PaymentMethodsTable): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof PaymentMethodsTable): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof PaymentMethodsTable): Promise<number> {

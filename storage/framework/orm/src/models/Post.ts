@@ -271,10 +271,34 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof PostsTable, ...args: [V] | [Operator, V]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof PostsTable, value: string): PostModel {
     const instance = new PostModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof PostsTable, order: 'asc' | 'desc'): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof PostsTable): Promise<number> {

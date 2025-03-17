@@ -1139,10 +1139,34 @@ export async function generateModelString(
           return instance.applyTake(count)
         }
 
+        static where<V = string>(column: keyof ${formattedTableName}Table, ...args: [V] | [Operator, V]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhere<V>(column, ...args)
+        }
+
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyWhereLike(column, value)
+        }
+
+        static orderBy(column: keyof ${formattedTableName}Table, order: 'asc' | 'desc'): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyOrderBy(column, order)
+        }
+
+        static orderByAsc(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyOrderByAsc(column)
+        }
+
+        static orderByDesc(column: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyOrderByDesc(column)
         }
 
         static async max(field: keyof ${formattedTableName}Table): Promise<number> {

@@ -365,10 +365,34 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProductsTable, ...args: [V] | [Operator, V]): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProductsTable, value: string): ProductModel {
     const instance = new ProductModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProductsTable, order: 'asc' | 'desc'): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProductsTable): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProductsTable): Promise<number> {

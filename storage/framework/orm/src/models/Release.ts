@@ -260,10 +260,34 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ReleasesTable, ...args: [V] | [Operator, V]): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ReleasesTable, order: 'asc' | 'desc'): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ReleasesTable): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ReleasesTable): Promise<number> {

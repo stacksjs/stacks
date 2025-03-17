@@ -278,10 +278,34 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProjectsTable, ...args: [V] | [Operator, V]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     const instance = new ProjectModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProjectsTable, order: 'asc' | 'desc'): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProjectsTable): Promise<number> {

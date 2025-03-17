@@ -341,10 +341,34 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof CustomersTable, ...args: [V] | [Operator, V]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof CustomersTable, order: 'asc' | 'desc'): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof CustomersTable): Promise<number> {

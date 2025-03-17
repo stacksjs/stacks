@@ -316,10 +316,34 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof LoyaltyPointsTable, ...args: [V] | [Operator, V]): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof LoyaltyPointsTable, value: string): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof LoyaltyPointsTable, order: 'asc' | 'desc'): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof LoyaltyPointsTable): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof LoyaltyPointsTable): Promise<number> {

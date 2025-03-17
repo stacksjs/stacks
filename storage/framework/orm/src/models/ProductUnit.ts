@@ -309,10 +309,34 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProductUnitsTable, ...args: [V] | [Operator, V]): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProductUnitsTable, value: string): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProductUnitsTable, order: 'asc' | 'desc'): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProductUnitsTable): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProductUnitsTable): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProductUnitsTable): Promise<number> {

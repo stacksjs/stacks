@@ -327,10 +327,34 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof TransactionsTable, ...args: [V] | [Operator, V]): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     const instance = new TransactionModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof TransactionsTable, order: 'asc' | 'desc'): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof TransactionsTable): Promise<number> {

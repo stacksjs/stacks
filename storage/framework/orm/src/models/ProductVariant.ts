@@ -309,10 +309,34 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ProductVariantsTable, ...args: [V] | [Operator, V]): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ProductVariantsTable, value: string): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ProductVariantsTable, order: 'asc' | 'desc'): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ProductVariantsTable): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ProductVariantsTable): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ProductVariantsTable): Promise<number> {

@@ -326,10 +326,34 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof RequestsTable, ...args: [V] | [Operator, V]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof RequestsTable, value: string): RequestModel {
     const instance = new RequestModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof RequestsTable, order: 'asc' | 'desc'): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof RequestsTable): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof RequestsTable): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof RequestsTable): Promise<number> {

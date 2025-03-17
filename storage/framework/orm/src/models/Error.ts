@@ -287,10 +287,34 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof ErrorsTable, ...args: [V] | [Operator, V]): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof ErrorsTable, value: string): ErrorModel {
     const instance = new ErrorModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof ErrorsTable, order: 'asc' | 'desc'): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof ErrorsTable): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof ErrorsTable): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof ErrorsTable): Promise<number> {

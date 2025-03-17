@@ -355,10 +355,34 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance.applyTake(count)
   }
 
+  static where<V = string>(column: keyof UsersTable, ...args: [V] | [Operator, V]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhere<V>(column, ...args)
+  }
+
   static whereLike(column: keyof UsersTable, value: string): UserModel {
     const instance = new UserModel(undefined)
 
     return instance.applyWhereLike(column, value)
+  }
+
+  static orderBy(column: keyof UsersTable, order: 'asc' | 'desc'): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyOrderBy(column, order)
+  }
+
+  static orderByAsc(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyOrderByAsc(column)
+  }
+
+  static orderByDesc(column: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyOrderByDesc(column)
   }
 
   static async max(field: keyof UsersTable): Promise<number> {
