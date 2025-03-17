@@ -17,7 +17,6 @@ const result = await Bun.build({
     '@stacksjs/config',
     '@stacksjs/error-handling',
     '@stacksjs/path',
-    '@stacksjs/types',
     '@stacksjs/validation',
   ],
   plugins: [

@@ -35,8 +35,6 @@ export const storage: StacksOptions['storage'] = config.storage
 export const team: StacksOptions['team'] = config.team
 export const ui: StacksOptions['ui'] = config.ui
 
-export { defaults, overrides }
-
 export * from './helpers'
 
 export function determineAppEnv(): string {
@@ -54,3 +52,5 @@ export function determineAppEnv(): string {
 
   return app.env
 }
+
+export { defaults, overrides }

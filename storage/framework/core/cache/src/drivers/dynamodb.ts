@@ -1,5 +1,4 @@
 import { config } from '@stacksjs/config'
-// dynamodb-cache-driver.ts
 import { BentoCache, bentostore } from 'bentocache'
 import { dynamoDbDriver } from 'bentocache/drivers/dynamodb'
 import { BaseCacheDriver } from './base'
