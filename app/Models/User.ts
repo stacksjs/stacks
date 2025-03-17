@@ -112,7 +112,7 @@ export default {
   },
 
   set: {
-    password: (attributes: Attributes) => Bun.password.hash(attributes.password),
+    password: (attributes: Attributes) => Bun.password.hash(String(attributes.password)),
   },
   dashboard: {
     highlight: true,

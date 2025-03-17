@@ -134,7 +134,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
-          model[key] = fn()
+          (model as any)[key] = fn()
         }
 
         return model
@@ -150,7 +150,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
-        model[key] = fn()
+        (model as any)[key] = fn()
       }
     }
   }
@@ -163,7 +163,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      model[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 

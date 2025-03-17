@@ -157,7 +157,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
-          model[key] = fn()
+          (model as any)[key] = fn()
         }
 
         return model
@@ -177,7 +177,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
-        model[key] = fn()
+        (model as any)[key] = fn()
       }
     }
   }
@@ -187,12 +187,12 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       default: () => {
       },
 
-      password: () => Bun.password.hash(model.password),
+      password: () => Bun.password.hash(String(model.password)),
 
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      model[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 

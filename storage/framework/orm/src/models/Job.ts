@@ -133,7 +133,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
         }
 
         for (const [key, fn] of Object.entries(customGetter)) {
-          model[key] = fn()
+          (model as any)[key] = fn()
         }
 
         return model
@@ -149,7 +149,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       }
 
       for (const [key, fn] of Object.entries(customGetter)) {
-        model[key] = fn()
+        (model as any)[key] = fn()
       }
     }
   }
@@ -162,7 +162,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     }
 
     for (const [key, fn] of Object.entries(customSetter)) {
-      model[key] = await fn()
+      (model as any)[key] = await fn()
     }
   }
 
