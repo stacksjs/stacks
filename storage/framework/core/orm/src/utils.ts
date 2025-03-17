@@ -1352,13 +1352,11 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
     }
 
     log.info('Generating API Routes...')
-    const modelFiles = globSync([path.userModelsPath('**/*.ts')], { absolute: true })
-    const coreModelFiles = globSync([path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('**/*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
     await generateApiRoutes(modelFiles)
-    await generateApiRoutes(coreModelFiles)
     log.success('Generated API Routes')
 
-    await writeModelOrmImports([...modelFiles, ...coreModelFiles])
+    await writeModelOrmImports(modelFiles)
 
     for (const modelFile of modelFiles) {
       if (modelStringFile && modelStringFile !== modelFile)
@@ -1370,25 +1368,6 @@ export async function generateModelFiles(modelStringFile?: string): Promise<void
       const modelName = getModelName(model, modelFile)
       const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
       const fields = await extractFields(model, modelFile)
-      const classString = await generateModelString(tableName, modelName, model, fields)
-
-      const writer = file.writer()
-      log.info(`Writing API Endpoints for: ${italic(modelName)}`)
-      writer.write(classString)
-      log.success(`Wrote API endpoints for: ${italic(modelName)}`)
-      await writer.end()
-    }
-
-    for (const coreModelFile of coreModelFiles) {
-      if (modelStringFile && modelStringFile !== coreModelFile)
-        continue
-      log.info(`Processing Model: ${italic(coreModelFile)}`)
-
-      const model = (await import(coreModelFile)).default as Model
-      const tableName = getTableName(model, coreModelFile)
-      const modelName = getModelName(model, coreModelFile)
-      const file = Bun.file(path.frameworkPath(`orm/src/models/${modelName}.ts`))
-      const fields = await extractFields(model, coreModelFile)
       const classString = await generateModelString(tableName, modelName, model, fields)
 
       const writer = file.writer()
@@ -1465,6 +1444,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
 
 async function ensureCodeStyle(): Promise<void> {
   log.info('Linting code style...')
+
   const proc = Bun.spawn(['bunx', '--bun', 'eslint', '.', '--fix'], {
     stdio: ['ignore', 'pipe', 'pipe'],
     cwd: path.projectPath(),
