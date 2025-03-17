@@ -339,27 +339,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof GiftCardJsonResponse): Partial<GiftCardJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<GiftCardJsonResponse> {
-    return this.fillable.reduce<Partial<GiftCardJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof GiftCardsTable]
-      const originalValue = this.originalAttributes[key as keyof GiftCardsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof GiftCardJsonResponse)[] | RawBuilder<string> | string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 

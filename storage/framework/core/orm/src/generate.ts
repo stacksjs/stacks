@@ -1073,27 +1073,6 @@ export async function generateModelString(
         ${getFields}
         ${setFields}
         
-        getOriginal(column?: keyof ${modelName}JsonResponse): Partial<${modelName}JsonResponse> {
-          if (column) {
-            return this.originalAttributes[column]
-          }
-
-          return this.originalAttributes
-        }
-
-        getChanges(): Partial<${modelName}JsonResponse> {
-          return this.fillable.reduce<Partial<${modelName}JsonResponse>>((changes, key) => {
-            const currentValue = this.attributes[key as keyof ${formattedTableName}Table]
-            const originalValue = this.originalAttributes[key as keyof ${formattedTableName}Table]
-
-            if (currentValue !== originalValue) {
-              changes[key] = currentValue
-            }
-
-            return changes
-          }, {})
-        }
-
         static select(params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
   

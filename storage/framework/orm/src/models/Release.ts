@@ -193,27 +193,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ReleaseJsonResponse): Partial<ReleaseJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ReleaseJsonResponse> {
-    return this.fillable.reduce<Partial<ReleaseJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ReleasesTable]
-      const originalValue = this.originalAttributes[key as keyof ReleasesTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ReleaseJsonResponse)[] | RawBuilder<string> | string): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 

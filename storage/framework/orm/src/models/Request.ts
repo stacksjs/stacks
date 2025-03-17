@@ -257,27 +257,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof RequestJsonResponse): Partial<RequestJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<RequestJsonResponse> {
-    return this.fillable.reduce<Partial<RequestJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof RequestsTable]
-      const originalValue = this.originalAttributes[key as keyof RequestsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof RequestJsonResponse)[] | RawBuilder<string> | string): RequestModel {
     const instance = new RequestModel(undefined)
 

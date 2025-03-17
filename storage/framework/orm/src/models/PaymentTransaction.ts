@@ -255,27 +255,6 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PaymentTransactionJsonResponse): Partial<PaymentTransactionJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<PaymentTransactionJsonResponse> {
-    return this.fillable.reduce<Partial<PaymentTransactionJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof PaymentTransactionsTable]
-      const originalValue = this.originalAttributes[key as keyof PaymentTransactionsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof PaymentTransactionJsonResponse)[] | RawBuilder<string> | string): PaymentTransactionModel {
     const instance = new PaymentTransactionModel(undefined)
 

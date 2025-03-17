@@ -227,27 +227,6 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof OrderItemJsonResponse): Partial<OrderItemJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<OrderItemJsonResponse> {
-    return this.fillable.reduce<Partial<OrderItemJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof OrderItemsTable]
-      const originalValue = this.originalAttributes[key as keyof OrderItemsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof OrderItemJsonResponse)[] | RawBuilder<string> | string): OrderItemModel {
     const instance = new OrderItemModel(undefined)
 

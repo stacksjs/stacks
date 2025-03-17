@@ -194,27 +194,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     this.attributes.deleted_at = value
   }
 
-  getOriginal(column?: keyof SubscriberEmailJsonResponse): Partial<SubscriberEmailJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<SubscriberEmailJsonResponse> {
-    return this.fillable.reduce<Partial<SubscriberEmailJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof SubscriberEmailsTable]
-      const originalValue = this.originalAttributes[key as keyof SubscriberEmailsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof SubscriberEmailJsonResponse)[] | RawBuilder<string> | string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 

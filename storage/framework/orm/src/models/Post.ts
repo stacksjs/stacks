@@ -205,27 +205,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof PostJsonResponse): Partial<PostJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<PostJsonResponse> {
-    return this.fillable.reduce<Partial<PostJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof PostsTable]
-      const originalValue = this.originalAttributes[key as keyof PostsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof PostJsonResponse)[] | RawBuilder<string> | string): PostModel {
     const instance = new PostModel(undefined)
 

@@ -330,27 +330,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof CouponJsonResponse): Partial<CouponJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<CouponJsonResponse> {
-    return this.fillable.reduce<Partial<CouponJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof CouponsTable]
-      const originalValue = this.originalAttributes[key as keyof CouponsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof CouponJsonResponse)[] | RawBuilder<string> | string): CouponModel {
     const instance = new CouponModel(undefined)
 

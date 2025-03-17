@@ -220,27 +220,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ErrorJsonResponse): Partial<ErrorJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ErrorJsonResponse> {
-    return this.fillable.reduce<Partial<ErrorJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ErrorsTable]
-      const originalValue = this.originalAttributes[key as keyof ErrorsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ErrorJsonResponse)[] | RawBuilder<string> | string): ErrorModel {
     const instance = new ErrorModel(undefined)
 

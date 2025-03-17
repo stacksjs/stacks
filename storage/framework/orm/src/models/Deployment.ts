@@ -260,27 +260,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof DeploymentJsonResponse): Partial<DeploymentJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<DeploymentJsonResponse> {
-    return this.fillable.reduce<Partial<DeploymentJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof DeploymentsTable]
-      const originalValue = this.originalAttributes[key as keyof DeploymentsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof DeploymentJsonResponse)[] | RawBuilder<string> | string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 

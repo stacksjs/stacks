@@ -301,27 +301,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductJsonResponse): Partial<ProductJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProductJsonResponse> {
-    return this.fillable.reduce<Partial<ProductJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductsTable]
-      const originalValue = this.originalAttributes[key as keyof ProductsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ProductJsonResponse)[] | RawBuilder<string> | string): ProductModel {
     const instance = new ProductModel(undefined)
 

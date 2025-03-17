@@ -227,27 +227,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ManufacturerJsonResponse): Partial<ManufacturerJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ManufacturerJsonResponse> {
-    return this.fillable.reduce<Partial<ManufacturerJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ManufacturersTable]
-      const originalValue = this.originalAttributes[key as keyof ManufacturersTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ManufacturerJsonResponse)[] | RawBuilder<string> | string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 

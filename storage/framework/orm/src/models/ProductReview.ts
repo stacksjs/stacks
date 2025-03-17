@@ -292,27 +292,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductReviewJsonResponse): Partial<ProductReviewJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProductReviewJsonResponse> {
-    return this.fillable.reduce<Partial<ProductReviewJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductReviewsTable]
-      const originalValue = this.originalAttributes[key as keyof ProductReviewsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ProductReviewJsonResponse)[] | RawBuilder<string> | string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 

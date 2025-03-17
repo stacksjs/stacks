@@ -290,27 +290,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof UserJsonResponse): Partial<UserJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<UserJsonResponse> {
-    return this.fillable.reduce<Partial<UserJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof UsersTable]
-      const originalValue = this.originalAttributes[key as keyof UsersTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof UserJsonResponse)[] | RawBuilder<string> | string): UserModel {
     const instance = new UserModel(undefined)
 

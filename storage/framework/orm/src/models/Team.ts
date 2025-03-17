@@ -254,27 +254,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TeamJsonResponse): Partial<TeamJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<TeamJsonResponse> {
-    return this.fillable.reduce<Partial<TeamJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof TeamsTable]
-      const originalValue = this.originalAttributes[key as keyof TeamsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof TeamJsonResponse)[] | RawBuilder<string> | string): TeamModel {
     const instance = new TeamModel(undefined)
 

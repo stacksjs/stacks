@@ -275,27 +275,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof CustomerJsonResponse): Partial<CustomerJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<CustomerJsonResponse> {
-    return this.fillable.reduce<Partial<CustomerJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof CustomersTable]
-      const originalValue = this.originalAttributes[key as keyof CustomersTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof CustomerJsonResponse)[] | RawBuilder<string> | string): CustomerModel {
     const instance = new CustomerModel(undefined)
 

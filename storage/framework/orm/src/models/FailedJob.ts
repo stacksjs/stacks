@@ -220,27 +220,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof FailedJobJsonResponse): Partial<FailedJobJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<FailedJobJsonResponse> {
-    return this.fillable.reduce<Partial<FailedJobJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof FailedJobsTable]
-      const originalValue = this.originalAttributes[key as keyof FailedJobsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof FailedJobJsonResponse)[] | RawBuilder<string> | string): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 

@@ -184,27 +184,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof SubscriberJsonResponse): Partial<SubscriberJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<SubscriberJsonResponse> {
-    return this.fillable.reduce<Partial<SubscriberJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof SubscribersTable]
-      const originalValue = this.originalAttributes[key as keyof SubscribersTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof SubscriberJsonResponse)[] | RawBuilder<string> | string): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 

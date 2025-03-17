@@ -245,27 +245,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductCategoryJsonResponse): Partial<ProductCategoryJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProductCategoryJsonResponse> {
-    return this.fillable.reduce<Partial<ProductCategoryJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductCategoriesTable]
-      const originalValue = this.originalAttributes[key as keyof ProductCategoriesTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ProductCategoryJsonResponse)[] | RawBuilder<string> | string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 

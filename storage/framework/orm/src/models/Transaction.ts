@@ -261,27 +261,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof TransactionJsonResponse): Partial<TransactionJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<TransactionJsonResponse> {
-    return this.fillable.reduce<Partial<TransactionJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof TransactionsTable]
-      const originalValue = this.originalAttributes[key as keyof TransactionsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof TransactionJsonResponse)[] | RawBuilder<string> | string): TransactionModel {
     const instance = new TransactionModel(undefined)
 

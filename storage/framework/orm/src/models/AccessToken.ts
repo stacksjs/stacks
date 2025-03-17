@@ -290,27 +290,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof AccessTokenJsonResponse): Partial<AccessTokenJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<AccessTokenJsonResponse> {
-    return this.fillable.reduce<Partial<AccessTokenJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof PersonalAccessTokensTable]
-      const originalValue = this.originalAttributes[key as keyof PersonalAccessTokensTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof AccessTokenJsonResponse)[] | RawBuilder<string> | string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 

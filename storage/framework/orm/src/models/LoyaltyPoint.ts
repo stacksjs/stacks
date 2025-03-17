@@ -249,27 +249,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof LoyaltyPointJsonResponse): Partial<LoyaltyPointJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<LoyaltyPointJsonResponse> {
-    return this.fillable.reduce<Partial<LoyaltyPointJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof LoyaltyPointsTable]
-      const originalValue = this.originalAttributes[key as keyof LoyaltyPointsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof LoyaltyPointJsonResponse)[] | RawBuilder<string> | string): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 

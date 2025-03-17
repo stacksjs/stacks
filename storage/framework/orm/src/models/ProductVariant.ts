@@ -243,27 +243,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProductVariantJsonResponse): Partial<ProductVariantJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProductVariantJsonResponse> {
-    return this.fillable.reduce<Partial<ProductVariantJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProductVariantsTable]
-      const originalValue = this.originalAttributes[key as keyof ProductVariantsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ProductVariantJsonResponse)[] | RawBuilder<string> | string): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 

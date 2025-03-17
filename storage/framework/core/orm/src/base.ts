@@ -786,6 +786,35 @@ export class BaseOrm<T, C, J> {
     return (this as any).hasSaved && this.isDirty(column)
   }
 
+  getOriginal(column?: keyof T): Partial<T> {
+    if (!('originalAttributes' in this)) {
+      throw new Error('Child class must define originalAttributes property')
+    }
+
+    if (column) {
+      return (this as any).originalAttributes[column as string]
+    }
+
+    return (this as any).originalAttributes
+  }
+
+  getChanges(): Partial<T> {
+    if (!('attributes' in this) || !('originalAttributes' in this) || !('fillable' in this)) {
+      throw new Error('Child class must define attributes, originalAttributes, and fillable properties')
+    }
+
+    return (this as any).fillable.reduce((changes: Partial<T>, key: string) => {
+      const currentValue = (this as any).attributes[key]
+      const originalValue = (this as any).originalAttributes[key]
+
+      if (currentValue !== originalValue) {
+        changes[key as keyof T] = currentValue
+      }
+
+      return changes
+    }, {} as Partial<T>)
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 

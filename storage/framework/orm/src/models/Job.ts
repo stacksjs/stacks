@@ -220,27 +220,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof JobJsonResponse): Partial<JobJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<JobJsonResponse> {
-    return this.fillable.reduce<Partial<JobJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof JobsTable]
-      const originalValue = this.originalAttributes[key as keyof JobsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof JobJsonResponse)[] | RawBuilder<string> | string): JobModel {
     const instance = new JobModel(undefined)
 

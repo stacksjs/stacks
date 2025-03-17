@@ -211,27 +211,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     this.attributes.updated_at = value
   }
 
-  getOriginal(column?: keyof ProjectJsonResponse): Partial<ProjectJsonResponse> {
-    if (column) {
-      return this.originalAttributes[column]
-    }
-
-    return this.originalAttributes
-  }
-
-  getChanges(): Partial<ProjectJsonResponse> {
-    return this.fillable.reduce<Partial<ProjectJsonResponse>>((changes, key) => {
-      const currentValue = this.attributes[key as keyof ProjectsTable]
-      const originalValue = this.originalAttributes[key as keyof ProjectsTable]
-
-      if (currentValue !== originalValue) {
-        changes[key] = currentValue
-      }
-
-      return changes
-    }, {})
-  }
-
   static select(params: (keyof ProjectJsonResponse)[] | RawBuilder<string> | string): ProjectModel {
     const instance = new ProjectModel(undefined)
 
