@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -371,6 +372,24 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof SubscriptionsTable, range: [V, V]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof SubscriptionsTable, ...args: string[]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: SubscriptionModel) => SubscriptionModel): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
@@ -393,6 +412,18 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const instance = new SubscriptionModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof SubscriptionsTable, operator: Operator, second: keyof SubscriptionsTable): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof SubscriptionsTable): Promise<number> {
@@ -423,6 +454,29 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const instance = new SubscriptionModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<SubscriptionModel[]> {
+    const instance = new SubscriptionModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: SubscriptionJsonResponse) => new SubscriptionModel(item))
+  }
+
+  static async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
+    const instance = new SubscriptionModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: SubscriptionModel[]) => Promise<void>): Promise<void> {
+    const instance = new SubscriptionModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: SubscriptionJsonResponse) => new SubscriptionModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -473,6 +527,27 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const instance = new SubscriptionModel(undefined)
 
     return await instance.applyCreate(newSubscription)
+  }
+
+  static async firstOrCreate(search: Partial<SubscriptionsTable>, values: NewSubscription = {} as NewSubscription): Promise<SubscriptionModel> {
+    // First try to find a record matching the search criteria
+    const instance = new SubscriptionModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new SubscriptionModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewSubscription
+    return await SubscriptionModel.create(createData)
   }
 
   async update(newSubscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {

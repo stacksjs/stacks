@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -289,6 +290,24 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof PostsTable, range: [V, V]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof PostsTable, ...args: string[]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: PostModel) => PostModel): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof PostsTable, value: string): PostModel {
     const instance = new PostModel(undefined)
 
@@ -311,6 +330,18 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof PostsTable, operator: Operator, second: keyof PostsTable): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof PostsTable): Promise<number> {
@@ -341,6 +372,29 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<PostModel[]> {
+    const instance = new PostModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: PostJsonResponse) => new PostModel(item))
+  }
+
+  static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
+    const instance = new PostModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {
+    const instance = new PostModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: PostJsonResponse) => new PostModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -389,6 +443,27 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     return await instance.applyCreate(newPost)
+  }
+
+  static async firstOrCreate(search: Partial<PostsTable>, values: NewPost = {} as NewPost): Promise<PostModel> {
+    // First try to find a record matching the search criteria
+    const instance = new PostModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new PostModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewPost
+    return await PostModel.create(createData)
   }
 
   async update(newPost: PostUpdate): Promise<PostModel | undefined> {

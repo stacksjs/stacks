@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { TeamModel } from './Team'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
@@ -372,6 +373,24 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof PersonalAccessTokensTable, range: [V, V]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof PersonalAccessTokensTable, ...args: string[]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: AccessTokenModel) => AccessTokenModel): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
@@ -394,6 +413,18 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof PersonalAccessTokensTable, operator: Operator, second: keyof PersonalAccessTokensTable): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof PersonalAccessTokensTable): Promise<number> {
@@ -424,6 +455,29 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const instance = new AccessTokenModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<AccessTokenModel[]> {
+    const instance = new AccessTokenModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: AccessTokenJsonResponse) => new AccessTokenModel(item))
+  }
+
+  static async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {
+    const instance = new AccessTokenModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {
+    const instance = new AccessTokenModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: AccessTokenJsonResponse) => new AccessTokenModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -472,6 +526,27 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const instance = new AccessTokenModel(undefined)
 
     return await instance.applyCreate(newAccessToken)
+  }
+
+  static async firstOrCreate(search: Partial<PersonalAccessTokensTable>, values: NewAccessToken = {} as NewAccessToken): Promise<AccessTokenModel> {
+    // First try to find a record matching the search criteria
+    const instance = new AccessTokenModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new AccessTokenModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewAccessToken
+    return await AccessTokenModel.create(createData)
   }
 
   async update(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {

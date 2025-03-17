@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { CustomerModel } from './Customer'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
@@ -374,6 +375,24 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ProductReviewsTable, range: [V, V]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProductReviewsTable, ...args: string[]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProductReviewModel) => ProductReviewModel): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ProductReviewsTable, value: string): ProductReviewModel {
     const instance = new ProductReviewModel(undefined)
 
@@ -396,6 +415,18 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProductReviewsTable, operator: Operator, second: keyof ProductReviewsTable): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ProductReviewsTable): Promise<number> {
@@ -426,6 +457,29 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const instance = new ProductReviewModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ProductReviewModel[]> {
+    const instance = new ProductReviewModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ProductReviewJsonResponse) => new ProductReviewModel(item))
+  }
+
+  static async pluck<K extends keyof ProductReviewModel>(field: K): Promise<ProductReviewModel[K][]> {
+    const instance = new ProductReviewModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ProductReviewModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProductReviewModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProductReviewJsonResponse) => new ProductReviewModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -479,6 +533,27 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     const instance = new ProductReviewModel(undefined)
 
     return await instance.applyCreate(newProductReview)
+  }
+
+  static async firstOrCreate(search: Partial<ProductReviewsTable>, values: NewProductReview = {} as NewProductReview): Promise<ProductReviewModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductReviewModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ProductReviewModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductReview
+    return await ProductReviewModel.create(createData)
   }
 
   async update(newProductReview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {

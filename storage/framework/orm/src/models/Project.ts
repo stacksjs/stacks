@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -296,6 +297,24 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ProjectsTable, range: [V, V]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProjectsTable, ...args: string[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProjectModel) => ProjectModel): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
     const instance = new ProjectModel(undefined)
 
@@ -318,6 +337,18 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const instance = new ProjectModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProjectsTable, operator: Operator, second: keyof ProjectsTable): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ProjectsTable): Promise<number> {
@@ -348,6 +379,29 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const instance = new ProjectModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ProjectModel[]> {
+    const instance = new ProjectModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ProjectJsonResponse) => new ProjectModel(item))
+  }
+
+  static async pluck<K extends keyof ProjectModel>(field: K): Promise<ProjectModel[K][]> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ProjectModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProjectModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProjectJsonResponse) => new ProjectModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -396,6 +450,27 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const instance = new ProjectModel(undefined)
 
     return await instance.applyCreate(newProject)
+  }
+
+  static async firstOrCreate(search: Partial<ProjectsTable>, values: NewProject = {} as NewProject): Promise<ProjectModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProjectModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ProjectModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProject
+    return await ProjectModel.create(createData)
   }
 
   async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {

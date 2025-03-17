@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -327,6 +328,24 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ProductVariantsTable, range: [V, V]): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProductVariantsTable, ...args: string[]): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProductVariantModel) => ProductVariantModel): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ProductVariantsTable, value: string): ProductVariantModel {
     const instance = new ProductVariantModel(undefined)
 
@@ -349,6 +368,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const instance = new ProductVariantModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProductVariantsTable, operator: Operator, second: keyof ProductVariantsTable): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ProductVariantsTable): Promise<number> {
@@ -379,6 +410,29 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const instance = new ProductVariantModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ProductVariantModel[]> {
+    const instance = new ProductVariantModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ProductVariantJsonResponse) => new ProductVariantModel(item))
+  }
+
+  static async pluck<K extends keyof ProductVariantModel>(field: K): Promise<ProductVariantModel[K][]> {
+    const instance = new ProductVariantModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ProductVariantModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProductVariantModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProductVariantJsonResponse) => new ProductVariantModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -432,6 +486,27 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const instance = new ProductVariantModel(undefined)
 
     return await instance.applyCreate(newProductVariant)
+  }
+
+  static async firstOrCreate(search: Partial<ProductVariantsTable>, values: NewProductVariant = {} as NewProductVariant): Promise<ProductVariantModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductVariantModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ProductVariantModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductVariant
+    return await ProductVariantModel.create(createData)
   }
 
   async update(newProductVariant: ProductVariantUpdate): Promise<ProductVariantModel | undefined> {

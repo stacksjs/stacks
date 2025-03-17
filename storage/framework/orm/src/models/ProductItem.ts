@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductModel } from './Product'
 import type { ProductCategoryModel } from './ProductCategory'
@@ -385,6 +386,24 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ProductItemsTable, range: [V, V]): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProductItemsTable, ...args: string[]): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProductItemModel) => ProductItemModel): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ProductItemsTable, value: string): ProductItemModel {
     const instance = new ProductItemModel(undefined)
 
@@ -407,6 +426,18 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     const instance = new ProductItemModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProductItemsTable, operator: Operator, second: keyof ProductItemsTable): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ProductItemsTable): Promise<number> {
@@ -437,6 +468,29 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     const instance = new ProductItemModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ProductItemModel[]> {
+    const instance = new ProductItemModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ProductItemJsonResponse) => new ProductItemModel(item))
+  }
+
+  static async pluck<K extends keyof ProductItemModel>(field: K): Promise<ProductItemModel[K][]> {
+    const instance = new ProductItemModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ProductItemModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProductItemModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProductItemJsonResponse) => new ProductItemModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -490,6 +544,27 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     const instance = new ProductItemModel(undefined)
 
     return await instance.applyCreate(newProductItem)
+  }
+
+  static async firstOrCreate(search: Partial<ProductItemsTable>, values: NewProductItem = {} as NewProductItem): Promise<ProductItemModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductItemModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ProductItemModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductItem
+    return await ProductItemModel.create(createData)
   }
 
   async update(newProductItem: ProductItemUpdate): Promise<ProductItemModel | undefined> {

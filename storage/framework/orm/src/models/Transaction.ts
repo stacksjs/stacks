@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -345,6 +346,24 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof TransactionsTable, range: [V, V]): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof TransactionsTable, ...args: string[]): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: TransactionModel) => TransactionModel): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof TransactionsTable, value: string): TransactionModel {
     const instance = new TransactionModel(undefined)
 
@@ -367,6 +386,18 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const instance = new TransactionModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof TransactionsTable, operator: Operator, second: keyof TransactionsTable): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof TransactionsTable): Promise<number> {
@@ -397,6 +428,29 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const instance = new TransactionModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<TransactionModel[]> {
+    const instance = new TransactionModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: TransactionJsonResponse) => new TransactionModel(item))
+  }
+
+  static async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {
+    const instance = new TransactionModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: TransactionModel[]) => Promise<void>): Promise<void> {
+    const instance = new TransactionModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: TransactionJsonResponse) => new TransactionModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -450,6 +504,27 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const instance = new TransactionModel(undefined)
 
     return await instance.applyCreate(newTransaction)
+  }
+
+  static async firstOrCreate(search: Partial<TransactionsTable>, values: NewTransaction = {} as NewTransaction): Promise<TransactionModel> {
+    // First try to find a record matching the search criteria
+    const instance = new TransactionModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new TransactionModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewTransaction
+    return await TransactionModel.create(createData)
   }
 
   async update(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {

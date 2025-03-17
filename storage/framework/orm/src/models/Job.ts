@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -305,6 +306,24 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof JobsTable, range: [V, V]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof JobsTable, ...args: string[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: JobModel) => JobModel): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof JobsTable, value: string): JobModel {
     const instance = new JobModel(undefined)
 
@@ -327,6 +346,18 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof JobsTable, operator: Operator, second: keyof JobsTable): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof JobsTable): Promise<number> {
@@ -357,6 +388,29 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<JobModel[]> {
+    const instance = new JobModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: JobJsonResponse) => new JobModel(item))
+  }
+
+  static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {
+    const instance = new JobModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: JobJsonResponse) => new JobModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -405,6 +459,27 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     return await instance.applyCreate(newJob)
+  }
+
+  static async firstOrCreate(search: Partial<JobsTable>, values: NewJob = {} as NewJob): Promise<JobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new JobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new JobModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewJob
+    return await JobModel.create(createData)
   }
 
   async update(newJob: JobUpdate): Promise<JobModel | undefined> {

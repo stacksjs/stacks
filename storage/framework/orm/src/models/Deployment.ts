@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -344,6 +345,24 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof DeploymentsTable, range: [V, V]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof DeploymentsTable, ...args: string[]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: DeploymentModel) => DeploymentModel): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
@@ -366,6 +385,18 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof DeploymentsTable, operator: Operator, second: keyof DeploymentsTable): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof DeploymentsTable): Promise<number> {
@@ -396,6 +427,29 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<DeploymentModel[]> {
+    const instance = new DeploymentModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: DeploymentJsonResponse) => new DeploymentModel(item))
+  }
+
+  static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
+    const instance = new DeploymentModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {
+    const instance = new DeploymentModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: DeploymentJsonResponse) => new DeploymentModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -446,6 +500,27 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     return await instance.applyCreate(newDeployment)
+  }
+
+  static async firstOrCreate(search: Partial<DeploymentsTable>, values: NewDeployment = {} as NewDeployment): Promise<DeploymentModel> {
+    // First try to find a record matching the search criteria
+    const instance = new DeploymentModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new DeploymentModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewDeployment
+    return await DeploymentModel.create(createData)
   }
 
   async update(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {

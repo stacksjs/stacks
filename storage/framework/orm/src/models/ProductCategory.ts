@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -330,6 +331,24 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ProductCategoriesTable, range: [V, V]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ProductCategoriesTable, ...args: string[]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ProductCategoryModel) => ProductCategoryModel): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ProductCategoriesTable, value: string): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
@@ -352,6 +371,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const instance = new ProductCategoryModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ProductCategoriesTable, operator: Operator, second: keyof ProductCategoriesTable): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ProductCategoriesTable): Promise<number> {
@@ -382,6 +413,29 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const instance = new ProductCategoryModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ProductCategoryModel[]> {
+    const instance = new ProductCategoryModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ProductCategoryJsonResponse) => new ProductCategoryModel(item))
+  }
+
+  static async pluck<K extends keyof ProductCategoryModel>(field: K): Promise<ProductCategoryModel[K][]> {
+    const instance = new ProductCategoryModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ProductCategoryModel[]) => Promise<void>): Promise<void> {
+    const instance = new ProductCategoryModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ProductCategoryJsonResponse) => new ProductCategoryModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -435,6 +489,27 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const instance = new ProductCategoryModel(undefined)
 
     return await instance.applyCreate(newProductCategory)
+  }
+
+  static async firstOrCreate(search: Partial<ProductCategoriesTable>, values: NewProductCategory = {} as NewProductCategory): Promise<ProductCategoryModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ProductCategoryModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ProductCategoryModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewProductCategory
+    return await ProductCategoryModel.create(createData)
   }
 
   async update(newProductCategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {

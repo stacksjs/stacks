@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -281,6 +282,24 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof SubscriberEmailsTable, range: [V, V]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof SubscriberEmailsTable, ...args: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: SubscriberEmailModel) => SubscriberEmailModel): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
     const instance = new SubscriberEmailModel(undefined)
 
@@ -303,6 +322,18 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof SubscriberEmailsTable, operator: Operator, second: keyof SubscriberEmailsTable): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof SubscriberEmailsTable): Promise<number> {
@@ -333,6 +364,29 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const instance = new SubscriberEmailModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<SubscriberEmailModel[]> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: SubscriberEmailJsonResponse) => new SubscriberEmailModel(item))
+  }
+
+  static async pluck<K extends keyof SubscriberEmailModel>(field: K): Promise<SubscriberEmailModel[K][]> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: SubscriberEmailModel[]) => Promise<void>): Promise<void> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: SubscriberEmailJsonResponse) => new SubscriberEmailModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -381,6 +435,27 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     const instance = new SubscriberEmailModel(undefined)
 
     return await instance.applyCreate(newSubscriberEmail)
+  }
+
+  static async firstOrCreate(search: Partial<SubscriberEmailsTable>, values: NewSubscriberEmail = {} as NewSubscriberEmail): Promise<SubscriberEmailModel> {
+    // First try to find a record matching the search criteria
+    const instance = new SubscriberEmailModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new SubscriberEmailModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewSubscriberEmail
+    return await SubscriberEmailModel.create(createData)
   }
 
   async update(newSubscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {

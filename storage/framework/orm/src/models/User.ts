@@ -1,6 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Stripe } from '@stacksjs/payments'
-import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { CheckoutLineItem, CheckoutOptions, Operator, StripeCustomerOptions } from '@stacksjs/types'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
@@ -373,6 +373,24 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof UsersTable, range: [V, V]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof UsersTable, ...args: string[]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: UserModel) => UserModel): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof UsersTable, value: string): UserModel {
     const instance = new UserModel(undefined)
 
@@ -395,6 +413,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof UsersTable, operator: Operator, second: keyof UsersTable): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof UsersTable): Promise<number> {
@@ -425,6 +455,29 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<UserModel[]> {
+    const instance = new UserModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: UserJsonResponse) => new UserModel(item))
+  }
+
+  static async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {
+    const instance = new UserModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: UserModel[]) => Promise<void>): Promise<void> {
+    const instance = new UserModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: UserJsonResponse) => new UserModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -478,6 +531,27 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const instance = new UserModel(undefined)
 
     return await instance.applyCreate(newUser)
+  }
+
+  static async firstOrCreate(search: Partial<UsersTable>, values: NewUser = {} as NewUser): Promise<UserModel> {
+    // First try to find a record matching the search criteria
+    const instance = new UserModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new UserModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewUser
+    return await UserModel.create(createData)
   }
 
   async update(newUser: UserUpdate): Promise<UserModel | undefined> {

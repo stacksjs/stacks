@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import type { OrderItemModel } from './OrderItem'
@@ -398,6 +399,24 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof OrdersTable, range: [V, V]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof OrdersTable, ...args: string[]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: OrderModel) => OrderModel): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof OrdersTable, value: string): OrderModel {
     const instance = new OrderModel(undefined)
 
@@ -420,6 +439,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof OrdersTable, operator: Operator, second: keyof OrdersTable): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof OrdersTable): Promise<number> {
@@ -450,6 +481,29 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<OrderModel[]> {
+    const instance = new OrderModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: OrderJsonResponse) => new OrderModel(item))
+  }
+
+  static async pluck<K extends keyof OrderModel>(field: K): Promise<OrderModel[K][]> {
+    const instance = new OrderModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: OrderModel[]) => Promise<void>): Promise<void> {
+    const instance = new OrderModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: OrderJsonResponse) => new OrderModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -503,6 +557,27 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     return await instance.applyCreate(newOrder)
+  }
+
+  static async firstOrCreate(search: Partial<OrdersTable>, values: NewOrder = {} as NewOrder): Promise<OrderModel> {
+    // First try to find a record matching the search criteria
+    const instance = new OrderModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new OrderModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewOrder
+    return await OrderModel.create(createData)
   }
 
   async update(newOrder: OrderUpdate): Promise<OrderModel | undefined> {

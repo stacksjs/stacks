@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { OrderModel } from './Order'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
@@ -359,6 +360,24 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof CustomersTable, range: [V, V]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof CustomersTable, ...args: string[]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: CustomerModel) => CustomerModel): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
     const instance = new CustomerModel(undefined)
 
@@ -381,6 +400,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const instance = new CustomerModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof CustomersTable, operator: Operator, second: keyof CustomersTable): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof CustomersTable): Promise<number> {
@@ -411,6 +442,29 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const instance = new CustomerModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<CustomerModel[]> {
+    const instance = new CustomerModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: CustomerJsonResponse) => new CustomerModel(item))
+  }
+
+  static async pluck<K extends keyof CustomerModel>(field: K): Promise<CustomerModel[K][]> {
+    const instance = new CustomerModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: CustomerModel[]) => Promise<void>): Promise<void> {
+    const instance = new CustomerModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: CustomerJsonResponse) => new CustomerModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -464,6 +518,27 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const instance = new CustomerModel(undefined)
 
     return await instance.applyCreate(newCustomer)
+  }
+
+  static async firstOrCreate(search: Partial<CustomersTable>, values: NewCustomer = {} as NewCustomer): Promise<CustomerModel> {
+    // First try to find a record matching the search criteria
+    const instance = new CustomerModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new CustomerModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewCustomer
+    return await CustomerModel.create(createData)
   }
 
   async update(newCustomer: CustomerUpdate): Promise<CustomerModel | undefined> {

@@ -904,7 +904,7 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
       import { DB, BaseOrm } from '@stacksjs/orm'
-      import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+      import type { CheckoutLineItem, CheckoutOptions, Operator, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
       import { generateTwoFactorSecret } from '@stacksjs/auth'
@@ -1163,6 +1163,18 @@ export async function generateModelString(
           return instance.applyWhereBetween<V>(column, range)
         }
 
+        static whereRef(column: keyof ${formattedTableName}Table, ...args: string[]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereRef(column, ...args)
+        }
+
+        static when(condition: boolean, callback: (query: ${modelName}Model) => ${modelName}Model): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhen(condition, callback as any)
+        }
+
         static whereLike(column: keyof ${formattedTableName}Table, value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
@@ -1185,6 +1197,18 @@ export async function generateModelString(
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyOrderByDesc(column)
+        }
+
+        static inRandomOrder(): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyInRandomOrder()
+        }
+
+        static whereColumn(first: keyof ${formattedTableName}Table, operator: Operator, second: keyof ${formattedTableName}Table): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+
+          return instance.applyWhereColumn(first, operator, second)
         }
 
         static async max(field: keyof ${formattedTableName}Table): Promise<number> {
@@ -1215,6 +1239,29 @@ export async function generateModelString(
           const instance = new ${modelName}Model(undefined)
 
           return instance.applyCount()
+        }
+        
+        static async get(): Promise<${modelName}Model[]> {
+          const instance = new ${modelName}Model(undefined)
+          
+          const results = await instance.applyGet()
+          
+          return results.map((item: ${modelName}JsonResponse) => new ${modelName}Model(item))
+        }
+        
+        static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
+          const instance = new ${modelName}Model(undefined)
+          
+          return await instance.applyPluck(field)
+        }
+        
+        static async chunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {
+          const instance = new ${modelName}Model(undefined)
+          
+          await instance.applyChunk(size, async (models) => {
+            const modelInstances = models.map((item: ${modelName}JsonResponse) => new ${modelName}Model(item))
+            await callback(modelInstances)
+          })
         }
         
         static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ 
@@ -1267,6 +1314,27 @@ export async function generateModelString(
           const instance = new ${modelName}Model(undefined)
 
           return await instance.applyCreate(new${modelName})
+        }
+  
+        static async firstOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
+          // First try to find a record matching the search criteria
+          const instance = new ${modelName}Model(undefined)
+          
+          // Apply all search conditions
+          for (const [key, value] of Object.entries(search)) {
+            instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+          }
+          
+          // Try to find the record
+          const existingRecord = await instance.applyFirst()
+          
+          if (existingRecord) {
+            return new ${modelName}Model(existingRecord)
+          }
+          
+          // If no record exists, create a new one with combined search criteria and values
+          const createData = { ...search, ...values } as New${modelName}
+          return await ${modelName}Model.create(createData)
         }
   
         async update(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {

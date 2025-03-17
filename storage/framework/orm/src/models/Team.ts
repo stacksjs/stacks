@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { AccessTokenModel } from './AccessToken'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -338,6 +339,24 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof TeamsTable, range: [V, V]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof TeamsTable, ...args: string[]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: TeamModel) => TeamModel): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof TeamsTable, value: string): TeamModel {
     const instance = new TeamModel(undefined)
 
@@ -360,6 +379,18 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof TeamsTable, operator: Operator, second: keyof TeamsTable): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof TeamsTable): Promise<number> {
@@ -390,6 +421,29 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<TeamModel[]> {
+    const instance = new TeamModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: TeamJsonResponse) => new TeamModel(item))
+  }
+
+  static async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
+    const instance = new TeamModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {
+    const instance = new TeamModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: TeamJsonResponse) => new TeamModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -438,6 +492,27 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     return await instance.applyCreate(newTeam)
+  }
+
+  static async firstOrCreate(search: Partial<TeamsTable>, values: NewTeam = {} as NewTeam): Promise<TeamModel> {
+    // First try to find a record matching the search criteria
+    const instance = new TeamModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new TeamModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewTeam
+    return await TeamModel.create(createData)
   }
 
   async update(newTeam: TeamUpdate): Promise<TeamModel | undefined> {

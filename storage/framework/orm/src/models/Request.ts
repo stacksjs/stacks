@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -344,6 +345,24 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof RequestsTable, range: [V, V]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof RequestsTable, ...args: string[]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: RequestModel) => RequestModel): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof RequestsTable, value: string): RequestModel {
     const instance = new RequestModel(undefined)
 
@@ -366,6 +385,18 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const instance = new RequestModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof RequestsTable, operator: Operator, second: keyof RequestsTable): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof RequestsTable): Promise<number> {
@@ -396,6 +427,29 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const instance = new RequestModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<RequestModel[]> {
+    const instance = new RequestModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: RequestJsonResponse) => new RequestModel(item))
+  }
+
+  static async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {
+    const instance = new RequestModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {
+    const instance = new RequestModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: RequestJsonResponse) => new RequestModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -444,6 +498,27 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const instance = new RequestModel(undefined)
 
     return await instance.applyCreate(newRequest)
+  }
+
+  static async firstOrCreate(search: Partial<RequestsTable>, values: NewRequest = {} as NewRequest): Promise<RequestModel> {
+    // First try to find a record matching the search criteria
+    const instance = new RequestModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new RequestModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewRequest
+    return await RequestModel.create(createData)
   }
 
   async update(newRequest: RequestUpdate): Promise<RequestModel | undefined> {

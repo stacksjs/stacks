@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
@@ -423,6 +424,24 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof GiftCardsTable, range: [V, V]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof GiftCardsTable, ...args: string[]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: GiftCardModel) => GiftCardModel): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof GiftCardsTable, value: string): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
@@ -445,6 +464,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof GiftCardsTable, operator: Operator, second: keyof GiftCardsTable): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof GiftCardsTable): Promise<number> {
@@ -475,6 +506,29 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<GiftCardModel[]> {
+    const instance = new GiftCardModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: GiftCardJsonResponse) => new GiftCardModel(item))
+  }
+
+  static async pluck<K extends keyof GiftCardModel>(field: K): Promise<GiftCardModel[K][]> {
+    const instance = new GiftCardModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: GiftCardModel[]) => Promise<void>): Promise<void> {
+    const instance = new GiftCardModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: GiftCardJsonResponse) => new GiftCardModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -528,6 +582,27 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     return await instance.applyCreate(newGiftCard)
+  }
+
+  static async firstOrCreate(search: Partial<GiftCardsTable>, values: NewGiftCard = {} as NewGiftCard): Promise<GiftCardModel> {
+    // First try to find a record matching the search criteria
+    const instance = new GiftCardModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new GiftCardModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewGiftCard
+    return await GiftCardModel.create(createData)
   }
 
   async update(newGiftCard: GiftCardUpdate): Promise<GiftCardModel | undefined> {

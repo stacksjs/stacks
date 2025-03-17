@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -333,6 +334,24 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof PaymentProductsTable, range: [V, V]): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof PaymentProductsTable, ...args: string[]): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: PaymentProductModel) => PaymentProductModel): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof PaymentProductsTable, value: string): PaymentProductModel {
     const instance = new PaymentProductModel(undefined)
 
@@ -355,6 +374,18 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const instance = new PaymentProductModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof PaymentProductsTable, operator: Operator, second: keyof PaymentProductsTable): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof PaymentProductsTable): Promise<number> {
@@ -385,6 +416,29 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const instance = new PaymentProductModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<PaymentProductModel[]> {
+    const instance = new PaymentProductModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: PaymentProductJsonResponse) => new PaymentProductModel(item))
+  }
+
+  static async pluck<K extends keyof PaymentProductModel>(field: K): Promise<PaymentProductModel[K][]> {
+    const instance = new PaymentProductModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: PaymentProductModel[]) => Promise<void>): Promise<void> {
+    const instance = new PaymentProductModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: PaymentProductJsonResponse) => new PaymentProductModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -435,6 +489,27 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const instance = new PaymentProductModel(undefined)
 
     return await instance.applyCreate(newPaymentProduct)
+  }
+
+  static async firstOrCreate(search: Partial<PaymentProductsTable>, values: NewPaymentProduct = {} as NewPaymentProduct): Promise<PaymentProductModel> {
+    // First try to find a record matching the search criteria
+    const instance = new PaymentProductModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new PaymentProductModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewPaymentProduct
+    return await PaymentProductModel.create(createData)
   }
 
   async update(newPaymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {

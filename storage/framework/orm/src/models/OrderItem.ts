@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { sql } from '@stacksjs/database'
@@ -309,6 +310,24 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof OrderItemsTable, range: [V, V]): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof OrderItemsTable, ...args: string[]): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: OrderItemModel) => OrderItemModel): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof OrderItemsTable, value: string): OrderItemModel {
     const instance = new OrderItemModel(undefined)
 
@@ -331,6 +350,18 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     const instance = new OrderItemModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof OrderItemsTable, operator: Operator, second: keyof OrderItemsTable): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof OrderItemsTable): Promise<number> {
@@ -361,6 +392,29 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     const instance = new OrderItemModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<OrderItemModel[]> {
+    const instance = new OrderItemModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: OrderItemJsonResponse) => new OrderItemModel(item))
+  }
+
+  static async pluck<K extends keyof OrderItemModel>(field: K): Promise<OrderItemModel[K][]> {
+    const instance = new OrderItemModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: OrderItemModel[]) => Promise<void>): Promise<void> {
+    const instance = new OrderItemModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: OrderItemJsonResponse) => new OrderItemModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -409,6 +463,27 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     const instance = new OrderItemModel(undefined)
 
     return await instance.applyCreate(newOrderItem)
+  }
+
+  static async firstOrCreate(search: Partial<OrderItemsTable>, values: NewOrderItem = {} as NewOrderItem): Promise<OrderItemModel> {
+    // First try to find a record matching the search criteria
+    const instance = new OrderItemModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new OrderItemModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewOrderItem
+    return await OrderItemModel.create(createData)
   }
 
   async update(newOrderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {

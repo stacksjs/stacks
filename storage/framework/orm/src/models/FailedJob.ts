@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import { sql } from '@stacksjs/database'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -305,6 +306,24 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof FailedJobsTable, range: [V, V]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof FailedJobsTable, ...args: string[]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: FailedJobModel) => FailedJobModel): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
@@ -327,6 +346,18 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof FailedJobsTable, operator: Operator, second: keyof FailedJobsTable): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof FailedJobsTable): Promise<number> {
@@ -357,6 +388,29 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<FailedJobModel[]> {
+    const instance = new FailedJobModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: FailedJobJsonResponse) => new FailedJobModel(item))
+  }
+
+  static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
+    const instance = new FailedJobModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: FailedJobModel[]) => Promise<void>): Promise<void> {
+    const instance = new FailedJobModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: FailedJobJsonResponse) => new FailedJobModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -405,6 +459,27 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     return await instance.applyCreate(newFailedJob)
+  }
+
+  static async firstOrCreate(search: Partial<FailedJobsTable>, values: NewFailedJob = {} as NewFailedJob): Promise<FailedJobModel> {
+    // First try to find a record matching the search criteria
+    const instance = new FailedJobModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new FailedJobModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewFailedJob
+    return await FailedJobModel.create(createData)
   }
 
   async update(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {

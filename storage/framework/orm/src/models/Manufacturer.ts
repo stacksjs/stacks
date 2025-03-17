@@ -1,4 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
+import type { Operator } from '@stacksjs/types'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -312,6 +313,24 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance.applyWhereNotIn<V>(column, values)
   }
 
+  static whereBetween<V = number>(column: keyof ManufacturersTable, range: [V, V]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereBetween<V>(column, range)
+  }
+
+  static whereRef(column: keyof ManufacturersTable, ...args: string[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereRef(column, ...args)
+  }
+
+  static when(condition: boolean, callback: (query: ManufacturerModel) => ManufacturerModel): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhen(condition, callback as any)
+  }
+
   static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
@@ -334,6 +353,18 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyOrderByDesc(column)
+  }
+
+  static inRandomOrder(): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyInRandomOrder()
+  }
+
+  static whereColumn(first: keyof ManufacturersTable, operator: Operator, second: keyof ManufacturersTable): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereColumn(first, operator, second)
   }
 
   static async max(field: keyof ManufacturersTable): Promise<number> {
@@ -364,6 +395,29 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const instance = new ManufacturerModel(undefined)
 
     return instance.applyCount()
+  }
+
+  static async get(): Promise<ManufacturerModel[]> {
+    const instance = new ManufacturerModel(undefined)
+
+    const results = await instance.applyGet()
+
+    return results.map((item: ManufacturerJsonResponse) => new ManufacturerModel(item))
+  }
+
+  static async pluck<K extends keyof ManufacturerModel>(field: K): Promise<ManufacturerModel[K][]> {
+    const instance = new ManufacturerModel(undefined)
+
+    return await instance.applyPluck(field)
+  }
+
+  static async chunk(size: number, callback: (models: ManufacturerModel[]) => Promise<void>): Promise<void> {
+    const instance = new ManufacturerModel(undefined)
+
+    await instance.applyChunk(size, async (models) => {
+      const modelInstances = models.map((item: ManufacturerJsonResponse) => new ManufacturerModel(item))
+      await callback(modelInstances)
+    })
   }
 
   static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
@@ -417,6 +471,27 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const instance = new ManufacturerModel(undefined)
 
     return await instance.applyCreate(newManufacturer)
+  }
+
+  static async firstOrCreate(search: Partial<ManufacturersTable>, values: NewManufacturer = {} as NewManufacturer): Promise<ManufacturerModel> {
+    // First try to find a record matching the search criteria
+    const instance = new ManufacturerModel(undefined)
+
+    // Apply all search conditions
+    for (const [key, value] of Object.entries(search)) {
+      instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
+    }
+
+    // Try to find the record
+    const existingRecord = await instance.applyFirst()
+
+    if (existingRecord) {
+      return new ManufacturerModel(existingRecord)
+    }
+
+    // If no record exists, create a new one with combined search criteria and values
+    const createData = { ...search, ...values } as NewManufacturer
+    return await ManufacturerModel.create(createData)
   }
 
   async update(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
