@@ -489,18 +489,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new GiftCardModel(modelItem)))
   }
 
-  skip(count: number): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: GiftCardModel[]) => Promise<void>): Promise<void> {

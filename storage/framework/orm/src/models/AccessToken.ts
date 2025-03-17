@@ -440,18 +440,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new AccessTokenModel(modelItem)))
   }
 
-  skip(count: number): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: AccessTokenModel[]) => Promise<void>): Promise<void> {

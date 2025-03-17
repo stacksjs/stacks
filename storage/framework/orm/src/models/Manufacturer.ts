@@ -377,18 +377,10 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new ManufacturerModel(modelItem)))
   }
 
-  skip(count: number): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: ManufacturerModel[]) => Promise<void>): Promise<void> {

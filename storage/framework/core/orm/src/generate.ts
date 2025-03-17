@@ -1216,18 +1216,10 @@ export async function generateModelString(
           return models.map((modelItem: UserJsonResponse) => this.parseResult(new ${modelName}Model(modelItem)))
         }
 
-        skip(count: number): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.offset(count)
-
-          return this
-        }
-
         static skip(count: number): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-          return instance
+          return instance.applySkip(count)
         }
 
         async applyChunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {

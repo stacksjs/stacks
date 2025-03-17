@@ -480,18 +480,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new CouponModel(modelItem)))
   }
 
-  skip(count: number): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: CouponModel[]) => Promise<void>): Promise<void> {

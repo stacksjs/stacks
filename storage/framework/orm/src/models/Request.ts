@@ -413,18 +413,10 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new RequestModel(modelItem)))
   }
 
-  skip(count: number): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): RequestModel {
     const instance = new RequestModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: RequestModel[]) => Promise<void>): Promise<void> {

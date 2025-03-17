@@ -355,18 +355,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new PostModel(modelItem)))
   }
 
-  skip(count: number): PostModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: PostModel[]) => Promise<void>): Promise<void> {

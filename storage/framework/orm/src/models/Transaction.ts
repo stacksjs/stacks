@@ -411,18 +411,10 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new TransactionModel(modelItem)))
   }
 
-  skip(count: number): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: TransactionModel[]) => Promise<void>): Promise<void> {

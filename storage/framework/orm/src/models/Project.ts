@@ -361,18 +361,10 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProjectModel(modelItem)))
   }
 
-  skip(count: number): ProjectModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): ProjectModel {
     const instance = new ProjectModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: ProjectModel[]) => Promise<void>): Promise<void> {

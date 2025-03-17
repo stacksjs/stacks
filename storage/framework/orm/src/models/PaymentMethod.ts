@@ -416,18 +416,10 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new PaymentMethodModel(modelItem)))
   }
 
-  skip(count: number): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: PaymentMethodModel[]) => Promise<void>): Promise<void> {

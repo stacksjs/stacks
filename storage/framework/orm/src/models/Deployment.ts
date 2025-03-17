@@ -410,18 +410,10 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new DeploymentModel(modelItem)))
   }
 
-  skip(count: number): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: DeploymentModel[]) => Promise<void>): Promise<void> {

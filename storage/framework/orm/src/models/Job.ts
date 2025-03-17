@@ -370,18 +370,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new JobModel(modelItem)))
   }
 
-  skip(count: number): JobModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): JobModel {
     const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: JobModel[]) => Promise<void>): Promise<void> {

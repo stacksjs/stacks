@@ -399,18 +399,10 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
-  skip(count: number): LoyaltyPointModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): LoyaltyPointModel {
     const instance = new LoyaltyPointModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: LoyaltyPointModel[]) => Promise<void>): Promise<void> {

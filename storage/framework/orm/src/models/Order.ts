@@ -466,18 +466,10 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new OrderModel(modelItem)))
   }
 
-  skip(count: number): OrderModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): OrderModel {
     const instance = new OrderModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: OrderModel[]) => Promise<void>): Promise<void> {

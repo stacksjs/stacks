@@ -393,18 +393,10 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProductUnitModel(modelItem)))
   }
 
-  skip(count: number): ProductUnitModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): ProductUnitModel {
     const instance = new ProductUnitModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: ProductUnitModel[]) => Promise<void>): Promise<void> {

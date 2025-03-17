@@ -437,18 +437,10 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new SubscriptionModel(modelItem)))
   }
 
-  skip(count: number): SubscriptionModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: SubscriptionModel[]) => Promise<void>): Promise<void> {

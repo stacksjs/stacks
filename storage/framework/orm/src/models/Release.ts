@@ -343,18 +343,10 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new ReleaseModel(modelItem)))
   }
 
-  skip(count: number): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: ReleaseModel[]) => Promise<void>): Promise<void> {

@@ -404,18 +404,10 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new TeamModel(modelItem)))
   }
 
-  skip(count: number): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: TeamModel[]) => Promise<void>): Promise<void> {

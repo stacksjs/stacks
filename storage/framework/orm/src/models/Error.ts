@@ -370,18 +370,10 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return models.map((modelItem: UserJsonResponse) => this.parseResult(new ErrorModel(modelItem)))
   }
 
-  skip(count: number): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.offset(count)
-
-    return this
-  }
-
   static skip(count: number): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.offset(count)
-
-    return instance
+    return instance.applySkip(count)
   }
 
   async applyChunk(size: number, callback: (models: ErrorModel[]) => Promise<void>): Promise<void> {
