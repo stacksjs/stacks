@@ -384,18 +384,10 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): FailedJobModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): FailedJobModel {
     const instance = new FailedJobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {

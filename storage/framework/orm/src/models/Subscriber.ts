@@ -348,18 +348,10 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): SubscriberModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): SubscriberModel {
     const instance = new SubscriberModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {

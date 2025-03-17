@@ -420,18 +420,10 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): TeamModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): TeamModel {
     const instance = new TeamModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {

@@ -391,18 +391,10 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): OrderItemModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): OrderItemModel {
     const instance = new OrderItemModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof OrderItemModel>(field: K): Promise<OrderItemModel[K][]> {

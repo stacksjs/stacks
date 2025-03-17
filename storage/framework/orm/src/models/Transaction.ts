@@ -425,18 +425,10 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): TransactionModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): TransactionModel {
     const instance = new TransactionModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof TransactionModel>(field: K): Promise<TransactionModel[K][]> {

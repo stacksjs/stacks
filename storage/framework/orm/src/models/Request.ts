@@ -427,18 +427,10 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): RequestModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): RequestModel {
     const instance = new RequestModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof RequestModel>(field: K): Promise<RequestModel[K][]> {

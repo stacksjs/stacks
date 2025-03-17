@@ -430,18 +430,10 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): PaymentMethodModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): PaymentMethodModel {
     const instance = new PaymentMethodModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof PaymentMethodModel>(field: K): Promise<PaymentMethodModel[K][]> {

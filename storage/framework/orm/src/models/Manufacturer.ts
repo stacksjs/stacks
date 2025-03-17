@@ -391,18 +391,10 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ManufacturerModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): ManufacturerModel {
     const instance = new ManufacturerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof ManufacturerModel>(field: K): Promise<ManufacturerModel[K][]> {

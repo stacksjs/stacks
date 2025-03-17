@@ -357,18 +357,10 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ReleaseModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): ReleaseModel {
     const instance = new ReleaseModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {

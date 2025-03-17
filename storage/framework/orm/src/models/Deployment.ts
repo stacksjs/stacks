@@ -424,18 +424,10 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): DeploymentModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): DeploymentModel {
     const instance = new DeploymentModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {

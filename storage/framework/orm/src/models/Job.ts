@@ -384,18 +384,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): JobModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): JobModel {
     const instance = new JobModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {

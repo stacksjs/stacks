@@ -443,18 +443,10 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): LoyaltyRewardModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): LoyaltyRewardModel {
     const instance = new LoyaltyRewardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof LoyaltyRewardModel>(field: K): Promise<LoyaltyRewardModel[K][]> {

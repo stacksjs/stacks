@@ -36,6 +36,45 @@ export class BaseOrm<T, C, J> {
     return this.applySelect(params)
   }
 
+  async first(): Promise<T | undefined> {
+    const model = await this.applyFirst()
+
+    if (!model)
+      return undefined
+
+    return model as T
+  }
+
+  async firstOrFail(): Promise<T> {
+    const model = await this.applyFirstOrFail()
+
+    if (!model)
+      throw new HttpError(404, `No ${this.tableName} results found for query`)
+
+    return model as T
+  }
+
+  protected async applyFirstOrFail(): Promise<T | undefined> {
+    let model
+
+    if (this.hasSelect) {
+      model = await this.selectFromQuery.executeTakeFirst()
+    }
+    else {
+      model = await this.selectFromQuery.selectAll().executeTakeFirst()
+    }
+
+    if (!model)
+      throw new HttpError(404, `No ${this.tableName} results found for query`)
+
+    if (model) {
+      this.mapCustomGetters(model)
+      await this.loadRelations(model)
+    }
+
+    return model
+  }
+
   // The protected helper method that does the actual work
   protected async applyFind(id: number): Promise<T | undefined> {
     const model = await DB.instance.selectFrom(this.tableName)
@@ -75,6 +114,17 @@ export class BaseOrm<T, C, J> {
 
   async findMany(ids: number[]): Promise<T[]> {
     return await this.applyFindMany(ids)
+  }
+
+  async all(): Promise<T[]> {
+    const models = await DB.instance.selectFrom(this.tableName)
+      .selectAll()
+      .execute()
+
+    this.mapCustomGetters(models)
+    await this.loadRelations(models)
+
+    return models as T[]
   }
 
   async applyFirst(): Promise<T | undefined> {
@@ -118,6 +168,32 @@ export class BaseOrm<T, C, J> {
 
   async find(id: number): Promise<T | undefined> {
     return await this.applyFind(id)
+  }
+
+  async findOrFail(id: number): Promise<T> {
+    const model = await this.applyFindOrFail(id)
+
+    if (!model)
+      throw new HttpError(404, `No ${this.tableName} results found for id ${id}`)
+
+    return model as T
+  }
+
+  protected async applyFindOrFail(id: number): Promise<T | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      throw new HttpError(404, `No ${this.tableName} results found for id ${id}`)
+
+    this.mapCustomGetters(model)
+    await this.loadRelations(model)
+
+    cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
+
+    return model
   }
 
   applyWhereColumn(first: keyof C, operator: Operator, second: keyof C): this {
@@ -329,6 +405,59 @@ export class BaseOrm<T, C, J> {
     return model
   }
 
+  async last(): Promise<T | undefined> {
+    const model = await this.applyLast()
+
+    if (!model)
+      return undefined
+
+    return model as T
+  }
+
+  async applyGet(): Promise<T[]> {
+    let models
+
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
+    }
+
+    this.mapCustomGetters(models)
+    await this.loadRelations(models)
+
+    return models as T[]
+  }
+
+  async get(): Promise<T[]> {
+    return await this.applyGet()
+  }
+
+  skip(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.offset(count)
+
+    return this
+  }
+
+  applyTake(count: number): this {
+    this.selectFromQuery = this.selectFromQuery.limit(count)
+
+    return this
+  }
+
+  take(count: number): this {
+    return this.applyTake(count)
+  }
+
+  async count(): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`COUNT(*) as count`)
+      .executeTakeFirst()
+
+    return result.count || 0
+  }
+
   applyOrderBy(column: keyof C, order: 'asc' | 'desc'): this {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, order)
 
@@ -336,7 +465,7 @@ export class BaseOrm<T, C, J> {
   }
 
   orderBy(column: keyof C, order: 'asc' | 'desc'): this {
-    return this.orderBy(column, order)
+    return this.applyOrderBy(column, order)
   }
 
   applyGroupBy(column: keyof C): this {

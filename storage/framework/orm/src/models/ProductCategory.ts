@@ -409,18 +409,10 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ProductCategoryModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): ProductCategoryModel {
     const instance = new ProductCategoryModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof ProductCategoryModel>(field: K): Promise<ProductCategoryModel[K][]> {

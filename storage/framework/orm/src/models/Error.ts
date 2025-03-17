@@ -384,18 +384,10 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): ErrorModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): ErrorModel {
     const instance = new ErrorModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {

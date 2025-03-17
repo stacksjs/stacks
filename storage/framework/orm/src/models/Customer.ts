@@ -439,18 +439,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): CustomerModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): CustomerModel {
     const instance = new CustomerModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof CustomerModel>(field: K): Promise<CustomerModel[K][]> {

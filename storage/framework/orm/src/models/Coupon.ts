@@ -494,18 +494,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): CouponModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): CouponModel {
     const instance = new CouponModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof CouponModel>(field: K): Promise<CouponModel[K][]> {

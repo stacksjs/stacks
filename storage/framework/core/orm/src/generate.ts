@@ -1231,18 +1231,10 @@ export async function generateModelString(
           await instance.applyChunk(size, callback)
         }
 
-        take(count: number): ${modelName}Model {
-          this.selectFromQuery = this.selectFromQuery.limit(count)
-
-          return this
-        }
-
         static take(count: number): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
 
-          instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-          return instance
+          return instance.applyTake(count)
         }
 
         static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {

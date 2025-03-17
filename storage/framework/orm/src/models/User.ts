@@ -454,18 +454,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): UserModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): UserModel {
     const instance = new UserModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof UserModel>(field: K): Promise<UserModel[K][]> {

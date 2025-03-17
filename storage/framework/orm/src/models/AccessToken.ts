@@ -454,18 +454,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): AccessTokenModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): AccessTokenModel {
     const instance = new AccessTokenModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof AccessTokenModel>(field: K): Promise<AccessTokenModel[K][]> {

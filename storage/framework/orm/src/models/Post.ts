@@ -369,18 +369,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): PostModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): PostModel {
     const instance = new PostModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {

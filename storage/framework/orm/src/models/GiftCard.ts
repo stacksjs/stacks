@@ -503,18 +503,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     await instance.applyChunk(size, callback)
   }
 
-  take(count: number): GiftCardModel {
-    this.selectFromQuery = this.selectFromQuery.limit(count)
-
-    return this
-  }
-
   static take(count: number): GiftCardModel {
     const instance = new GiftCardModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.limit(count)
-
-    return instance
+    return instance.applyTake(count)
   }
 
   static async pluck<K extends keyof GiftCardModel>(field: K): Promise<GiftCardModel[K][]> {
