@@ -301,10 +301,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return data
   }
 
-  async firstOrFail(): Promise<ProjectModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 

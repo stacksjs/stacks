@@ -333,10 +333,6 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return data
   }
 
-  async firstOrFail(): Promise<ProductUnitModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProductUnitModel | undefined> {
     const instance = new ProductUnitModel(undefined)
 

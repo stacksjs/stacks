@@ -283,10 +283,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return data
   }
 
-  async firstOrFail(): Promise<ReleaseModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 

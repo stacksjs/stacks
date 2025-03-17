@@ -295,10 +295,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return data
   }
 
-  async firstOrFail(): Promise<PostModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 

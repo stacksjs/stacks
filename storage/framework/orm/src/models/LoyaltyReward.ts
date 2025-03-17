@@ -369,10 +369,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return data
   }
 
-  async firstOrFail(): Promise<LoyaltyRewardModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<LoyaltyRewardModel | undefined> {
     const instance = new LoyaltyRewardModel(undefined)
 

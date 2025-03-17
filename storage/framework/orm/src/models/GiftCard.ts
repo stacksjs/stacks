@@ -429,10 +429,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return data
   }
 
-  async firstOrFail(): Promise<GiftCardModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 

@@ -347,10 +347,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return data
   }
 
-  async firstOrFail(): Promise<RequestModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 

@@ -335,10 +335,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return data
   }
 
-  async firstOrFail(): Promise<ProductCategoryModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 

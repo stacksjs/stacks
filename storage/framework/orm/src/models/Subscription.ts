@@ -377,10 +377,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return data
   }
 
-  async firstOrFail(): Promise<SubscriptionModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<SubscriptionModel | undefined> {
     const instance = new SubscriptionModel(undefined)
 

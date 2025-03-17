@@ -351,10 +351,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return data
   }
 
-  async firstOrFail(): Promise<TransactionModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(undefined)
 

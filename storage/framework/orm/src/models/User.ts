@@ -380,10 +380,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return data
   }
 
-  async firstOrFail(): Promise<UserModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 

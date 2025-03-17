@@ -1153,10 +1153,6 @@ export async function generateModelString(
   
           return data
         }
-  
-        async firstOrFail(): Promise<${modelName}Model | undefined> {
-          return await this.applyFirstOrFail()
-        }
 
         static async firstOrFail(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)

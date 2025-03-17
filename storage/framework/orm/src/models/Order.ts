@@ -406,10 +406,6 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return data
   }
 
-  async firstOrFail(): Promise<OrderModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<OrderModel | undefined> {
     const instance = new OrderModel(undefined)
 

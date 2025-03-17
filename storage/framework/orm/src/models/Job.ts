@@ -310,10 +310,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return data
   }
 
-  async firstOrFail(): Promise<JobModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 

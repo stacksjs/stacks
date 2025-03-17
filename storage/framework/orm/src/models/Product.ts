@@ -391,10 +391,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return data
   }
 
-  async firstOrFail(): Promise<ProductModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 

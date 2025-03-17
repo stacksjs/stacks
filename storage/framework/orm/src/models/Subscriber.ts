@@ -274,10 +274,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return data
   }
 
-  async firstOrFail(): Promise<SubscriberModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(undefined)
 

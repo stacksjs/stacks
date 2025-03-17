@@ -382,10 +382,6 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return data
   }
 
-  async firstOrFail(): Promise<ProductReviewModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProductReviewModel | undefined> {
     const instance = new ProductReviewModel(undefined)
 

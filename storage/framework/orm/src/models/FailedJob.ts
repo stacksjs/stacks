@@ -310,10 +310,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return data
   }
 
-  async firstOrFail(): Promise<FailedJobModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(undefined)
 

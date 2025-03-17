@@ -350,10 +350,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return data
   }
 
-  async firstOrFail(): Promise<DeploymentModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 

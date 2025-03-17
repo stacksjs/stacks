@@ -310,10 +310,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return data
   }
 
-  async firstOrFail(): Promise<ErrorModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(undefined)
 

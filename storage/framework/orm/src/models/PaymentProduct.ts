@@ -338,10 +338,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return data
   }
 
-  async firstOrFail(): Promise<PaymentProductModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<PaymentProductModel | undefined> {
     const instance = new PaymentProductModel(undefined)
 

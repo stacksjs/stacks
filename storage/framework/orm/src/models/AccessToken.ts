@@ -380,10 +380,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return data
   }
 
-  async firstOrFail(): Promise<AccessTokenModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 

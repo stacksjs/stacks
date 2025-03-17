@@ -284,10 +284,6 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return data
   }
 
-  async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<SubscriberEmailModel | undefined> {
     const instance = new SubscriberEmailModel(undefined)
 

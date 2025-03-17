@@ -365,10 +365,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return data
   }
 
-  async firstOrFail(): Promise<CustomerModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 

@@ -344,10 +344,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return data
   }
 
-  async firstOrFail(): Promise<TeamModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<TeamModel | undefined> {
     const instance = new TeamModel(undefined)
 

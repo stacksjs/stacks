@@ -333,10 +333,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return data
   }
 
-  async firstOrFail(): Promise<ProductVariantModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ProductVariantModel | undefined> {
     const instance = new ProductVariantModel(undefined)
 

@@ -317,10 +317,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return data
   }
 
-  async firstOrFail(): Promise<ManufacturerModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<ManufacturerModel | undefined> {
     const instance = new ManufacturerModel(undefined)
 

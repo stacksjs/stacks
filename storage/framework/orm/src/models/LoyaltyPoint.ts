@@ -339,10 +339,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return data
   }
 
-  async firstOrFail(): Promise<LoyaltyPointModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<LoyaltyPointModel | undefined> {
     const instance = new LoyaltyPointModel(undefined)
 

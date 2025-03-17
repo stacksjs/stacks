@@ -420,10 +420,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return data
   }
 
-  async firstOrFail(): Promise<CouponModel | undefined> {
-    return await this.applyFirstOrFail()
-  }
-
   static async firstOrFail(): Promise<CouponModel | undefined> {
     const instance = new CouponModel(undefined)
 
