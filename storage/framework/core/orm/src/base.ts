@@ -500,30 +500,20 @@ export class BaseOrm<T, C, J> {
     return this.applyHaving<V>(column, operator, value)
   }
 
-  applyInRandomOrder(): this {
-    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
-
-    return this
-  }
-
-  inRandomOrder(): this {
-    return this.applyInRandomOrder()
-  }
-
   applyOrderByDesc(column: keyof C): this {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'desc')
 
     return this
   }
 
+  orderByDesc(column: keyof C): this {
+    return this.applyOrderByDesc(column)
+  }
+
   applyOrderByAsc(column: keyof C): this {
     this.selectFromQuery = this.selectFromQuery.orderBy(column, 'asc')
 
     return this
-  }
-
-  orderByDesc(column: keyof C): this {
-    return this.applyOrderByDesc(column)
   }
 
   orderByAsc(column: keyof C): this {
@@ -552,20 +542,220 @@ export class BaseOrm<T, C, J> {
     return this.applyJoin(table, firstCol, secondCol)
   }
 
-  async applyUpdate<U>(values: U): Promise<T | undefined> {
-    if (!values || Object.keys(values).length === 0)
-      return undefined
+  async applyPluck<K extends keyof T>(field: K): Promise<T[K][]> {
+    let models
 
-    await this.updateFromQuery
-      .set(values as any)
-      .executeTakeFirst()
-
-    // If we have an ID in the current instance, try to find the updated model
-    if ((this as any).id) {
-      return await this.applyFind((this as any).id)
+    if (this.hasSelect) {
+      models = await this.selectFromQuery.execute()
+    }
+    else {
+      models = await this.selectFromQuery.selectAll().execute()
     }
 
-    return undefined
+    return models.map((model: T) => model[field])
+  }
+
+  async pluck<K extends keyof T>(field: K): Promise<T[K][]> {
+    return await this.applyPluck(field)
+  }
+
+  applyInRandomOrder(): this {
+    this.selectFromQuery = this.selectFromQuery.orderBy(sql` ${sql.raw('RANDOM()')} `)
+
+    return this
+  }
+
+  inRandomOrder(): this {
+    return this.applyInRandomOrder()
+  }
+
+  applyWhereExists(callback: (qb: any) => any): this {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(callback({ exists, selectFrom })),
+    )
+
+    return this
+  }
+
+  whereExists(callback: (qb: any) => any): this {
+    return this.applyWhereExists(callback)
+  }
+
+  applyHas(relation: string): this {
+    this.selectFromQuery = this.selectFromQuery.where(({ exists, selectFrom }: any) =>
+      exists(
+        selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.${this.tableName.slice(0, -1)}_id`, '=', `${this.tableName}.id`),
+      ),
+    )
+
+    return this
+  }
+
+  has(relation: string): this {
+    return this.applyHas(relation)
+  }
+
+  applyDoesntHave(relation: string): this {
+    this.selectFromQuery = this.selectFromQuery.where(({ not, exists, selectFrom }: any) =>
+      not(
+        exists(
+          selectFrom(relation)
+            .select('1')
+            .whereRef(`${relation}.${this.tableName.slice(0, -1)}_id`, '=', `${this.tableName}.id`),
+        ),
+      ),
+    )
+
+    return this
+  }
+
+  doesntHave(relation: string): this {
+    return this.applyDoesntHave(relation)
+  }
+
+  applyWhereHas(relation: string, callback: (query: any) => void): this {
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom }: any) => {
+        const subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.${this.tableName.slice(0, -1)}_id`, '=', `${this.tableName}.id`)
+
+        // Apply the callback to the subquery
+        callback(subquery)
+
+        return exists(subquery)
+      })
+
+    return this
+  }
+
+  whereHas(relation: string, callback: (query: any) => void): this {
+    return this.applyWhereHas(relation, callback)
+  }
+
+  applyWhereDoesntHave(relation: string, callback: (query: any) => void): this {
+    this.selectFromQuery = this.selectFromQuery
+      .where(({ exists, selectFrom, not }: any) => {
+        const subquery = selectFrom(relation)
+          .select('1')
+          .whereRef(`${relation}.${this.tableName.slice(0, -1)}_id`, '=', `${this.tableName}.id`)
+
+        // Apply the callback to the subquery
+        callback(subquery)
+
+        return not(exists(subquery))
+      })
+
+    return this
+  }
+
+  whereDoesntHave(relation: string, callback: (query: any) => void): this {
+    return this.applyWhereDoesntHave(relation, callback)
+  }
+
+  async applyPaginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ data: T[], paging: { total_records: number, page: number, total_pages: number }, next_cursor: number | null }> {
+    const totalRecordsResult = await DB.instance.selectFrom(this.tableName)
+      .select(DB.instance.fn.count('id').as('total'))
+      .executeTakeFirst()
+
+    const totalRecords = Number(totalRecordsResult?.total) || 0
+    const totalPages = Math.ceil(totalRecords / (options.limit ?? 10))
+
+    const modelsWithExtra = await DB.instance.selectFrom(this.tableName)
+      .selectAll()
+      .orderBy('id', 'asc')
+      .limit((options.limit ?? 10) + 1)
+      .offset(((options.page ?? 1) - 1) * (options.limit ?? 10))
+      .execute()
+
+    let nextCursor = null
+    if (modelsWithExtra.length > (options.limit ?? 10))
+      nextCursor = modelsWithExtra.pop()?.id ?? null
+
+    this.mapCustomGetters(modelsWithExtra)
+    await this.loadRelations(modelsWithExtra)
+
+    return {
+      data: modelsWithExtra as T[],
+      paging: {
+        total_records: totalRecords,
+        page: options.page || 1,
+        total_pages: totalPages,
+      },
+      next_cursor: nextCursor,
+    }
+  }
+
+  async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ data: T[], paging: { total_records: number, page: number, total_pages: number }, next_cursor: number | null }> {
+    return await this.applyPaginate(options)
+  }
+
+  async applyMax(field: keyof C): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MAX(${sql.raw(field as string)}) as max`)
+      .executeTakeFirst()
+
+    return result.max || 0
+  }
+
+  async max(field: keyof C): Promise<number> {
+    return await this.applyMax(field)
+  }
+
+  async applyMin(field: keyof C): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`MIN(${sql.raw(field as string)}) as min`)
+      .executeTakeFirst()
+
+    return result.min || 0
+  }
+
+  async min(field: keyof C): Promise<number> {
+    return await this.applyMin(field)
+  }
+
+  async applyAvg(field: keyof C): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`AVG(${sql.raw(field as string)}) as avg`)
+      .executeTakeFirst()
+
+    return result.avg || 0
+  }
+
+  async avg(field: keyof C): Promise<number> {
+    return await this.applyAvg(field)
+  }
+
+  async applyChunk(size: number, callback: (models: T[]) => Promise<void>): Promise<void> {
+    let page = 1
+    let hasMore = true
+
+    while (hasMore) {
+      // Get one batch
+      const models = await this.selectFromQuery
+        .selectAll()
+        .limit(size)
+        .offset((page - 1) * size)
+        .execute()
+
+      // If we got fewer results than chunk size, this is the last batch
+      if (models.length < size) {
+        hasMore = false
+      }
+
+      // Process this batch
+      if (models.length > 0) {
+        await callback(models)
+      }
+
+      page++
+    }
+  }
+
+  async chunk(size: number, callback: (models: T[]) => Promise<void>): Promise<void> {
+    await this.applyChunk(size, callback)
   }
 
   // Methods to be implemented by child classes
