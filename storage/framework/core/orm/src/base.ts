@@ -450,12 +450,16 @@ export class BaseOrm<T, C, J> {
     return this.applyTake(count)
   }
 
-  async count(): Promise<number> {
+  async applyCount(): Promise<number> {
     const result = await this.selectFromQuery
       .select(sql`COUNT(*) as count`)
       .executeTakeFirst()
 
     return result.count || 0
+  }
+
+  async count(): Promise<number> {
+    return this.applyCount()
   }
 
   applyOrderBy(column: keyof C, order: 'asc' | 'desc'): this {

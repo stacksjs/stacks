@@ -487,19 +487,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   static async count(): Promise<number> {
     const instance = new UserModel(undefined)
 
-    const result = await instance.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async count(): Promise<number> {
-    const result = await this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
+    return instance.applyCount()
   }
 
   static async max(field: keyof UserModel): Promise<number> {

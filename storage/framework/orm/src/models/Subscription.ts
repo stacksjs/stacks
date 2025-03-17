@@ -484,19 +484,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   static async count(): Promise<number> {
     const instance = new SubscriptionModel(undefined)
 
-    const result = await instance.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async count(): Promise<number> {
-    const result = await this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
+    return instance.applyCount()
   }
 
   static async max(field: keyof SubscriptionModel): Promise<number> {

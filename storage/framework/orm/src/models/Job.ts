@@ -417,19 +417,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   static async count(): Promise<number> {
     const instance = new JobModel(undefined)
 
-    const result = await instance.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
-  }
-
-  async count(): Promise<number> {
-    const result = await this.selectFromQuery
-      .select(sql`COUNT(*) as count`)
-      .executeTakeFirst()
-
-    return result.count || 0
+    return instance.applyCount()
   }
 
   static async max(field: keyof JobModel): Promise<number> {
