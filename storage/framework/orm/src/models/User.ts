@@ -901,6 +901,52 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return await instance.applyCreate(newUser)
   }
 
+  async update(newUser: UserUpdate): Promise<UserModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newUser).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as UserUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('users')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('user:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newUser: UserUpdate): Promise<UserModel | undefined> {
+    await DB.instance.updateTable('users')
+      .set(newUser)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('user:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newUser: NewUser[]): Promise<void> {
     const instance = new UserModel(undefined)
 
@@ -939,11 +985,25 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('user:deleted', model)
+
+    await DB.instance.deleteFrom('users')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new UserModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('user:deleted', model)
 
     return await DB.instance.deleteFrom('users')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

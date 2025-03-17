@@ -552,6 +552,22 @@ export class BaseOrm<T, C, J> {
     return this.applyJoin(table, firstCol, secondCol)
   }
 
+  async applyUpdate<U>(values: U): Promise<T | undefined> {
+    if (!values || Object.keys(values).length === 0)
+      return undefined
+
+    await this.updateFromQuery
+      .set(values as any)
+      .executeTakeFirst()
+
+    // If we have an ID in the current instance, try to find the updated model
+    if ((this as any).id) {
+      return await this.applyFind((this as any).id)
+    }
+
+    return undefined
+  }
+
   // Methods to be implemented by child classes
   protected mapCustomGetters(_model: T): void {}
 

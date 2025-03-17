@@ -874,6 +874,46 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return await instance.applyCreate(newPaymentMethod)
   }
 
+  async update(newPaymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPaymentMethod).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as PaymentMethodUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('payment_methods')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newPaymentMethod: PaymentMethodUpdate): Promise<PaymentMethodModel | undefined> {
+    await DB.instance.updateTable('payment_methods')
+      .set(newPaymentMethod)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newPaymentMethod: NewPaymentMethod[]): Promise<void> {
     const instance = new PaymentMethodModel(undefined)
 
@@ -909,8 +949,14 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('payment_methods')
+    await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('payment_methods')
+      .where('id', '=', id)
       .execute()
   }
 

@@ -886,6 +886,52 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return await instance.applyCreate(newCustomer)
   }
 
+  async update(newCustomer: CustomerUpdate): Promise<CustomerModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newCustomer).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as CustomerUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('customers')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('customer:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newCustomer: CustomerUpdate): Promise<CustomerModel | undefined> {
+    await DB.instance.updateTable('customers')
+      .set(newCustomer)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('customer:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newCustomer: NewCustomer[]): Promise<void> {
     const instance = new CustomerModel(undefined)
 
@@ -924,11 +970,25 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('customer:deleted', model)
+
+    await DB.instance.deleteFrom('customers')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new CustomerModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('customer:deleted', model)
 
     return await DB.instance.deleteFrom('customers')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

@@ -927,6 +927,52 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return await instance.applyCreate(newOrder)
   }
 
+  async update(newOrder: OrderUpdate): Promise<OrderModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newOrder).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as OrderUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('orders')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('order:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newOrder: OrderUpdate): Promise<OrderModel | undefined> {
+    await DB.instance.updateTable('orders')
+      .set(newOrder)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('order:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newOrder: NewOrder[]): Promise<void> {
     const instance = new OrderModel(undefined)
 
@@ -965,11 +1011,25 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('order:deleted', model)
+
+    await DB.instance.deleteFrom('orders')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new OrderModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('order:deleted', model)
 
     return await DB.instance.deleteFrom('orders')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

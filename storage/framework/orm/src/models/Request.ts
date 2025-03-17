@@ -869,6 +869,46 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return await instance.applyCreate(newRequest)
   }
 
+  async update(newRequest: RequestUpdate): Promise<RequestModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newRequest).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as RequestUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('requests')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newRequest: RequestUpdate): Promise<RequestModel | undefined> {
+    await DB.instance.updateTable('requests')
+      .set(newRequest)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newRequest: NewRequest[]): Promise<void> {
     const instance = new RequestModel(undefined)
 
@@ -902,17 +942,29 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    if (this.softDeletes) {
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    await DB.instance.deleteFrom('requests')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new RequestModel(undefined)
+
+    if (instance.softDeletes) {
       return await DB.instance.updateTable('requests')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
-        .where('id', '=', this.id)
+        .where('id', '=', id)
         .execute()
     }
 
     return await DB.instance.deleteFrom('requests')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

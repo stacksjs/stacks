@@ -896,6 +896,46 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return await instance.applyCreate(newAccessToken)
   }
 
+  async update(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newAccessToken).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as AccessTokenUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('personal_access_tokens')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newAccessToken: AccessTokenUpdate): Promise<AccessTokenModel | undefined> {
+    await DB.instance.updateTable('personal_access_tokens')
+      .set(newAccessToken)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newAccessToken: NewAccessToken[]): Promise<void> {
     const instance = new AccessTokenModel(undefined)
 
@@ -929,8 +969,14 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('personal_access_tokens')
+    await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('personal_access_tokens')
+      .where('id', '=', id)
       .execute()
   }
 

@@ -811,6 +811,46 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return await instance.applyCreate(newPost)
   }
 
+  async update(newPost: PostUpdate): Promise<PostModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPost).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as PostUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('posts')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newPost: PostUpdate): Promise<PostModel | undefined> {
+    await DB.instance.updateTable('posts')
+      .set(newPost)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newPost: NewPost[]): Promise<void> {
     const instance = new PostModel(undefined)
 
@@ -844,8 +884,14 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('posts')
+    await DB.instance.deleteFrom('posts')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('posts')
+      .where('id', '=', id)
       .execute()
   }
 

@@ -826,6 +826,46 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return await instance.applyCreate(newJob)
   }
 
+  async update(newJob: JobUpdate): Promise<JobModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newJob).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as JobUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('jobs')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newJob: JobUpdate): Promise<JobModel | undefined> {
+    await DB.instance.updateTable('jobs')
+      .set(newJob)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newJob: NewJob[]): Promise<void> {
     const instance = new JobModel(undefined)
 
@@ -859,8 +899,14 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('jobs')
+    await DB.instance.deleteFrom('jobs')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('jobs')
+      .where('id', '=', id)
       .execute()
   }
 

@@ -838,6 +838,52 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return await instance.applyCreate(newManufacturer)
   }
 
+  async update(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newManufacturer).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ManufacturerUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('manufacturers')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('manufacturer:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newManufacturer: ManufacturerUpdate): Promise<ManufacturerModel | undefined> {
+    await DB.instance.updateTable('manufacturers')
+      .set(newManufacturer)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('manufacturer:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newManufacturer: NewManufacturer[]): Promise<void> {
     const instance = new ManufacturerModel(undefined)
 
@@ -876,11 +922,25 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('manufacturer:deleted', model)
+
+    await DB.instance.deleteFrom('manufacturers')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ManufacturerModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('manufacturer:deleted', model)
 
     return await DB.instance.deleteFrom('manufacturers')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

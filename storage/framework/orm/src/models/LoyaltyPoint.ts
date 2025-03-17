@@ -860,6 +860,52 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return await instance.applyCreate(newLoyaltyPoint)
   }
 
+  async update(newLoyaltyPoint: LoyaltyPointUpdate): Promise<LoyaltyPointModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newLoyaltyPoint).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as LoyaltyPointUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('loyalty_points')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('loyaltyPoint:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newLoyaltyPoint: LoyaltyPointUpdate): Promise<LoyaltyPointModel | undefined> {
+    await DB.instance.updateTable('loyalty_points')
+      .set(newLoyaltyPoint)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('loyaltyPoint:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newLoyaltyPoint: NewLoyaltyPoint[]): Promise<void> {
     const instance = new LoyaltyPointModel(undefined)
 
@@ -898,11 +944,25 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('loyaltyPoint:deleted', model)
+
+    await DB.instance.deleteFrom('loyalty_points')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new LoyaltyPointModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('loyaltyPoint:deleted', model)
 
     return await DB.instance.deleteFrom('loyalty_points')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

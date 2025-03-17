@@ -895,6 +895,46 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return await instance.applyCreate(newSubscription)
   }
 
+  async update(newSubscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscription).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as SubscriptionUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('subscriptions')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newSubscription: SubscriptionUpdate): Promise<SubscriptionModel | undefined> {
+    await DB.instance.updateTable('subscriptions')
+      .set(newSubscription)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newSubscription: NewSubscription[]): Promise<void> {
     const instance = new SubscriptionModel(undefined)
 
@@ -930,8 +970,14 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('subscriptions')
+    await DB.instance.deleteFrom('subscriptions')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('subscriptions')
+      .where('id', '=', id)
       .execute()
   }
 

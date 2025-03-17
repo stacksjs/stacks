@@ -856,6 +856,52 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return await instance.applyCreate(newProductCategory)
   }
 
+  async update(newProductCategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProductCategory).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductCategoryUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('product_categories')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productCategory:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProductCategory: ProductCategoryUpdate): Promise<ProductCategoryModel | undefined> {
+    await DB.instance.updateTable('product_categories')
+      .set(newProductCategory)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productCategory:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProductCategory: NewProductCategory[]): Promise<void> {
     const instance = new ProductCategoryModel(undefined)
 
@@ -894,11 +940,25 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('productCategory:deleted', model)
+
+    await DB.instance.deleteFrom('product_categories')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductCategoryModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('productCategory:deleted', model)
 
     return await DB.instance.deleteFrom('product_categories')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

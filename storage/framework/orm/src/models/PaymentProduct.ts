@@ -856,6 +856,46 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return await instance.applyCreate(newPaymentProduct)
   }
 
+  async update(newPaymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPaymentProduct).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as PaymentProductUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('payment_products')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newPaymentProduct: PaymentProductUpdate): Promise<PaymentProductModel | undefined> {
+    await DB.instance.updateTable('payment_products')
+      .set(newPaymentProduct)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newPaymentProduct: NewPaymentProduct[]): Promise<void> {
     const instance = new PaymentProductModel(undefined)
 
@@ -891,8 +931,14 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('payment_products')
+    await DB.instance.deleteFrom('payment_products')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('payment_products')
+      .where('id', '=', id)
       .execute()
   }
 

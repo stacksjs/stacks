@@ -903,6 +903,52 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return await instance.applyCreate(newProductReview)
   }
 
+  async update(newProductReview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProductReview).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductReviewUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('product_reviews')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productReview:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProductReview: ProductReviewUpdate): Promise<ProductReviewModel | undefined> {
+    await DB.instance.updateTable('product_reviews')
+      .set(newProductReview)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productReview:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProductReview: NewProductReview[]): Promise<void> {
     const instance = new ProductReviewModel(undefined)
 
@@ -941,11 +987,25 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('productReview:deleted', model)
+
+    await DB.instance.deleteFrom('product_reviews')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductReviewModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('productReview:deleted', model)
 
     return await DB.instance.deleteFrom('product_reviews')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

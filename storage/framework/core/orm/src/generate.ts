@@ -1673,6 +1673,50 @@ export async function generateModelString(
           return await instance.applyCreate(new${modelName})
         }
   
+        async update(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
+          const filteredValues = Object.fromEntries(
+            Object.entries(new${modelName}).filter(([key]) => 
+              !this.guarded.includes(key) && this.fillable.includes(key)
+            ),
+          ) as ${modelName}Update
+
+          await this.mapCustomSetters(filteredValues)
+
+          await DB.instance.updateTable('${tableName}')
+            .set(filteredValues)
+            .where('id', '=', this.id)
+            .executeTakeFirst()
+
+          if (this.id) {
+            const model = await this.find(this.id)
+
+            ${mittUpdateStatement}
+    
+            return model
+          }
+
+          this.hasSaved = true
+
+          return undefined
+        }
+
+        async forceUpdate(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
+          await DB.instance.updateTable('${tableName}')
+            .set(new${modelName})
+            .where('id', '=', this.id)
+            .executeTakeFirst()
+
+          if (this.id) {
+            const model = await this.find(this.id)
+
+            ${mittUpdateStatement}
+    
+            return model
+          }
+
+          return undefined
+        }
+  
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(undefined)
 
@@ -1709,13 +1753,27 @@ export async function generateModelString(
         async delete(): Promise<${formattedTableName}Table> {
           if (this.id === undefined)
             this.deleteFromQuery.execute()
-            ${mittDeleteFindStatement}
-            ${mittDeleteStatement}
-            ${thisSoftDeleteStatementsUpdateFrom}
+          ${mittDeleteFindStatement}
+          ${instanceSoftDeleteStatements}
+          ${mittDeleteStatement}
+
+          await DB.instance.deleteFrom('${tableName}')
+            .where('id', '=', this.id)
+            .execute()
+        }
+
+        static async remove(id: number): Promise<any> {
+          ${removeInstanceStatment}
   
-            return await DB.instance.deleteFrom('${tableName}')
-              .where('id', '=', this.id)
-              .execute()
+          ${mittDeleteStaticFindStatement}
+  
+          ${instanceSoftDeleteStatementsUpdateFrom}
+  
+          ${mittDeleteStatement}
+        
+          return await DB.instance.deleteFrom('${tableName}')
+            .where('id', '=', id)
+            .execute()
         }
   
         ${whereStatements}

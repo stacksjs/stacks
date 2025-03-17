@@ -860,6 +860,46 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return await instance.applyCreate(newTeam)
   }
 
+  async update(newTeam: TeamUpdate): Promise<TeamModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newTeam).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as TeamUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('teams')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newTeam: TeamUpdate): Promise<TeamModel | undefined> {
+    await DB.instance.updateTable('teams')
+      .set(newTeam)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newTeam: NewTeam[]): Promise<void> {
     const instance = new TeamModel(undefined)
 
@@ -893,8 +933,14 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('teams')
+    await DB.instance.deleteFrom('teams')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('teams')
+      .where('id', '=', id)
       .execute()
   }
 

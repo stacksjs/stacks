@@ -854,6 +854,52 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return await instance.applyCreate(newProductUnit)
   }
 
+  async update(newProductUnit: ProductUnitUpdate): Promise<ProductUnitModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProductUnit).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductUnitUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('product_units')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productUnit:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProductUnit: ProductUnitUpdate): Promise<ProductUnitModel | undefined> {
+    await DB.instance.updateTable('product_units')
+      .set(newProductUnit)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productUnit:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProductUnit: NewProductUnit[]): Promise<void> {
     const instance = new ProductUnitModel(undefined)
 
@@ -892,11 +938,25 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('productUnit:deleted', model)
+
+    await DB.instance.deleteFrom('product_units')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductUnitModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('productUnit:deleted', model)
 
     return await DB.instance.deleteFrom('product_units')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

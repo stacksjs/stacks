@@ -817,6 +817,46 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return await instance.applyCreate(newProject)
   }
 
+  async update(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProject).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProjectUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('projects')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProject: ProjectUpdate): Promise<ProjectModel | undefined> {
+    await DB.instance.updateTable('projects')
+      .set(newProject)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProject: NewProject[]): Promise<void> {
     const instance = new ProjectModel(undefined)
 
@@ -850,8 +890,14 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('projects')
+    await DB.instance.deleteFrom('projects')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('projects')
+      .where('id', '=', id)
       .execute()
   }
 

@@ -799,6 +799,46 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return await instance.applyCreate(newRelease)
   }
 
+  async update(newRelease: ReleaseUpdate): Promise<ReleaseModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newRelease).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ReleaseUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('releases')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newRelease: ReleaseUpdate): Promise<ReleaseModel | undefined> {
+    await DB.instance.updateTable('releases')
+      .set(newRelease)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newRelease: NewRelease[]): Promise<void> {
     const instance = new ReleaseModel(undefined)
 
@@ -832,8 +872,14 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('releases')
+    await DB.instance.deleteFrom('releases')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('releases')
+      .where('id', '=', id)
       .execute()
   }
 

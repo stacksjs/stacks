@@ -806,6 +806,46 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return await instance.applyCreate(newSubscriberEmail)
   }
 
+  async update(newSubscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newSubscriberEmail).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as SubscriberEmailUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('subscriber_emails')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newSubscriberEmail: SubscriberEmailUpdate): Promise<SubscriberEmailModel | undefined> {
+    await DB.instance.updateTable('subscriber_emails')
+      .set(newSubscriberEmail)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newSubscriberEmail: NewSubscriberEmail[]): Promise<void> {
     const instance = new SubscriberEmailModel(undefined)
 
@@ -839,17 +879,29 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    if (this.softDeletes) {
+    if (instance.softDeletes) {
+      query = query.where('deleted_at', 'is', null)
+    }
+
+    await DB.instance.deleteFrom('subscriber_emails')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    if (instance.softDeletes) {
       return await DB.instance.updateTable('subscriber_emails')
         .set({
           deleted_at: sql.raw('CURRENT_TIMESTAMP'),
         })
-        .where('id', '=', this.id)
+        .where('id', '=', id)
         .execute()
     }
 
     return await DB.instance.deleteFrom('subscriber_emails')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

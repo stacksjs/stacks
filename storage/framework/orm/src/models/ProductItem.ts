@@ -916,6 +916,52 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return await instance.applyCreate(newProductItem)
   }
 
+  async update(newProductItem: ProductItemUpdate): Promise<ProductItemModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProductItem).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductItemUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('product_items')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productItem:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProductItem: ProductItemUpdate): Promise<ProductItemModel | undefined> {
+    await DB.instance.updateTable('product_items')
+      .set(newProductItem)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productItem:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProductItem: NewProductItem[]): Promise<void> {
     const instance = new ProductItemModel(undefined)
 
@@ -954,11 +1000,25 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('productItem:deleted', model)
+
+    await DB.instance.deleteFrom('product_items')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductItemModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('productItem:deleted', model)
 
     return await DB.instance.deleteFrom('product_items')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

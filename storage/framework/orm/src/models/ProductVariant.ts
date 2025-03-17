@@ -854,6 +854,52 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return await instance.applyCreate(newProductVariant)
   }
 
+  async update(newProductVariant: ProductVariantUpdate): Promise<ProductVariantModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProductVariant).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductVariantUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('product_variants')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productVariant:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProductVariant: ProductVariantUpdate): Promise<ProductVariantModel | undefined> {
+    await DB.instance.updateTable('product_variants')
+      .set(newProductVariant)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('productVariant:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProductVariant: NewProductVariant[]): Promise<void> {
     const instance = new ProductVariantModel(undefined)
 
@@ -892,11 +938,25 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('productVariant:deleted', model)
+
+    await DB.instance.deleteFrom('product_variants')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductVariantModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('productVariant:deleted', model)
 
     return await DB.instance.deleteFrom('product_variants')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

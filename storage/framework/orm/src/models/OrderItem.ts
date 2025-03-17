@@ -833,6 +833,46 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return await instance.applyCreate(newOrderItem)
   }
 
+  async update(newOrderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newOrderItem).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as OrderItemUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('order_items')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newOrderItem: OrderItemUpdate): Promise<OrderItemModel | undefined> {
+    await DB.instance.updateTable('order_items')
+      .set(newOrderItem)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newOrderItem: NewOrderItem[]): Promise<void> {
     const instance = new OrderItemModel(undefined)
 
@@ -866,8 +906,14 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('order_items')
+    await DB.instance.deleteFrom('order_items')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('order_items')
+      .where('id', '=', id)
       .execute()
   }
 

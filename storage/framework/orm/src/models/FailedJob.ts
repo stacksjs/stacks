@@ -826,6 +826,46 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return await instance.applyCreate(newFailedJob)
   }
 
+  async update(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newFailedJob).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as FailedJobUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('failed_jobs')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newFailedJob: FailedJobUpdate): Promise<FailedJobModel | undefined> {
+    await DB.instance.updateTable('failed_jobs')
+      .set(newFailedJob)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newFailedJob: NewFailedJob[]): Promise<void> {
     const instance = new FailedJobModel(undefined)
 
@@ -859,8 +899,14 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('failed_jobs')
+    await DB.instance.deleteFrom('failed_jobs')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('failed_jobs')
+      .where('id', '=', id)
       .execute()
   }
 

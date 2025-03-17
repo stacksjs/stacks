@@ -912,6 +912,52 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return await instance.applyCreate(newProduct)
   }
 
+  async update(newProduct: ProductUpdate): Promise<ProductModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newProduct).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ProductUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('products')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('product:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newProduct: ProductUpdate): Promise<ProductModel | undefined> {
+    await DB.instance.updateTable('products')
+      .set(newProduct)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('product:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newProduct: NewProduct[]): Promise<void> {
     const instance = new ProductModel(undefined)
 
@@ -950,11 +996,25 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('product:deleted', model)
+
+    await DB.instance.deleteFrom('products')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new ProductModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('product:deleted', model)
 
     return await DB.instance.deleteFrom('products')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

@@ -872,6 +872,52 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return await instance.applyCreate(newTransaction)
   }
 
+  async update(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newTransaction).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as TransactionUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('transactions')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('transaction:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newTransaction: TransactionUpdate): Promise<TransactionModel | undefined> {
+    await DB.instance.updateTable('transactions')
+      .set(newTransaction)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('transaction:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newTransaction: NewTransaction[]): Promise<void> {
     const instance = new TransactionModel(undefined)
 
@@ -910,11 +956,25 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('transaction:deleted', model)
+
+    await DB.instance.deleteFrom('transactions')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new TransactionModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('transaction:deleted', model)
 
     return await DB.instance.deleteFrom('transactions')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

@@ -930,6 +930,52 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return await instance.applyCreate(newPayment)
   }
 
+  async update(newPayment: PaymentUpdate): Promise<PaymentModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newPayment).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as PaymentUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('payments')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('payment:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newPayment: PaymentUpdate): Promise<PaymentModel | undefined> {
+    await DB.instance.updateTable('payments')
+      .set(newPayment)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('payment:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newPayment: NewPayment[]): Promise<void> {
     const instance = new PaymentModel(undefined)
 
@@ -968,11 +1014,25 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('payment:deleted', model)
+
+    await DB.instance.deleteFrom('payments')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new PaymentModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('payment:deleted', model)
 
     return await DB.instance.deleteFrom('payments')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 

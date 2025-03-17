@@ -826,6 +826,46 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return await instance.applyCreate(newError)
   }
 
+  async update(newError: ErrorUpdate): Promise<ErrorModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newError).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as ErrorUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('errors')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newError: ErrorUpdate): Promise<ErrorModel | undefined> {
+    await DB.instance.updateTable('errors')
+      .set(newError)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newError: NewError[]): Promise<void> {
     const instance = new ErrorModel(undefined)
 
@@ -859,8 +899,14 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('errors')
+    await DB.instance.deleteFrom('errors')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('errors')
+      .where('id', '=', id)
       .execute()
   }
 

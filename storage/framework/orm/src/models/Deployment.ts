@@ -868,6 +868,46 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return await instance.applyCreate(newDeployment)
   }
 
+  async update(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newDeployment).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as DeploymentUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('deployments')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newDeployment: DeploymentUpdate): Promise<DeploymentModel | undefined> {
+    await DB.instance.updateTable('deployments')
+      .set(newDeployment)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newDeployment: NewDeployment[]): Promise<void> {
     const instance = new DeploymentModel(undefined)
 
@@ -903,8 +943,14 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     if (this.id === undefined)
       this.deleteFromQuery.execute()
 
-    return await DB.instance.deleteFrom('deployments')
+    await DB.instance.deleteFrom('deployments')
       .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    return await DB.instance.deleteFrom('deployments')
+      .where('id', '=', id)
       .execute()
   }
 

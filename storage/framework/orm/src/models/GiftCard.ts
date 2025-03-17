@@ -950,6 +950,52 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return await instance.applyCreate(newGiftCard)
   }
 
+  async update(newGiftCard: GiftCardUpdate): Promise<GiftCardModel | undefined> {
+    const filteredValues = Object.fromEntries(
+      Object.entries(newGiftCard).filter(([key]) =>
+        !this.guarded.includes(key) && this.fillable.includes(key),
+      ),
+    ) as GiftCardUpdate
+
+    await this.mapCustomSetters(filteredValues)
+
+    await DB.instance.updateTable('gift_cards')
+      .set(filteredValues)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('giftCard:updated', model)
+
+      return model
+    }
+
+    this.hasSaved = true
+
+    return undefined
+  }
+
+  async forceUpdate(newGiftCard: GiftCardUpdate): Promise<GiftCardModel | undefined> {
+    await DB.instance.updateTable('gift_cards')
+      .set(newGiftCard)
+      .where('id', '=', this.id)
+      .executeTakeFirst()
+
+    if (this.id) {
+      const model = await this.find(this.id)
+
+      if (model)
+        dispatch('giftCard:updated', model)
+
+      return model
+    }
+
+    return undefined
+  }
+
   static async createMany(newGiftCard: NewGiftCard[]): Promise<void> {
     const instance = new GiftCardModel(undefined)
 
@@ -988,11 +1034,25 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     if (this.id === undefined)
       this.deleteFromQuery.execute()
     const model = await this.find(Number(this.id))
+
+    if (model)
+      dispatch('giftCard:deleted', model)
+
+    await DB.instance.deleteFrom('gift_cards')
+      .where('id', '=', this.id)
+      .execute()
+  }
+
+  static async remove(id: number): Promise<any> {
+    const instance = new GiftCardModel(undefined)
+
+    const model = await instance.find(Number(id))
+
     if (model)
       dispatch('giftCard:deleted', model)
 
     return await DB.instance.deleteFrom('gift_cards')
-      .where('id', '=', this.id)
+      .where('id', '=', id)
       .execute()
   }
 
