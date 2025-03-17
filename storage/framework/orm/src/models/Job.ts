@@ -287,6 +287,36 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof JobsTable, value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof JobsTable): Promise<number> {
+    const instance = new JobModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new JobModel(undefined)
 

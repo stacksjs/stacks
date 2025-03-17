@@ -326,6 +326,36 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof DeploymentsTable, value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof DeploymentsTable): Promise<number> {
+    const instance = new DeploymentModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof DeploymentsTable): Promise<number> {
+    const instance = new DeploymentModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof DeploymentsTable): Promise<number> {
+    const instance = new DeploymentModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof DeploymentsTable): Promise<number> {
+    const instance = new DeploymentModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new DeploymentModel(undefined)
 

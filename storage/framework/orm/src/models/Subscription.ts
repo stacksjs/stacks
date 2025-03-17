@@ -353,6 +353,36 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof SubscriptionsTable, value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof SubscriptionsTable): Promise<number> {
+    const instance = new SubscriptionModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof SubscriptionsTable): Promise<number> {
+    const instance = new SubscriptionModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof SubscriptionsTable): Promise<number> {
+    const instance = new SubscriptionModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof SubscriptionsTable): Promise<number> {
+    const instance = new SubscriptionModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new SubscriptionModel(undefined)
 

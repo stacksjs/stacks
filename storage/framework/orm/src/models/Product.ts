@@ -365,6 +365,36 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ProductsTable, value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ProductsTable): Promise<number> {
+    const instance = new ProductModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ProductsTable): Promise<number> {
+    const instance = new ProductModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ProductsTable): Promise<number> {
+    const instance = new ProductModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ProductsTable): Promise<number> {
+    const instance = new ProductModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ProductModel(undefined)
 

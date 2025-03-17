@@ -251,6 +251,36 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof SubscribersTable, value: string): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof SubscribersTable): Promise<number> {
+    const instance = new SubscriberModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof SubscribersTable): Promise<number> {
+    const instance = new SubscriberModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof SubscribersTable): Promise<number> {
+    const instance = new SubscriberModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof SubscribersTable): Promise<number> {
+    const instance = new SubscriberModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new SubscriberModel(undefined)
 

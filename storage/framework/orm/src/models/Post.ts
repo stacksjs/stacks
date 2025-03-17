@@ -271,6 +271,36 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof PostsTable, value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof PostsTable): Promise<number> {
+    const instance = new PostModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof PostsTable): Promise<number> {
+    const instance = new PostModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof PostsTable): Promise<number> {
+    const instance = new PostModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof PostsTable): Promise<number> {
+    const instance = new PostModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new PostModel(undefined)
 

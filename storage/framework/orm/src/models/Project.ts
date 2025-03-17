@@ -278,6 +278,36 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ProjectsTable, value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ProjectsTable): Promise<number> {
+    const instance = new ProjectModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ProjectModel(undefined)
 

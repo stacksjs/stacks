@@ -326,6 +326,36 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof RequestsTable, value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof RequestsTable): Promise<number> {
+    const instance = new RequestModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof RequestsTable): Promise<number> {
+    const instance = new RequestModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof RequestsTable): Promise<number> {
+    const instance = new RequestModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof RequestsTable): Promise<number> {
+    const instance = new RequestModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new RequestModel(undefined)
 

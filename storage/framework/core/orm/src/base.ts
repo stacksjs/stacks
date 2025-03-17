@@ -725,6 +725,18 @@ export class BaseOrm<T, C, J> {
     return await this.applyAvg(field)
   }
 
+  async applySum(field: keyof C): Promise<number> {
+    const result = await this.selectFromQuery
+      .select(sql`SUM(${sql.raw(field as string)}) as sum`)
+      .executeTakeFirst()
+
+    return Number(result?.sum) || 0
+  }
+
+  async sum(field: keyof C): Promise<number> {
+    return await this.applySum(field)
+  }
+
   async applyChunk(size: number, callback: (models: T[]) => Promise<void>): Promise<void> {
     let page = 1
     let hasMore = true

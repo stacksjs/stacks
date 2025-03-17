@@ -356,6 +356,36 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ProductReviewsTable, value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ProductReviewsTable): Promise<number> {
+    const instance = new ProductReviewModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ProductReviewsTable): Promise<number> {
+    const instance = new ProductReviewModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ProductReviewsTable): Promise<number> {
+    const instance = new ProductReviewModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ProductReviewsTable): Promise<number> {
+    const instance = new ProductReviewModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ProductReviewModel(undefined)
 

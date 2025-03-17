@@ -263,6 +263,36 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof SubscriberEmailsTable, value: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof SubscriberEmailsTable): Promise<number> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof SubscriberEmailsTable): Promise<number> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof SubscriberEmailsTable): Promise<number> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof SubscriberEmailsTable): Promise<number> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new SubscriberEmailModel(undefined)
 

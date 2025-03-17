@@ -260,6 +260,36 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ReleasesTable, value: string): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ReleasesTable): Promise<number> {
+    const instance = new ReleaseModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ReleasesTable): Promise<number> {
+    const instance = new ReleaseModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ReleasesTable): Promise<number> {
+    const instance = new ReleaseModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ReleasesTable): Promise<number> {
+    const instance = new ReleaseModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ReleaseModel(undefined)
 

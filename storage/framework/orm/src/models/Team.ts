@@ -320,6 +320,36 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof TeamsTable, value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof TeamsTable): Promise<number> {
+    const instance = new TeamModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof TeamsTable): Promise<number> {
+    const instance = new TeamModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof TeamsTable): Promise<number> {
+    const instance = new TeamModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof TeamsTable): Promise<number> {
+    const instance = new TeamModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new TeamModel(undefined)
 

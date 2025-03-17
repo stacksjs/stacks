@@ -294,6 +294,36 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ManufacturersTable, value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ManufacturersTable): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ManufacturersTable): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ManufacturersTable): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ManufacturersTable): Promise<number> {
+    const instance = new ManufacturerModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ManufacturerModel(undefined)
 

@@ -287,6 +287,36 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof ErrorsTable, value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof ErrorsTable): Promise<number> {
+    const instance = new ErrorModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof ErrorsTable): Promise<number> {
+    const instance = new ErrorModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof ErrorsTable): Promise<number> {
+    const instance = new ErrorModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof ErrorsTable): Promise<number> {
+    const instance = new ErrorModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new ErrorModel(undefined)
 

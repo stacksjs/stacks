@@ -345,6 +345,36 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof LoyaltyRewardsTable, value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof LoyaltyRewardsTable): Promise<number> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof LoyaltyRewardsTable): Promise<number> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof LoyaltyRewardsTable): Promise<number> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof LoyaltyRewardsTable): Promise<number> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new LoyaltyRewardModel(undefined)
 

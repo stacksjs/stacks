@@ -355,6 +355,36 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof UsersTable, value: string): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof UsersTable): Promise<number> {
+    const instance = new UserModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof UsersTable): Promise<number> {
+    const instance = new UserModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof UsersTable): Promise<number> {
+    const instance = new UserModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof UsersTable): Promise<number> {
+    const instance = new UserModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new UserModel(undefined)
 

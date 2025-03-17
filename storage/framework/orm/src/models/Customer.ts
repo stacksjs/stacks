@@ -341,6 +341,36 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof CustomersTable, value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof CustomersTable): Promise<number> {
+    const instance = new CustomerModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof CustomersTable): Promise<number> {
+    const instance = new CustomerModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof CustomersTable): Promise<number> {
+    const instance = new CustomerModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof CustomersTable): Promise<number> {
+    const instance = new CustomerModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new CustomerModel(undefined)
 

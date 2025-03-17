@@ -287,6 +287,36 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof FailedJobsTable, value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof FailedJobsTable): Promise<number> {
+    const instance = new FailedJobModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof FailedJobsTable): Promise<number> {
+    const instance = new FailedJobModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof FailedJobsTable): Promise<number> {
+    const instance = new FailedJobModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof FailedJobsTable): Promise<number> {
+    const instance = new FailedJobModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new FailedJobModel(undefined)
 

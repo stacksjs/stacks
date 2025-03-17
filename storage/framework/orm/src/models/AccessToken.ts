@@ -354,6 +354,36 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return instance.applyTake(count)
   }
 
+  static whereLike(column: keyof PersonalAccessTokensTable, value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWhereLike(column, value)
+  }
+
+  static async max(field: keyof PersonalAccessTokensTable): Promise<number> {
+    const instance = new AccessTokenModel(undefined)
+
+    return await instance.applyMax(field)
+  }
+
+  static async min(field: keyof PersonalAccessTokensTable): Promise<number> {
+    const instance = new AccessTokenModel(undefined)
+
+    return await instance.applyMin(field)
+  }
+
+  static async avg(field: keyof PersonalAccessTokensTable): Promise<number> {
+    const instance = new AccessTokenModel(undefined)
+
+    return await instance.applyAvg(field)
+  }
+
+  static async sum(field: keyof PersonalAccessTokensTable): Promise<number> {
+    const instance = new AccessTokenModel(undefined)
+
+    return await instance.applySum(field)
+  }
+
   static async count(): Promise<number> {
     const instance = new AccessTokenModel(undefined)
 
