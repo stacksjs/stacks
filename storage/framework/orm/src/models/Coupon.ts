@@ -98,6 +98,47 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: CouponJsonResponse | CouponJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('coupon_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: CouponJsonResponse) => {
+          const records = relatedRecords.filter((record: { coupon_id: number }) => {
+            return record.coupon_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { coupon_id: number }) => {
+          return record.coupon_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: CouponJsonResponse | CouponJsonResponse[]): void {
     const data = models
 
@@ -956,6 +997,118 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return await DB.instance.deleteFrom('coupons')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereCode(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereDiscountType(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('discount_type', '=', value)
+
+    return instance
+  }
+
+  static whereDiscountValue(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('discount_value', '=', value)
+
+    return instance
+  }
+
+  static whereMinOrderAmount(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('min_order_amount', '=', value)
+
+    return instance
+  }
+
+  static whereMaxDiscountAmount(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('max_discount_amount', '=', value)
+
+    return instance
+  }
+
+  static whereFreeProductId(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
+
+    return instance
+  }
+
+  static whereIsActive(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+
+    return instance
+  }
+
+  static whereUsageLimit(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('usage_limit', '=', value)
+
+    return instance
+  }
+
+  static whereUsageCount(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('usage_count', '=', value)
+
+    return instance
+  }
+
+  static whereStartDate(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('start_date', '=', value)
+
+    return instance
+  }
+
+  static whereEndDate(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('end_date', '=', value)
+
+    return instance
+  }
+
+  static whereApplicableProducts(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('applicable_products', '=', value)
+
+    return instance
+  }
+
+  static whereApplicableCategories(value: string): CouponModel {
+    const instance = new CouponModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('applicable_categories', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

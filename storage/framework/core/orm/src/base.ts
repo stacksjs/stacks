@@ -381,10 +381,14 @@ export class BaseOrm<T, C, J> {
     return model !== null && model !== undefined
   }
 
-  with(relations: string[]): this {
+  applyWith(relations: string[]): this {
     this.withRelations = relations
 
     return this
+  }
+
+  with(relations: string[]): this {
+    return this.applyWith(relations)
   }
 
   async applyLast(): Promise<T | undefined> {

@@ -86,6 +86,47 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('team_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: TeamJsonResponse) => {
+          const records = relatedRecords.filter((record: { team_id: number }) => {
+            return record.team_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { team_id: number }) => {
+          return record.team_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: TeamJsonResponse | TeamJsonResponse[]): void {
     const data = models
 
@@ -867,6 +908,70 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return await DB.instance.deleteFrom('teams')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereCompanyName(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('companyName', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+
+    return instance
+  }
+
+  static whereBillingEmail(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('billingEmail', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static wherePath(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
+
+    return instance
+  }
+
+  static whereIsPersonal(value: string): TeamModel {
+    const instance = new TeamModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('isPersonal', '=', value)
+
+    return instance
   }
 
   async teamUsers() {

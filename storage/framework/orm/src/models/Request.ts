@@ -85,6 +85,47 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: RequestJsonResponse | RequestJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('request_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: RequestJsonResponse) => {
+          const records = relatedRecords.filter((record: { request_id: number }) => {
+            return record.request_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { request_id: number }) => {
+          return record.request_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: RequestJsonResponse | RequestJsonResponse[]): void {
     const data = models
 
@@ -885,6 +926,70 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return await DB.instance.deleteFrom('requests')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereMethod(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('method', '=', value)
+
+    return instance
+  }
+
+  static wherePath(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('path', '=', value)
+
+    return instance
+  }
+
+  static whereStatusCode(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status_code', '=', value)
+
+    return instance
+  }
+
+  static whereDurationMs(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('duration_ms', '=', value)
+
+    return instance
+  }
+
+  static whereIpAddress(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('ip_address', '=', value)
+
+    return instance
+  }
+
+  static whereMemoryUsage(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('memory_usage', '=', value)
+
+    return instance
+  }
+
+  static whereUserAgent(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('user_agent', '=', value)
+
+    return instance
+  }
+
+  static whereErrorMessage(value: string): RequestModel {
+    const instance = new RequestModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('error_message', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof RequestJsonResponse): RequestModel {

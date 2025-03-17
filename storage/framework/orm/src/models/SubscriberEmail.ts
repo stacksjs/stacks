@@ -78,6 +78,47 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('subscriberEmail_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: SubscriberEmailJsonResponse) => {
+          const records = relatedRecords.filter((record: { subscriberEmail_id: number }) => {
+            return record.subscriberEmail_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { subscriberEmail_id: number }) => {
+          return record.subscriberEmail_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: SubscriberEmailJsonResponse | SubscriberEmailJsonResponse[]): void {
     const data = models
 
@@ -822,6 +863,14 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return await DB.instance.deleteFrom('subscriber_emails')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereEmail(value: string): SubscriberEmailModel {
+    const instance = new SubscriberEmailModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof SubscriberEmailJsonResponse): SubscriberEmailModel {

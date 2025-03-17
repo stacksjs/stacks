@@ -85,6 +85,47 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('productCategory_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductCategoryJsonResponse) => {
+          const records = relatedRecords.filter((record: { productCategory_id: number }) => {
+            return record.productCategory_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { productCategory_id: number }) => {
+          return record.productCategory_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductCategoryJsonResponse | ProductCategoryJsonResponse[]): void {
     const data = models
 
@@ -871,6 +912,54 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return await DB.instance.deleteFrom('product_categories')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereImageUrl(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
+
+    return instance
+  }
+
+  static whereIsActive(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+
+    return instance
+  }
+
+  static whereParentCategoryId(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('parent_category_id', '=', value)
+
+    return instance
+  }
+
+  static whereDisplayOrder(value: string): ProductCategoryModel {
+    const instance = new ProductCategoryModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('display_order', '=', value)
+
+    return instance
   }
 
   toSearchableObject(): Partial<ProductCategoryJsonResponse> {

@@ -87,6 +87,47 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: OrderItemJsonResponse | OrderItemJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('orderItem_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: OrderItemJsonResponse) => {
+          const records = relatedRecords.filter((record: { orderItem_id: number }) => {
+            return record.orderItem_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { orderItem_id: number }) => {
+          return record.orderItem_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: OrderItemJsonResponse | OrderItemJsonResponse[]): void {
     const data = models
 
@@ -840,6 +881,30 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return await DB.instance.deleteFrom('order_items')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereQuantity(value: string): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
+
+    return instance
+  }
+
+  static wherePrice(value: string): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
+
+    return instance
+  }
+
+  static whereSpecialInstructions(value: string): OrderItemModel {
+    const instance = new OrderItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
+
+    return instance
   }
 
   async orderBelong(): Promise<OrderModel> {

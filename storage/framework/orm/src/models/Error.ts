@@ -80,6 +80,47 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('error_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ErrorJsonResponse) => {
+          const records = relatedRecords.filter((record: { error_id: number }) => {
+            return record.error_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { error_id: number }) => {
+          return record.error_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ErrorJsonResponse | ErrorJsonResponse[]): void {
     const data = models
 
@@ -833,6 +874,46 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return await DB.instance.deleteFrom('errors')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereType(value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+
+    return instance
+  }
+
+  static whereMessage(value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('message', '=', value)
+
+    return instance
+  }
+
+  static whereStack(value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('stack', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereAdditionalInfo(value: string): ErrorModel {
+    const instance = new ErrorModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('additional_info', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof ErrorJsonResponse): ErrorModel {

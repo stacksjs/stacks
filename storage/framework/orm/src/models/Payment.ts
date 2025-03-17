@@ -99,6 +99,47 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: PaymentJsonResponse | PaymentJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('payment_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: PaymentJsonResponse) => {
+          const records = relatedRecords.filter((record: { payment_id: number }) => {
+            return record.payment_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { payment_id: number }) => {
+          return record.payment_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: PaymentJsonResponse | PaymentJsonResponse[]): void {
     const data = models
 
@@ -945,6 +986,102 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return await DB.instance.deleteFrom('payments')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereAmount(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
+
+    return instance
+  }
+
+  static whereMethod(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('method', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereCurrency(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('currency', '=', value)
+
+    return instance
+  }
+
+  static whereReferenceNumber(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('reference_number', '=', value)
+
+    return instance
+  }
+
+  static whereCardLastFour(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('card_last_four', '=', value)
+
+    return instance
+  }
+
+  static whereCardBrand(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('card_brand', '=', value)
+
+    return instance
+  }
+
+  static whereBillingEmail(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('billing_email', '=', value)
+
+    return instance
+  }
+
+  static whereTransactionId(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('transaction_id', '=', value)
+
+    return instance
+  }
+
+  static wherePaymentProvider(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('payment_provider', '=', value)
+
+    return instance
+  }
+
+  static whereRefundAmount(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('refund_amount', '=', value)
+
+    return instance
+  }
+
+  static whereNotes(value: string): PaymentModel {
+    const instance = new PaymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('notes', '=', value)
+
+    return instance
   }
 
   async orderBelong(): Promise<OrderModel> {

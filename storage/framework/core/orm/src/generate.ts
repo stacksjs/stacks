@@ -976,6 +976,45 @@ export async function generateModelString(
           this.hasSaved = false
         }
 
+        protected async loadRelations(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): Promise<void> {
+          // Handle both single model and array of models
+          const modelArray = Array.isArray(models) ? models : [models]
+          if (!modelArray.length) return
+        
+          const modelIds = modelArray.map(model => model.id)
+
+          for (const relation of this.withRelations) {
+            const relatedRecords = await DB.instance
+              .selectFrom(relation)
+              .where('${formattedModelName}_id', 'in', modelIds)
+              .selectAll()
+              .execute()
+        
+            if (Array.isArray(models)) {
+              models.map((model: ${modelName}JsonResponse) => {
+                const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
+                  return record.${formattedModelName}_id === model.id
+                })
+
+                model[relation] = records.length === 1 ? records[0] : records
+                return model
+              })
+            } else {
+              const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
+                return record.${formattedModelName}_id === models.id
+              })
+        
+              models[relation] = records.length === 1 ? records[0] : records
+            }
+          }
+        }
+  
+        static with(relations: string[]): ${modelName}Model {
+          const instance = new ${modelName}Model(undefined)
+    
+          return instance.applyWith(relations)
+        }
+
         protected mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
           const data = models
               
@@ -1691,6 +1730,8 @@ export async function generateModelString(
               .execute()
         }
   
+        ${whereStatements}
+        
         ${relationMethods}
   
         ${displayableStatements}

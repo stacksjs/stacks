@@ -89,6 +89,47 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('transaction_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: TransactionJsonResponse) => {
+          const records = relatedRecords.filter((record: { transaction_id: number }) => {
+            return record.transaction_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { transaction_id: number }) => {
+          return record.transaction_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: TransactionJsonResponse | TransactionJsonResponse[]): void {
     const data = models
 
@@ -887,6 +928,62 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return await DB.instance.deleteFrom('transactions')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereAmount(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('amount', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static wherePaymentMethod(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('payment_method', '=', value)
+
+    return instance
+  }
+
+  static wherePaymentDetails(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('payment_details', '=', value)
+
+    return instance
+  }
+
+  static whereTransactionReference(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('transaction_reference', '=', value)
+
+    return instance
+  }
+
+  static whereLoyaltyPointsEarned(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_earned', '=', value)
+
+    return instance
+  }
+
+  static whereLoyaltyPointsRedeemed(value: string): TransactionModel {
+    const instance = new TransactionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('loyalty_points_redeemed', '=', value)
+
+    return instance
   }
 
   async orderBelong(): Promise<OrderModel> {

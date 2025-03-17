@@ -88,6 +88,47 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('deployment_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: DeploymentJsonResponse) => {
+          const records = relatedRecords.filter((record: { deployment_id: number }) => {
+            return record.deployment_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { deployment_id: number }) => {
+          return record.deployment_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: DeploymentJsonResponse | DeploymentJsonResponse[]): void {
     const data = models
 
@@ -877,6 +918,62 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return await DB.instance.deleteFrom('deployments')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereCommitSha(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('commitSha', '=', value)
+
+    return instance
+  }
+
+  static whereCommitMessage(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('commitMessage', '=', value)
+
+    return instance
+  }
+
+  static whereBranch(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('branch', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereExecutionTime(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('executionTime', '=', value)
+
+    return instance
+  }
+
+  static whereDeployScript(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('deployScript', '=', value)
+
+    return instance
+  }
+
+  static whereTerminalOutput(value: string): DeploymentModel {
+    const instance = new DeploymentModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('terminalOutput', '=', value)
+
+    return instance
   }
 
   async userBelong(): Promise<UserModel> {

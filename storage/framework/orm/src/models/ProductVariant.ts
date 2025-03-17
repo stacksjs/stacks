@@ -87,6 +87,47 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductVariantJsonResponse | ProductVariantJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('productVariant_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductVariantJsonResponse) => {
+          const records = relatedRecords.filter((record: { productVariant_id: number }) => {
+            return record.productVariant_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { productVariant_id: number }) => {
+          return record.productVariant_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductVariantJsonResponse | ProductVariantJsonResponse[]): void {
     const data = models
 
@@ -869,6 +910,46 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return await DB.instance.deleteFrom('product_variants')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereVariant(value: string): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('variant', '=', value)
+
+    return instance
+  }
+
+  static whereType(value: string): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereOptions(value: string): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('options', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): ProductVariantModel {
+    const instance = new ProductVariantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

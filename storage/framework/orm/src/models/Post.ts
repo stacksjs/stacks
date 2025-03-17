@@ -81,6 +81,47 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('post_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: PostJsonResponse) => {
+          const records = relatedRecords.filter((record: { post_id: number }) => {
+            return record.post_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { post_id: number }) => {
+          return record.post_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): PostModel {
+    const instance = new PostModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: PostJsonResponse | PostJsonResponse[]): void {
     const data = models
 
@@ -818,6 +859,22 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return await DB.instance.deleteFrom('posts')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereTitle(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
+
+    return instance
+  }
+
+  static whereBody(value: string): PostModel {
+    const instance = new PostModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('body', '=', value)
+
+    return instance
   }
 
   async userBelong(): Promise<UserModel> {

@@ -87,6 +87,47 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductUnitJsonResponse | ProductUnitJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('productUnit_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductUnitJsonResponse) => {
+          const records = relatedRecords.filter((record: { productUnit_id: number }) => {
+            return record.productUnit_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { productUnit_id: number }) => {
+          return record.productUnit_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductUnitJsonResponse | ProductUnitJsonResponse[]): void {
     const data = models
 
@@ -869,6 +910,46 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
     return await DB.instance.deleteFrom('product_units')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereAbbreviation(value: string): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('abbreviation', '=', value)
+
+    return instance
+  }
+
+  static whereType(value: string): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereIsDefault(value: string): ProductUnitModel {
+    const instance = new ProductUnitModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_default', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

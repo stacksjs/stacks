@@ -94,6 +94,47 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('accessToken_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: AccessTokenJsonResponse) => {
+          const records = relatedRecords.filter((record: { accessToken_id: number }) => {
+            return record.accessToken_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { accessToken_id: number }) => {
+          return record.accessToken_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): void {
     const data = models
 
@@ -903,6 +944,86 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return await DB.instance.deleteFrom('personal_access_tokens')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereToken(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('token', '=', value)
+
+    return instance
+  }
+
+  static wherePlainTextToken(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('plainTextToken', '=', value)
+
+    return instance
+  }
+
+  static whereAbilities(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('abilities', '=', value)
+
+    return instance
+  }
+
+  static whereLastUsedAt(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
+
+    return instance
+  }
+
+  static whereExpiresAt(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expiresAt', '=', value)
+
+    return instance
+  }
+
+  static whereRevokedAt(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('revokedAt', '=', value)
+
+    return instance
+  }
+
+  static whereIpAddress(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('ipAddress', '=', value)
+
+    return instance
+  }
+
+  static whereDeviceName(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('deviceName', '=', value)
+
+    return instance
+  }
+
+  static whereIsSingleUse(value: string): AccessTokenModel {
+    const instance = new AccessTokenModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('isSingleUse', '=', value)
+
+    return instance
   }
 
   async teamBelong(): Promise<TeamModel> {

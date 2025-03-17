@@ -91,6 +91,47 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('loyaltyReward_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: LoyaltyRewardJsonResponse) => {
+          const records = relatedRecords.filter((record: { loyaltyReward_id: number }) => {
+            return record.loyaltyReward_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { loyaltyReward_id: number }) => {
+          return record.loyaltyReward_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): void {
     const data = models
 
@@ -905,6 +946,78 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return await DB.instance.deleteFrom('loyalty_rewards')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static wherePointsRequired(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('points_required', '=', value)
+
+    return instance
+  }
+
+  static whereRewardType(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('reward_type', '=', value)
+
+    return instance
+  }
+
+  static whereDiscountPercentage(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('discount_percentage', '=', value)
+
+    return instance
+  }
+
+  static whereFreeProductId(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('free_product_id', '=', value)
+
+    return instance
+  }
+
+  static whereIsActive(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+
+    return instance
+  }
+
+  static whereExpiryDays(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expiry_days', '=', value)
+
+    return instance
+  }
+
+  static whereImageUrl(value: string): LoyaltyRewardModel {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

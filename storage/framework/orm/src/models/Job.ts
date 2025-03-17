@@ -80,6 +80,47 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('job_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: JobJsonResponse) => {
+          const records = relatedRecords.filter((record: { job_id: number }) => {
+            return record.job_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { job_id: number }) => {
+          return record.job_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): JobModel {
+    const instance = new JobModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: JobJsonResponse | JobJsonResponse[]): void {
     const data = models
 
@@ -833,6 +874,46 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return await DB.instance.deleteFrom('jobs')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereQueue(value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
+
+    return instance
+  }
+
+  static wherePayload(value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
+
+    return instance
+  }
+
+  static whereAttempts(value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('attempts', '=', value)
+
+    return instance
+  }
+
+  static whereAvailableAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('available_at', '=', value)
+
+    return instance
+  }
+
+  static whereReservedAt(value: string): JobModel {
+    const instance = new JobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('reserved_at', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof JobJsonResponse): JobModel {

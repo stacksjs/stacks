@@ -76,6 +76,47 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: SubscriberJsonResponse | SubscriberJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('subscriber_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: SubscriberJsonResponse) => {
+          const records = relatedRecords.filter((record: { subscriber_id: number }) => {
+            return record.subscriber_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { subscriber_id: number }) => {
+          return record.subscriber_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: SubscriberJsonResponse | SubscriberJsonResponse[]): void {
     const data = models
 
@@ -797,6 +838,14 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return await DB.instance.deleteFrom('subscribers')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereSubscribed(value: string): SubscriberModel {
+    const instance = new SubscriberModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('subscribed', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof SubscriberJsonResponse): SubscriberModel {

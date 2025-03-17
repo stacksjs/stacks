@@ -91,6 +91,47 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('subscription_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: SubscriptionJsonResponse) => {
+          const records = relatedRecords.filter((record: { subscription_id: number }) => {
+            return record.subscription_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { subscription_id: number }) => {
+          return record.subscription_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): void {
     const data = models
 
@@ -904,6 +945,86 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return await DB.instance.deleteFrom('subscriptions')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereType(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+
+    return instance
+  }
+
+  static whereProviderId(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+
+    return instance
+  }
+
+  static whereProviderStatus(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerStatus', '=', value)
+
+    return instance
+  }
+
+  static whereUnitPrice(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
+
+    return instance
+  }
+
+  static whereProviderType(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerType', '=', value)
+
+    return instance
+  }
+
+  static whereProviderPriceId(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerPriceId', '=', value)
+
+    return instance
+  }
+
+  static whereQuantity(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
+
+    return instance
+  }
+
+  static whereTrialEndsAt(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('trialEndsAt', '=', value)
+
+    return instance
+  }
+
+  static whereEndsAt(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('endsAt', '=', value)
+
+    return instance
+  }
+
+  static whereLastUsedAt(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('lastUsedAt', '=', value)
+
+    return instance
   }
 
   async userBelong(): Promise<UserModel> {

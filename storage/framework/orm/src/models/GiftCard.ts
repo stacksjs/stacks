@@ -99,6 +99,47 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: GiftCardJsonResponse | GiftCardJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('giftCard_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: GiftCardJsonResponse) => {
+          const records = relatedRecords.filter((record: { giftCard_id: number }) => {
+            return record.giftCard_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { giftCard_id: number }) => {
+          return record.giftCard_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: GiftCardJsonResponse | GiftCardJsonResponse[]): void {
     const data = models
 
@@ -965,6 +1006,126 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return await DB.instance.deleteFrom('gift_cards')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereCode(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('code', '=', value)
+
+    return instance
+  }
+
+  static whereInitialBalance(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('initial_balance', '=', value)
+
+    return instance
+  }
+
+  static whereCurrentBalance(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('current_balance', '=', value)
+
+    return instance
+  }
+
+  static whereCurrency(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('currency', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static wherePurchaserId(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('purchaser_id', '=', value)
+
+    return instance
+  }
+
+  static whereRecipientEmail(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('recipient_email', '=', value)
+
+    return instance
+  }
+
+  static whereRecipientName(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('recipient_name', '=', value)
+
+    return instance
+  }
+
+  static wherePersonalMessage(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('personal_message', '=', value)
+
+    return instance
+  }
+
+  static whereIsDigital(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_digital', '=', value)
+
+    return instance
+  }
+
+  static whereIsReloadable(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_reloadable', '=', value)
+
+    return instance
+  }
+
+  static whereIsActive(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_active', '=', value)
+
+    return instance
+  }
+
+  static whereExpiryDate(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expiry_date', '=', value)
+
+    return instance
+  }
+
+  static whereLastUsedDate(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('last_used_date', '=', value)
+
+    return instance
+  }
+
+  static whereTemplateId(value: string): GiftCardModel {
+    const instance = new GiftCardModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('template_id', '=', value)
+
+    return instance
   }
 
   async customerBelong(): Promise<CustomerModel> {

@@ -77,6 +77,47 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('release_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ReleaseJsonResponse) => {
+          const records = relatedRecords.filter((record: { release_id: number }) => {
+            return record.release_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { release_id: number }) => {
+          return record.release_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ReleaseJsonResponse | ReleaseJsonResponse[]): void {
     const data = models
 
@@ -806,6 +847,22 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return await DB.instance.deleteFrom('releases')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereVersion(value: string): ReleaseModel {
+    const instance = new ReleaseModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('version', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof ReleaseJsonResponse): ReleaseModel {

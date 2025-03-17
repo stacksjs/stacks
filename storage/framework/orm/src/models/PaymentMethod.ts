@@ -90,6 +90,47 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('paymentMethod_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: PaymentMethodJsonResponse) => {
+          const records = relatedRecords.filter((record: { paymentMethod_id: number }) => {
+            return record.paymentMethod_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { paymentMethod_id: number }) => {
+          return record.paymentMethod_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): void {
     const data = models
 
@@ -883,6 +924,62 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return await DB.instance.deleteFrom('payment_methods')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereType(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('type', '=', value)
+
+    return instance
+  }
+
+  static whereLastFour(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('lastFour', '=', value)
+
+    return instance
+  }
+
+  static whereBrand(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('brand', '=', value)
+
+    return instance
+  }
+
+  static whereExpMonth(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expMonth', '=', value)
+
+    return instance
+  }
+
+  static whereExpYear(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expYear', '=', value)
+
+    return instance
+  }
+
+  static whereIsDefault(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('isDefault', '=', value)
+
+    return instance
+  }
+
+  static whereProviderId(value: string): PaymentMethodModel {
+    const instance = new PaymentMethodModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+
+    return instance
   }
 
   async userBelong(): Promise<UserModel> {

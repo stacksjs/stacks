@@ -85,6 +85,47 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('loyaltyPoint_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: LoyaltyPointJsonResponse) => {
+          const records = relatedRecords.filter((record: { loyaltyPoint_id: number }) => {
+            return record.loyaltyPoint_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { loyaltyPoint_id: number }) => {
+          return record.loyaltyPoint_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): void {
     const data = models
 
@@ -875,6 +916,62 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return await DB.instance.deleteFrom('loyalty_points')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereWalletId(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('wallet_id', '=', value)
+
+    return instance
+  }
+
+  static wherePoints(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('points', '=', value)
+
+    return instance
+  }
+
+  static whereSource(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('source', '=', value)
+
+    return instance
+  }
+
+  static whereSourceReferenceId(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('source_reference_id', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereExpiryDate(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('expiry_date', '=', value)
+
+    return instance
+  }
+
+  static whereIsUsed(value: string): LoyaltyPointModel {
+    const instance = new LoyaltyPointModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_used', '=', value)
+
+    return instance
   }
 
   toSearchableObject(): Partial<LoyaltyPointJsonResponse> {

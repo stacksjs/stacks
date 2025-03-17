@@ -96,6 +96,47 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductReviewJsonResponse | ProductReviewJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('productReview_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductReviewJsonResponse) => {
+          const records = relatedRecords.filter((record: { productReview_id: number }) => {
+            return record.productReview_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { productReview_id: number }) => {
+          return record.productReview_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductReviewJsonResponse | ProductReviewJsonResponse[]): void {
     const data = models
 
@@ -918,6 +959,78 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return await DB.instance.deleteFrom('product_reviews')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereRating(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('rating', '=', value)
+
+    return instance
+  }
+
+  static whereTitle(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('title', '=', value)
+
+    return instance
+  }
+
+  static whereContent(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('content', '=', value)
+
+    return instance
+  }
+
+  static whereIsVerifiedPurchase(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_verified_purchase', '=', value)
+
+    return instance
+  }
+
+  static whereIsApproved(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_approved', '=', value)
+
+    return instance
+  }
+
+  static whereHelpfulVotes(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('helpful_votes', '=', value)
+
+    return instance
+  }
+
+  static whereUnhelpfulVotes(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('unhelpful_votes', '=', value)
+
+    return instance
+  }
+
+  static wherePurchaseDate(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('purchase_date', '=', value)
+
+    return instance
+  }
+
+  static whereImages(value: string): ProductReviewModel {
+    const instance = new ProductReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('images', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

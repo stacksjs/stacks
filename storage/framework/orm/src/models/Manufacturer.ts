@@ -83,6 +83,47 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ManufacturerJsonResponse | ManufacturerJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('manufacturer_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ManufacturerJsonResponse) => {
+          const records = relatedRecords.filter((record: { manufacturer_id: number }) => {
+            return record.manufacturer_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { manufacturer_id: number }) => {
+          return record.manufacturer_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ManufacturerJsonResponse | ManufacturerJsonResponse[]): void {
     const data = models
 
@@ -853,6 +894,38 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return await DB.instance.deleteFrom('manufacturers')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereManufacturer(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('manufacturer', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereCountry(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('country', '=', value)
+
+    return instance
+  }
+
+  static whereFeatured(value: string): ManufacturerModel {
+    const instance = new ManufacturerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('featured', '=', value)
+
+    return instance
   }
 
   toSearchableObject(): Partial<ManufacturerJsonResponse> {

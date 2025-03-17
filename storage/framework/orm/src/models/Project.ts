@@ -79,6 +79,47 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProjectJsonResponse | ProjectJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('project_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProjectJsonResponse) => {
+          const records = relatedRecords.filter((record: { project_id: number }) => {
+            return record.project_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { project_id: number }) => {
+          return record.project_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProjectJsonResponse | ProjectJsonResponse[]): void {
     const data = models
 
@@ -824,6 +865,38 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return await DB.instance.deleteFrom('projects')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereUrl(value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('url', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): ProjectModel {
+    const instance = new ProjectModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof ProjectJsonResponse): ProjectModel {

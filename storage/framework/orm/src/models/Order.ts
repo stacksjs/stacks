@@ -100,6 +100,47 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: OrderJsonResponse | OrderJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('order_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: OrderJsonResponse) => {
+          const records = relatedRecords.filter((record: { order_id: number }) => {
+            return record.order_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { order_id: number }) => {
+          return record.order_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: OrderJsonResponse | OrderJsonResponse[]): void {
     const data = models
 
@@ -942,6 +983,94 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return await DB.instance.deleteFrom('orders')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereStatus(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereTotalAmount(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('total_amount', '=', value)
+
+    return instance
+  }
+
+  static whereTaxAmount(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('tax_amount', '=', value)
+
+    return instance
+  }
+
+  static whereDiscountAmount(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('discount_amount', '=', value)
+
+    return instance
+  }
+
+  static whereDeliveryFee(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('delivery_fee', '=', value)
+
+    return instance
+  }
+
+  static whereTipAmount(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('tip_amount', '=', value)
+
+    return instance
+  }
+
+  static whereOrderType(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('order_type', '=', value)
+
+    return instance
+  }
+
+  static whereDeliveryAddress(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('delivery_address', '=', value)
+
+    return instance
+  }
+
+  static whereSpecialInstructions(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('special_instructions', '=', value)
+
+    return instance
+  }
+
+  static whereEstimatedDeliveryTime(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('estimated_delivery_time', '=', value)
+
+    return instance
+  }
+
+  static whereAppliedCouponId(value: string): OrderModel {
+    const instance = new OrderModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('applied_coupon_id', '=', value)
+
+    return instance
   }
 
   async customerBelong(): Promise<CustomerModel> {

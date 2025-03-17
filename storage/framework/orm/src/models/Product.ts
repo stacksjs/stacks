@@ -97,6 +97,47 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductJsonResponse | ProductJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('product_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductJsonResponse) => {
+          const records = relatedRecords.filter((record: { product_id: number }) => {
+            return record.product_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { product_id: number }) => {
+          return record.product_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductJsonResponse | ProductJsonResponse[]): void {
     const data = models
 
@@ -927,6 +968,86 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return await DB.instance.deleteFrom('products')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static wherePrice(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
+
+    return instance
+  }
+
+  static whereImageUrl(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
+
+    return instance
+  }
+
+  static whereIsAvailable(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_available', '=', value)
+
+    return instance
+  }
+
+  static whereInventoryCount(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('inventory_count', '=', value)
+
+    return instance
+  }
+
+  static whereCategoryId(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('category_id', '=', value)
+
+    return instance
+  }
+
+  static wherePreparationTime(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('preparation_time', '=', value)
+
+    return instance
+  }
+
+  static whereAllergens(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('allergens', '=', value)
+
+    return instance
+  }
+
+  static whereNutritionalInfo(value: string): ProductModel {
+    const instance = new ProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('nutritional_info', '=', value)
+
+    return instance
   }
 
   async productCategoryBelong(): Promise<ProductCategoryModel> {

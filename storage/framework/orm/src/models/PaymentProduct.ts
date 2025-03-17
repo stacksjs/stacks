@@ -84,6 +84,47 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: PaymentProductJsonResponse | PaymentProductJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('paymentProduct_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: PaymentProductJsonResponse) => {
+          const records = relatedRecords.filter((record: { paymentProduct_id: number }) => {
+            return record.paymentProduct_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { paymentProduct_id: number }) => {
+          return record.paymentProduct_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: PaymentProductJsonResponse | PaymentProductJsonResponse[]): void {
     const data = models
 
@@ -865,6 +906,62 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return await DB.instance.deleteFrom('payment_products')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereDescription(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('description', '=', value)
+
+    return instance
+  }
+
+  static whereKey(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('key', '=', value)
+
+    return instance
+  }
+
+  static whereUnitPrice(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('unitPrice', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereImage(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('image', '=', value)
+
+    return instance
+  }
+
+  static whereProviderId(value: string): PaymentProductModel {
+    const instance = new PaymentProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('providerId', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof PaymentProductJsonResponse): PaymentProductModel {

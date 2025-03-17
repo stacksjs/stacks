@@ -101,6 +101,47 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: ProductItemJsonResponse | ProductItemJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('productItem_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: ProductItemJsonResponse) => {
+          const records = relatedRecords.filter((record: { productItem_id: number }) => {
+            return record.productItem_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { productItem_id: number }) => {
+          return record.productItem_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: ProductItemJsonResponse | ProductItemJsonResponse[]): void {
     const data = models
 
@@ -931,6 +972,78 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return await DB.instance.deleteFrom('product_items')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereSize(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('size', '=', value)
+
+    return instance
+  }
+
+  static whereColor(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('color', '=', value)
+
+    return instance
+  }
+
+  static wherePrice(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('price', '=', value)
+
+    return instance
+  }
+
+  static whereImageUrl(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('image_url', '=', value)
+
+    return instance
+  }
+
+  static whereIsAvailable(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_available', '=', value)
+
+    return instance
+  }
+
+  static whereInventoryCount(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('inventory_count', '=', value)
+
+    return instance
+  }
+
+  static whereSku(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('sku', '=', value)
+
+    return instance
+  }
+
+  static whereCustomOptions(value: string): ProductItemModel {
+    const instance = new ProductItemModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('custom_options', '=', value)
+
+    return instance
   }
 
   async productBelong(): Promise<ProductModel> {

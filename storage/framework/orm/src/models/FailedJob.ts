@@ -80,6 +80,47 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: FailedJobJsonResponse | FailedJobJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('failedJob_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: FailedJobJsonResponse) => {
+          const records = relatedRecords.filter((record: { failedJob_id: number }) => {
+            return record.failedJob_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { failedJob_id: number }) => {
+          return record.failedJob_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: FailedJobJsonResponse | FailedJobJsonResponse[]): void {
     const data = models
 
@@ -833,6 +874,46 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return await DB.instance.deleteFrom('failed_jobs')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereConnection(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('connection', '=', value)
+
+    return instance
+  }
+
+  static whereQueue(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('queue', '=', value)
+
+    return instance
+  }
+
+  static wherePayload(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('payload', '=', value)
+
+    return instance
+  }
+
+  static whereException(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('exception', '=', value)
+
+    return instance
+  }
+
+  static whereFailedAt(value: string): FailedJobModel {
+    const instance = new FailedJobModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('failed_at', '=', value)
+
+    return instance
   }
 
   distinct(column: keyof FailedJobJsonResponse): FailedJobModel {

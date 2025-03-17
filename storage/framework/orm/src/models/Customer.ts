@@ -91,6 +91,47 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('customer_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: CustomerJsonResponse) => {
+          const records = relatedRecords.filter((record: { customer_id: number }) => {
+            return record.customer_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { customer_id: number }) => {
+          return record.customer_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: CustomerJsonResponse | CustomerJsonResponse[]): void {
     const data = models
 
@@ -901,6 +942,62 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return await DB.instance.deleteFrom('customers')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+
+    return instance
+  }
+
+  static wherePhone(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('phone', '=', value)
+
+    return instance
+  }
+
+  static whereTotalSpent(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('totalSpent', '=', value)
+
+    return instance
+  }
+
+  static whereLastOrder(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('lastOrder', '=', value)
+
+    return instance
+  }
+
+  static whereStatus(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
+  static whereAvatar(value: string): CustomerModel {
+    const instance = new CustomerModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('avatar', '=', value)
+
+    return instance
   }
 
   async userBelong(): Promise<UserModel> {

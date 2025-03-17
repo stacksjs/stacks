@@ -100,6 +100,47 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     this.hasSaved = false
   }
 
+  protected async loadRelations(models: UserJsonResponse | UserJsonResponse[]): Promise<void> {
+    // Handle both single model and array of models
+    const modelArray = Array.isArray(models) ? models : [models]
+    if (!modelArray.length)
+      return
+
+    const modelIds = modelArray.map(model => model.id)
+
+    for (const relation of this.withRelations) {
+      const relatedRecords = await DB.instance
+        .selectFrom(relation)
+        .where('user_id', 'in', modelIds)
+        .selectAll()
+        .execute()
+
+      if (Array.isArray(models)) {
+        models.map((model: UserJsonResponse) => {
+          const records = relatedRecords.filter((record: { user_id: number }) => {
+            return record.user_id === model.id
+          })
+
+          model[relation] = records.length === 1 ? records[0] : records
+          return model
+        })
+      }
+      else {
+        const records = relatedRecords.filter((record: { user_id: number }) => {
+          return record.user_id === models.id
+        })
+
+        models[relation] = records.length === 1 ? records[0] : records
+      }
+    }
+  }
+
+  static with(relations: string[]): UserModel {
+    const instance = new UserModel(undefined)
+
+    return instance.applyWith(relations)
+  }
+
   protected mapCustomGetters(models: UserJsonResponse | UserJsonResponse[]): void {
     const data = models
 
@@ -916,6 +957,38 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return await DB.instance.deleteFrom('users')
       .where('id', '=', this.id)
       .execute()
+  }
+
+  static whereName(value: string): UserModel {
+    const instance = new UserModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('name', '=', value)
+
+    return instance
+  }
+
+  static whereEmail(value: string): UserModel {
+    const instance = new UserModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('email', '=', value)
+
+    return instance
+  }
+
+  static whereJobTitle(value: string): UserModel {
+    const instance = new UserModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('jobTitle', '=', value)
+
+    return instance
+  }
+
+  static wherePassword(value: string): UserModel {
+    const instance = new UserModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('password', '=', value)
+
+    return instance
   }
 
   async userTeams() {
