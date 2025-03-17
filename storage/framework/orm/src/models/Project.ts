@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface ProjectsTable {
@@ -224,34 +222,10 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProjectModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ProjectModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ProjectModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ProjectModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProjectModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ProjectModel(model)
 
@@ -276,26 +250,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ProjectModel> {
-    const model = await DB.instance.selectFrom('projects').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProjectModel results for ${id}`)
-
-    cache.getOrSet(`project:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProjectModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ProjectModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProjectModel> {

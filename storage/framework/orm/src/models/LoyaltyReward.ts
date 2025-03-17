@@ -1,9 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -292,34 +291,10 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<LoyaltyRewardModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new LoyaltyRewardModel(model)
-
-    return data
-  }
-
   static async first(): Promise<LoyaltyRewardModel | undefined> {
     const instance = new LoyaltyRewardModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new LoyaltyRewardModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<LoyaltyRewardModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No LoyaltyRewardModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new LoyaltyRewardModel(model)
 
@@ -344,26 +319,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<LoyaltyRewardModel> {
-    const model = await DB.instance.selectFrom('loyalty_rewards').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No LoyaltyRewardModel results for ${id}`)
-
-    cache.getOrSet(`loyaltyReward:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new LoyaltyRewardModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<LoyaltyRewardModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<LoyaltyRewardModel> {

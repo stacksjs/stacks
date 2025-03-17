@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface SubscribersTable {
@@ -197,34 +195,10 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<SubscriberModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new SubscriberModel(model)
-
-    return data
-  }
-
   static async first(): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new SubscriberModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<SubscriberModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No SubscriberModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new SubscriberModel(model)
 
@@ -249,26 +223,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<SubscriberModel> {
-    const model = await DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No SubscriberModel results for ${id}`)
-
-    cache.getOrSet(`subscriber:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new SubscriberModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<SubscriberModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<SubscriberModel> {

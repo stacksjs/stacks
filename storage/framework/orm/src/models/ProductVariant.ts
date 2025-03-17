@@ -1,9 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -256,34 +255,10 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductVariantModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ProductVariantModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ProductVariantModel | undefined> {
     const instance = new ProductVariantModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ProductVariantModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ProductVariantModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductVariantModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ProductVariantModel(model)
 
@@ -308,26 +283,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ProductVariantModel> {
-    const model = await DB.instance.selectFrom('product_variants').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductVariantModel results for ${id}`)
-
-    cache.getOrSet(`productVariant:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProductVariantModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ProductVariantModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProductVariantModel> {

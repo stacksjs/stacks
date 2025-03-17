@@ -1,8 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 import User from './User'
@@ -218,34 +217,10 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<PostModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new PostModel(model)
-
-    return data
-  }
-
   static async first(): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new PostModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<PostModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PostModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new PostModel(model)
 
@@ -270,26 +245,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<PostModel> {
-    const model = await DB.instance.selectFrom('posts').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PostModel results for ${id}`)
-
-    cache.getOrSet(`post:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new PostModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<PostModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<PostModel> {

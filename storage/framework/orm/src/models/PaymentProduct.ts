@@ -1,8 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
@@ -261,34 +259,10 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<PaymentProductModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new PaymentProductModel(model)
-
-    return data
-  }
-
   static async first(): Promise<PaymentProductModel | undefined> {
     const instance = new PaymentProductModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new PaymentProductModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<PaymentProductModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentProductModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new PaymentProductModel(model)
 
@@ -313,26 +287,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<PaymentProductModel> {
-    const model = await DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentProductModel results for ${id}`)
-
-    cache.getOrSet(`paymentProduct:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new PaymentProductModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<PaymentProductModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<PaymentProductModel> {

@@ -1085,14 +1085,6 @@ export async function generateModelString(
 
           return await instance.applyFind(id)
         }
-
-        async first(): Promise<${modelName}Model | undefined> {
-          const model = await this.applyFirst()
-
-          const data = new ${modelName}Model(model)
-
-          return data
-        }
         
         static async first(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
@@ -1101,22 +1093,6 @@ export async function generateModelString(
 
           const data = new ${modelName}Model(model)
 
-          return data
-        }
-
-        async applyFirstOrFail(): Promise<${modelName}Model | undefined> {
-          const model = await this.selectFromQuery.executeTakeFirst()
-  
-          if (model === undefined)
-            throw new ModelNotFoundException(404, \`No ${modelName}Model results found for query\`)
-          
-          if (model) {
-            this.mapCustomGetters(model)
-            await this.loadRelations(model)
-          }
-
-          const data = new ${modelName}Model(model)
-  
           return data
         }
 
@@ -1138,28 +1114,6 @@ export async function generateModelString(
           }))
   
           return data
-        }
-
-        async applyFindOrFail(id: number): Promise<${modelName}Model> {
-          const model = await DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll().executeTakeFirst()
-  
-          ${instanceSoftDeleteStatementsSelectFrom}
-  
-          if (model === undefined)
-            throw new ModelNotFoundException(404, \`No ${modelName}Model results for \${id}\`)
-          
-          cache.getOrSet(\`${formattedModelName}:\${id}\`, JSON.stringify(model))
-
-          this.mapCustomGetters(model)
-          await this.loadRelations(model)
-
-          const data = new ${modelName}Model(model)
-  
-          return data
-        }
-
-        async findOrFail(id: number): Promise<${modelName}Model> {
-          return await this.applyFindOrFail(id)
         }
   
         static async findOrFail(id: number): Promise<${modelName}Model> {

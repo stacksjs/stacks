@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
@@ -233,34 +231,10 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<FailedJobModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new FailedJobModel(model)
-
-    return data
-  }
-
   static async first(): Promise<FailedJobModel | undefined> {
     const instance = new FailedJobModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new FailedJobModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<FailedJobModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No FailedJobModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new FailedJobModel(model)
 
@@ -285,26 +259,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<FailedJobModel> {
-    const model = await DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No FailedJobModel results for ${id}`)
-
-    cache.getOrSet(`failedJob:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new FailedJobModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<FailedJobModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<FailedJobModel> {

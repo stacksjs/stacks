@@ -1,9 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { TeamModel } from './Team'
 import type { UserModel } from './User'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -303,34 +302,10 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<AccessTokenModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new AccessTokenModel(model)
-
-    return data
-  }
-
   static async first(): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new AccessTokenModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<AccessTokenModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No AccessTokenModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new AccessTokenModel(model)
 
@@ -355,26 +330,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<AccessTokenModel> {
-    const model = await DB.instance.selectFrom('personal_access_tokens').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No AccessTokenModel results for ${id}`)
-
-    cache.getOrSet(`accessToken:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new AccessTokenModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<AccessTokenModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<AccessTokenModel> {

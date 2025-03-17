@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface RequestsTable {
@@ -270,34 +268,10 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<RequestModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new RequestModel(model)
-
-    return data
-  }
-
   static async first(): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new RequestModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<RequestModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No RequestModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new RequestModel(model)
 
@@ -322,30 +296,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<RequestModel> {
-    const model = await DB.instance.selectFrom('requests').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (instance.softDeletes) {
-      instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
-    }
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No RequestModel results for ${id}`)
-
-    cache.getOrSet(`request:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new RequestModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<RequestModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<RequestModel> {

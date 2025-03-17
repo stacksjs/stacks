@@ -2,9 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -343,34 +342,10 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<CouponModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new CouponModel(model)
-
-    return data
-  }
-
   static async first(): Promise<CouponModel | undefined> {
     const instance = new CouponModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new CouponModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<CouponModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No CouponModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new CouponModel(model)
 
@@ -395,26 +370,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<CouponModel> {
-    const model = await DB.instance.selectFrom('coupons').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No CouponModel results for ${id}`)
-
-    cache.getOrSet(`coupon:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new CouponModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<CouponModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<CouponModel> {

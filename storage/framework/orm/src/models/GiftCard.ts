@@ -2,9 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -352,34 +351,10 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<GiftCardModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new GiftCardModel(model)
-
-    return data
-  }
-
   static async first(): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new GiftCardModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<GiftCardModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No GiftCardModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new GiftCardModel(model)
 
@@ -404,26 +379,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<GiftCardModel> {
-    const model = await DB.instance.selectFrom('gift_cards').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No GiftCardModel results for ${id}`)
-
-    cache.getOrSet(`giftCard:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new GiftCardModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<GiftCardModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<GiftCardModel> {

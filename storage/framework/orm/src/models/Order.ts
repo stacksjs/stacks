@@ -3,9 +3,8 @@ import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import type { OrderItemModel } from './OrderItem'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
@@ -329,34 +328,10 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<OrderModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new OrderModel(model)
-
-    return data
-  }
-
   static async first(): Promise<OrderModel | undefined> {
     const instance = new OrderModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new OrderModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<OrderModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No OrderModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new OrderModel(model)
 
@@ -381,26 +356,6 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<OrderModel> {
-    const model = await DB.instance.selectFrom('orders').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No OrderModel results for ${id}`)
-
-    cache.getOrSet(`order:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new OrderModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<OrderModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<OrderModel> {

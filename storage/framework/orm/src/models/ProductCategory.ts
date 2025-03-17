@@ -1,9 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -258,34 +256,10 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductCategoryModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ProductCategoryModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ProductCategoryModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ProductCategoryModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductCategoryModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ProductCategoryModel(model)
 
@@ -310,26 +284,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ProductCategoryModel> {
-    const model = await DB.instance.selectFrom('product_categories').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductCategoryModel results for ${id}`)
-
-    cache.getOrSet(`productCategory:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProductCategoryModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ProductCategoryModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProductCategoryModel> {

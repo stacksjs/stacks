@@ -2,9 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductCategoryModel } from './ProductCategory'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -314,34 +313,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ProductModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ProductModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ProductModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ProductModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ProductModel(model)
 
@@ -366,26 +341,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ProductModel> {
-    const model = await DB.instance.selectFrom('products').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ProductModel results for ${id}`)
-
-    cache.getOrSet(`product:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ProductModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ProductModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ProductModel> {

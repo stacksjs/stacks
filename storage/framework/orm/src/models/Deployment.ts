@@ -1,9 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 import User from './User'
@@ -273,34 +272,10 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<DeploymentModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new DeploymentModel(model)
-
-    return data
-  }
-
   static async first(): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new DeploymentModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<DeploymentModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No DeploymentModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new DeploymentModel(model)
 
@@ -325,26 +300,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<DeploymentModel> {
-    const model = await DB.instance.selectFrom('deployments').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No DeploymentModel results for ${id}`)
-
-    cache.getOrSet(`deployment:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new DeploymentModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<DeploymentModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<DeploymentModel> {

@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface ReleasesTable {
@@ -206,34 +204,10 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ReleaseModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ReleaseModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ReleaseModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ReleaseModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ReleaseModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ReleaseModel(model)
 
@@ -258,26 +232,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ReleaseModel> {
-    const model = await DB.instance.selectFrom('releases').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ReleaseModel results for ${id}`)
-
-    cache.getOrSet(`release:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ReleaseModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ReleaseModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ReleaseModel> {

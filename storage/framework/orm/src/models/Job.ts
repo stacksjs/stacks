@@ -1,7 +1,5 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface JobsTable {
@@ -233,34 +231,10 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<JobModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new JobModel(model)
-
-    return data
-  }
-
   static async first(): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new JobModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<JobModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No JobModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new JobModel(model)
 
@@ -285,26 +259,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<JobModel> {
-    const model = await DB.instance.selectFrom('jobs').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No JobModel results for ${id}`)
-
-    cache.getOrSet(`job:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new JobModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<JobModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<JobModel> {

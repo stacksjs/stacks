@@ -1,9 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { ModelNotFoundException } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -240,34 +238,10 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<ManufacturerModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new ManufacturerModel(model)
-
-    return data
-  }
-
   static async first(): Promise<ManufacturerModel | undefined> {
     const instance = new ManufacturerModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new ManufacturerModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<ManufacturerModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ManufacturerModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new ManufacturerModel(model)
 
@@ -292,26 +266,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<ManufacturerModel> {
-    const model = await DB.instance.selectFrom('manufacturers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No ManufacturerModel results for ${id}`)
-
-    cache.getOrSet(`manufacturer:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new ManufacturerModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<ManufacturerModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<ManufacturerModel> {

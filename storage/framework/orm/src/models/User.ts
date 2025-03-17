@@ -9,11 +9,9 @@ import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
 import { randomUUIDv7 } from 'bun'
 
-import { cache } from '@stacksjs/cache'
-
 import { sql } from '@stacksjs/database'
 
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
@@ -303,34 +301,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<UserModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new UserModel(model)
-
-    return data
-  }
-
   static async first(): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new UserModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<UserModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No UserModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new UserModel(model)
 
@@ -355,26 +329,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<UserModel> {
-    const model = await DB.instance.selectFrom('users').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No UserModel results for ${id}`)
-
-    cache.getOrSet(`user:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new UserModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<UserModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<UserModel> {

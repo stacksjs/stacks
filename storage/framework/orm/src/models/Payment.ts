@@ -2,9 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { CustomerModel } from './Customer'
 import type { OrderModel } from './Order'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -332,34 +331,10 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<PaymentModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new PaymentModel(model)
-
-    return data
-  }
-
   static async first(): Promise<PaymentModel | undefined> {
     const instance = new PaymentModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new PaymentModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<PaymentModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new PaymentModel(model)
 
@@ -384,26 +359,6 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<PaymentModel> {
-    const model = await DB.instance.selectFrom('payments').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No PaymentModel results for ${id}`)
-
-    cache.getOrSet(`payment:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new PaymentModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<PaymentModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<PaymentModel> {

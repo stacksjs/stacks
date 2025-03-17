@@ -2,9 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { OrderModel } from './Order'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
-import { cache } from '@stacksjs/cache'
 import { sql } from '@stacksjs/database'
-import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -288,34 +287,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return await instance.applyFind(id)
   }
 
-  async first(): Promise<CustomerModel | undefined> {
-    const model = await this.applyFirst()
-
-    const data = new CustomerModel(model)
-
-    return data
-  }
-
   static async first(): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 
     const model = await instance.applyFirst()
-
-    const data = new CustomerModel(model)
-
-    return data
-  }
-
-  async applyFirstOrFail(): Promise<CustomerModel | undefined> {
-    const model = await this.selectFromQuery.executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No CustomerModel results found for query`)
-
-    if (model) {
-      this.mapCustomGetters(model)
-      await this.loadRelations(model)
-    }
 
     const data = new CustomerModel(model)
 
@@ -340,26 +315,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     }))
 
     return data
-  }
-
-  async applyFindOrFail(id: number): Promise<CustomerModel> {
-    const model = await DB.instance.selectFrom('customers').where('id', '=', id).selectAll().executeTakeFirst()
-
-    if (model === undefined)
-      throw new ModelNotFoundException(404, `No CustomerModel results for ${id}`)
-
-    cache.getOrSet(`customer:${id}`, JSON.stringify(model))
-
-    this.mapCustomGetters(model)
-    await this.loadRelations(model)
-
-    const data = new CustomerModel(model)
-
-    return data
-  }
-
-  async findOrFail(id: number): Promise<CustomerModel> {
-    return await this.applyFindOrFail(id)
   }
 
   static async findOrFail(id: number): Promise<CustomerModel> {
