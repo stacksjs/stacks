@@ -371,6 +371,26 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: ProductModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new ProductModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: ProductJsonResponse) => new ProductModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newProduct: NewProduct): Promise<ProductModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newProduct).filter(([key]) =>

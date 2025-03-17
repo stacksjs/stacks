@@ -269,6 +269,26 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: SubscriberEmailModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new SubscriberEmailModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: SubscriberEmailJsonResponse) => new SubscriberEmailModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newSubscriberEmail).filter(([key]) =>

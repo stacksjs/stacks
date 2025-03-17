@@ -297,6 +297,26 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: OrderItemModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new OrderItemModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: OrderItemJsonResponse) => new OrderItemModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newOrderItem: NewOrderItem): Promise<OrderItemModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newOrderItem).filter(([key]) =>

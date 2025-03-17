@@ -277,6 +277,26 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: PostModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new PostModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: PostJsonResponse) => new PostModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newPost: NewPost): Promise<PostModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPost).filter(([key]) =>

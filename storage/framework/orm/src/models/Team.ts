@@ -326,6 +326,26 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: TeamModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new TeamModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: TeamJsonResponse) => new TeamModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newTeam: NewTeam): Promise<TeamModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTeam).filter(([key]) =>

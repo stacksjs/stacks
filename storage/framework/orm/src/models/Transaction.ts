@@ -333,6 +333,26 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: TransactionModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new TransactionModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: TransactionJsonResponse) => new TransactionModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newTransaction: NewTransaction): Promise<TransactionModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newTransaction).filter(([key]) =>

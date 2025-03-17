@@ -338,6 +338,26 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: PaymentMethodModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new PaymentMethodModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: PaymentMethodJsonResponse) => new PaymentMethodModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newPaymentMethod).filter(([key]) =>

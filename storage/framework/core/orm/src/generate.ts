@@ -1145,6 +1145,26 @@ export async function generateModelString(
           return instance.applyCount()
         }
         
+        static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ 
+          data: ${modelName}Model[], 
+          paging: { 
+            total_records: number, 
+            page: number, 
+            total_pages: number 
+          }, 
+          next_cursor: number | null 
+        }> {
+          const instance = new ${modelName}Model(undefined)
+          
+          const result = await instance.applyPaginate(options)
+          
+          return {
+            data: result.data.map((item: ${modelName}JsonResponse) => new ${modelName}Model(item)),
+            paging: result.paging,
+            next_cursor: result.next_cursor
+          }
+        }
+        
         async applyCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const filteredValues = Object.fromEntries(
             Object.entries(new${modelName}).filter(([key]) => 

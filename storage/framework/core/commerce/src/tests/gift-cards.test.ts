@@ -1,9 +1,9 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
-import { fetchById, fetchByCode, checkBalance } from '../gift-cards/fetch'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { db } from '@stacksjs/database'
+import { deactivate, remove } from '../gift-cards/destroy'
+import { checkBalance, fetchByCode, fetchById } from '../gift-cards/fetch'
 import { store } from '../gift-cards/store'
 import { update, updateBalance } from '../gift-cards/update'
-import { remove, deactivate } from '../gift-cards/destroy'
-import { db } from '@stacksjs/database'
 
 // Mock the database
 mock.module('@stacksjs/database', () => ({
@@ -76,12 +76,12 @@ describe('Gift Card Module', () => {
   describe('fetchById', () => {
     it('should fetch a gift card by ID', async () => {
       const giftCard = await fetchById(1)
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.id).toBe(1)
       expect(giftCard?.code).toBe('GIFT123')
       expect(giftCard?.initial_balance).toBe(100)
-      
+
       // Verify db was called correctly
       expect(db.selectFrom).toHaveBeenCalledWith('gift_cards')
       expect(db.selectFrom('gift_cards').where).toHaveBeenCalledWith('id', '=', 1)
@@ -91,10 +91,10 @@ describe('Gift Card Module', () => {
   describe('fetchByCode', () => {
     it('should fetch a gift card by code', async () => {
       const giftCard = await fetchByCode('GIFT123')
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.code).toBe('GIFT123')
-      
+
       // Verify db was called correctly
       expect(db.selectFrom).toHaveBeenCalledWith('gift_cards')
       expect(db.selectFrom('gift_cards').where).toHaveBeenCalledWith('code', '=', 'GIFT123')
@@ -113,19 +113,19 @@ describe('Gift Card Module', () => {
         recipient_email: 'new@example.com',
         recipient_name: 'New Recipient',
       }
-      
+
       const request = new MockRequest(requestData)
       const giftCard = await store(request as any)
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.id).toBe(1)
       expect(giftCard?.code).toBe('GIFT123') // From the mock response
-      
+
       // Verify db was called correctly
       expect(db.insertInto).toHaveBeenCalledWith('gift_cards')
       expect(db.insertInto('gift_cards').values).toHaveBeenCalledTimes(1)
     })
-    
+
     it('should throw an error if code already exists', async () => {
       // Mock the database to throw a duplicate entry error
       mock.module('@stacksjs/database', () => ({
@@ -139,15 +139,15 @@ describe('Gift Card Module', () => {
           })),
         },
       }))
-      
+
       const requestData = {
         code: 'DUPLICATE',
         initial_balance: 50,
         currency: 'USD',
       }
-      
+
       const request = new MockRequest(requestData)
-      
+
       await expect(store(request as any)).rejects.toThrow('A gift card with this code already exists')
     })
   })
@@ -159,26 +159,26 @@ describe('Gift Card Module', () => {
         current_balance: 80,
         status: 'ACTIVE',
       }
-      
+
       const request = new MockRequest(requestData)
       const giftCard = await update(1, request as any)
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.id).toBe(1)
-      
+
       // Verify db was called correctly
       expect(db.updateTable).toHaveBeenCalledWith('gift_cards')
       expect(db.updateTable('gift_cards').set).toHaveBeenCalledTimes(1)
       expect(db.selectFrom).toHaveBeenCalledWith('gift_cards')
     })
-    
+
     it('should return the gift card without updating if no data provided', async () => {
       const request = new MockRequest({})
       const giftCard = await update(1, request as any)
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.id).toBe(1)
-      
+
       // Verify db was not called to update
       expect(db.updateTable).not.toHaveBeenCalled()
     })
@@ -187,16 +187,16 @@ describe('Gift Card Module', () => {
   describe('updateBalance', () => {
     it('should update a gift card balance', async () => {
       const giftCard = await updateBalance(1, -25)
-      
+
       expect(giftCard).toBeDefined()
       expect(giftCard?.id).toBe(1)
-      
+
       // Verify db was called correctly
       expect(db.updateTable).toHaveBeenCalledWith('gift_cards')
       expect(db.updateTable('gift_cards').set).toHaveBeenCalledTimes(1)
       expect(db.selectFrom).toHaveBeenCalledWith('gift_cards')
     })
-    
+
     it('should throw an error if balance would go below zero', async () => {
       // Mock the database to return a gift card with low balance
       mock.module('@stacksjs/database', () => ({
@@ -218,7 +218,7 @@ describe('Gift Card Module', () => {
           })),
         },
       }))
-      
+
       await expect(updateBalance(1, -20)).rejects.toThrow('Insufficient gift card balance')
     })
   })
@@ -226,14 +226,14 @@ describe('Gift Card Module', () => {
   describe('remove', () => {
     it('should delete a gift card', async () => {
       const result = await remove(1)
-      
+
       expect(result).toBe(true)
-      
+
       // Verify db was called correctly
       expect(db.deleteFrom).toHaveBeenCalledWith('gift_cards')
       expect(db.deleteFrom('gift_cards').where).toHaveBeenCalledWith('id', '=', 1)
     })
-    
+
     it('should throw an error if gift card not found', async () => {
       // Mock the database to return undefined for the gift card
       mock.module('@stacksjs/database', () => ({
@@ -247,7 +247,7 @@ describe('Gift Card Module', () => {
           })),
         },
       }))
-      
+
       await expect(remove(999)).rejects.toThrow('Gift card with ID 999 not found')
     })
   })
@@ -255,9 +255,9 @@ describe('Gift Card Module', () => {
   describe('deactivate', () => {
     it('should deactivate a gift card', async () => {
       const result = await deactivate(1)
-      
+
       expect(result).toBe(true)
-      
+
       // Verify db was called correctly
       expect(db.updateTable).toHaveBeenCalledWith('gift_cards')
       expect(db.updateTable('gift_cards').set).toHaveBeenCalledWith({
@@ -271,12 +271,12 @@ describe('Gift Card Module', () => {
   describe('checkBalance', () => {
     it('should check a valid gift card balance', async () => {
       const result = await checkBalance('GIFT123')
-      
+
       expect(result.valid).toBe(true)
       expect(result.balance).toBe(75)
       expect(result.currency).toBe('USD')
     })
-    
+
     it('should return invalid for non-existent gift card', async () => {
       // Mock the database to return undefined for the gift card
       mock.module('@stacksjs/database', () => ({
@@ -290,13 +290,13 @@ describe('Gift Card Module', () => {
           })),
         },
       }))
-      
+
       const result = await checkBalance('INVALID')
-      
+
       expect(result.valid).toBe(false)
       expect(result.message).toBe('Gift card not found')
     })
-    
+
     it('should return invalid for inactive gift card', async () => {
       // Mock the database to return an inactive gift card
       mock.module('@stacksjs/database', () => ({
@@ -318,9 +318,9 @@ describe('Gift Card Module', () => {
           })),
         },
       }))
-      
+
       const result = await checkBalance('INACTIVE')
-      
+
       expect(result.valid).toBe(false)
       expect(result.message).toBe('Gift card is deactivated')
     })

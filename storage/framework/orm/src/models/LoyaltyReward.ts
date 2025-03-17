@@ -351,6 +351,26 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return instance.applyCount()
   }
 
+  static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+    data: LoyaltyRewardModel[]
+    paging: {
+      total_records: number
+      page: number
+      total_pages: number
+    }
+    next_cursor: number | null
+  }> {
+    const instance = new LoyaltyRewardModel(undefined)
+
+    const result = await instance.applyPaginate(options)
+
+    return {
+      data: result.data.map((item: LoyaltyRewardJsonResponse) => new LoyaltyRewardModel(item)),
+      paging: result.paging,
+      next_cursor: result.next_cursor,
+    }
+  }
+
   async applyCreate(newLoyaltyReward: NewLoyaltyReward): Promise<LoyaltyRewardModel> {
     const filteredValues = Object.fromEntries(
       Object.entries(newLoyaltyReward).filter(([key]) =>

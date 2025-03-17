@@ -1,8 +1,8 @@
-import { describe, expect, it, mock, beforeEach } from 'bun:test'
+import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { db } from '@stacksjs/database'
 import { fetchById } from '../customers/fetch'
 import { store } from '../customers/store'
 import { update } from '../customers/update'
-import { db } from '@stacksjs/database'
 
 // Mock the database
 mock.module('@stacksjs/database', () => ({
@@ -65,12 +65,12 @@ describe('Customer Module', () => {
   describe('fetchById', () => {
     it('should fetch a customer by ID', async () => {
       const customer = await fetchById(1)
-      
+
       expect(customer).toBeDefined()
       expect(customer?.id).toBe(1)
       expect(customer?.name).toBe('Test Customer')
       expect(customer?.email).toBe('test@example.com')
-      
+
       // Verify db was called correctly
       expect(db.selectFrom).toHaveBeenCalledWith('customers')
       expect(db.selectFrom('customers').where).toHaveBeenCalledWith('id', '=', 1)
@@ -86,19 +86,19 @@ describe('Customer Module', () => {
         status: 'Active',
         user_id: 2,
       }
-      
+
       const request = new MockRequest(requestData)
       const customer = await store(request as any)
-      
+
       expect(customer).toBeDefined()
       expect(customer?.id).toBe(1)
       expect(customer?.name).toBe('Test Customer')
-      
+
       // Verify db was called correctly
       expect(db.insertInto).toHaveBeenCalledWith('customers')
       expect(db.insertInto('customers').values).toHaveBeenCalledTimes(1)
     })
-    
+
     it('should throw an error if email already exists', async () => {
       // Mock the database to throw a duplicate entry error
       mock.module('@stacksjs/database', () => ({
@@ -112,15 +112,15 @@ describe('Customer Module', () => {
           })),
         },
       }))
-      
+
       const requestData = {
         name: 'Duplicate Customer',
         email: 'duplicate@example.com',
         phone: '555-555-5555',
       }
-      
+
       const request = new MockRequest(requestData)
-      
+
       await expect(store(request as any)).rejects.toThrow('A customer with this email already exists')
     })
   })
@@ -132,26 +132,26 @@ describe('Customer Module', () => {
         email: 'updated@example.com',
         phone: '111-222-3333',
       }
-      
+
       const request = new MockRequest(requestData)
       const customer = await update(1, request as any)
-      
+
       expect(customer).toBeDefined()
       expect(customer?.id).toBe(1)
-      
+
       // Verify db was called correctly
       expect(db.updateTable).toHaveBeenCalledWith('customers')
       expect(db.updateTable('customers').set).toHaveBeenCalledTimes(1)
       expect(db.selectFrom).toHaveBeenCalledWith('customers')
     })
-    
+
     it('should return the customer without updating if no data provided', async () => {
       const request = new MockRequest({})
       const customer = await update(1, request as any)
-      
+
       expect(customer).toBeDefined()
       expect(customer?.id).toBe(1)
-      
+
       // Verify db was not called to update
       expect(db.updateTable).not.toHaveBeenCalled()
       expect(db.selectFrom).toHaveBeenCalledWith('customers')
