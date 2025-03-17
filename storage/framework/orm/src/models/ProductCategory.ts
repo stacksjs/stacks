@@ -286,7 +286,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     return data
   }
 
-  static async findOrFail(id: number): Promise<ProductCategoryModel> {
+  static async findOrFail(id: number): Promise<ProductCategoryModel | undefined> {
     const instance = new ProductCategoryModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -298,12 +298,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductCategoryModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ProductCategoryModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProductCategoryModel(modelItem)))
   }
 
   static skip(count: number): ProductCategoryModel {

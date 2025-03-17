@@ -252,7 +252,7 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     return data
   }
 
-  static async findOrFail(id: number): Promise<ProjectModel> {
+  static async findOrFail(id: number): Promise<ProjectModel | undefined> {
     const instance = new ProjectModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -264,12 +264,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ProjectModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProjectModel(modelItem)))
   }
 
   static skip(count: number): ProjectModel {

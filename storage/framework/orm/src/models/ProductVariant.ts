@@ -6,8 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Product from './Product'
-
 export interface ProductVariantsTable {
   id: Generated<number>
   product_id: number
@@ -285,7 +283,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     return data
   }
 
-  static async findOrFail(id: number): Promise<ProductVariantModel> {
+  static async findOrFail(id: number): Promise<ProductVariantModel | undefined> {
     const instance = new ProductVariantModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -297,12 +295,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductVariantModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ProductVariantModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProductVariantModel(modelItem)))
   }
 
   static skip(count: number): ProductVariantModel {

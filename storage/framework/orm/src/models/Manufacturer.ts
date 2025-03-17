@@ -268,7 +268,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     return data
   }
 
-  static async findOrFail(id: number): Promise<ManufacturerModel> {
+  static async findOrFail(id: number): Promise<ManufacturerModel | undefined> {
     const instance = new ManufacturerModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -280,12 +280,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ManufacturerModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ManufacturerModel(modelItem)))
   }
 
   static skip(count: number): ManufacturerModel {

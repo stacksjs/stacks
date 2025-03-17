@@ -234,7 +234,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     return data
   }
 
-  static async findOrFail(id: number): Promise<ReleaseModel> {
+  static async findOrFail(id: number): Promise<ReleaseModel | undefined> {
     const instance = new ReleaseModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -246,12 +246,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ReleaseModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ReleaseModel(modelItem)))
   }
 
   static skip(count: number): ReleaseModel {

@@ -5,8 +5,6 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import User from './User'
-
 export interface SubscriptionsTable {
   id: Generated<number>
   user_id: number
@@ -329,7 +327,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return data
   }
 
-  static async findOrFail(id: number): Promise<SubscriptionModel> {
+  static async findOrFail(id: number): Promise<SubscriptionModel | undefined> {
     const instance = new SubscriptionModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -341,12 +339,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriptionModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<SubscriptionModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new SubscriptionModel(modelItem)))
   }
 
   static skip(count: number): SubscriptionModel {

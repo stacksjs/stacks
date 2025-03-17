@@ -5,8 +5,6 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import User from './User'
-
 export interface DeploymentsTable {
   id: Generated<number>
   user_id: number
@@ -302,7 +300,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return data
   }
 
-  static async findOrFail(id: number): Promise<DeploymentModel> {
+  static async findOrFail(id: number): Promise<DeploymentModel | undefined> {
     const instance = new DeploymentModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -314,12 +312,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new DeploymentModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<DeploymentModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new DeploymentModel(modelItem)))
   }
 
   static skip(count: number): DeploymentModel {

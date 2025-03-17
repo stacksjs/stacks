@@ -8,8 +8,6 @@ import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Customer from './Customer'
-
 export interface GiftCardsTable {
   id: Generated<number>
   customer_id: number
@@ -381,7 +379,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return data
   }
 
-  static async findOrFail(id: number): Promise<GiftCardModel> {
+  static async findOrFail(id: number): Promise<GiftCardModel | undefined> {
     const instance = new GiftCardModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -393,12 +391,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<GiftCardModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new GiftCardModel(modelItem)))
   }
 
   static skip(count: number): GiftCardModel {

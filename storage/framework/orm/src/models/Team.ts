@@ -4,8 +4,6 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import User from './User'
-
 export interface TeamsTable {
   id: Generated<number>
   name: string
@@ -296,7 +294,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     return data
   }
 
-  static async findOrFail(id: number): Promise<TeamModel> {
+  static async findOrFail(id: number): Promise<TeamModel | undefined> {
     const instance = new TeamModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -308,12 +306,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<TeamModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new TeamModel(modelItem)))
   }
 
   static skip(count: number): TeamModel {

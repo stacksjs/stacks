@@ -120,10 +120,8 @@ export async function generateModelString(
 
   const relations = await getRelations(model, modelName)
 
-  for (const relationInstance of relations) {
-    relationImports += `import ${relationInstance.model} from './${relationInstance.model}'\n\n`
+  for (const relationInstance of relations)
     relationImports += `import type {${relationInstance.model}Model} from './${relationInstance.model}'\n\n`
-  }
 
   const useTimestamps = model?.traits?.useTimestamps ?? model?.traits?.timestampable ?? true
   const useSoftDeletes = model?.traits?.useSoftDeletes ?? model?.traits?.softDeletable ?? false
@@ -905,10 +903,9 @@ export async function generateModelString(
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
-      import { DB, BaseOrm, SubqueryBuilder } from '@stacksjs/orm'
-      import type { Operator } from '@stacksjs/orm'
+      import { DB, BaseOrm } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
-      import { HttpError, ModelNotFoundException } from '@stacksjs/error-handling'
+      import { HttpError } from '@stacksjs/error-handling'
       import { dispatch } from '@stacksjs/events'
       import { generateTwoFactorSecret } from '@stacksjs/auth'
       import { verifyTwoFactorCode } from '@stacksjs/auth'
@@ -1116,7 +1113,7 @@ export async function generateModelString(
           return data
         }
   
-        static async findOrFail(id: number): Promise<${modelName}Model> {
+        static async findOrFail(id: number): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
           
           return await instance.applyFindOrFail(id)
@@ -1128,12 +1125,6 @@ export async function generateModelString(
           const models = await instance.applyFindMany(ids)
 
           return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
-        }
-
-        async findMany(ids: number[]): Promise<${modelName}Model[]> {
-          const models = await this.applyFindMany(ids)
-
-          return models.map((modelItem: UserJsonResponse) => this.parseResult(new ${modelName}Model(modelItem)))
         }
 
         static skip(count: number): ${modelName}Model {

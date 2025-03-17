@@ -6,10 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Team from './Team'
-
-import User from './User'
-
 export interface PersonalAccessTokensTable {
   id: Generated<number>
   team_id: number
@@ -332,7 +328,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return data
   }
 
-  static async findOrFail(id: number): Promise<AccessTokenModel> {
+  static async findOrFail(id: number): Promise<AccessTokenModel | undefined> {
     const instance = new AccessTokenModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -344,12 +340,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<AccessTokenModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new AccessTokenModel(modelItem)))
   }
 
   static skip(count: number): AccessTokenModel {

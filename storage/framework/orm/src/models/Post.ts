@@ -4,8 +4,6 @@ import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import User from './User'
-
 export interface PostsTable {
   id: Generated<number>
   user_id: number
@@ -247,7 +245,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     return data
   }
 
-  static async findOrFail(id: number): Promise<PostModel> {
+  static async findOrFail(id: number): Promise<PostModel | undefined> {
     const instance = new PostModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -259,12 +257,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PostModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<PostModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new PostModel(modelItem)))
   }
 
   static skip(count: number): PostModel {

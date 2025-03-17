@@ -298,7 +298,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     return data
   }
 
-  static async findOrFail(id: number): Promise<RequestModel> {
+  static async findOrFail(id: number): Promise<RequestModel | undefined> {
     const instance = new RequestModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -312,12 +312,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<RequestModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new RequestModel(modelItem)))
   }
 
   static skip(count: number): RequestModel {

@@ -6,8 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Order from './Order'
-
 export interface TransactionsTable {
   id: Generated<number>
   order_id: number
@@ -303,7 +301,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return data
   }
 
-  static async findOrFail(id: number): Promise<TransactionModel> {
+  static async findOrFail(id: number): Promise<TransactionModel | undefined> {
     const instance = new TransactionModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -315,12 +313,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<TransactionModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new TransactionModel(modelItem)))
   }
 
   static skip(count: number): TransactionModel {

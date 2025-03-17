@@ -261,7 +261,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     return data
   }
 
-  static async findOrFail(id: number): Promise<ErrorModel> {
+  static async findOrFail(id: number): Promise<ErrorModel | undefined> {
     const instance = new ErrorModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -273,12 +273,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ErrorModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ErrorModel(modelItem)))
   }
 
   static skip(count: number): ErrorModel {

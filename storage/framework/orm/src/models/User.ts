@@ -18,8 +18,6 @@ import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
 
-import Team from './Team'
-
 export interface UsersTable {
   id: Generated<number>
   name: string
@@ -331,7 +329,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     return data
   }
 
-  static async findOrFail(id: number): Promise<UserModel> {
+  static async findOrFail(id: number): Promise<UserModel | undefined> {
     const instance = new UserModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -343,12 +341,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new UserModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<UserModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new UserModel(modelItem)))
   }
 
   static skip(count: number): UserModel {

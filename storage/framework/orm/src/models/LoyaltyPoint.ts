@@ -290,7 +290,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     return data
   }
 
-  static async findOrFail(id: number): Promise<LoyaltyPointModel> {
+  static async findOrFail(id: number): Promise<LoyaltyPointModel | undefined> {
     const instance = new LoyaltyPointModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -302,12 +302,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyPointModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<LoyaltyPointModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new LoyaltyPointModel(modelItem)))
   }
 
   static skip(count: number): LoyaltyPointModel {

@@ -8,10 +8,6 @@ import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Manufacturer from './Manufacturer'
-
-import ProductCategory from './ProductCategory'
-
 export interface ProductsTable {
   id: Generated<number>
   product_category_id: number
@@ -343,7 +339,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return data
   }
 
-  static async findOrFail(id: number): Promise<ProductModel> {
+  static async findOrFail(id: number): Promise<ProductModel | undefined> {
     const instance = new ProductModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -355,12 +351,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<ProductModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new ProductModel(modelItem)))
   }
 
   static skip(count: number): ProductModel {

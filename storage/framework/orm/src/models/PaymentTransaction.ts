@@ -7,10 +7,6 @@ import { HttpError } from '@stacksjs/error-handling'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import PaymentMethod from './PaymentMethod'
-
-import User from './User'
-
 export interface PaymentTransactionsTable {
   id: Generated<number>
   user_id: number
@@ -297,7 +293,7 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     return data
   }
 
-  static async findOrFail(id: number): Promise<PaymentTransactionModel> {
+  static async findOrFail(id: number): Promise<PaymentTransactionModel | undefined> {
     const instance = new PaymentTransactionModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -309,12 +305,6 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PaymentTransactionModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<PaymentTransactionModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new PaymentTransactionModel(modelItem)))
   }
 
   static skip(count: number): PaymentTransactionModel {

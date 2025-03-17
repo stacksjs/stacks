@@ -8,8 +8,6 @@ import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import User from './User'
-
 export interface CustomersTable {
   id: Generated<number>
   user_id: number
@@ -317,7 +315,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return data
   }
 
-  static async findOrFail(id: number): Promise<CustomerModel> {
+  static async findOrFail(id: number): Promise<CustomerModel | undefined> {
     const instance = new CustomerModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -329,12 +327,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new CustomerModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<CustomerModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new CustomerModel(modelItem)))
   }
 
   static skip(count: number): CustomerModel {

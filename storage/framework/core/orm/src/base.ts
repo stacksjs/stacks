@@ -100,9 +100,6 @@ export class BaseOrm<T, C, J> {
     query = query.selectAll()
 
     // TODO: Properly implement soft deletes
-    // if (this.childClass.hasSelect) {
-    //   query = query.where('deleted_at', 'is', null)
-    // }
 
     const models = await query.execute()
 

@@ -261,7 +261,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     return data
   }
 
-  static async findOrFail(id: number): Promise<JobModel> {
+  static async findOrFail(id: number): Promise<JobModel | undefined> {
     const instance = new JobModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -273,12 +273,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new JobModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<JobModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new JobModel(modelItem)))
   }
 
   static skip(count: number): JobModel {

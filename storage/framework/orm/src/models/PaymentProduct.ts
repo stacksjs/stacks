@@ -289,7 +289,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return data
   }
 
-  static async findOrFail(id: number): Promise<PaymentProductModel> {
+  static async findOrFail(id: number): Promise<PaymentProductModel | undefined> {
     const instance = new PaymentProductModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -301,12 +301,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PaymentProductModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<PaymentProductModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new PaymentProductModel(modelItem)))
   }
 
   static skip(count: number): PaymentProductModel {

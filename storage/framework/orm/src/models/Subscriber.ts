@@ -225,7 +225,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     return data
   }
 
-  static async findOrFail(id: number): Promise<SubscriberModel> {
+  static async findOrFail(id: number): Promise<SubscriberModel | undefined> {
     const instance = new SubscriberModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -237,12 +237,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriberModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<SubscriberModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new SubscriberModel(modelItem)))
   }
 
   static skip(count: number): SubscriberModel {

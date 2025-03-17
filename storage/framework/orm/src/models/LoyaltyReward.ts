@@ -6,8 +6,6 @@ import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
-import Product from './Product'
-
 export interface LoyaltyRewardsTable {
   id: Generated<number>
   product_id: number
@@ -321,7 +319,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     return data
   }
 
-  static async findOrFail(id: number): Promise<LoyaltyRewardModel> {
+  static async findOrFail(id: number): Promise<LoyaltyRewardModel | undefined> {
     const instance = new LoyaltyRewardModel(undefined)
 
     return await instance.applyFindOrFail(id)
@@ -333,12 +331,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     const models = await instance.applyFindMany(ids)
 
     return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
-  }
-
-  async findMany(ids: number[]): Promise<LoyaltyRewardModel[]> {
-    const models = await this.applyFindMany(ids)
-
-    return models.map((modelItem: UserJsonResponse) => this.parseResult(new LoyaltyRewardModel(modelItem)))
   }
 
   static skip(count: number): LoyaltyRewardModel {
