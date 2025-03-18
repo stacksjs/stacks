@@ -10,6 +10,7 @@ export interface SubscriptionsTable {
   id: Generated<number>
   user_id: number
   type: string
+  plan?: string
   provider_id: string
   provider_status: string
   unit_price?: number
@@ -46,7 +47,7 @@ export type SubscriptionUpdate = Updateable<SubscriptionsTable>
 
 export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsTable, SubscriptionJsonResponse> {
   private readonly hidden: Array<keyof SubscriptionJsonResponse> = []
-  private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
+  private readonly fillable: Array<keyof SubscriptionJsonResponse> = ['type', 'plan', 'provider_id', 'provider_status', 'unit_price', 'provider_type', 'provider_price_id', 'quantity', 'trial_ends_at', 'ends_at', 'last_used_at', 'uuid', 'user_id']
   private readonly guarded: Array<keyof SubscriptionJsonResponse> = []
   protected attributes = {} as SubscriptionJsonResponse
   protected originalAttributes = {} as SubscriptionJsonResponse
@@ -193,6 +194,10 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return this.attributes.type
   }
 
+  get plan(): string | undefined {
+    return this.attributes.plan
+  }
+
   get provider_id(): string {
     return this.attributes.provider_id
   }
@@ -243,6 +248,10 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
   set type(value: string) {
     this.attributes.type = value
+  }
+
+  set plan(value: string) {
+    this.attributes.plan = value
   }
 
   set provider_id(value: string) {
@@ -817,6 +826,14 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return instance
   }
 
+  static wherePlan(value: string): SubscriptionModel {
+    const instance = new SubscriptionModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('plan', '=', value)
+
+    return instance
+  }
+
   static whereProviderId(value: string): SubscriptionModel {
     const instance = new SubscriptionModel(undefined)
 
@@ -928,6 +945,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
       id: this.id,
       type: this.type,
+      plan: this.plan,
       provider_id: this.provider_id,
       provider_status: this.provider_status,
       unit_price: this.unit_price,
@@ -1012,6 +1030,13 @@ export async function remove(id: number): Promise<void> {
 
 export async function whereType(value: string): Promise<SubscriptionModel[]> {
   const query = DB.instance.selectFrom('subscriptions').where('type', '=', value)
+  const results: SubscriptionJsonResponse = await query.execute()
+
+  return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))
+}
+
+export async function wherePlan(value: string): Promise<SubscriptionModel[]> {
+  const query = DB.instance.selectFrom('subscriptions').where('plan', '=', value)
   const results: SubscriptionJsonResponse = await query.execute()
 
   return results.map((modelItem: SubscriptionJsonResponse) => new SubscriptionModel(modelItem))

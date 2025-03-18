@@ -14,6 +14,7 @@ interface CustomAttributes {
 interface RequestDataSubscription {
   id: number
   type: string
+  plan: string
   provider_id: string
   provider_status: string
   unit_price: number
@@ -30,6 +31,7 @@ interface RequestDataSubscription {
 export class SubscriptionRequest extends Request<RequestDataSubscription> implements SubscriptionRequestType {
   public id = 1
   public type = ''
+  public plan = ''
   public provider_id = ''
   public provider_status = ''
   public unit_price = 0

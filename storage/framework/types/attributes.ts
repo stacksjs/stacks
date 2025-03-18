@@ -140,6 +140,7 @@ export interface Attributes {
   attempts: number
   available_at: number
   reserved_at: Date | string
+  plan: string
   provider_status: string
   unit_price: number
   provider_type: string

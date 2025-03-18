@@ -867,6 +867,7 @@ export interface JobRequestType extends Request {
 interface RequestDataSubscription {
   id: number
   type: string
+  plan: string
   provider_id: string
   provider_status: string
   unit_price: number
@@ -886,6 +887,7 @@ export interface SubscriptionRequestType extends Request {
   all: () => RequestDataSubscription
   id: number
   type: string
+  plan: string
   provider_id: string
   provider_status: string
   unit_price: number

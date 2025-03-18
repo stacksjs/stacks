@@ -25,6 +25,19 @@ export default {
       factory: faker => faker.lorem.lines(1),
     },
 
+    plan: {
+      fillable: true,
+      validation: {
+        rule: schema.string().maxLength(100),
+        message: {
+          string: 'plan must be a string',
+          required: 'plan is required',
+          maxLength: 'plan must have a maximum of 100 characters',
+        },
+      },
+      factory: faker => faker.helpers.arrayElement(['free', 'starter', 'pro', 'enterprise']),
+    },
+
     providerId: {
       required: true,
       unique: true,
