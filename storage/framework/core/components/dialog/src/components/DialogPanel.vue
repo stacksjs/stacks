@@ -1,11 +1,13 @@
+<script setup lang="ts">
+defineProps<{
+  class?: string
+}>()
+</script>
+
 <template>
-  <div class="z-60 overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl sm:my-8 sm:max-w-lg sm:w-full sm:p-6" @click.stop>
+  <div class="p-4 bg-white rounded-lg"  @click.stop>
     <slot>
       <p>Default modal content goes here.</p>
     </slot>
   </div>
 </template>
-
-<style scoped>
-/* @unocss-placeholder */
-</style>

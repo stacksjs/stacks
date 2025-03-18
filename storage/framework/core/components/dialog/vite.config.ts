@@ -1,6 +1,8 @@
 import type { UserConfig } from 'vite'
 import { resolve } from 'node:path'
 import { alias } from '@stacksjs/alias'
+
+import { path as p } from '@stacksjs/path'
 import Vue from '@vitejs/plugin-vue'
 import CleanCSS from 'clean-css'
 import UnoCSS from 'unocss/vite'
@@ -9,23 +11,26 @@ import Icons from 'unplugin-icons/vite'
 import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 
-const cleanCssInstance = new CleanCSS({})
 function minify(code: string) {
+  const cleanCssInstance = new CleanCSS({})
   return cleanCssInstance.minify(code).styles
 }
 
-let cssCodeStr = ''
-
 export default defineConfig(({ mode }) => {
-  const userConfig: UserConfig = {}
+  let cssCodeStr = ''
+  const userConfig: UserConfig = {
+    optimizeDeps: {
+      exclude: ['@stacksjs/dialog'],
+    },
+  }
 
   const commonPlugins = [
     Vue({
       include: /\.(stx|vue|md)($|\?)/,
     }),
-    UnoCSS({
-      mode: 'global',
-    }),
+
+    UnoCSS(),
+
     Components({
       extensions: ['stx', 'vue', 'md'],
       include: /\.(stx|vue|md)($|\?)/,
@@ -35,6 +40,7 @@ export default defineConfig(({ mode }) => {
         }),
       ],
     }),
+
     Icons(),
   ]
 
@@ -42,8 +48,8 @@ export default defineConfig(({ mode }) => {
     userConfig.build = {
       lib: {
         entry: resolve(__dirname, 'src/index.ts'),
-        name: 'StacksModal',
-        fileName: 'stacks-modal',
+        name: 'stacks-dialog',
+        fileName: 'index',
       },
       outDir: 'dist',
       emptyOutDir: true,
@@ -52,10 +58,6 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         external: ['vue'],
         output: [
-          // {
-          //   format: 'cjs',
-          //   entryFileNames: `stacks-modal.cjs`,
-          // },
           {
             format: 'es',
             entryFileNames: `index.js`,
@@ -86,7 +88,7 @@ export default defineConfig(({ mode }) => {
 
           return {
             code: `\
-            function __insertCSSStacksModal(code) {
+            function __insertCSSStacksDialog(code) {
               if (!code || typeof document == 'undefined') return
               let head = document.head || document.getElementsByTagName('head')[0]
               let style = document.createElement('style')
@@ -94,7 +96,7 @@ export default defineConfig(({ mode }) => {
               head.appendChild(style)
               ;style.styleSheet ? (style.styleSheet.cssText = code) : style.appendChild(document.createTextNode(code))
             }\n
-            __insertCSSStacksModal(${JSON.stringify(cssCodeStr)})
+            __insertCSSStacksDialog(${JSON.stringify(cssCodeStr)})
             \n ${code}`,
             map: { mappings: '' },
           }
@@ -105,7 +107,13 @@ export default defineConfig(({ mode }) => {
 
   return {
     resolve: {
-      alias,
+      '~/.env': p.projectConfigPath('env.ts'),
+      '~/config/errors': p.projectConfigPath('errors.ts'),
+
+      ...alias,
+    },
+    server: {
+      port: 3007,
     },
     plugins: [...commonPlugins],
     ...userConfig,
