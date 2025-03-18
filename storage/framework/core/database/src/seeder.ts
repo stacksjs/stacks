@@ -181,7 +181,9 @@ export async function seed(): Promise<void> {
   const coreModelsDir = path.storagePath('framework/defaults/models')
 
   // Use glob to find all .ts files recursively in core models
-  const coreModelFiles = globSync(`${coreModelsDir}**/*.ts`, { absolute: true })
+  const coreModelFiles = globSync(`${coreModelsDir}/**/*.ts`, { absolute: true })
+
+  console.log(coreModelFiles)
 
   // Original user models seeding
   const modelFiles = fs.readdirSync(modelsDir).filter(file => file.endsWith('.ts'))
