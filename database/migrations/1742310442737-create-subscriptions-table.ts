@@ -7,6 +7,7 @@ export async function up(db: Database<any>) {
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
     .addColumn('type', 'text', col => col.notNull())
+    .addColumn('plan', 'text')
     .addColumn('provider_id', 'text', col => col.unique().notNull())
     .addColumn('provider_status', 'text', col => col.notNull())
     .addColumn('unit_price', 'numeric')
@@ -16,8 +17,9 @@ export async function up(db: Database<any>) {
     .addColumn('trial_ends_at', 'text')
     .addColumn('ends_at', 'text')
     .addColumn('last_used_at', 'text')
-    .addColumn('user_id', 'integer', col =>
-      col.references('users.id').onDelete('cascade'))
+    .addColumn('user_id', 'integer', (col) =>
+        col.references('users.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
