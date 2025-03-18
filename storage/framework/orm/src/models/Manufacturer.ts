@@ -291,7 +291,7 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
+    return models.map((modelItem: ManufacturerJsonResponse) => instance.parseResult(new ManufacturerModel(modelItem)))
   }
 
   static async latest(column: keyof ManufacturersTable = 'created_at'): Promise<ManufacturerModel | undefined> {

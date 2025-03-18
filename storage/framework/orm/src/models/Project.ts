@@ -275,7 +275,7 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
+    return models.map((modelItem: ProjectJsonResponse) => instance.parseResult(new ProjectModel(modelItem)))
   }
 
   static async latest(column: keyof ProjectsTable = 'created_at'): Promise<ProjectModel | undefined> {

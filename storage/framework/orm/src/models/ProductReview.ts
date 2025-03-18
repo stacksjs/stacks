@@ -353,7 +353,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductReviewModel(modelItem)))
+    return models.map((modelItem: ProductReviewJsonResponse) => instance.parseResult(new ProductReviewModel(modelItem)))
   }
 
   static async latest(column: keyof ProductReviewsTable = 'created_at'): Promise<ProductReviewModel | undefined> {

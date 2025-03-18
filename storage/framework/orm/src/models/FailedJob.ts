@@ -284,7 +284,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new FailedJobModel(modelItem)))
+    return models.map((modelItem: FailedJobJsonResponse) => instance.parseResult(new FailedJobModel(modelItem)))
   }
 
   static async latest(column: keyof FailedJobsTable = 'created_at'): Promise<FailedJobModel | undefined> {

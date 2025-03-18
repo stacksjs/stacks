@@ -248,7 +248,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new SubscriberModel(modelItem)))
+    return models.map((modelItem: SubscriberJsonResponse) => instance.parseResult(new SubscriberModel(modelItem)))
   }
 
   static async latest(column: keyof SubscribersTable = 'created_at'): Promise<SubscriberModel | undefined> {

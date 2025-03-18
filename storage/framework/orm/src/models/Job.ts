@@ -284,7 +284,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new JobModel(modelItem)))
+    return models.map((modelItem: JobJsonResponse) => instance.parseResult(new JobModel(modelItem)))
   }
 
   static async latest(column: keyof JobsTable = 'created_at'): Promise<JobModel | undefined> {

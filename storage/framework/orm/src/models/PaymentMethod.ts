@@ -329,7 +329,7 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PaymentMethodModel(modelItem)))
+    return models.map((modelItem: PaymentMethodJsonResponse) => instance.parseResult(new PaymentMethodModel(modelItem)))
   }
 
   static async latest(column: keyof PaymentMethodsTable = 'created_at'): Promise<PaymentMethodModel | undefined> {

@@ -257,7 +257,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
+    return models.map((modelItem: ReleaseJsonResponse) => instance.parseResult(new ReleaseModel(modelItem)))
   }
 
   static async latest(column: keyof ReleasesTable = 'created_at'): Promise<ReleaseModel | undefined> {

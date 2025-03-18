@@ -1135,7 +1135,7 @@ export async function generateModelString(
            ${instanceSoftDeleteStatements}
           const models = await instance.applyFindMany(ids)
 
-          return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
+          return models.map((modelItem: ${modelName}JsonResponse) => instance.parseResult(new ${modelName}Model(modelItem)))
         }
 
         static async latest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {

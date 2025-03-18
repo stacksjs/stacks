@@ -342,7 +342,7 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
+    return models.map((modelItem: LoyaltyRewardJsonResponse) => instance.parseResult(new LoyaltyRewardModel(modelItem)))
   }
 
   static async latest(column: keyof LoyaltyRewardsTable = 'created_at'): Promise<LoyaltyRewardModel | undefined> {

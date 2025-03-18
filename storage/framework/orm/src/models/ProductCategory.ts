@@ -309,7 +309,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ProductCategoryModel(modelItem)))
+    return models.map((modelItem: ProductCategoryJsonResponse) => instance.parseResult(new ProductCategoryModel(modelItem)))
   }
 
   static async latest(column: keyof ProductCategoriesTable = 'created_at'): Promise<ProductCategoryModel | undefined> {

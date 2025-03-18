@@ -284,7 +284,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
+    return models.map((modelItem: ErrorJsonResponse) => instance.parseResult(new ErrorModel(modelItem)))
   }
 
   static async latest(column: keyof ErrorsTable = 'created_at'): Promise<ErrorModel | undefined> {

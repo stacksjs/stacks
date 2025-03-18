@@ -402,7 +402,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
+    return models.map((modelItem: GiftCardJsonResponse) => instance.parseResult(new GiftCardModel(modelItem)))
   }
 
   static async latest(column: keyof GiftCardsTable = 'created_at'): Promise<GiftCardModel | undefined> {

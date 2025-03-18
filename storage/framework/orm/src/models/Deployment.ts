@@ -323,7 +323,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new DeploymentModel(modelItem)))
+    return models.map((modelItem: DeploymentJsonResponse) => instance.parseResult(new DeploymentModel(modelItem)))
   }
 
   static async latest(column: keyof DeploymentsTable = 'created_at'): Promise<DeploymentModel | undefined> {

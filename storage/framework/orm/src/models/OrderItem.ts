@@ -288,7 +288,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new OrderItemModel(modelItem)))
+    return models.map((modelItem: OrderItemJsonResponse) => instance.parseResult(new OrderItemModel(modelItem)))
   }
 
   static async latest(column: keyof OrderItemsTable = 'created_at'): Promise<OrderItemModel | undefined> {

@@ -351,7 +351,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
+    return models.map((modelItem: AccessTokenJsonResponse) => instance.parseResult(new AccessTokenModel(modelItem)))
   }
 
   static async latest(column: keyof PersonalAccessTokensTable = 'created_at'): Promise<AccessTokenModel | undefined> {

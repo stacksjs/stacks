@@ -393,7 +393,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
+    return models.map((modelItem: CouponJsonResponse) => instance.parseResult(new CouponModel(modelItem)))
   }
 
   static async latest(column: keyof CouponsTable = 'created_at'): Promise<CouponModel | undefined> {

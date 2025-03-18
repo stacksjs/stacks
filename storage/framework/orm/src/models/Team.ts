@@ -317,7 +317,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
+    return models.map((modelItem: TeamJsonResponse) => instance.parseResult(new TeamModel(modelItem)))
   }
 
   static async latest(column: keyof TeamsTable = 'created_at'): Promise<TeamModel | undefined> {

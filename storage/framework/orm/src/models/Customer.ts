@@ -338,7 +338,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new CustomerModel(modelItem)))
+    return models.map((modelItem: CustomerJsonResponse) => instance.parseResult(new CustomerModel(modelItem)))
   }
 
   static async latest(column: keyof CustomersTable = 'created_at'): Promise<CustomerModel | undefined> {

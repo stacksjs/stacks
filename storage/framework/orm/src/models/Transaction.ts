@@ -324,7 +324,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
+    return models.map((modelItem: TransactionJsonResponse) => instance.parseResult(new TransactionModel(modelItem)))
   }
 
   static async latest(column: keyof TransactionsTable = 'created_at'): Promise<TransactionModel | undefined> {

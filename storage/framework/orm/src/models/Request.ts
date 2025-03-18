@@ -323,7 +323,7 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     }
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
+    return models.map((modelItem: RequestJsonResponse) => instance.parseResult(new RequestModel(modelItem)))
   }
 
   static async latest(column: keyof RequestsTable = 'created_at'): Promise<RequestModel | undefined> {

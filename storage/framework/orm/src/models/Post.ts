@@ -268,7 +268,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     const models = await instance.applyFindMany(ids)
 
-    return models.map((modelItem: UserJsonResponse) => instance.parseResult(new PostModel(modelItem)))
+    return models.map((modelItem: PostJsonResponse) => instance.parseResult(new PostModel(modelItem)))
   }
 
   static async latest(column: keyof PostsTable = 'created_at'): Promise<PostModel | undefined> {
