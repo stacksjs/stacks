@@ -320,9 +320,15 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
   // Method to find a Order by ID
   static async find(id: number): Promise<OrderModel | undefined> {
-    const instance = new OrderModel(undefined)
+    const query = DB.instance.selectFrom('orders').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new OrderModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<OrderModel | undefined> {
@@ -553,7 +559,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     const results = await instance.applyGet()
 
-    return results.map((item: OrderJsonResponse) => new OrderModel(item))
+    return results.map((item: OrderJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof OrderModel>(field: K): Promise<OrderModel[K][]> {
@@ -566,7 +572,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const instance = new OrderModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: OrderJsonResponse) => new OrderModel(item))
+      const modelInstances = models.map((item: OrderJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -585,10 +591,15 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: OrderJsonResponse) => new OrderModel(item)),
+      data: result.data.map((item: OrderJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: OrderJsonResponse): OrderModel {
+    return new OrderModel(data)
   }
 
   async applyCreate(newOrder: NewOrder): Promise<OrderModel> {
@@ -606,12 +617,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as OrderModel
+    const modelData = await DB.instance.selectFrom('orders')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Order')
+    }
 
     if (model)
       dispatch('order:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newOrder: NewOrder): Promise<OrderModel> {
@@ -620,7 +637,6 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
   static async create(newOrder: NewOrder): Promise<OrderModel> {
     const instance = new OrderModel(undefined)
-
     return await instance.applyCreate(newOrder)
   }
 
@@ -637,7 +653,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new OrderModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -659,7 +675,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new OrderModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as OrderUpdate)
       return model
     }
@@ -684,12 +700,19 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('orders')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Order')
+      }
 
       if (model)
         dispatch('order:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -704,12 +727,19 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('orders')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Order')
+      }
+
+      if (this)
         dispatch('order:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -724,11 +754,19 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as OrderModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('orders')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Order')
+      }
+
       if (this)
         dispatch('order:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -736,11 +774,19 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
         .values(this.attributes as NewOrder)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as OrderModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('orders')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Order')
+      }
+
       if (this)
         dispatch('order:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -769,12 +815,20 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .values(newOrder)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as OrderModel
+    const instance = new OrderModel(undefined)
+    const modelData = await DB.instance.selectFrom('orders')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Order')
+    }
 
     if (model)
       dispatch('order:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Order
@@ -991,9 +1045,27 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<OrderModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<OrderModel | undefined> {
+export async function find(id: number): Promise<OrderModel | undefined> {
   const query = DB.instance.selectFrom('orders').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1001,7 +1073,8 @@ async function find(id: number): Promise<OrderModel | undefined> {
   if (!model)
     return undefined
 
-  return new OrderModel(model)
+  const instance = new OrderModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -1011,11 +1084,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newOrder: NewOrder): Promise<OrderModel> {
-  const result = await DB.instance.insertInto('orders')
-    .values(newOrder)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as OrderModel
+  const instance = new OrderModel(undefined)
+  return await instance.applyCreate(newOrder)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

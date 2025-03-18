@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface JobsTable {
@@ -227,9 +228,15 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
   // Method to find a Job by ID
   static async find(id: number): Promise<JobModel | undefined> {
-    const instance = new JobModel(undefined)
+    const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new JobModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<JobModel | undefined> {
@@ -460,7 +467,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     const results = await instance.applyGet()
 
-    return results.map((item: JobJsonResponse) => new JobModel(item))
+    return results.map((item: JobJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof JobModel>(field: K): Promise<JobModel[K][]> {
@@ -473,7 +480,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const instance = new JobModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: JobJsonResponse) => new JobModel(item))
+      const modelInstances = models.map((item: JobJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -492,10 +499,15 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: JobJsonResponse) => new JobModel(item)),
+      data: result.data.map((item: JobJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: JobJsonResponse): JobModel {
+    return new JobModel(data)
   }
 
   async applyCreate(newJob: NewJob): Promise<JobModel> {
@@ -511,9 +523,16 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+    const modelData = await DB.instance.selectFrom('jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Job')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newJob: NewJob): Promise<JobModel> {
@@ -522,7 +541,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
   static async create(newJob: NewJob): Promise<JobModel> {
     const instance = new JobModel(undefined)
-
     return await instance.applyCreate(newJob)
   }
 
@@ -539,7 +557,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new JobModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -561,7 +579,7 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new JobModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as JobUpdate)
       return model
     }
@@ -586,9 +604,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -603,9 +629,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -620,9 +654,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as JobModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Job')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -630,9 +672,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
         .values(this.attributes as NewJob)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('jobs')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Job')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -659,9 +709,17 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
       .values(newJob)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+    const instance = new JobModel(undefined)
+    const modelData = await DB.instance.selectFrom('jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Job')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Job
@@ -767,9 +825,27 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<JobModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<JobModel | undefined> {
+export async function find(id: number): Promise<JobModel | undefined> {
   const query = DB.instance.selectFrom('jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -777,7 +853,8 @@ async function find(id: number): Promise<JobModel | undefined> {
   if (!model)
     return undefined
 
-  return new JobModel(model)
+  const instance = new JobModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -787,11 +864,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newJob: NewJob): Promise<JobModel> {
-  const result = await DB.instance.insertInto('jobs')
-    .values(newJob)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as JobModel
+  const instance = new JobModel(undefined)
+  return await instance.applyCreate(newJob)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

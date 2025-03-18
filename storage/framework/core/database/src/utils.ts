@@ -1,41 +1,26 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
+// Import config directly, but gracefully handle potential issues
+import * as config from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
+
 import { Pool } from 'pg'
 
-// Get config values safely
+// Simple functions with defensive defaults in case the imports failed
 function getEnv(): string {
-  try {
-    // Use dynamic import to avoid initialization issues
-    const { app } = require('@stacksjs/config')
-    return app?.env || 'local'
-  } catch (error) {
-    return 'local'
-  }
+  return config?.app?.env || 'local'
 }
 
 function getDriver(): string {
-  try {
-    // Use dynamic import to avoid initialization issues
-    const { database } = require('@stacksjs/config')
-    return database?.default || 'sqlite'
-  } catch (error) {
-    return 'sqlite'
-  }
+  return config?.database?.default || 'sqlite'
 }
 
-// Helper to safely get database config
 function getDatabaseConfig() {
-  try {
-    const { database } = require('@stacksjs/config')
-    return database
-  } catch (error) {
-    return { connections: {} }
-  }
+  return config?.database || { connections: {} }
 }
 
 export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {
@@ -58,7 +43,7 @@ export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect 
   if (driver === 'mysql') {
     return new MysqlDialect({
       pool: createPool({
-        database: database.connections?.mysql?.name || 'stacks', // Use modified dbName
+        database: database.connections?.mysql?.name || 'stacks',
         host: database.connections?.mysql?.host ?? '127.0.0.1',
         user: database.connections?.mysql?.username ?? 'root',
         password: database.connections?.mysql?.password ?? '',
@@ -68,12 +53,12 @@ export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect 
   }
 
   if (driver === 'postgres') {
-    const pgDbName = database.connections?.postgres?.name ?? 'stacks' // Default Postgres database name
-    const finalPgDbName = appEnv === 'testing' ? `${pgDbName}_testing` : pgDbName // Modify if testing
+    const pgDbName = database.connections?.postgres?.name ?? 'stacks'
+    const finalPgDbName = appEnv === 'testing' ? `${pgDbName}_testing` : pgDbName
 
     return new PostgresDialect({
       pool: new Pool({
-        database: finalPgDbName, // Use modified pgDbName
+        database: finalPgDbName,
         host: database.connections?.postgres?.host ?? '127.0.0.1',
         user: database.connections?.postgres?.username ?? '',
         password: database.connections?.postgres?.password ?? '',
@@ -90,4 +75,3 @@ export const now: RawBuilder<any> = sql`now()`
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 })
-  

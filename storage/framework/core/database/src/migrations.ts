@@ -9,7 +9,6 @@ import { FileMigrationProvider, Migrator } from 'kysely'
 import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { db } from './utils'
 
-
 function getDriver(): string {
   return database.default || ''
 }

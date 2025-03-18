@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface ErrorsTable {
@@ -227,9 +228,15 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
   // Method to find a Error by ID
   static async find(id: number): Promise<ErrorModel | undefined> {
-    const instance = new ErrorModel(undefined)
+    const query = DB.instance.selectFrom('errors').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ErrorModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ErrorModel | undefined> {
@@ -460,7 +467,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
     const results = await instance.applyGet()
 
-    return results.map((item: ErrorJsonResponse) => new ErrorModel(item))
+    return results.map((item: ErrorJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof ErrorModel>(field: K): Promise<ErrorModel[K][]> {
@@ -473,7 +480,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const instance = new ErrorModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: ErrorJsonResponse) => new ErrorModel(item))
+      const modelInstances = models.map((item: ErrorJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -492,10 +499,15 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: ErrorJsonResponse) => new ErrorModel(item)),
+      data: result.data.map((item: ErrorJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: ErrorJsonResponse): ErrorModel {
+    return new ErrorModel(data)
   }
 
   async applyCreate(newError: NewError): Promise<ErrorModel> {
@@ -511,9 +523,16 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+    const modelData = await DB.instance.selectFrom('errors')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Error')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newError: NewError): Promise<ErrorModel> {
@@ -522,7 +541,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
   static async create(newError: NewError): Promise<ErrorModel> {
     const instance = new ErrorModel(undefined)
-
     return await instance.applyCreate(newError)
   }
 
@@ -539,7 +557,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new ErrorModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -561,7 +579,7 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new ErrorModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as ErrorUpdate)
       return model
     }
@@ -586,9 +604,17 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('errors')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Error')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -603,9 +629,17 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('errors')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Error')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -620,9 +654,17 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as ErrorModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('errors')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Error')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -630,9 +672,17 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
         .values(this.attributes as NewError)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('errors')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Error')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -659,9 +709,17 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
       .values(newError)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+    const instance = new ErrorModel(undefined)
+    const modelData = await DB.instance.selectFrom('errors')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Error')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Error
@@ -767,9 +825,27 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ErrorModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ErrorModel | undefined> {
+export async function find(id: number): Promise<ErrorModel | undefined> {
   const query = DB.instance.selectFrom('errors').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -777,7 +853,8 @@ async function find(id: number): Promise<ErrorModel | undefined> {
   if (!model)
     return undefined
 
-  return new ErrorModel(model)
+  const instance = new ErrorModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -787,11 +864,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newError: NewError): Promise<ErrorModel> {
-  const result = await DB.instance.insertInto('errors')
-    .values(newError)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ErrorModel
+  const instance = new ErrorModel(undefined)
+  return await instance.applyCreate(newError)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

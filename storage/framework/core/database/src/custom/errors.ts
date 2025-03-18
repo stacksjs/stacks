@@ -3,7 +3,6 @@ import { database } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { hasTableBeenMigrated } from '../drivers'
 
-
 export async function createErrorsTable(): Promise<void> {
   if (['sqlite', 'mysql'].includes(getDriver())) {
     const hasBeenMigrated = await hasTableBeenMigrated('errors')

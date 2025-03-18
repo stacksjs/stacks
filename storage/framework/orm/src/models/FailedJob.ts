@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface FailedJobsTable {
@@ -227,9 +228,15 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
   // Method to find a FailedJob by ID
   static async find(id: number): Promise<FailedJobModel | undefined> {
-    const instance = new FailedJobModel(undefined)
+    const query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new FailedJobModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<FailedJobModel | undefined> {
@@ -460,7 +467,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     const results = await instance.applyGet()
 
-    return results.map((item: FailedJobJsonResponse) => new FailedJobModel(item))
+    return results.map((item: FailedJobJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof FailedJobModel>(field: K): Promise<FailedJobModel[K][]> {
@@ -473,7 +480,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const instance = new FailedJobModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: FailedJobJsonResponse) => new FailedJobModel(item))
+      const modelInstances = models.map((item: FailedJobJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -492,10 +499,15 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: FailedJobJsonResponse) => new FailedJobModel(item)),
+      data: result.data.map((item: FailedJobJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: FailedJobJsonResponse): FailedJobModel {
+    return new FailedJobModel(data)
   }
 
   async applyCreate(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
@@ -511,9 +523,16 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+    const modelData = await DB.instance.selectFrom('failed_jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created FailedJob')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
@@ -522,7 +541,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
   static async create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
     const instance = new FailedJobModel(undefined)
-
     return await instance.applyCreate(newFailedJob)
   }
 
@@ -539,7 +557,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new FailedJobModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -561,7 +579,7 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new FailedJobModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as FailedJobUpdate)
       return model
     }
@@ -586,9 +604,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('failed_jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated FailedJob')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -603,9 +629,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('failed_jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated FailedJob')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -620,9 +654,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as FailedJobModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('failed_jobs')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated FailedJob')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -630,9 +672,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
         .values(this.attributes as NewFailedJob)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('failed_jobs')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created FailedJob')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -659,9 +709,17 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
       .values(newFailedJob)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+    const instance = new FailedJobModel(undefined)
+    const modelData = await DB.instance.selectFrom('failed_jobs')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created FailedJob')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a FailedJob
@@ -767,9 +825,27 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<FailedJobModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<FailedJobModel | undefined> {
+export async function find(id: number): Promise<FailedJobModel | undefined> {
   const query = DB.instance.selectFrom('failed_jobs').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -777,7 +853,8 @@ async function find(id: number): Promise<FailedJobModel | undefined> {
   if (!model)
     return undefined
 
-  return new FailedJobModel(model)
+  const instance = new FailedJobModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -787,11 +864,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newFailedJob: NewFailedJob): Promise<FailedJobModel> {
-  const result = await DB.instance.insertInto('failed_jobs')
-    .values(newFailedJob)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as FailedJobModel
+  const instance = new FailedJobModel(undefined)
+  return await instance.applyCreate(newFailedJob)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

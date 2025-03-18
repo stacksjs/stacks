@@ -260,9 +260,15 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
   // Method to find a Team by ID
   static async find(id: number): Promise<TeamModel | undefined> {
-    const instance = new TeamModel(undefined)
+    const query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new TeamModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<TeamModel | undefined> {
@@ -493,7 +499,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     const results = await instance.applyGet()
 
-    return results.map((item: TeamJsonResponse) => new TeamModel(item))
+    return results.map((item: TeamJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof TeamModel>(field: K): Promise<TeamModel[K][]> {
@@ -506,7 +512,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const instance = new TeamModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: TeamJsonResponse) => new TeamModel(item))
+      const modelInstances = models.map((item: TeamJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -525,10 +531,15 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: TeamJsonResponse) => new TeamModel(item)),
+      data: result.data.map((item: TeamJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: TeamJsonResponse): TeamModel {
+    return new TeamModel(data)
   }
 
   async applyCreate(newTeam: NewTeam): Promise<TeamModel> {
@@ -544,9 +555,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+    const modelData = await DB.instance.selectFrom('teams')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Team')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newTeam: NewTeam): Promise<TeamModel> {
@@ -555,7 +573,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
   static async create(newTeam: NewTeam): Promise<TeamModel> {
     const instance = new TeamModel(undefined)
-
     return await instance.applyCreate(newTeam)
   }
 
@@ -572,7 +589,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new TeamModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -594,7 +611,7 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new TeamModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as TeamUpdate)
       return model
     }
@@ -619,9 +636,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('teams')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Team')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -636,9 +661,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('teams')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Team')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -653,9 +686,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as TeamModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('teams')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Team')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -663,9 +704,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         .values(this.attributes as NewTeam)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('teams')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Team')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -692,9 +741,17 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .values(newTeam)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+    const instance = new TeamModel(undefined)
+    const modelData = await DB.instance.selectFrom('teams')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Team')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Team
@@ -847,9 +904,27 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<TeamModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<TeamModel | undefined> {
+export async function find(id: number): Promise<TeamModel | undefined> {
   const query = DB.instance.selectFrom('teams').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -857,7 +932,8 @@ async function find(id: number): Promise<TeamModel | undefined> {
   if (!model)
     return undefined
 
-  return new TeamModel(model)
+  const instance = new TeamModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -867,11 +943,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newTeam: NewTeam): Promise<TeamModel> {
-  const result = await DB.instance.insertInto('teams')
-    .values(newTeam)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as TeamModel
+  const instance = new TeamModel(undefined)
+  return await instance.applyCreate(newTeam)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

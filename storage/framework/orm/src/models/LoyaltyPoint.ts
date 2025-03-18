@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -256,9 +257,15 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
   // Method to find a LoyaltyPoint by ID
   static async find(id: number): Promise<LoyaltyPointModel | undefined> {
-    const instance = new LoyaltyPointModel(undefined)
+    const query = DB.instance.selectFrom('loyalty_points').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new LoyaltyPointModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<LoyaltyPointModel | undefined> {
@@ -489,7 +496,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
     const results = await instance.applyGet()
 
-    return results.map((item: LoyaltyPointJsonResponse) => new LoyaltyPointModel(item))
+    return results.map((item: LoyaltyPointJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof LoyaltyPointModel>(field: K): Promise<LoyaltyPointModel[K][]> {
@@ -502,7 +509,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const instance = new LoyaltyPointModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: LoyaltyPointJsonResponse) => new LoyaltyPointModel(item))
+      const modelInstances = models.map((item: LoyaltyPointJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -521,10 +528,15 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: LoyaltyPointJsonResponse) => new LoyaltyPointModel(item)),
+      data: result.data.map((item: LoyaltyPointJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: LoyaltyPointJsonResponse): LoyaltyPointModel {
+    return new LoyaltyPointModel(data)
   }
 
   async applyCreate(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyPointModel> {
@@ -542,12 +554,18 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyPointModel
+    const modelData = await DB.instance.selectFrom('loyalty_points')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created LoyaltyPoint')
+    }
 
     if (model)
       dispatch('loyaltyPoint:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyPointModel> {
@@ -556,7 +574,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
   static async create(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyPointModel> {
     const instance = new LoyaltyPointModel(undefined)
-
     return await instance.applyCreate(newLoyaltyPoint)
   }
 
@@ -573,7 +590,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new LoyaltyPointModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -595,7 +612,7 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new LoyaltyPointModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as LoyaltyPointUpdate)
       return model
     }
@@ -620,12 +637,19 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('loyalty_points')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated LoyaltyPoint')
+      }
 
       if (model)
         dispatch('loyaltyPoint:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -640,12 +664,19 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('loyalty_points')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated LoyaltyPoint')
+      }
+
+      if (this)
         dispatch('loyaltyPoint:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -660,11 +691,19 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as LoyaltyPointModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('loyalty_points')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated LoyaltyPoint')
+      }
+
       if (this)
         dispatch('loyaltyPoint:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -672,11 +711,19 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
         .values(this.attributes as NewLoyaltyPoint)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyPointModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('loyalty_points')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created LoyaltyPoint')
+      }
+
       if (this)
         dispatch('loyaltyPoint:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -705,12 +752,20 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
       .values(newLoyaltyPoint)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyPointModel
+    const instance = new LoyaltyPointModel(undefined)
+    const modelData = await DB.instance.selectFrom('loyalty_points')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created LoyaltyPoint')
+    }
 
     if (model)
       dispatch('loyaltyPoint:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a LoyaltyPoint
@@ -859,9 +914,27 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<LoyaltyPointModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<LoyaltyPointModel | undefined> {
+export async function find(id: number): Promise<LoyaltyPointModel | undefined> {
   const query = DB.instance.selectFrom('loyalty_points').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -869,7 +942,8 @@ async function find(id: number): Promise<LoyaltyPointModel | undefined> {
   if (!model)
     return undefined
 
-  return new LoyaltyPointModel(model)
+  const instance = new LoyaltyPointModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -879,11 +953,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newLoyaltyPoint: NewLoyaltyPoint): Promise<LoyaltyPointModel> {
-  const result = await DB.instance.insertInto('loyalty_points')
-    .values(newLoyaltyPoint)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as LoyaltyPointModel
+  const instance = new LoyaltyPointModel(undefined)
+  return await instance.applyCreate(newLoyaltyPoint)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

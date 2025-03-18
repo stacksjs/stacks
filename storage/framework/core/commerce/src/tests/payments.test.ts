@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, mock } from 'bun:test'
-import { db, sql } from '@stacksjs/database'
-import { fetchPaymentStats, fetchPaymentStatsByMethod, fetchMonthlyPaymentTrends } from '../payments/fetch'
+import { db } from '@stacksjs/database'
+import { bulkDestroy, destroy } from '../payments/destroy'
+import { fetchMonthlyPaymentTrends, fetchPaymentStats, fetchPaymentStatsByMethod } from '../payments/fetch'
 import { store } from '../payments/store'
-import { destroy, bulkDestroy } from '../payments/destroy'
 
 // Mock the database
 mock.module('@stacksjs/database', () => ({
@@ -167,7 +167,7 @@ describe('Payment Module', () => {
           })),
         },
       }))
-      
+
       const methodStats = await fetchPaymentStatsByMethod()
 
       expect(methodStats).toBeDefined()

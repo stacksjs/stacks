@@ -249,9 +249,15 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
   // Method to find a ProductVariant by ID
   static async find(id: number): Promise<ProductVariantModel | undefined> {
-    const instance = new ProductVariantModel(undefined)
+    const query = DB.instance.selectFrom('product_variants').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductVariantModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ProductVariantModel | undefined> {
@@ -482,7 +488,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     const results = await instance.applyGet()
 
-    return results.map((item: ProductVariantJsonResponse) => new ProductVariantModel(item))
+    return results.map((item: ProductVariantJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof ProductVariantModel>(field: K): Promise<ProductVariantModel[K][]> {
@@ -495,7 +501,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const instance = new ProductVariantModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: ProductVariantJsonResponse) => new ProductVariantModel(item))
+      const modelInstances = models.map((item: ProductVariantJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -514,10 +520,15 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: ProductVariantJsonResponse) => new ProductVariantModel(item)),
+      data: result.data.map((item: ProductVariantJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: ProductVariantJsonResponse): ProductVariantModel {
+    return new ProductVariantModel(data)
   }
 
   async applyCreate(newProductVariant: NewProductVariant): Promise<ProductVariantModel> {
@@ -535,12 +546,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductVariantModel
+    const modelData = await DB.instance.selectFrom('product_variants')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created ProductVariant')
+    }
 
     if (model)
       dispatch('productVariant:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newProductVariant: NewProductVariant): Promise<ProductVariantModel> {
@@ -549,7 +566,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
   static async create(newProductVariant: NewProductVariant): Promise<ProductVariantModel> {
     const instance = new ProductVariantModel(undefined)
-
     return await instance.applyCreate(newProductVariant)
   }
 
@@ -566,7 +582,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new ProductVariantModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -588,7 +604,7 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new ProductVariantModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as ProductVariantUpdate)
       return model
     }
@@ -613,12 +629,19 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_variants')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
+      }
 
       if (model)
         dispatch('productVariant:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -633,12 +656,19 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_variants')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
+      }
+
+      if (this)
         dispatch('productVariant:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -653,11 +683,19 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as ProductVariantModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_variants')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
+      }
+
       if (this)
         dispatch('productVariant:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -665,11 +703,19 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
         .values(this.attributes as NewProductVariant)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductVariantModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('product_variants')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created ProductVariant')
+      }
+
       if (this)
         dispatch('productVariant:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -698,12 +744,20 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .values(newProductVariant)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductVariantModel
+    const instance = new ProductVariantModel(undefined)
+    const modelData = await DB.instance.selectFrom('product_variants')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created ProductVariant')
+    }
 
     if (model)
       dispatch('productVariant:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a ProductVariant
@@ -850,9 +904,27 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ProductVariantModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ProductVariantModel | undefined> {
+export async function find(id: number): Promise<ProductVariantModel | undefined> {
   const query = DB.instance.selectFrom('product_variants').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -860,7 +932,8 @@ async function find(id: number): Promise<ProductVariantModel | undefined> {
   if (!model)
     return undefined
 
-  return new ProductVariantModel(model)
+  const instance = new ProductVariantModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -870,11 +943,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProductVariant: NewProductVariant): Promise<ProductVariantModel> {
-  const result = await DB.instance.insertInto('product_variants')
-    .values(newProductVariant)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductVariantModel
+  const instance = new ProductVariantModel(undefined)
+  return await instance.applyCreate(newProductVariant)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

@@ -3,6 +3,7 @@ import type { Operator } from '@stacksjs/orm'
 import type { ProductModel } from './Product'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
@@ -252,9 +253,15 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
   // Method to find a ProductCategory by ID
   static async find(id: number): Promise<ProductCategoryModel | undefined> {
-    const instance = new ProductCategoryModel(undefined)
+    const query = DB.instance.selectFrom('product_categories').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductCategoryModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ProductCategoryModel | undefined> {
@@ -485,7 +492,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     const results = await instance.applyGet()
 
-    return results.map((item: ProductCategoryJsonResponse) => new ProductCategoryModel(item))
+    return results.map((item: ProductCategoryJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof ProductCategoryModel>(field: K): Promise<ProductCategoryModel[K][]> {
@@ -498,7 +505,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const instance = new ProductCategoryModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: ProductCategoryJsonResponse) => new ProductCategoryModel(item))
+      const modelInstances = models.map((item: ProductCategoryJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -517,10 +524,15 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: ProductCategoryJsonResponse) => new ProductCategoryModel(item)),
+      data: result.data.map((item: ProductCategoryJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: ProductCategoryJsonResponse): ProductCategoryModel {
+    return new ProductCategoryModel(data)
   }
 
   async applyCreate(newProductCategory: NewProductCategory): Promise<ProductCategoryModel> {
@@ -538,12 +550,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
+    const modelData = await DB.instance.selectFrom('product_categories')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created ProductCategory')
+    }
 
     if (model)
       dispatch('productCategory:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newProductCategory: NewProductCategory): Promise<ProductCategoryModel> {
@@ -552,7 +570,6 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
   static async create(newProductCategory: NewProductCategory): Promise<ProductCategoryModel> {
     const instance = new ProductCategoryModel(undefined)
-
     return await instance.applyCreate(newProductCategory)
   }
 
@@ -569,7 +586,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new ProductCategoryModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -591,7 +608,7 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new ProductCategoryModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as ProductCategoryUpdate)
       return model
     }
@@ -616,12 +633,19 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_categories')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
+      }
 
       if (model)
         dispatch('productCategory:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -636,12 +660,19 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_categories')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
+      }
+
+      if (this)
         dispatch('productCategory:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -656,11 +687,19 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as ProductCategoryModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('product_categories')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
+      }
+
       if (this)
         dispatch('productCategory:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -668,11 +707,19 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
         .values(this.attributes as NewProductCategory)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('product_categories')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created ProductCategory')
+      }
+
       if (this)
         dispatch('productCategory:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -701,12 +748,20 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .values(newProductCategory)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
+    const instance = new ProductCategoryModel(undefined)
+    const modelData = await DB.instance.selectFrom('product_categories')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created ProductCategory')
+    }
 
     if (model)
       dispatch('productCategory:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a ProductCategory
@@ -846,9 +901,27 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ProductCategoryModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ProductCategoryModel | undefined> {
+export async function find(id: number): Promise<ProductCategoryModel | undefined> {
   const query = DB.instance.selectFrom('product_categories').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -856,7 +929,8 @@ async function find(id: number): Promise<ProductCategoryModel | undefined> {
   if (!model)
     return undefined
 
-  return new ProductCategoryModel(model)
+  const instance = new ProductCategoryModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -866,11 +940,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProductCategory: NewProductCategory): Promise<ProductCategoryModel> {
-  const result = await DB.instance.insertInto('product_categories')
-    .values(newProductCategory)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductCategoryModel
+  const instance = new ProductCategoryModel(undefined)
+  return await instance.applyCreate(newProductCategory)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

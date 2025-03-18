@@ -3,6 +3,7 @@ import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import * as path from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
@@ -104,17 +105,7 @@ interface WriteOptions {
 export async function writeToLogFile(message: string, options?: WriteOptions): Promise<void> {
   const timestamp = new Date().toISOString()
   const formattedMessage = `[${timestamp}] ${message}\n`
-  
-  // Get config using dynamic import
-  let logFile: string;
-  try {
-    const { config } = require('@stacksjs/config')
-    logFile = options?.logFile ?? config?.logging?.logsPath ?? 'storage/logs/stacks.log'
-  } catch (error) {
-    // Fallback if config can't be loaded
-    logFile = options?.logFile ?? 'storage/logs/stacks.log'
-  }
-  
+  const logFile = options?.logFile ?? config.logging.logsPath ?? 'storage/logs/stacks.log'
   const dirPath = dirname(logFile)
 
   if (!fs.existsSync(dirPath)) {

@@ -2,6 +2,7 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface PaymentProductsTable {
@@ -255,9 +256,15 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
   // Method to find a PaymentProduct by ID
   static async find(id: number): Promise<PaymentProductModel | undefined> {
-    const instance = new PaymentProductModel(undefined)
+    const query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PaymentProductModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<PaymentProductModel | undefined> {
@@ -488,7 +495,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     const results = await instance.applyGet()
 
-    return results.map((item: PaymentProductJsonResponse) => new PaymentProductModel(item))
+    return results.map((item: PaymentProductJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof PaymentProductModel>(field: K): Promise<PaymentProductModel[K][]> {
@@ -501,7 +508,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const instance = new PaymentProductModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: PaymentProductJsonResponse) => new PaymentProductModel(item))
+      const modelInstances = models.map((item: PaymentProductJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -520,10 +527,15 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: PaymentProductJsonResponse) => new PaymentProductModel(item)),
+      data: result.data.map((item: PaymentProductJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: PaymentProductJsonResponse): PaymentProductModel {
+    return new PaymentProductModel(data)
   }
 
   async applyCreate(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
@@ -541,9 +553,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentProductModel
+    const modelData = await DB.instance.selectFrom('payment_products')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
@@ -552,7 +571,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
   static async create(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
     const instance = new PaymentProductModel(undefined)
-
     return await instance.applyCreate(newPaymentProduct)
   }
 
@@ -569,7 +587,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new PaymentProductModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -591,7 +609,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new PaymentProductModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as PaymentProductUpdate)
       return model
     }
@@ -616,9 +634,17 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('payment_products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -633,9 +659,17 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('payment_products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -650,9 +684,17 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as PaymentProductModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('payment_products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -660,9 +702,17 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
         .values(this.attributes as NewPaymentProduct)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PaymentProductModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('payment_products')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -691,9 +741,17 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .values(newPaymentProduct)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PaymentProductModel
+    const instance = new PaymentProductModel(undefined)
+    const modelData = await DB.instance.selectFrom('payment_products')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a PaymentProduct
@@ -819,9 +877,27 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<PaymentProductModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<PaymentProductModel | undefined> {
+export async function find(id: number): Promise<PaymentProductModel | undefined> {
   const query = DB.instance.selectFrom('payment_products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -829,7 +905,8 @@ async function find(id: number): Promise<PaymentProductModel | undefined> {
   if (!model)
     return undefined
 
-  return new PaymentProductModel(model)
+  const instance = new PaymentProductModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -839,11 +916,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
-  const result = await DB.instance.insertInto('payment_products')
-    .values(newPaymentProduct)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as PaymentProductModel
+  const instance = new PaymentProductModel(undefined)
+  return await instance.applyCreate(newPaymentProduct)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

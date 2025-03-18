@@ -336,9 +336,15 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   // Method to find a Coupon by ID
   static async find(id: number): Promise<CouponModel | undefined> {
-    const instance = new CouponModel(undefined)
+    const query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new CouponModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<CouponModel | undefined> {
@@ -569,7 +575,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     const results = await instance.applyGet()
 
-    return results.map((item: CouponJsonResponse) => new CouponModel(item))
+    return results.map((item: CouponJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof CouponModel>(field: K): Promise<CouponModel[K][]> {
@@ -582,7 +588,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const instance = new CouponModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: CouponJsonResponse) => new CouponModel(item))
+      const modelInstances = models.map((item: CouponJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -601,10 +607,15 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: CouponJsonResponse) => new CouponModel(item)),
+      data: result.data.map((item: CouponJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: CouponJsonResponse): CouponModel {
+    return new CouponModel(data)
   }
 
   async applyCreate(newCoupon: NewCoupon): Promise<CouponModel> {
@@ -622,12 +633,18 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as CouponModel
+    const modelData = await DB.instance.selectFrom('coupons')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Coupon')
+    }
 
     if (model)
       dispatch('coupon:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newCoupon: NewCoupon): Promise<CouponModel> {
@@ -636,7 +653,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
   static async create(newCoupon: NewCoupon): Promise<CouponModel> {
     const instance = new CouponModel(undefined)
-
     return await instance.applyCreate(newCoupon)
   }
 
@@ -653,7 +669,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new CouponModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -675,7 +691,7 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new CouponModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as CouponUpdate)
       return model
     }
@@ -700,12 +716,19 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('coupons')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Coupon')
+      }
 
       if (model)
         dispatch('coupon:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -720,12 +743,19 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('coupons')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Coupon')
+      }
+
+      if (this)
         dispatch('coupon:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -740,11 +770,19 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as CouponModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('coupons')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Coupon')
+      }
+
       if (this)
         dispatch('coupon:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -752,11 +790,19 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
         .values(this.attributes as NewCoupon)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as CouponModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('coupons')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Coupon')
+      }
+
       if (this)
         dispatch('coupon:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -785,12 +831,20 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
       .values(newCoupon)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as CouponModel
+    const instance = new CouponModel(undefined)
+    const modelData = await DB.instance.selectFrom('coupons')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Coupon')
+    }
 
     if (model)
       dispatch('coupon:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Coupon
@@ -1019,9 +1073,27 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<CouponModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<CouponModel | undefined> {
+export async function find(id: number): Promise<CouponModel | undefined> {
   const query = DB.instance.selectFrom('coupons').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1029,7 +1101,8 @@ async function find(id: number): Promise<CouponModel | undefined> {
   if (!model)
     return undefined
 
-  return new CouponModel(model)
+  const instance = new CouponModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -1039,11 +1112,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newCoupon: NewCoupon): Promise<CouponModel> {
-  const result = await DB.instance.insertInto('coupons')
-    .values(newCoupon)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as CouponModel
+  const instance = new CouponModel(undefined)
+  return await instance.applyCreate(newCoupon)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

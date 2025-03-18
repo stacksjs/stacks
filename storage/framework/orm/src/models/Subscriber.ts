@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface SubscribersTable {
@@ -191,9 +192,15 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
   // Method to find a Subscriber by ID
   static async find(id: number): Promise<SubscriberModel | undefined> {
-    const instance = new SubscriberModel(undefined)
+    const query = DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriberModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<SubscriberModel | undefined> {
@@ -424,7 +431,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
     const results = await instance.applyGet()
 
-    return results.map((item: SubscriberJsonResponse) => new SubscriberModel(item))
+    return results.map((item: SubscriberJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof SubscriberModel>(field: K): Promise<SubscriberModel[K][]> {
@@ -437,7 +444,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const instance = new SubscriberModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: SubscriberJsonResponse) => new SubscriberModel(item))
+      const modelInstances = models.map((item: SubscriberJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -456,10 +463,15 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: SubscriberJsonResponse) => new SubscriberModel(item)),
+      data: result.data.map((item: SubscriberJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: SubscriberJsonResponse): SubscriberModel {
+    return new SubscriberModel(data)
   }
 
   async applyCreate(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
@@ -475,9 +487,16 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+    const modelData = await DB.instance.selectFrom('subscribers')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Subscriber')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
@@ -486,7 +505,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
   static async create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
     const instance = new SubscriberModel(undefined)
-
     return await instance.applyCreate(newSubscriber)
   }
 
@@ -503,7 +521,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new SubscriberModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -525,7 +543,7 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new SubscriberModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as SubscriberUpdate)
       return model
     }
@@ -550,9 +568,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscribers')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscriber')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -567,9 +593,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscribers')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscriber')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -584,9 +618,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as SubscriberModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscribers')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscriber')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -594,9 +636,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
         .values(this.attributes as NewSubscriber)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('subscribers')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Subscriber')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -623,9 +673,17 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
       .values(newSubscriber)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+    const instance = new SubscriberModel(undefined)
+    const modelData = await DB.instance.selectFrom('subscribers')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Subscriber')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Subscriber
@@ -695,9 +753,27 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<SubscriberModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<SubscriberModel | undefined> {
+export async function find(id: number): Promise<SubscriberModel | undefined> {
   const query = DB.instance.selectFrom('subscribers').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -705,7 +781,8 @@ async function find(id: number): Promise<SubscriberModel | undefined> {
   if (!model)
     return undefined
 
-  return new SubscriberModel(model)
+  const instance = new SubscriberModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -715,11 +792,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscriber: NewSubscriber): Promise<SubscriberModel> {
-  const result = await DB.instance.insertInto('subscribers')
-    .values(newSubscriber)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as SubscriberModel
+  const instance = new SubscriberModel(undefined)
+  return await instance.applyCreate(newSubscriber)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

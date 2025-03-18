@@ -345,9 +345,15 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
   // Method to find a GiftCard by ID
   static async find(id: number): Promise<GiftCardModel | undefined> {
-    const instance = new GiftCardModel(undefined)
+    const query = DB.instance.selectFrom('gift_cards').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new GiftCardModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<GiftCardModel | undefined> {
@@ -578,7 +584,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
     const results = await instance.applyGet()
 
-    return results.map((item: GiftCardJsonResponse) => new GiftCardModel(item))
+    return results.map((item: GiftCardJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof GiftCardModel>(field: K): Promise<GiftCardModel[K][]> {
@@ -591,7 +597,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const instance = new GiftCardModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: GiftCardJsonResponse) => new GiftCardModel(item))
+      const modelInstances = models.map((item: GiftCardJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -610,10 +616,15 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: GiftCardJsonResponse) => new GiftCardModel(item)),
+      data: result.data.map((item: GiftCardJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: GiftCardJsonResponse): GiftCardModel {
+    return new GiftCardModel(data)
   }
 
   async applyCreate(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
@@ -631,12 +642,18 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
+    const modelData = await DB.instance.selectFrom('gift_cards')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created GiftCard')
+    }
 
     if (model)
       dispatch('giftCard:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
@@ -645,7 +662,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
   static async create(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
     const instance = new GiftCardModel(undefined)
-
     return await instance.applyCreate(newGiftCard)
   }
 
@@ -662,7 +678,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new GiftCardModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -684,7 +700,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new GiftCardModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as GiftCardUpdate)
       return model
     }
@@ -709,12 +725,19 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('gift_cards')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated GiftCard')
+      }
 
       if (model)
         dispatch('giftCard:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -729,12 +752,19 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('gift_cards')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated GiftCard')
+      }
+
+      if (this)
         dispatch('giftCard:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -749,11 +779,19 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as GiftCardModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('gift_cards')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated GiftCard')
+      }
+
       if (this)
         dispatch('giftCard:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -761,11 +799,19 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
         .values(this.attributes as NewGiftCard)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('gift_cards')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created GiftCard')
+      }
+
       if (this)
         dispatch('giftCard:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -794,12 +840,20 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
       .values(newGiftCard)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
+    const instance = new GiftCardModel(undefined)
+    const modelData = await DB.instance.selectFrom('gift_cards')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created GiftCard')
+    }
 
     if (model)
       dispatch('giftCard:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a GiftCard
@@ -1037,9 +1091,27 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<GiftCardModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<GiftCardModel | undefined> {
+export async function find(id: number): Promise<GiftCardModel | undefined> {
   const query = DB.instance.selectFrom('gift_cards').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -1047,7 +1119,8 @@ async function find(id: number): Promise<GiftCardModel | undefined> {
   if (!model)
     return undefined
 
-  return new GiftCardModel(model)
+  const instance = new GiftCardModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -1057,11 +1130,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newGiftCard: NewGiftCard): Promise<GiftCardModel> {
-  const result = await DB.instance.insertInto('gift_cards')
-    .values(newGiftCard)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as GiftCardModel
+  const instance = new GiftCardModel(undefined)
+  return await instance.applyCreate(newGiftCard)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

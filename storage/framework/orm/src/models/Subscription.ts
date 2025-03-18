@@ -293,9 +293,15 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
   // Method to find a Subscription by ID
   static async find(id: number): Promise<SubscriptionModel | undefined> {
-    const instance = new SubscriptionModel(undefined)
+    const query = DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new SubscriptionModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<SubscriptionModel | undefined> {
@@ -526,7 +532,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     const results = await instance.applyGet()
 
-    return results.map((item: SubscriptionJsonResponse) => new SubscriptionModel(item))
+    return results.map((item: SubscriptionJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof SubscriptionModel>(field: K): Promise<SubscriptionModel[K][]> {
@@ -539,7 +545,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const instance = new SubscriptionModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: SubscriptionJsonResponse) => new SubscriptionModel(item))
+      const modelInstances = models.map((item: SubscriptionJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -558,10 +564,15 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: SubscriptionJsonResponse) => new SubscriptionModel(item)),
+      data: result.data.map((item: SubscriptionJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: SubscriptionJsonResponse): SubscriptionModel {
+    return new SubscriptionModel(data)
   }
 
   async applyCreate(newSubscription: NewSubscription): Promise<SubscriptionModel> {
@@ -579,9 +590,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+    const modelData = await DB.instance.selectFrom('subscriptions')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Subscription')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
@@ -590,7 +608,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
   static async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
     const instance = new SubscriptionModel(undefined)
-
     return await instance.applyCreate(newSubscription)
   }
 
@@ -607,7 +624,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new SubscriptionModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -629,7 +646,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new SubscriptionModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as SubscriptionUpdate)
       return model
     }
@@ -654,9 +671,17 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscriptions')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscription')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -671,9 +696,17 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscriptions')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscription')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -688,9 +721,17 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as SubscriptionModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('subscriptions')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Subscription')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -698,9 +739,17 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
         .values(this.attributes as NewSubscription)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('subscriptions')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Subscription')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -729,9 +778,17 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .values(newSubscription)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+    const instance = new SubscriptionModel(undefined)
+    const modelData = await DB.instance.selectFrom('subscriptions')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Subscription')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Subscription
@@ -900,9 +957,27 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<SubscriptionModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<SubscriptionModel | undefined> {
+export async function find(id: number): Promise<SubscriptionModel | undefined> {
   const query = DB.instance.selectFrom('subscriptions').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -910,7 +985,8 @@ async function find(id: number): Promise<SubscriptionModel | undefined> {
   if (!model)
     return undefined
 
-  return new SubscriptionModel(model)
+  const instance = new SubscriptionModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -920,11 +996,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
-  const result = await DB.instance.insertInto('subscriptions')
-    .values(newSubscription)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as SubscriptionModel
+  const instance = new SubscriptionModel(undefined)
+  return await instance.applyCreate(newSubscription)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

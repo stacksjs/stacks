@@ -305,9 +305,15 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   // Method to find a Product by ID
   static async find(id: number): Promise<ProductModel | undefined> {
-    const instance = new ProductModel(undefined)
+    const query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ProductModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ProductModel | undefined> {
@@ -538,7 +544,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     const results = await instance.applyGet()
 
-    return results.map((item: ProductJsonResponse) => new ProductModel(item))
+    return results.map((item: ProductJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof ProductModel>(field: K): Promise<ProductModel[K][]> {
@@ -551,7 +557,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const instance = new ProductModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: ProductJsonResponse) => new ProductModel(item))
+      const modelInstances = models.map((item: ProductJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -570,10 +576,15 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: ProductJsonResponse) => new ProductModel(item)),
+      data: result.data.map((item: ProductJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: ProductJsonResponse): ProductModel {
+    return new ProductModel(data)
   }
 
   async applyCreate(newProduct: NewProduct): Promise<ProductModel> {
@@ -591,12 +602,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const modelData = await DB.instance.selectFrom('products')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Product')
+    }
 
     if (model)
       dispatch('product:created', model)
-
-    return model
+    return this.createInstance(modelData)
   }
 
   async create(newProduct: NewProduct): Promise<ProductModel> {
@@ -605,7 +622,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   static async create(newProduct: NewProduct): Promise<ProductModel> {
     const instance = new ProductModel(undefined)
-
     return await instance.applyCreate(newProduct)
   }
 
@@ -622,7 +638,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new ProductModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -644,7 +660,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new ProductModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as ProductUpdate)
       return model
     }
@@ -669,12 +685,19 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Product')
+      }
 
       if (model)
         dispatch('product:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -689,12 +712,19 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      if (model)
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Product')
+      }
+
+      if (this)
         dispatch('product:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -709,11 +739,19 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as ProductModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('products')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Product')
+      }
+
       if (this)
         dispatch('product:updated', model)
-
-      return model
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -721,11 +759,19 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
         .values(this.attributes as NewProduct)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('products')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
+
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Product')
+      }
+
       if (this)
         dispatch('product:created', model)
-
-      return model
+      return this.createInstance(modelData)
     }
   }
 
@@ -754,12 +800,20 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .values(newProduct)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+    const instance = new ProductModel(undefined)
+    const modelData = await DB.instance.selectFrom('products')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Product')
+    }
 
     if (model)
       dispatch('product:created', model)
 
-    return model
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Product
@@ -967,9 +1021,27 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ProductModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ProductModel | undefined> {
+export async function find(id: number): Promise<ProductModel | undefined> {
   const query = DB.instance.selectFrom('products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -977,7 +1049,8 @@ async function find(id: number): Promise<ProductModel | undefined> {
   if (!model)
     return undefined
 
-  return new ProductModel(model)
+  const instance = new ProductModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -987,11 +1060,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newProduct: NewProduct): Promise<ProductModel> {
-  const result = await DB.instance.insertInto('products')
-    .values(newProduct)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ProductModel
+  const instance = new ProductModel(undefined)
+  return await instance.applyCreate(newProduct)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

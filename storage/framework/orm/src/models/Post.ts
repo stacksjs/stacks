@@ -211,9 +211,15 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   // Method to find a Post by ID
   static async find(id: number): Promise<PostModel | undefined> {
-    const instance = new PostModel(undefined)
+    const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new PostModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<PostModel | undefined> {
@@ -444,7 +450,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     const results = await instance.applyGet()
 
-    return results.map((item: PostJsonResponse) => new PostModel(item))
+    return results.map((item: PostJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof PostModel>(field: K): Promise<PostModel[K][]> {
@@ -457,7 +463,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const instance = new PostModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: PostJsonResponse) => new PostModel(item))
+      const modelInstances = models.map((item: PostJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -476,10 +482,15 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: PostJsonResponse) => new PostModel(item)),
+      data: result.data.map((item: PostJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: PostJsonResponse): PostModel {
+    return new PostModel(data)
   }
 
   async applyCreate(newPost: NewPost): Promise<PostModel> {
@@ -495,9 +506,16 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const modelData = await DB.instance.selectFrom('posts')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Post')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newPost: NewPost): Promise<PostModel> {
@@ -506,7 +524,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
   static async create(newPost: NewPost): Promise<PostModel> {
     const instance = new PostModel(undefined)
-
     return await instance.applyCreate(newPost)
   }
 
@@ -523,7 +540,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new PostModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -545,7 +562,7 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new PostModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as PostUpdate)
       return model
     }
@@ -570,9 +587,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('posts')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Post')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -587,9 +612,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('posts')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Post')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -604,9 +637,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as PostModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('posts')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Post')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -614,9 +655,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
         .values(this.attributes as NewPost)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('posts')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Post')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -643,9 +692,17 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
       .values(newPost)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+    const instance = new PostModel(undefined)
+    const modelData = await DB.instance.selectFrom('posts')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Post')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Post
@@ -740,9 +797,27 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<PostModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<PostModel | undefined> {
+export async function find(id: number): Promise<PostModel | undefined> {
   const query = DB.instance.selectFrom('posts').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -750,7 +825,8 @@ async function find(id: number): Promise<PostModel | undefined> {
   if (!model)
     return undefined
 
-  return new PostModel(model)
+  const instance = new PostModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -760,11 +836,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newPost: NewPost): Promise<PostModel> {
-  const result = await DB.instance.insertInto('posts')
-    .values(newPost)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as PostModel
+  const instance = new PostModel(undefined)
+  return await instance.applyCreate(newPost)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

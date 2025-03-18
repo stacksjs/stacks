@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface ReleasesTable {
@@ -200,9 +201,15 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
   // Method to find a Release by ID
   static async find(id: number): Promise<ReleaseModel | undefined> {
-    const instance = new ReleaseModel(undefined)
+    const query = DB.instance.selectFrom('releases').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new ReleaseModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<ReleaseModel | undefined> {
@@ -433,7 +440,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
     const results = await instance.applyGet()
 
-    return results.map((item: ReleaseJsonResponse) => new ReleaseModel(item))
+    return results.map((item: ReleaseJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof ReleaseModel>(field: K): Promise<ReleaseModel[K][]> {
@@ -446,7 +453,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const instance = new ReleaseModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: ReleaseJsonResponse) => new ReleaseModel(item))
+      const modelInstances = models.map((item: ReleaseJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -465,10 +472,15 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: ReleaseJsonResponse) => new ReleaseModel(item)),
+      data: result.data.map((item: ReleaseJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: ReleaseJsonResponse): ReleaseModel {
+    return new ReleaseModel(data)
   }
 
   async applyCreate(newRelease: NewRelease): Promise<ReleaseModel> {
@@ -484,9 +496,16 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+    const modelData = await DB.instance.selectFrom('releases')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Release')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newRelease: NewRelease): Promise<ReleaseModel> {
@@ -495,7 +514,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
   static async create(newRelease: NewRelease): Promise<ReleaseModel> {
     const instance = new ReleaseModel(undefined)
-
     return await instance.applyCreate(newRelease)
   }
 
@@ -512,7 +530,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new ReleaseModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -534,7 +552,7 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new ReleaseModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as ReleaseUpdate)
       return model
     }
@@ -559,9 +577,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('releases')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Release')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -576,9 +602,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('releases')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Release')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -593,9 +627,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as ReleaseModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('releases')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Release')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -603,9 +645,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
         .values(this.attributes as NewRelease)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('releases')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Release')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -632,9 +682,17 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
       .values(newRelease)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+    const instance = new ReleaseModel(undefined)
+    const modelData = await DB.instance.selectFrom('releases')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Release')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Release
@@ -713,9 +771,27 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<ReleaseModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<ReleaseModel | undefined> {
+export async function find(id: number): Promise<ReleaseModel | undefined> {
   const query = DB.instance.selectFrom('releases').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -723,7 +799,8 @@ async function find(id: number): Promise<ReleaseModel | undefined> {
   if (!model)
     return undefined
 
-  return new ReleaseModel(model)
+  const instance = new ReleaseModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -733,11 +810,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newRelease: NewRelease): Promise<ReleaseModel> {
-  const result = await DB.instance.insertInto('releases')
-    .values(newRelease)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as ReleaseModel
+  const instance = new ReleaseModel(undefined)
+  return await instance.applyCreate(newRelease)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {

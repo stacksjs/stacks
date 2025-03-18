@@ -266,9 +266,15 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
   // Method to find a Deployment by ID
   static async find(id: number): Promise<DeploymentModel | undefined> {
-    const instance = new DeploymentModel(undefined)
+    const query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
 
-    return await instance.applyFind(id)
+    const model = await query.executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    const instance = new DeploymentModel(undefined)
+    return instance.createInstance(model)
   }
 
   static async first(): Promise<DeploymentModel | undefined> {
@@ -499,7 +505,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
     const results = await instance.applyGet()
 
-    return results.map((item: DeploymentJsonResponse) => new DeploymentModel(item))
+    return results.map((item: DeploymentJsonResponse) => instance.createInstance(item))
   }
 
   static async pluck<K extends keyof DeploymentModel>(field: K): Promise<DeploymentModel[K][]> {
@@ -512,7 +518,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const instance = new DeploymentModel(undefined)
 
     await instance.applyChunk(size, async (models) => {
-      const modelInstances = models.map((item: DeploymentJsonResponse) => new DeploymentModel(item))
+      const modelInstances = models.map((item: DeploymentJsonResponse) => instance.createInstance(item))
       await callback(modelInstances)
     })
   }
@@ -531,10 +537,15 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const result = await instance.applyPaginate(options)
 
     return {
-      data: result.data.map((item: DeploymentJsonResponse) => new DeploymentModel(item)),
+      data: result.data.map((item: DeploymentJsonResponse) => instance.createInstance(item)),
       paging: result.paging,
       next_cursor: result.next_cursor,
     }
+  }
+
+  // Instance method for creating model instances
+  createInstance(data: DeploymentJsonResponse): DeploymentModel {
+    return new DeploymentModel(data)
   }
 
   async applyCreate(newDeployment: NewDeployment): Promise<DeploymentModel> {
@@ -552,9 +563,16 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+    const modelData = await DB.instance.selectFrom('deployments')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Deployment')
+    }
+
+    return this.createInstance(modelData)
   }
 
   async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
@@ -563,7 +581,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
   static async create(newDeployment: NewDeployment): Promise<DeploymentModel> {
     const instance = new DeploymentModel(undefined)
-
     return await instance.applyCreate(newDeployment)
   }
 
@@ -580,7 +597,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     const existingRecord = await instance.applyFirst()
 
     if (existingRecord) {
-      return new DeploymentModel(existingRecord)
+      return instance.createInstance(existingRecord)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -602,7 +619,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
     if (existingRecord) {
       // If record exists, update it with the new values
-      const model = new DeploymentModel(existingRecord)
+      const model = instance.createInstance(existingRecord)
       await model.update(values as DeploymentUpdate)
       return model
     }
@@ -627,9 +644,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('deployments')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Deployment')
+      }
+
+      return this.createInstance(modelData)
     }
 
     this.hasSaved = true
@@ -644,9 +669,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
       .executeTakeFirst()
 
     if (this.id) {
-      const model = await this.find(this.id)
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('deployments')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Deployment')
+      }
+
+      return this.createInstance(modelData)
     }
 
     return undefined
@@ -661,9 +694,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
         .where('id', '=', this.id)
         .executeTakeFirst()
 
-      const model = await this.find(this.id) as DeploymentModel
+      // Get the updated data
+      const modelData = await DB.instance.selectFrom('deployments')
+        .where('id', '=', this.id)
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve updated Deployment')
+      }
+
+      return this.createInstance(modelData)
     }
     else {
       // Create new record
@@ -671,9 +712,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
         .values(this.attributes as NewDeployment)
         .executeTakeFirst()
 
-      const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+      // Get the created data
+      const modelData = await DB.instance.selectFrom('deployments')
+        .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+        .selectAll()
+        .executeTakeFirst()
 
-      return model
+      if (!modelData) {
+        throw new HttpError(500, 'Failed to retrieve created Deployment')
+      }
+
+      return this.createInstance(modelData)
     }
   }
 
@@ -702,9 +751,17 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
       .values(newDeployment)
       .executeTakeFirst()
 
-    const model = await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+    const instance = new DeploymentModel(undefined)
+    const modelData = await DB.instance.selectFrom('deployments')
+      .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
+      .selectAll()
+      .executeTakeFirst()
 
-    return model
+    if (!modelData) {
+      throw new HttpError(500, 'Failed to retrieve created Deployment')
+    }
+
+    return instance.createInstance(modelData)
   }
 
   // Method to remove a Deployment
@@ -846,9 +903,27 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
     return model
   }
+
+  // Add a protected applyFind implementation
+  protected async applyFind(id: number): Promise<DeploymentModel | undefined> {
+    const model = await DB.instance.selectFrom(this.tableName)
+      .where('id', '=', id)
+      .selectAll()
+      .executeTakeFirst()
+
+    if (!model)
+      return undefined
+
+    this.mapCustomGetters(model)
+
+    await this.loadRelations(model)
+
+    // Return a proper instance using the factory method
+    return this.createInstance(model)
+  }
 }
 
-async function find(id: number): Promise<DeploymentModel | undefined> {
+export async function find(id: number): Promise<DeploymentModel | undefined> {
   const query = DB.instance.selectFrom('deployments').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
@@ -856,7 +931,8 @@ async function find(id: number): Promise<DeploymentModel | undefined> {
   if (!model)
     return undefined
 
-  return new DeploymentModel(model)
+  const instance = new DeploymentModel(undefined)
+  return instance.createInstance(model)
 }
 
 export async function count(): Promise<number> {
@@ -866,11 +942,8 @@ export async function count(): Promise<number> {
 }
 
 export async function create(newDeployment: NewDeployment): Promise<DeploymentModel> {
-  const result = await DB.instance.insertInto('deployments')
-    .values(newDeployment)
-    .executeTakeFirstOrThrow()
-
-  return await find(Number(result.numInsertedOrUpdatedRows)) as DeploymentModel
+  const instance = new DeploymentModel(undefined)
+  return await instance.applyCreate(newDeployment)
 }
 
 export async function rawQuery(rawQuery: string): Promise<any> {
