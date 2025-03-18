@@ -89,7 +89,7 @@ export class BaseOrm<T, C, J> {
 
     await this.loadRelations(model)
 
-    cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
+    // cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
   }
@@ -188,7 +188,7 @@ export class BaseOrm<T, C, J> {
     this.mapCustomGetters(model)
     await this.loadRelations(model)
 
-    cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
+    // cache.getOrSet(`${this.tableName}:${id}`, JSON.stringify(model))
 
     return model
   }
@@ -795,7 +795,7 @@ export class BaseOrm<T, C, J> {
     return (this as any).hasSaved && this.isDirty(column)
   }
 
-  getOriginal(column?: keyof T): Partial<T> {
+  getOriginal<K extends keyof T>(column?: K): K extends keyof T ? T[K] : Partial<T> {
     if (!('originalAttributes' in this)) {
       throw new Error('Child class must define originalAttributes property')
     }

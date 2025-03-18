@@ -3,10 +3,9 @@ import { database } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { hasTableBeenMigrated } from '../drivers'
 
-const driver = database.default || ''
 
 export async function createErrorsTable(): Promise<void> {
-  if (['sqlite', 'mysql'].includes(driver)) {
+  if (['sqlite', 'mysql'].includes(getDriver())) {
     const hasBeenMigrated = await hasTableBeenMigrated('errors')
 
     if (hasBeenMigrated)
@@ -37,4 +36,8 @@ export async function createErrorsTable(): Promise<void> {
 
     log.success('Created errors table')
   }
+}
+
+function getDriver(): string {
+  return database.default || ''
 }

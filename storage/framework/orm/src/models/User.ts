@@ -583,6 +583,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
     const model = await this.find(Number(result.numInsertedOrUpdatedRows)) as UserModel
 
+    console.log(model)
     if (model)
       dispatch('user:created', model)
 
@@ -658,6 +659,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       .where('id', '=', this.id)
       .executeTakeFirst()
 
+      console.log('id', this.id)
     if (this.id) {
       const model = await this.find(this.id)
 

@@ -6,11 +6,9 @@ import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { hasMigrationBeenCreated } from '../drivers'
 
-const driver = database.default || ''
-
 export async function createJobsMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
-    if (['sqlite', 'mysql'].includes(driver)) {
+    if (['sqlite', 'mysql'].includes(getDriver())) {
       const hasBeenMigrated = await hasMigrationBeenCreated('jobs')
 
       if (!hasBeenMigrated) {
@@ -47,4 +45,8 @@ export async function createJobsMigration(): Promise<Result<MigrationResult[] | 
   catch (error) {
     return err(handleError('Error creating migration', error))
   }
+}
+
+function getDriver(): string {
+  return database.default || ''
 }

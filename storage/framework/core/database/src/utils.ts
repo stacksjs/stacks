@@ -1,6 +1,5 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
-import { app, database } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
@@ -8,15 +7,47 @@ import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
 import { Pool } from 'pg'
 
+// Get config values safely
+function getEnv(): string {
+  try {
+    // Use dynamic import to avoid initialization issues
+    const { app } = require('@stacksjs/config')
+    return app?.env || 'local'
+  } catch (error) {
+    return 'local'
+  }
+}
+
+function getDriver(): string {
+  try {
+    // Use dynamic import to avoid initialization issues
+    const { database } = require('@stacksjs/config')
+    return database?.default || 'sqlite'
+  } catch (error) {
+    return 'sqlite'
+  }
+}
+
+// Helper to safely get database config
+function getDatabaseConfig() {
+  try {
+    const { database } = require('@stacksjs/config')
+    return database
+  } catch (error) {
+    return { connections: {} }
+  }
+}
+
 export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {
-  const appEnv = app.env || 'local'
-  const driver = database.default || 'sqlite'
+  const appEnv = getEnv()
+  const driver = getDriver()
+  const database = getDatabaseConfig()
 
   log.debug(`Using database driver: ${driver}`)
 
   if (driver === 'sqlite') {
     const defaultName = appEnv !== 'testing' ? 'database/stacks.sqlite' : 'database/stacks_testing.sqlite'
-    const sqliteDbName = database.connections?.sqlite.database ?? defaultName
+    const sqliteDbName = database.connections?.sqlite?.database ?? defaultName
     const dbPath = projectPath(sqliteDbName)
 
     return new BunWorkerDialect({
@@ -59,3 +90,4 @@ export const now: RawBuilder<any> = sql`now()`
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
 })
+  

@@ -9,7 +9,10 @@ import { FileMigrationProvider, Migrator } from 'kysely'
 import { generateMysqlMigration, generatePostgresMigration, generateSqliteMigration, resetMysqlDatabase, resetPostgresDatabase, resetSqliteDatabase } from './drivers'
 import { db } from './utils'
 
-const driver = database.default || ''
+
+function getDriver(): string {
+  return database.default || ''
+}
 
 export function migrator(): Migrator {
   return new Migrator({
@@ -70,11 +73,11 @@ export interface MigrationOptions {
 }
 
 export async function resetDatabase(): Promise<Ok<string, never>> {
-  if (driver === 'sqlite')
+  if (getDriver() === 'sqlite')
     return await resetSqliteDatabase()
-  if (driver === 'mysql')
+  if (getDriver() === 'mysql')
     return await resetMysqlDatabase()
-  if (driver === 'postgres')
+  if (getDriver() === 'postgres')
     return await resetPostgresDatabase()
 
   throw new Error('Unsupported database driver in resetDatabase')
@@ -101,13 +104,13 @@ export async function generateMigrations(): Promise<Ok<string, never> | Err<stri
 }
 
 export async function generateMigration(modelPath: string): Promise<void> {
-  if (driver === 'sqlite')
+  if (getDriver() === 'sqlite')
     await generateSqliteMigration(modelPath)
 
-  if (driver === 'mysql')
+  if (getDriver() === 'mysql')
     await generateMysqlMigration(modelPath)
 
-  if (driver === 'postgres')
+  if (getDriver() === 'postgres')
     await generatePostgresMigration(modelPath)
 }
 
