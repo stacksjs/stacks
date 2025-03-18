@@ -553,16 +553,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('payment_products')
+    const model = await DB.instance.selectFrom('payment_products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newPaymentProduct: NewPaymentProduct): Promise<PaymentProductModel> {
@@ -635,16 +635,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_products')
+      const model = await DB.instance.selectFrom('payment_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -660,16 +660,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_products')
+      const model = await DB.instance.selectFrom('payment_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -685,16 +685,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_products')
+      const model = await DB.instance.selectFrom('payment_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentProduct')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -703,16 +703,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('payment_products')
+      const model = await DB.instance.selectFrom('payment_products')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -742,16 +742,16 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
       .executeTakeFirst()
 
     const instance = new PaymentProductModel(undefined)
-    const modelData = await DB.instance.selectFrom('payment_products')
+    const model = await DB.instance.selectFrom('payment_products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentProduct')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a PaymentProduct

@@ -592,18 +592,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('users')
+    const model = await DB.instance.selectFrom('users')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created User')
     }
 
     if (model)
       dispatch('user:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newUser: NewUser): Promise<UserModel> {
@@ -676,18 +676,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('users')
+      const model = await DB.instance.selectFrom('users')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
       if (model)
         dispatch('user:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -703,18 +703,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('users')
+      const model = await DB.instance.selectFrom('users')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
       if (this)
         dispatch('user:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -730,18 +730,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('users')
+      const model = await DB.instance.selectFrom('users')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated User')
       }
 
       if (this)
         dispatch('user:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -750,18 +750,18 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('users')
+      const model = await DB.instance.selectFrom('users')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created User')
       }
 
       if (this)
         dispatch('user:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -791,19 +791,19 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       .executeTakeFirst()
 
     const instance = new UserModel(undefined)
-    const modelData = await DB.instance.selectFrom('users')
+    const model = await DB.instance.selectFrom('users')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created User')
     }
 
     if (model)
       dispatch('user:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a User

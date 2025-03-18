@@ -617,18 +617,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('orders')
+    const model = await DB.instance.selectFrom('orders')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Order')
     }
 
     if (model)
       dispatch('order:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newOrder: NewOrder): Promise<OrderModel> {
@@ -701,18 +701,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('orders')
+      const model = await DB.instance.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Order')
       }
 
       if (model)
         dispatch('order:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -728,18 +728,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('orders')
+      const model = await DB.instance.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Order')
       }
 
       if (this)
         dispatch('order:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -755,18 +755,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('orders')
+      const model = await DB.instance.selectFrom('orders')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Order')
       }
 
       if (this)
         dispatch('order:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -775,18 +775,18 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('orders')
+      const model = await DB.instance.selectFrom('orders')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Order')
       }
 
       if (this)
         dispatch('order:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -816,19 +816,19 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       .executeTakeFirst()
 
     const instance = new OrderModel(undefined)
-    const modelData = await DB.instance.selectFrom('orders')
+    const model = await DB.instance.selectFrom('orders')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Order')
     }
 
     if (model)
       dispatch('order:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Order

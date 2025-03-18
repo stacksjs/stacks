@@ -582,18 +582,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('loyalty_rewards')
+    const model = await DB.instance.selectFrom('loyalty_rewards')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created LoyaltyReward')
     }
 
     if (model)
       dispatch('loyaltyReward:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newLoyaltyReward: NewLoyaltyReward): Promise<LoyaltyRewardModel> {
@@ -666,18 +666,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('loyalty_rewards')
+      const model = await DB.instance.selectFrom('loyalty_rewards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated LoyaltyReward')
       }
 
       if (model)
         dispatch('loyaltyReward:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -693,18 +693,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('loyalty_rewards')
+      const model = await DB.instance.selectFrom('loyalty_rewards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated LoyaltyReward')
       }
 
       if (this)
         dispatch('loyaltyReward:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -720,18 +720,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('loyalty_rewards')
+      const model = await DB.instance.selectFrom('loyalty_rewards')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated LoyaltyReward')
       }
 
       if (this)
         dispatch('loyaltyReward:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -740,18 +740,18 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('loyalty_rewards')
+      const model = await DB.instance.selectFrom('loyalty_rewards')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created LoyaltyReward')
       }
 
       if (this)
         dispatch('loyaltyReward:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -781,19 +781,19 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
       .executeTakeFirst()
 
     const instance = new LoyaltyRewardModel(undefined)
-    const modelData = await DB.instance.selectFrom('loyalty_rewards')
+    const model = await DB.instance.selectFrom('loyalty_rewards')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created LoyaltyReward')
     }
 
     if (model)
       dispatch('loyaltyReward:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a LoyaltyReward

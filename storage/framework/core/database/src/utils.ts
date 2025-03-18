@@ -1,7 +1,6 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
-// Import config directly, but gracefully handle potential issues
-import * as config from '@stacksjs/config'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'

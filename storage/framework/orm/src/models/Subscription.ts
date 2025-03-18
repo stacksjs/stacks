@@ -590,16 +590,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('subscriptions')
+    const model = await DB.instance.selectFrom('subscriptions')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Subscription')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newSubscription: NewSubscription): Promise<SubscriptionModel> {
@@ -672,16 +672,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriptions')
+      const model = await DB.instance.selectFrom('subscriptions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Subscription')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -697,16 +697,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriptions')
+      const model = await DB.instance.selectFrom('subscriptions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Subscription')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -722,16 +722,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriptions')
+      const model = await DB.instance.selectFrom('subscriptions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Subscription')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -740,16 +740,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('subscriptions')
+      const model = await DB.instance.selectFrom('subscriptions')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Subscription')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -779,16 +779,16 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
       .executeTakeFirst()
 
     const instance = new SubscriptionModel(undefined)
-    const modelData = await DB.instance.selectFrom('subscriptions')
+    const model = await DB.instance.selectFrom('subscriptions')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Subscription')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Subscription

@@ -546,18 +546,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('product_variants')
+    const model = await DB.instance.selectFrom('product_variants')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductVariant')
     }
 
     if (model)
       dispatch('productVariant:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newProductVariant: NewProductVariant): Promise<ProductVariantModel> {
@@ -630,18 +630,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_variants')
+      const model = await DB.instance.selectFrom('product_variants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
       }
 
       if (model)
         dispatch('productVariant:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -657,18 +657,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_variants')
+      const model = await DB.instance.selectFrom('product_variants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
       }
 
       if (this)
         dispatch('productVariant:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -684,18 +684,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_variants')
+      const model = await DB.instance.selectFrom('product_variants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductVariant')
       }
 
       if (this)
         dispatch('productVariant:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -704,18 +704,18 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('product_variants')
+      const model = await DB.instance.selectFrom('product_variants')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created ProductVariant')
       }
 
       if (this)
         dispatch('productVariant:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -745,19 +745,19 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
       .executeTakeFirst()
 
     const instance = new ProductVariantModel(undefined)
-    const modelData = await DB.instance.selectFrom('product_variants')
+    const model = await DB.instance.selectFrom('product_variants')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductVariant')
     }
 
     if (model)
       dispatch('productVariant:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a ProductVariant

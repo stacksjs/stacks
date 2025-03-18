@@ -602,18 +602,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('products')
+    const model = await DB.instance.selectFrom('products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Product')
     }
 
     if (model)
       dispatch('product:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newProduct: NewProduct): Promise<ProductModel> {
@@ -686,18 +686,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('products')
+      const model = await DB.instance.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Product')
       }
 
       if (model)
         dispatch('product:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -713,18 +713,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('products')
+      const model = await DB.instance.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Product')
       }
 
       if (this)
         dispatch('product:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -740,18 +740,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('products')
+      const model = await DB.instance.selectFrom('products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Product')
       }
 
       if (this)
         dispatch('product:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -760,18 +760,18 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('products')
+      const model = await DB.instance.selectFrom('products')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Product')
       }
 
       if (this)
         dispatch('product:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -801,19 +801,19 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       .executeTakeFirst()
 
     const instance = new ProductModel(undefined)
-    const modelData = await DB.instance.selectFrom('products')
+    const model = await DB.instance.selectFrom('products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Product')
     }
 
     if (model)
       dispatch('product:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Product

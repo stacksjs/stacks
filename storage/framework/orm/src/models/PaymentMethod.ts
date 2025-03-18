@@ -569,16 +569,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentMethod')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newPaymentMethod: NewPaymentMethod): Promise<PaymentMethodModel> {
@@ -651,16 +651,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_methods')
+      const model = await DB.instance.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentMethod')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -676,16 +676,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_methods')
+      const model = await DB.instance.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentMethod')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -701,16 +701,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_methods')
+      const model = await DB.instance.selectFrom('payment_methods')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentMethod')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -719,16 +719,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('payment_methods')
+      const model = await DB.instance.selectFrom('payment_methods')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created PaymentMethod')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -758,16 +758,16 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
       .executeTakeFirst()
 
     const instance = new PaymentMethodModel(undefined)
-    const modelData = await DB.instance.selectFrom('payment_methods')
+    const model = await DB.instance.selectFrom('payment_methods')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentMethod')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a PaymentMethod

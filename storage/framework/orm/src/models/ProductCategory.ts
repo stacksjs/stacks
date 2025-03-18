@@ -550,18 +550,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('product_categories')
+    const model = await DB.instance.selectFrom('product_categories')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductCategory')
     }
 
     if (model)
       dispatch('productCategory:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newProductCategory: NewProductCategory): Promise<ProductCategoryModel> {
@@ -634,18 +634,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_categories')
+      const model = await DB.instance.selectFrom('product_categories')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
       }
 
       if (model)
         dispatch('productCategory:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -661,18 +661,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_categories')
+      const model = await DB.instance.selectFrom('product_categories')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
       }
 
       if (this)
         dispatch('productCategory:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -688,18 +688,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_categories')
+      const model = await DB.instance.selectFrom('product_categories')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductCategory')
       }
 
       if (this)
         dispatch('productCategory:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -708,18 +708,18 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('product_categories')
+      const model = await DB.instance.selectFrom('product_categories')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created ProductCategory')
       }
 
       if (this)
         dispatch('productCategory:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -749,19 +749,19 @@ export class ProductCategoryModel extends BaseOrm<ProductCategoryModel, ProductC
       .executeTakeFirst()
 
     const instance = new ProductCategoryModel(undefined)
-    const modelData = await DB.instance.selectFrom('product_categories')
+    const model = await DB.instance.selectFrom('product_categories')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductCategory')
     }
 
     if (model)
       dispatch('productCategory:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a ProductCategory

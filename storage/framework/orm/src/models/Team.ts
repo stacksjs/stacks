@@ -555,16 +555,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('teams')
+    const model = await DB.instance.selectFrom('teams')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Team')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newTeam: NewTeam): Promise<TeamModel> {
@@ -637,16 +637,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('teams')
+      const model = await DB.instance.selectFrom('teams')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -662,16 +662,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('teams')
+      const model = await DB.instance.selectFrom('teams')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -687,16 +687,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('teams')
+      const model = await DB.instance.selectFrom('teams')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Team')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -705,16 +705,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('teams')
+      const model = await DB.instance.selectFrom('teams')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Team')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -742,16 +742,16 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
       .executeTakeFirst()
 
     const instance = new TeamModel(undefined)
-    const modelData = await DB.instance.selectFrom('teams')
+    const model = await DB.instance.selectFrom('teams')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Team')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Team

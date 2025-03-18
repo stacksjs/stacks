@@ -1372,17 +1372,17 @@ export async function generateModelString(
             .values(filteredValues)
             .executeTakeFirst()
 
-          const modelData = await DB.instance.selectFrom('${tableName}')
+          const model = await DB.instance.selectFrom('${tableName}')
             .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
             .selectAll()
             .executeTakeFirst()
 
-          if (!modelData) {
+          if (!model) {
             throw new HttpError(500, 'Failed to retrieve created ${modelName}')
           }
 
           ${mittCreateStatement}
-          return this.createInstance(modelData)
+          return this.createInstance(model)
         }
         
         async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
@@ -1455,17 +1455,17 @@ export async function generateModelString(
 
           if (this.id) {
             // Get the updated data
-            const modelData = await DB.instance.selectFrom('${tableName}')
+            const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', this.id)
               .selectAll()
               .executeTakeFirst()
 
-            if (!modelData) {
+            if (!model) {
               throw new HttpError(500, 'Failed to retrieve updated ${modelName}')
             }
 
             ${mittUpdateStatement}
-            return this.createInstance(modelData)
+            return this.createInstance(model)
           }
 
           this.hasSaved = true
@@ -1481,17 +1481,17 @@ export async function generateModelString(
 
           if (this.id) {
             // Get the updated data
-            const modelData = await DB.instance.selectFrom('${tableName}')
+            const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', this.id)
               .selectAll()
               .executeTakeFirst()
 
-            if (!modelData) {
+            if (!model) {
               throw new HttpError(500, 'Failed to retrieve updated ${modelName}')
             }
 
             ${mittUpdateStatement.replace('model', 'this')}
-            return this.createInstance(modelData)
+            return this.createInstance(model)
           }
 
           return undefined
@@ -1507,17 +1507,17 @@ export async function generateModelString(
               .executeTakeFirst()
               
             // Get the updated data
-            const modelData = await DB.instance.selectFrom('${tableName}')
+            const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', this.id)
               .selectAll()
               .executeTakeFirst()
 
-            if (!modelData) {
+            if (!model) {
               throw new HttpError(500, 'Failed to retrieve updated ${modelName}')
             }
 
             ${mittUpdateStatement.replace('model', 'this')}
-            return this.createInstance(modelData)
+            return this.createInstance(model)
           } else {
             // Create new record
             const result = await DB.instance.insertInto('${tableName}')
@@ -1525,17 +1525,17 @@ export async function generateModelString(
               .executeTakeFirst()
               
             // Get the created data
-            const modelData = await DB.instance.selectFrom('${tableName}')
+            const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
               .selectAll()
               .executeTakeFirst()
 
-            if (!modelData) {
+            if (!model) {
               throw new HttpError(500, 'Failed to retrieve created ${modelName}')
             }
 
             ${mittCreateStatement.replace('model', 'this')}
-            return this.createInstance(modelData)
+            return this.createInstance(model)
           }
         }
   
@@ -1565,18 +1565,18 @@ export async function generateModelString(
             .executeTakeFirst()
   
           const instance = new ${modelName}Model(undefined)
-          const modelData = await DB.instance.selectFrom('${tableName}')
+          const model = await DB.instance.selectFrom('${tableName}')
             .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
             .selectAll()
             .executeTakeFirst()
             
-          if (!modelData) {
+          if (!model) {
             throw new HttpError(500, 'Failed to retrieve created ${modelName}')
           }
   
           ${mittCreateStatement}
   
-          return instance.createInstance(modelData)
+          return instance.createInstance(model)
         }
   
         // Method to remove a ${modelName}

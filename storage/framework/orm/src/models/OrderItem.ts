@@ -526,16 +526,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('order_items')
+    const model = await DB.instance.selectFrom('order_items')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created OrderItem')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newOrderItem: NewOrderItem): Promise<OrderItemModel> {
@@ -608,16 +608,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('order_items')
+      const model = await DB.instance.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -633,16 +633,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('order_items')
+      const model = await DB.instance.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -658,16 +658,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('order_items')
+      const model = await DB.instance.selectFrom('order_items')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated OrderItem')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -676,16 +676,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('order_items')
+      const model = await DB.instance.selectFrom('order_items')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created OrderItem')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -713,16 +713,16 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
       .executeTakeFirst()
 
     const instance = new OrderItemModel(undefined)
-    const modelData = await DB.instance.selectFrom('order_items')
+    const model = await DB.instance.selectFrom('order_items')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created OrderItem')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a OrderItem

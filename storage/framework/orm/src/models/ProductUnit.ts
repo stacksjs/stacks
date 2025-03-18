@@ -546,18 +546,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('product_units')
+    const model = await DB.instance.selectFrom('product_units')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductUnit')
     }
 
     if (model)
       dispatch('productUnit:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newProductUnit: NewProductUnit): Promise<ProductUnitModel> {
@@ -630,18 +630,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_units')
+      const model = await DB.instance.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductUnit')
       }
 
       if (model)
         dispatch('productUnit:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -657,18 +657,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_units')
+      const model = await DB.instance.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductUnit')
       }
 
       if (this)
         dispatch('productUnit:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -684,18 +684,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('product_units')
+      const model = await DB.instance.selectFrom('product_units')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated ProductUnit')
       }
 
       if (this)
         dispatch('productUnit:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -704,18 +704,18 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('product_units')
+      const model = await DB.instance.selectFrom('product_units')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created ProductUnit')
       }
 
       if (this)
         dispatch('productUnit:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -745,19 +745,19 @@ export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTabl
       .executeTakeFirst()
 
     const instance = new ProductUnitModel(undefined)
-    const modelData = await DB.instance.selectFrom('product_units')
+    const model = await DB.instance.selectFrom('product_units')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created ProductUnit')
     }
 
     if (model)
       dispatch('productUnit:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a ProductUnit

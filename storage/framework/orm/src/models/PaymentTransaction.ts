@@ -556,16 +556,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('payment_transactions')
+    const model = await DB.instance.selectFrom('payment_transactions')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentTransaction')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newPaymentTransaction: NewPaymentTransaction): Promise<PaymentTransactionModel> {
@@ -638,16 +638,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_transactions')
+      const model = await DB.instance.selectFrom('payment_transactions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentTransaction')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -663,16 +663,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_transactions')
+      const model = await DB.instance.selectFrom('payment_transactions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentTransaction')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -688,16 +688,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('payment_transactions')
+      const model = await DB.instance.selectFrom('payment_transactions')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated PaymentTransaction')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -706,16 +706,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('payment_transactions')
+      const model = await DB.instance.selectFrom('payment_transactions')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created PaymentTransaction')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -745,16 +745,16 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
       .executeTakeFirst()
 
     const instance = new PaymentTransactionModel(undefined)
-    const modelData = await DB.instance.selectFrom('payment_transactions')
+    const model = await DB.instance.selectFrom('payment_transactions')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created PaymentTransaction')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a PaymentTransaction

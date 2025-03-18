@@ -514,16 +514,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('projects')
+    const model = await DB.instance.selectFrom('projects')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Project')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newProject: NewProject): Promise<ProjectModel> {
@@ -596,16 +596,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('projects')
+      const model = await DB.instance.selectFrom('projects')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Project')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -621,16 +621,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('projects')
+      const model = await DB.instance.selectFrom('projects')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Project')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -646,16 +646,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('projects')
+      const model = await DB.instance.selectFrom('projects')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Project')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -664,16 +664,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('projects')
+      const model = await DB.instance.selectFrom('projects')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Project')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -701,16 +701,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
       .executeTakeFirst()
 
     const instance = new ProjectModel(undefined)
-    const modelData = await DB.instance.selectFrom('projects')
+    const model = await DB.instance.selectFrom('projects')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Project')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Project

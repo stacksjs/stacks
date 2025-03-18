@@ -499,16 +499,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('subscriber_emails')
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created SubscriberEmail')
     }
 
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newSubscriberEmail: NewSubscriberEmail): Promise<SubscriberEmailModel> {
@@ -581,16 +581,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriber_emails')
+      const model = await DB.instance.selectFrom('subscriber_emails')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated SubscriberEmail')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -606,16 +606,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriber_emails')
+      const model = await DB.instance.selectFrom('subscriber_emails')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated SubscriberEmail')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -631,16 +631,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('subscriber_emails')
+      const model = await DB.instance.selectFrom('subscriber_emails')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated SubscriberEmail')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -649,16 +649,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('subscriber_emails')
+      const model = await DB.instance.selectFrom('subscriber_emails')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created SubscriberEmail')
       }
 
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -686,16 +686,16 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
       .executeTakeFirst()
 
     const instance = new SubscriberEmailModel(undefined)
-    const modelData = await DB.instance.selectFrom('subscriber_emails')
+    const model = await DB.instance.selectFrom('subscriber_emails')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created SubscriberEmail')
     }
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a SubscriberEmail

@@ -578,18 +578,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       .values(filteredValues)
       .executeTakeFirst()
 
-    const modelData = await DB.instance.selectFrom('customers')
+    const model = await DB.instance.selectFrom('customers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Customer')
     }
 
     if (model)
       dispatch('customer:created', model)
-    return this.createInstance(modelData)
+    return this.createInstance(model)
   }
 
   async create(newCustomer: NewCustomer): Promise<CustomerModel> {
@@ -662,18 +662,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('customers')
+      const model = await DB.instance.selectFrom('customers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Customer')
       }
 
       if (model)
         dispatch('customer:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     this.hasSaved = true
@@ -689,18 +689,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
     if (this.id) {
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('customers')
+      const model = await DB.instance.selectFrom('customers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Customer')
       }
 
       if (this)
         dispatch('customer:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
 
     return undefined
@@ -716,18 +716,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
         .executeTakeFirst()
 
       // Get the updated data
-      const modelData = await DB.instance.selectFrom('customers')
+      const model = await DB.instance.selectFrom('customers')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve updated Customer')
       }
 
       if (this)
         dispatch('customer:updated', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
     else {
       // Create new record
@@ -736,18 +736,18 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
         .executeTakeFirst()
 
       // Get the created data
-      const modelData = await DB.instance.selectFrom('customers')
+      const model = await DB.instance.selectFrom('customers')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
 
-      if (!modelData) {
+      if (!model) {
         throw new HttpError(500, 'Failed to retrieve created Customer')
       }
 
       if (this)
         dispatch('customer:created', model)
-      return this.createInstance(modelData)
+      return this.createInstance(model)
     }
   }
 
@@ -777,19 +777,19 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       .executeTakeFirst()
 
     const instance = new CustomerModel(undefined)
-    const modelData = await DB.instance.selectFrom('customers')
+    const model = await DB.instance.selectFrom('customers')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
 
-    if (!modelData) {
+    if (!model) {
       throw new HttpError(500, 'Failed to retrieve created Customer')
     }
 
     if (model)
       dispatch('customer:created', model)
 
-    return instance.createInstance(modelData)
+    return instance.createInstance(model)
   }
 
   // Method to remove a Customer
