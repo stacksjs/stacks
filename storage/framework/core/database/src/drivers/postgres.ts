@@ -261,9 +261,9 @@ async function createAlterTableMigration(modelPath: string) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule)
     const formattedFieldName = snakeCase(fieldName)
-    
+
     migrationContent += `    .addColumn('${formattedFieldName}', '${columnType}'`
-    
+
     // Check if there are configurations that require the lambda function
     if (options.unique || options.validation?.rule?.required || options.default !== undefined) {
       migrationContent += `, col => col`
@@ -281,7 +281,7 @@ async function createAlterTableMigration(modelPath: string) {
       }
       migrationContent += ``
     }
-    
+
     migrationContent += `)\n`
   }
 

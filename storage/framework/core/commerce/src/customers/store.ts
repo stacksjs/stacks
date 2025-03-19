@@ -24,14 +24,7 @@ export async function store(request: CustomerRequestType): Promise<CustomerJsonR
     // Insert the customer record
     const createdCustomer = await db
       .insertInto('customers')
-      .values({
-        name: request.get('name'),
-        email: request.get('email'),
-        phone: request.get('phone'),
-        status: request.get('status') || 'Active',
-        avatar: request.get('avatar') || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
-        user_id: request.get<number>('user_id'),
-      })
+      .values(customerData)
       .executeTakeFirst()
 
     const insertId = Number(createdCustomer?.insertId) || Number(createdCustomer?.numInsertedOrUpdatedRows)

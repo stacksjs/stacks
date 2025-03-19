@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { destroy, bulkDestroy } from '../reviews/destroy'
-import { fetchById, fetchByProductId, fetchByUserId, fetchApprovedByProductId, fetchProductReviewStats, fetchMostHelpfulByProductId } from '../reviews/fetch'
+import { bulkDestroy, destroy } from '../reviews/destroy'
+import { fetchApprovedByProductId, fetchById, fetchByProductId, fetchByUserId, fetchMostHelpfulByProductId, fetchProductReviewStats } from '../reviews/fetch'
 import { store } from '../reviews/store'
 import { update, updateVotes } from '../reviews/update'
 
@@ -125,7 +125,7 @@ describe('Product Review Module', () => {
     it('should fetch reviews by product ID', async () => {
       // Create several reviews for the same product
       const productId = 2
-      
+
       // Create first review
       const request1 = new TestRequest({
         product_id: productId,
@@ -136,7 +136,7 @@ describe('Product Review Module', () => {
         is_approved: true,
       })
       await store(request1 as any)
-      
+
       // Create second review
       const request2 = new TestRequest({
         product_id: productId,
@@ -161,7 +161,7 @@ describe('Product Review Module', () => {
     it('should fetch reviews by user ID', async () => {
       // Create several reviews for the same user
       const customerId = 3
-      
+
       // Create first review
       const request1 = new TestRequest({
         product_id: 1,
@@ -171,7 +171,7 @@ describe('Product Review Module', () => {
         content: 'First user review content',
       })
       await store(request1 as any)
-      
+
       // Create second review
       const request2 = new TestRequest({
         product_id: 2,
@@ -194,7 +194,7 @@ describe('Product Review Module', () => {
 
     it('should fetch approved reviews for a product', async () => {
       const productId = 3
-      
+
       // Create approved review
       const request1 = new TestRequest({
         product_id: productId,
@@ -205,7 +205,7 @@ describe('Product Review Module', () => {
         is_approved: true,
       })
       await store(request1 as any)
-      
+
       // Create unapproved review
       const request2 = new TestRequest({
         product_id: productId,
@@ -229,7 +229,7 @@ describe('Product Review Module', () => {
 
     it('should fetch product review statistics', async () => {
       const productId = 4
-      
+
       // Create several reviews with different ratings
       const request1 = new TestRequest({
         product_id: productId,
@@ -240,7 +240,7 @@ describe('Product Review Module', () => {
         is_approved: true,
       })
       await store(request1 as any)
-      
+
       const request2 = new TestRequest({
         product_id: productId,
         customer_id: 2,
@@ -250,7 +250,7 @@ describe('Product Review Module', () => {
         is_approved: true,
       })
       await store(request2 as any)
-      
+
       const request3 = new TestRequest({
         product_id: productId,
         customer_id: 3,
@@ -275,7 +275,7 @@ describe('Product Review Module', () => {
 
     it('should fetch most helpful reviews', async () => {
       const productId = 5
-      
+
       // Create review with many helpful votes
       const request1 = new TestRequest({
         product_id: productId,
@@ -287,7 +287,7 @@ describe('Product Review Module', () => {
         helpful_votes: 10,
       })
       await store(request1 as any)
-      
+
       // Create review with fewer helpful votes
       const request2 = new TestRequest({
         product_id: productId,
@@ -476,10 +476,10 @@ describe('Product Review Module', () => {
 
         const request = new TestRequest(requestData)
         const review = await store(request as any)
-        
+
         const reviewId = review?.id !== undefined ? Number(review.id) : undefined
         expect(reviewId).toBeDefined()
-        
+
         if (reviewId) {
           reviewIds.push(reviewId)
         }

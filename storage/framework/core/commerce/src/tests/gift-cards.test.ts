@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { remove } from '../gift-cards/destroy'
-import { fetchById, fetchByCode } from '../gift-cards/fetch'
+import { fetchByCode, fetchById } from '../gift-cards/fetch'
 import { store } from '../gift-cards/store'
 import { update, updateBalance } from '../gift-cards/update'
 
@@ -83,11 +83,11 @@ describe('Gift Card Module', () => {
         code: uniqueCode, // Same code as the first gift card
         initial_balance: 50,
         currency: 'USD',
-       customer_id: 2,
+        customer_id: 2,
       }
 
       const secondRequest = new TestRequest(secondGiftCardData)
-      
+
       try {
         await store(secondRequest as any)
         // If we get here, the test should fail as we expect an error
@@ -99,7 +99,7 @@ describe('Gift Card Module', () => {
         // Check for the specific error message format
         const errorMessage = (error as Error).message
         expect(
-          errorMessage.includes('Failed to create gift card: UNIQUE constraint failed: gift_cards.code')
+          errorMessage.includes('Failed to create gift card: UNIQUE constraint failed: gift_cards.code'),
         ).toBe(true)
       }
     })
@@ -107,7 +107,7 @@ describe('Gift Card Module', () => {
     it('should create a gift card with default values when optional fields are missing', async () => {
       // Create a gift card with only required fields
       const uniqueCode = `GC-DEFAULT-${Date.now()}`
-      
+
       const minimalRequestData = {
         code: uniqueCode,
         initial_balance: 75,
@@ -136,7 +136,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 100,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
       }
 
       const request = new TestRequest(requestData)
@@ -165,7 +165,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 150,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
       }
 
       const request = new TestRequest(requestData)
@@ -189,7 +189,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 100,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
       }
 
       // Create the gift card
@@ -236,7 +236,7 @@ describe('Gift Card Module', () => {
         code: code1,
         initial_balance: 100,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
       }
 
       const firstRequest = new TestRequest(firstGiftCardData)
@@ -249,7 +249,7 @@ describe('Gift Card Module', () => {
         code: code2,
         initial_balance: 200,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
       }
 
       const secondRequest = new TestRequest(secondGiftCardData)
@@ -262,11 +262,11 @@ describe('Gift Card Module', () => {
 
       // Try to update the second gift card with the first gift card's code
       const updateData = {
-        code: code1 // This should conflict with the first gift card
+        code: code1, // This should conflict with the first gift card
       }
 
       const updateRequest = new TestRequest(updateData)
-      
+
       try {
         await update(secondGiftCardId, updateRequest as any)
         // If we get here, the test should fail as we expect an error
@@ -278,7 +278,7 @@ describe('Gift Card Module', () => {
         // Update to use the exact error message format
         const errorMessage = (error as Error).message
         expect(
-          errorMessage.includes('Failed to update gift card: UNIQUE constraint failed: gift_cards.code')
+          errorMessage.includes('Failed to update gift card: UNIQUE constraint failed: gift_cards.code'),
         ).toBe(true)
       }
     })
@@ -292,7 +292,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 100,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
         status: 'ACTIVE',
         is_active: true,
       }
@@ -330,7 +330,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 50,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
         status: 'ACTIVE',
         is_active: true,
       }
@@ -365,7 +365,7 @@ describe('Gift Card Module', () => {
         code: uniqueCode,
         initial_balance: 50,
         currency: 'USD',
-       customer_id: 1,
+        customer_id: 1,
         status: 'DEACTIVATED',
         is_active: false,
       }
@@ -438,7 +438,7 @@ describe('Gift Card Module', () => {
         await remove(nonExistentId)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
-      } 
+      }
       catch (error) {
         expect(error).toBeDefined()
         expect(error instanceof Error).toBe(true)
@@ -466,10 +466,10 @@ describe('Gift Card Module', () => {
         const request = new TestRequest(requestData)
         const giftCard = await store(request as any)
         expect(giftCard).toBeDefined()
-        
+
         const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
         expect(giftCardId).toBeDefined()
-        
+
         if (giftCardId) {
           giftCardIds.push(giftCardId)
           giftCards.push(giftCard)
@@ -496,7 +496,7 @@ describe('Gift Card Module', () => {
     it('should return 0 when trying to delete an empty array of gift cards', async () => {
       // Import the bulkRemove function
       const { bulkRemove } = await import('../gift-cards/destroy')
-      
+
       // Try to delete with an empty array
       const deletedCount = await bulkRemove([])
       expect(deletedCount).toBe(0)

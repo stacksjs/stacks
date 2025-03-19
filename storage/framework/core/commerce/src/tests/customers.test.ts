@@ -86,7 +86,7 @@ describe('Customer Module', () => {
       }
 
       const secondRequest = new TestRequest(secondCustomerData)
-      
+
       try {
         await store(secondRequest as any)
         // If we get here, the test should fail as we expect an error
@@ -98,8 +98,8 @@ describe('Customer Module', () => {
         // Check for both possible error message formats
         const errorMessage = (error as Error).message
         expect(
-          errorMessage.includes('A customer with this email already exists') || 
-          errorMessage.includes('UNIQUE constraint failed: customers.email')
+          errorMessage.includes('A customer with this email already exists')
+          || errorMessage.includes('UNIQUE constraint failed: customers.email'),
         ).toBe(true)
       }
     })
@@ -107,7 +107,7 @@ describe('Customer Module', () => {
     it('should create a customer with default values when optional fields are missing', async () => {
       // Create a customer with only required fields
       const uniqueEmail = `test-defaults-${Date.now()}@example.com`
-      
+
       const minimalRequestData = {
         name: 'Minimal Customer',
         email: uniqueEmail,
@@ -239,11 +239,11 @@ describe('Customer Module', () => {
 
       // Try to update the second customer with the first customer's email
       const updateData = {
-        email: email1 // This should conflict with the first customer
+        email: email1, // This should conflict with the first customer
       }
 
       const updateRequest = new TestRequest(updateData)
-      
+
       try {
         await update(secondCustomerId, updateRequest as any)
         // If we get here, the test should fail as we expect an error
@@ -255,8 +255,8 @@ describe('Customer Module', () => {
         // Check for both possible error message formats
         const errorMessage = (error as Error).message
         expect(
-          errorMessage.includes('A customer with this email already exists') || 
-          errorMessage.includes('UNIQUE constraint failed: customers.email')
+          errorMessage.includes('A customer with this email already exists')
+          || errorMessage.includes('UNIQUE constraint failed: customers.email'),
         ).toBe(true)
       }
     })
@@ -307,7 +307,7 @@ describe('Customer Module', () => {
         await remove(nonExistentId)
         // If we get here, the test should fail as we expect an error
         expect(true).toBe(false) // This line should not be reached
-      } 
+      }
       catch (error) {
         expect(error).toBeDefined()
         expect(error instanceof Error).toBe(true)
@@ -336,10 +336,10 @@ describe('Customer Module', () => {
         const request = new TestRequest(requestData)
         const customer = await store(request as any)
         expect(customer).toBeDefined()
-        
+
         const customerId = customer?.id !== undefined ? Number(customer.id) : undefined
         expect(customerId).toBeDefined()
-        
+
         if (customerId) {
           customerIds.push(customerId)
           customers.push(customer)
@@ -366,7 +366,7 @@ describe('Customer Module', () => {
     it('should return 0 when trying to delete an empty array of customers', async () => {
       // Import the bulkRemove function
       const { bulkRemove } = await import('../customers/destroy')
-      
+
       // Try to delete with an empty array
       const deletedCount = await bulkRemove([])
       expect(deletedCount).toBe(0)

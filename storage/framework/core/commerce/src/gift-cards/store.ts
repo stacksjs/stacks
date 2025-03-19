@@ -29,7 +29,6 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
     template_id: request.get('template_id'),
   }
 
- 
   try {
     // Insert the gift card record
     const createdGiftCard = await db
