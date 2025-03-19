@@ -132,16 +132,16 @@ export async function compareOrdersByPeriod(daysRange: number = 30): Promise<{
   const currentPeriodOrders = await db
     .selectFrom('orders')
     .select(db.fn.count('id').as('count'))
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .executeTakeFirst()
 
   // Get orders for previous period
   const previousPeriodOrders = await db
     .selectFrom('orders')
     .select(db.fn.count('id').as('count'))
-    .where('created_at', '>=', previousPeriodStart)
-    .where('created_at', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
     .executeTakeFirst()
 
   const currentCount = Number(currentPeriodOrders?.count || 0)
@@ -218,8 +218,8 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
       db.fn.count('id').as('total_orders'),
       db.fn.sum('total_amount').as('total_revenue'),
     ])
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .executeTakeFirst()
 
   // Get values for previous period
@@ -229,16 +229,16 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
       db.fn.count('id').as('total_orders'),
       db.fn.sum('total_amount').as('total_revenue'),
     ])
-    .where('created_at', '>=', previousPeriodStart)
-    .where('created_at', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
     .executeTakeFirst()
 
   // Get orders by status for current period
   const ordersByStatus = await db
     .selectFrom('orders')
     .select(['status', db.fn.count('id').as('count')])
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .groupBy('status')
     .execute()
 
@@ -246,8 +246,8 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
   const ordersByType = await db
     .selectFrom('orders')
     .select(['order_type', db.fn.count('id').as('count')])
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .groupBy('order_type')
     .execute()
 
@@ -345,8 +345,8 @@ export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
       // Extract just the date part in ISO format (YYYY-MM-DD)
       'created_at',
     ])
-    .where('created_at', '>=', startDate)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', startDate.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .groupBy('created_at')
     .orderBy('created_at', 'asc')
     .execute()

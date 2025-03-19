@@ -86,7 +86,7 @@ async function fetchAllWithDetails(): Promise<OrderWithTotals[] | []> {
     }
   })
 
-  return enrichedOrders
+  return enrichedOrders as OrderWithTotals[]
 }
 
 /**

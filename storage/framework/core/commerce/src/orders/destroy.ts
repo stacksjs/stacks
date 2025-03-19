@@ -13,8 +13,6 @@ export async function destroy(id: number): Promise<boolean> {
       .where('id', '=', id)
       .executeTakeFirst()
 
-      console.log(result)
-
     return Number(result.numDeletedRows) > 0
   }
   catch (error) {
