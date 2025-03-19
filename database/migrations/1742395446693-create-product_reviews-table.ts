@@ -15,6 +15,9 @@ export async function up(db: Database<any>) {
     .addColumn('unhelpful_votes', 'numeric')
     .addColumn('purchase_date', 'text')
     .addColumn('images', 'text')
+    .addColumn('product_id', 'integer', (col) =>
+        col.references('products.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

@@ -31,6 +31,8 @@ export default {
 
   belongsTo: ['ProductCategory', 'Manufacturer'],
 
+  hasMany: ['ProductReview'],
+
   attributes: {
     name: {
       required: true,
