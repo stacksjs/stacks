@@ -151,6 +151,7 @@ export default {
       required: false,
       order: 12,
       fillable: true,
+      default: true,
       validation: {
         rule: schema.boolean(),
       },

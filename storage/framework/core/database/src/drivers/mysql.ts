@@ -152,12 +152,20 @@ async function createTableMigration(modelPath: string): Promise<void> {
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions?.required) {
+    if (fieldOptions.unique || fieldOptions?.required || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
       if (fieldOptions?.required)
         migrationContent += `.notNull()`
+      if (fieldOptions.default !== undefined) {
+        if (typeof fieldOptions.default === 'string')
+          migrationContent += `.defaultTo('${fieldOptions.default}')`
+        else if (fieldOptions.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${fieldOptions.default})`
+      }
       migrationContent += ``
     }
 
@@ -256,12 +264,14 @@ async function createPivotTableMigration(model: Model, modelPath: string): Promi
       return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+    migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
     migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer')\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n`
     migrationContent += `    }\n`
 
@@ -324,12 +334,20 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (options.unique || options?.required) {
+    if (options.unique || options?.required || options.default !== undefined) {
       migrationContent += `, col => col`
       if (options.unique)
         migrationContent += `.unique()`
       if (options?.required)
         migrationContent += `.notNull()`
+      if (options.default !== undefined) {
+        if (typeof options.default === 'string')
+          migrationContent += `.defaultTo('${options.default}')`
+        else if (options.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${options.default})`
+      }
       migrationContent += ``
     }
 

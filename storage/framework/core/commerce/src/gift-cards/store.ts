@@ -17,7 +17,7 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
     current_balance: request.get<number>('initial_balance'), // Initially set to same as initial balance
     currency: request.get('currency'),
     status: request.get('status') || 'ACTIVE',
-    user_id: request.get<number>('user_id'),
+    customer_id: request.get<number>('customer_id'),
     purchaser_id: request.get('purchaser_id'),
     recipient_email: request.get('recipient_email'),
     recipient_name: request.get('recipient_name'),
@@ -29,6 +29,7 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
     template_id: request.get('template_id'),
   }
 
+ 
   try {
     // Insert the gift card record
     const createdGiftCard = await db
@@ -36,11 +37,13 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
       .values(giftCardData)
       .executeTakeFirst()
 
+    const insertId = Number(createdGiftCard.insertId) || Number(createdGiftCard.numInsertedOrUpdatedRows)
+
     // If insert was successful, retrieve the newly created gift card
-    if (createdGiftCard.insertId) {
+    if (insertId) {
       const giftCard = await db
         .selectFrom('gift_cards')
-        .where('id', '=', Number(createdGiftCard.insertId))
+        .where('id', '=', insertId)
         .selectAll()
         .executeTakeFirst()
 

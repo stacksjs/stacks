@@ -152,12 +152,20 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${fieldNameFormatted}', '${columnType}'`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions.validation?.rule?.required) {
+    if (fieldOptions.unique || fieldOptions.validation?.rule?.required || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
       if (fieldOptions.validation?.rule?.required)
         migrationContent += `.notNull()`
+      if (fieldOptions.default !== undefined) {
+        if (typeof fieldOptions.default === 'string')
+          migrationContent += `.defaultTo('${fieldOptions.default}')`
+        else if (fieldOptions.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${fieldOptions.default})`
+      }
       migrationContent += ``
     }
 
@@ -212,8 +220,9 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
-    migrationContent += `    .addColumn('user_id', 'integer')\n`
-    migrationContent += `    .addColumn('subscriber_id', 'integer')\n`
+    migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
+    migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer')\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n`
     migrationContent += `    }\n`
 
@@ -251,7 +260,29 @@ async function createAlterTableMigration(modelPath: string) {
   for (const fieldName of fieldsToAdd) {
     const options = currentFields[fieldName] as Attribute
     const columnType = mapFieldTypeToColumnType(options.validation?.rule)
-    migrationContent += `    .addColumn('${fieldName}', '${columnType}')\n`
+    const formattedFieldName = snakeCase(fieldName)
+    
+    migrationContent += `    .addColumn('${formattedFieldName}', '${columnType}'`
+    
+    // Check if there are configurations that require the lambda function
+    if (options.unique || options.validation?.rule?.required || options.default !== undefined) {
+      migrationContent += `, col => col`
+      if (options.unique)
+        migrationContent += `.unique()`
+      if (options.validation?.rule?.required)
+        migrationContent += `.notNull()`
+      if (options.default !== undefined) {
+        if (typeof options.default === 'string')
+          migrationContent += `.defaultTo('${options.default}')`
+        else if (options.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${options.default})`
+      }
+      migrationContent += ``
+    }
+    
+    migrationContent += `)\n`
   }
 
   // Remove fields that no longer exist

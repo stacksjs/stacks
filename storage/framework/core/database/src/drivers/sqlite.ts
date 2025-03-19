@@ -190,12 +190,20 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${fieldNameFormatted}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (fieldOptions.unique || fieldOptions?.required) {
+    if (fieldOptions.unique || fieldOptions?.required || fieldOptions.default !== undefined) {
       migrationContent += `, col => col`
       if (fieldOptions.unique)
         migrationContent += `.unique()`
       if (fieldOptions?.required)
         migrationContent += `.notNull()`
+      if (fieldOptions.default !== undefined) {
+        if (typeof fieldOptions.default === 'string')
+          migrationContent += `.defaultTo('${fieldOptions.default}')`
+        else if (fieldOptions.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${fieldOptions.default})`
+      }
       migrationContent += ``
     }
 
@@ -257,12 +265,14 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
       return
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
+    migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
     migrationContent += `    .addColumn('${pivotTable.secondForeignKey}', 'integer')\n`
+    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
     migrationContent += `    .execute()\n`
     migrationContent += `    }\n`
 
@@ -291,11 +301,11 @@ async function createPasskeyMigration() {
   migrationContent += `    .addColumn('cred_public_key', 'text')\n`
   migrationContent += `    .addColumn('user_id', 'integer')\n`
   migrationContent += `    .addColumn('webauthn_user_id', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('counter', 'integer')\n`
+  migrationContent += `    .addColumn('counter', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('device_type', 'varchar(255)')\n`
   migrationContent += `    .addColumn('credential_type', 'varchar(255)')\n`
-  migrationContent += `    .addColumn('backup_eligible', 'boolean')\n`
-  migrationContent += `    .addColumn('backup_status', 'boolean')\n`
+  migrationContent += `    .addColumn('backup_eligible', 'boolean', col => col.defaultTo(false))\n`
+  migrationContent += `    .addColumn('backup_status', 'boolean', col => col.defaultTo(false))\n`
   migrationContent += `    .addColumn('transports', 'varchar(255)')\n`
   migrationContent += `    .addColumn('last_used_at', 'text')\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
@@ -334,7 +344,7 @@ async function createUpvoteMigration(model: Model, modelName: string, tableName:
   migrationContent += `    }\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-passkeys-table.ts`
+  const migrationFileName = `${timestamp}-create-${migrationTable}-table.ts`
 
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
@@ -410,12 +420,20 @@ async function createAlterTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('${formattedFieldName}', ${columnType}`
 
     // Check if there are configurations that require the lambda function
-    if (options.unique || options?.required) {
+    if (options.unique || options?.required || options.default !== undefined) {
       migrationContent += `, col => col`
       if (options.unique)
         migrationContent += `.unique()`
       if (options?.required)
         migrationContent += `.notNull()`
+      if (options.default !== undefined) {
+        if (typeof options.default === 'string')
+          migrationContent += `.defaultTo('${options.default}')`
+        else if (options.default === null)
+          migrationContent += `.defaultTo(null)`
+        else
+          migrationContent += `.defaultTo(${options.default})`
+      }
       migrationContent += ``
     }
 

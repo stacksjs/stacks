@@ -328,7 +328,7 @@ export async function calculateOrderMetrics(daysRange: number = 30): Promise<{
  * @param daysRange Number of days to look back
  */
 export async function fetchDailyOrderTrends(daysRange: number = 30): Promise<{
-  date: Date
+  date: string
   order_count: number
   revenue: number
 }[]> {
