@@ -8,13 +8,13 @@ import { db } from '@stacksjs/database'
  */
 export async function destroy(id: number): Promise<boolean> {
   try {
-    // Perform the delete operation
     const result = await db
       .deleteFrom('orders')
       .where('id', '=', id)
       .executeTakeFirst()
 
-    // Return true if any row was affected (deleted)
+      console.log(result)
+
     return Number(result.numDeletedRows) > 0
   }
   catch (error) {
