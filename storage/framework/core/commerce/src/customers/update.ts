@@ -35,9 +35,6 @@ export async function update(id: number, request: CustomerRequestType): Promise<
         .executeTakeFirst()
     }
 
-    // Include updated_at timestamp
-    updateData.updated_at = new Date()
-
     // Update the customer record
     await db
       .updateTable('customers')

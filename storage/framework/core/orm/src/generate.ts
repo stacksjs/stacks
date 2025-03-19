@@ -1453,8 +1453,10 @@ export async function generateModelString(
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as ${modelName}Update
-
+          
           await this.mapCustomSetters(filteredValues)
+          
+          filteredValues.updated_at = new Date().toISOString()
 
           await DB.instance.updateTable('${tableName}')
             .set(filteredValues)

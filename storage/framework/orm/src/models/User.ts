@@ -2,12 +2,14 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
+import type { CustomerModel } from './Customer'
 import type { DeploymentModel } from './Deployment'
 import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
 import type { SubscriptionModel } from './Subscription'
+
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -213,6 +215,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get payment_transactions(): PaymentTransactionModel[] | [] {
     return this.attributes.payment_transactions
+  }
+
+  get customers(): CustomerModel[] | [] {
+    return this.attributes.customers
   }
 
   get id(): number {
@@ -652,12 +658,12 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
       const updatedModel = await model.update(values as UserUpdate)
-      
+
       // Return the updated model instance
       if (updatedModel) {
         return updatedModel
       }
-      
+
       // If update didn't return a model, fetch it again to ensure we have latest data
       const refreshedModel = await instance.applyFirst()
       return instance.createInstance(refreshedModel!)
@@ -676,6 +682,8 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     ) as UserUpdate
 
     await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
 
     await DB.instance.updateTable('users')
       .set(filteredValues)
@@ -1184,6 +1192,7 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
       payment_methods: this.payment_methods,
       posts: this.posts,
       payment_transactions: this.payment_transactions,
+      customers: this.customers,
       ...this.customColumns,
       public_passkey: this.public_passkey,
       stripe_id: this.stripe_id,

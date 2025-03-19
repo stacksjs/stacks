@@ -46,7 +46,7 @@ export type CustomerUpdate = Updateable<CustomersTable>
 
 export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
-  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid']
+  private readonly fillable: Array<keyof CustomerJsonResponse> = ['name', 'email', 'phone', 'total_spent', 'last_order', 'status', 'avatar', 'uuid', 'user_id']
   private readonly guarded: Array<keyof CustomerJsonResponse> = []
   protected attributes = {} as CustomerJsonResponse
   protected originalAttributes = {} as CustomerJsonResponse
@@ -637,8 +637,16 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      await model.update(values as CustomerUpdate)
-      return model
+      const updatedModel = await model.update(values as CustomerUpdate)
+
+      // Return the updated model instance
+      if (updatedModel) {
+        return updatedModel
+      }
+
+      // If update didn't return a model, fetch it again to ensure we have latest data
+      const refreshedModel = await instance.applyFirst()
+      return instance.createInstance(refreshedModel!)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -654,6 +662,8 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     ) as CustomerUpdate
 
     await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
 
     await DB.instance.updateTable('customers')
       .set(filteredValues)

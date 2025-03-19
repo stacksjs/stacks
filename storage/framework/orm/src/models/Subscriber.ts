@@ -544,8 +544,16 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      await model.update(values as SubscriberUpdate)
-      return model
+      const updatedModel = await model.update(values as SubscriberUpdate)
+
+      // Return the updated model instance
+      if (updatedModel) {
+        return updatedModel
+      }
+
+      // If update didn't return a model, fetch it again to ensure we have latest data
+      const refreshedModel = await instance.applyFirst()
+      return instance.createInstance(refreshedModel!)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -561,6 +569,8 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
     ) as SubscriberUpdate
 
     await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
 
     await DB.instance.updateTable('subscribers')
       .set(filteredValues)

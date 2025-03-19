@@ -571,8 +571,16 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     if (existingRecord) {
       // If record exists, update it with the new values
       const model = instance.createInstance(existingRecord)
-      await model.update(values as ProjectUpdate)
-      return model
+      const updatedModel = await model.update(values as ProjectUpdate)
+
+      // Return the updated model instance
+      if (updatedModel) {
+        return updatedModel
+      }
+
+      // If update didn't return a model, fetch it again to ensure we have latest data
+      const refreshedModel = await instance.applyFirst()
+      return instance.createInstance(refreshedModel!)
     }
 
     // If no record exists, create a new one with combined search criteria and values
@@ -588,6 +596,8 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     ) as ProjectUpdate
 
     await this.mapCustomSetters(filteredValues)
+
+    filteredValues.updated_at = new Date().toISOString()
 
     await DB.instance.updateTable('projects')
       .set(filteredValues)

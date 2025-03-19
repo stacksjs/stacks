@@ -848,7 +848,7 @@ describe('Models test', () => {
       email: `user${i + 1}@stacks.com`,
       password: '123456',
     }))
-    
+
     // Insert sequentially to ensure consistent ordering
     for (const user of users) {
       await User.create(user)
@@ -945,7 +945,7 @@ describe('Models test', () => {
       email: `user${i + 1}@test.com`,
       password: '123456',
     }))
-    
+
     // Insert sequentially to ensure consistent ordering
     for (const user of users) {
       await User.create(user)

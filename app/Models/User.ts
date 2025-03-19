@@ -40,7 +40,7 @@ export default {
   },
 
   hasOne: ['Subscriber'],
-  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'PaymentTransaction'],
+  hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'PaymentTransaction', 'Customer'],
 
   belongsToMany: ['Team'],
 
