@@ -1,11 +1,11 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   class?: string
 }>()
 </script>
 
 <template>
-  <div class="p-4 bg-white rounded-lg"  @click.stop>
+  <div :class="props.class" @click.stop>
     <slot>
       <p>Default modal content goes here.</p>
     </slot>
