@@ -3,7 +3,7 @@
     "beforeBuildCommand": "bun build:app",
     "beforeDevCommand": "bun dev",
     "devPath": "http://127.0.0.1:3000/",
-    "distDir": "../../../dashboard/dist"
+    "frontendDist": "../../../dashboard/dist"
   },
   "package": {
     "productName": "stacks",
