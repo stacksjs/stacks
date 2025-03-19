@@ -22,7 +22,7 @@ export async function update(id: number, request: ProductUnitRequestType): Promi
       type: request.get('type'),
       description: request.get('description'),
       is_default: request.get<boolean>('is_default'),
-      updated_at: new Date(),
+      updated_at: new Date().toISOString(),
     }
 
     // Update the product unit
@@ -89,7 +89,7 @@ export async function bulkUpdate(updates: Array<{
           type: data.get<string>('type'),
           description: data.get<string>('description'),
           is_default: data.get<boolean>('is_default'),
-          updated_at: new Date(),
+          updated_at: new Date().toISOString(),
         }
 
         // Skip if no fields to update
@@ -154,7 +154,7 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
       .updateTable('product_units')
       .set({
         is_default: isDefault,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .executeTakeFirst()

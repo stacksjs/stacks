@@ -3,14 +3,19 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('product_units')
+    .createTable('customers')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
     .addColumn('name', 'text', col => col.notNull())
-    .addColumn('abbreviation', 'text', col => col.notNull())
-    .addColumn('type', 'text', col => col.notNull())
-    .addColumn('description', 'text')
-    .addColumn('is_default', 'integer')
+    .addColumn('email', 'text', col => col.unique().notNull())
+    .addColumn('phone', 'text', col => col.notNull())
+    .addColumn('total_spent', 'numeric', col => col.defaultTo(0))
+    .addColumn('last_order', 'text')
+    .addColumn('status', 'text', col => col.notNull().defaultTo('Active'))
+    .addColumn('avatar', 'text')
+    .addColumn('user_id', 'integer', (col) =>
+        col.references('users.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

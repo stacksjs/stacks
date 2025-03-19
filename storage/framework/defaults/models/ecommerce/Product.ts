@@ -31,7 +31,7 @@ export default {
 
   belongsTo: ['ProductCategory', 'Manufacturer'],
 
-  hasMany: ['ProductReview'],
+  hasMany: ['ProductReview', 'ProductUnit'],
 
   attributes: {
     name: {

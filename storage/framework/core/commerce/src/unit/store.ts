@@ -30,7 +30,7 @@ export async function store(request: ProductUnitRequestType): Promise<ProductUni
       .values(unitData)
       .executeTakeFirst()
 
-    const unitId = Number(result.insertId)
+    const unitId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
     // If this unit is set as default, update all other units of the same type
     if (unitData.is_default) {
@@ -95,7 +95,7 @@ export async function bulkStore(requests: ProductUnitRequestType[]): Promise<num
           .values(unitData)
           .executeTakeFirst()
 
-        const unitId = Number(result.insertId)
+        const unitId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
         // If this unit is set as default, update all other units of the same type
         if (unitData.is_default) {
