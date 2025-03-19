@@ -1362,7 +1362,7 @@ onMounted(() => {
               <div v-if="review.response" class="mt-4 rounded-md bg-gray-50 p-3 dark:bg-blue-gray-700">
                 <div class="flex items-center">
                   <div class="h-8 w-8 flex-shrink-0">
-                    <img class="h-8 w-8 rounded-full" src="/images/logo.svg" alt="Your Business" />
+                    <img class="h-8 w-8 rounded-full" src="/images/logos/logo.svg" alt="Your Business" />
                   </div>
                   <div class="ml-3">
                     <div class="text-sm font-medium text-gray-900 dark:text-white">Your Business</div>
