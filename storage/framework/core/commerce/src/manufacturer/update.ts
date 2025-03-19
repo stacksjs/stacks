@@ -26,7 +26,7 @@ export async function update(id: number, request: ManufacturerRequestType): Prom
     description: request.get('description'),
     country: request.get('country'),
     featured: request.get<boolean>('featured'),
-    updated_at: new Date(),
+    updated_at: new Date().toISOString(),
   }
 
   // Remove undefined fields to avoid overwriting with null values
@@ -93,7 +93,7 @@ export async function updateFeaturedStatus(
       .updateTable('manufacturers')
       .set({
         featured: newFeaturedStatus,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .execute()

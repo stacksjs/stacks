@@ -26,11 +26,12 @@ export async function store(request: ManufacturerRequestType): Promise<Manufactu
       .values(manufacturerData)
       .executeTakeFirst()
 
-    // If insert was successful, retrieve the newly created manufacturer
-    if (createdManufacturer.insertId) {
+    const insertId = Number(createdManufacturer.insertId) || Number(createdManufacturer.numInsertedOrUpdatedRows)
+
+    if (insertId) {
       const manufacturer = await db
         .selectFrom('manufacturers')
-        .where('id', '=', Number(createdManufacturer.insertId))
+        .where('id', '=', insertId)
         .selectAll()
         .executeTakeFirst()
 

@@ -1,0 +1,553 @@
+import { beforeEach, describe, expect, it } from 'bun:test'
+import { refreshDatabase } from '@stacksjs/testing'
+import { destroy, bulkDestroy } from '../manufacturer/destroy'
+import { fetchById, fetchFeatured, fetchByCountry, fetchWithProductCount } from '../manufacturer/fetch'
+import { store, bulkStore } from '../manufacturer/store'
+import { update, updateFeaturedStatus } from '../manufacturer/update'
+
+// Create a request-like object for testing
+class TestRequest {
+  private data: Record<string, any> = {}
+
+  constructor(data: Record<string, any>) {
+    this.data = data
+  }
+
+  validate() {
+    return Promise.resolve()
+  }
+
+  get<T = any>(key: string): T {
+    return this.data[key] as T
+  }
+}
+
+beforeEach(async () => {
+  await refreshDatabase()
+})
+
+describe('Manufacturer Module', () => {
+  describe('store', () => {
+    it('should create a new manufacturer in the database', async () => {
+      const manufacturerName = `Test Manufacturer ${Date.now()}`
+      
+      const requestData = {
+        manufacturer: manufacturerName,
+        description: 'Test description',
+        country: 'USA',
+        featured: true,
+      }
+
+      const request = new TestRequest(requestData)
+      const manufacturer = await store(request as any)
+
+      expect(manufacturer).toBeDefined()
+      expect(manufacturer?.manufacturer).toBe(manufacturerName)
+      expect(manufacturer?.description).toBe('Test description')
+      expect(manufacturer?.country).toBe('USA')
+      expect(Boolean(manufacturer?.featured)).toBe(true)
+
+      // Save the ID and convert from Generated<number> to number
+      const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+
+      // Verify we can fetch the manufacturer we just created
+      if (manufacturerId) {
+        const fetchedManufacturer = await fetchById(manufacturerId)
+        expect(fetchedManufacturer).toBeDefined()
+        expect(fetchedManufacturer?.id).toBe(manufacturerId)
+      }
+    })
+
+    it('should throw an error when trying to create a manufacturer with a duplicate name', async () => {
+      // Create a unique name to avoid conflicts with other tests
+      const manufacturerName = `Duplicate Manufacturer ${Date.now()}`
+
+      // Create first manufacturer
+      const firstManufacturerData = {
+        manufacturer: manufacturerName,
+        description: 'First test description',
+        country: 'USA',
+      }
+
+      const firstRequest = new TestRequest(firstManufacturerData)
+      const firstManufacturer = await store(firstRequest as any)
+      expect(firstManufacturer).toBeDefined()
+
+      // Try to create a second manufacturer with the same name
+      const secondManufacturerData = {
+        manufacturer: manufacturerName, // Same name as the first manufacturer
+        description: 'Second test description',
+        country: 'Canada',
+      }
+
+      const secondRequest = new TestRequest(secondManufacturerData)
+      
+      try {
+        await store(secondRequest as any)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        // Check for the specific error message format
+        const errorMessage = (error as Error).message
+        expect(
+          errorMessage.includes('Failed to create manufacturer: UNIQUE constraint failed: manufacturers.manufacturer')
+        ).toBe(true)
+      }
+    })
+
+    it('should create a manufacturer with default values when optional fields are missing', async () => {
+      // Create a manufacturer with only required fields
+      const manufacturerName = `Minimal Manufacturer ${Date.now()}`
+      
+      const minimalRequestData = {
+        manufacturer: manufacturerName,
+        country: 'Germany',
+        // Other fields are omitted to test defaults
+      }
+
+      const request = new TestRequest(minimalRequestData)
+      const manufacturer = await store(request as any)
+
+      expect(manufacturer).toBeDefined()
+      expect(manufacturer?.manufacturer).toBe(manufacturerName)
+      expect(manufacturer?.country).toBe('Germany')
+      expect(Boolean(manufacturer?.featured)).toBe(false) // Default value
+    })
+  })
+
+  describe('bulkStore', () => {
+    it('should create multiple manufacturers at once', async () => {
+      const baseTime = Date.now()
+      const requests = [
+        new TestRequest({
+          manufacturer: `Bulk Manufacturer 1 ${baseTime}`,
+          description: 'Description 1',
+          country: 'Japan',
+        }),
+        new TestRequest({
+          manufacturer: `Bulk Manufacturer 2 ${baseTime}`,
+          description: 'Description 2',
+          country: 'China',
+          featured: true,
+        }),
+        new TestRequest({
+          manufacturer: `Bulk Manufacturer 3 ${baseTime}`,
+          description: 'Description 3',
+          country: 'Korea',
+        }),
+      ]
+
+      const createdCount = await bulkStore(requests as any)
+      expect(createdCount).toBe(3)
+
+      // Verify the last manufacturer was created
+      const manufacturers = await fetchByCountry('Korea')
+      expect(manufacturers.data.some(m => m.manufacturer === `Bulk Manufacturer 3 ${baseTime}`)).toBe(true)
+    })
+
+    it('should return 0 when trying to create with an empty array', async () => {
+      const createdCount = await bulkStore([])
+      expect(createdCount).toBe(0)
+    })
+  })
+
+  describe('fetch methods', () => {
+    it('should fetch a manufacturer by ID', async () => {
+      // First create a manufacturer to fetch
+      const manufacturerName = `FetchByID Manufacturer ${Date.now()}`
+      const requestData = {
+        manufacturer: manufacturerName,
+        description: 'Test fetch by ID',
+        country: 'France',
+      }
+
+      const request = new TestRequest(requestData)
+      const manufacturer = await store(request as any)
+      const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+
+      // Make sure we have a valid manufacturer ID before proceeding
+      expect(manufacturerId).toBeDefined()
+      if (!manufacturerId) {
+        throw new Error('Failed to create test manufacturer')
+      }
+
+      // Now fetch the manufacturer by ID
+      const fetchedManufacturer = await fetchById(manufacturerId)
+
+      expect(fetchedManufacturer).toBeDefined()
+      expect(fetchedManufacturer?.id).toBe(manufacturerId)
+      expect(fetchedManufacturer?.manufacturer).toBe(manufacturerName)
+      expect(fetchedManufacturer?.description).toBe('Test fetch by ID')
+      expect(fetchedManufacturer?.country).toBe('France')
+    })
+
+    it('should fetch featured manufacturers', async () => {
+      // Create some featured manufacturers
+      const baseTime = Date.now()
+      const featuredNames = [
+        `Featured Manufacturer 1 ${baseTime}`,
+        `Featured Manufacturer 2 ${baseTime}`,
+      ]
+      
+      for (const name of featuredNames) {
+        const request = new TestRequest({
+          manufacturer: name,
+          description: 'Featured description',
+          country: 'Spain',
+          featured: true,
+        })
+        await store(request as any)
+      }
+
+      // Create a non-featured manufacturer
+      const nonFeaturedRequest = new TestRequest({
+        manufacturer: `Non-Featured Manufacturer ${baseTime}`,
+        description: 'Non-featured description',
+        country: 'Spain',
+        featured: false,
+      })
+      await store(nonFeaturedRequest as any)
+
+      // Fetch featured manufacturers
+      const featuredManufacturers = await fetchFeatured(5)
+      
+      // Verify our featured manufacturers are in the results
+      for (const name of featuredNames) {
+        expect(featuredManufacturers.some(m => m.manufacturer === name)).toBe(true)
+      }
+      
+      // Verify the non-featured manufacturer is not in the results
+      expect(featuredManufacturers.some(m => m.manufacturer === `Non-Featured Manufacturer ${baseTime}`)).toBe(false)
+    })
+
+    it('should fetch manufacturers by country with pagination', async () => {
+      // Create manufacturers from the same country
+      const baseTime = Date.now()
+      const country = 'Brazil'
+      const brazilianManufacturers = [
+        `Brazilian Manufacturer 1 ${baseTime}`,
+        `Brazilian Manufacturer 2 ${baseTime}`,
+        `Brazilian Manufacturer 3 ${baseTime}`,
+      ]
+      
+      for (const name of brazilianManufacturers) {
+        const request = new TestRequest({
+          manufacturer: name,
+          description: 'Brazilian description',
+          country,
+        })
+        await store(request as any)
+      }
+
+      // Create a manufacturer from a different country
+      const otherRequest = new TestRequest({
+        manufacturer: `Non-Brazilian Manufacturer ${baseTime}`,
+        description: 'Other description',
+        country: 'Argentina',
+      })
+      await store(otherRequest as any)
+
+      // Fetch manufacturers from Brazil with pagination (limit 2)
+      const result = await fetchByCountry(country, { page: 1, limit: 2 })
+      
+      // Verify pagination info
+      expect(result.data.length).toBeLessThanOrEqual(2)
+      expect(result.paging.total_records).toBeGreaterThanOrEqual(3)
+      expect(result.paging.page).toBe(1)
+      expect(result.paging.total_pages).toBeGreaterThanOrEqual(2)
+      expect(result.next_cursor).toBe(2)
+      
+      // Fetch the second page
+      const page2 = await fetchByCountry(country, { page: 2, limit: 2 })
+      expect(page2.data.length).toBeGreaterThanOrEqual(1)
+      expect(page2.paging.page).toBe(2)
+    })
+
+    it('should fetch manufacturers with product count', async () => {
+      // For this test, we can't easily add products, but we can test the pagination
+      // and filtering functionality of fetchWithProductCount
+      
+      // Create manufacturers with different featured statuses
+      const baseTime = Date.now()
+      const requestData1 = {
+        manufacturer: `ProductCount Manufacturer 1 ${baseTime}`,
+        description: 'Featured',
+        country: 'Canada',
+        featured: true,
+      }
+      
+      const requestData2 = {
+        manufacturer: `ProductCount Manufacturer 2 ${baseTime}`,
+        description: 'Not featured',
+        country: 'Canada',
+        featured: false,
+      }
+      
+      await store(new TestRequest(requestData1) as any)
+      await store(new TestRequest(requestData2) as any)
+      
+      // Fetch manufacturers with product count, filtered by featured status
+      const featuredResults = await fetchWithProductCount({ featured: true, limit: 10 })
+      const nonFeaturedResults = await fetchWithProductCount({ featured: false, limit: 10 })
+      
+      // Verify our test manufacturers are in the appropriate result sets
+      expect(featuredResults.data.some(m => 
+        m.manufacturer === `ProductCount Manufacturer 1 ${baseTime}`
+      )).toBe(true)
+      
+      expect(nonFeaturedResults.data.some(m => 
+        m.manufacturer === `ProductCount Manufacturer 2 ${baseTime}`
+      )).toBe(true)
+      
+      // Verify pagination structure is present
+      expect(featuredResults.paging).toBeDefined()
+      expect(featuredResults.paging.total_records).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  describe('update', () => {
+    it('should update an existing manufacturer', async () => {
+      // First create a manufacturer to update
+      const manufacturerName = `Update Manufacturer ${Date.now()}`
+      const initialData = {
+        manufacturer: manufacturerName,
+        description: 'Initial description',
+        country: 'Mexico',
+        featured: false,
+      }
+
+      // Create the manufacturer
+      const createRequest = new TestRequest(initialData)
+      const manufacturer = await store(createRequest as any)
+      const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+
+      // Make sure we have a valid manufacturer ID before proceeding
+      expect(manufacturerId).toBeDefined()
+      if (!manufacturerId) {
+        throw new Error('Failed to create test manufacturer')
+      }
+
+      // Update the manufacturer with new data
+      const updateData = {
+        description: 'Updated description',
+        country: 'Australia',
+        featured: true,
+      }
+
+      const updateRequest = new TestRequest(updateData)
+      const updatedManufacturer = await update(manufacturerId, updateRequest as any)
+
+      // Verify the update was successful
+      expect(updatedManufacturer).toBeDefined()
+      expect(updatedManufacturer?.id).toBe(manufacturerId)
+      expect(updatedManufacturer?.description).toBe('Updated description')
+      expect(updatedManufacturer?.country).toBe('Australia')
+      expect(Boolean(updatedManufacturer?.featured)).toBe(true)
+
+      // The original name should remain unchanged
+      expect(updatedManufacturer?.manufacturer).toBe(manufacturerName)
+    })
+
+    it('should throw an error when trying to update a manufacturer with an existing name', async () => {
+      // Create two manufacturers with unique names
+      const name1 = `Update Conflict 1 ${Date.now()}`
+      const name2 = `Update Conflict 2 ${Date.now()}`
+
+      // Create first manufacturer
+      const firstManufacturerData = {
+        manufacturer: name1,
+        description: 'First test description',
+        country: 'UK',
+      }
+
+      const firstRequest = new TestRequest(firstManufacturerData)
+      const firstManufacturer = await store(firstRequest as any)
+      const firstManufacturerId = firstManufacturer?.id !== undefined ? Number(firstManufacturer.id) : undefined
+      expect(firstManufacturerId).toBeDefined()
+
+      // Create second manufacturer
+      const secondManufacturerData = {
+        manufacturer: name2,
+        description: 'Second test description',
+        country: 'UK',
+      }
+
+      const secondRequest = new TestRequest(secondManufacturerData)
+      const secondManufacturer = await store(secondRequest as any)
+      const secondManufacturerId = secondManufacturer?.id !== undefined ? Number(secondManufacturer.id) : undefined
+      expect(secondManufacturerId).toBeDefined()
+
+      if (!firstManufacturerId || !secondManufacturerId)
+        throw new Error('Failed to create test manufacturers')
+
+      // Try to update the second manufacturer with the first manufacturer's name
+      const updateData = {
+        manufacturer: name1 // This should conflict with the first manufacturer
+      }
+
+      const updateRequest = new TestRequest(updateData)
+      
+      try {
+        await update(secondManufacturerId, updateRequest as any)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        // Check for both possible error message formats
+        const errorMessage = (error as Error).message
+        expect(
+          errorMessage.includes('A manufacturer with this name already exists') || 
+          errorMessage.includes('Duplicate entry') ||
+          errorMessage.includes('Failed to update manufacturer')
+        ).toBe(true)
+      }
+    })
+
+    it('should throw an error when trying to update a non-existent manufacturer', async () => {
+      // Use a non-existent ID
+      const nonExistentId = 99999999
+      
+      const updateData = {
+        description: 'This update should fail',
+      }
+      
+      const updateRequest = new TestRequest(updateData)
+      
+      try {
+        await update(nonExistentId, updateRequest as any)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        expect((error as Error).message).toContain(`Manufacturer with ID ${nonExistentId} not found`)
+      }
+    })
+  })
+
+  describe('updateFeaturedStatus', () => {
+    it('should update a manufacturer featured status', async () => {
+      // Create a manufacturer with featured = false
+      const manufacturerName = `Featured Status Test ${Date.now()}`
+      const requestData = {
+        manufacturer: manufacturerName,
+        description: 'Test featured status update',
+        country: 'India',
+        featured: false,
+      }
+
+      const request = new TestRequest(requestData)
+      const manufacturer = await store(request as any)
+      const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+
+      // Make sure we have a valid manufacturer ID before proceeding
+      expect(manufacturerId).toBeDefined()
+      if (!manufacturerId) {
+        throw new Error('Failed to create test manufacturer')
+      }
+
+      // Update the featured status to true
+      const updatedManufacturer = await updateFeaturedStatus(manufacturerId, true)
+
+      // Verify the update was successful
+      expect(updatedManufacturer).toBeDefined()
+      expect(updatedManufacturer?.id).toBe(manufacturerId)
+      expect(Boolean(updatedManufacturer?.featured)).toBe(true)
+
+      // Test toggling without specifying a value
+      const toggledManufacturer = await updateFeaturedStatus(manufacturerId)
+      expect(Boolean(toggledManufacturer?.featured)).toBe(false) // Should toggle back to false
+    })
+  })
+
+  describe('destroy', () => {
+    it('should delete a manufacturer from the database', async () => {
+      // First create a manufacturer to delete
+      const manufacturerName = `Delete Test ${Date.now()}`
+      const requestData = {
+        manufacturer: manufacturerName,
+        description: 'Test deletion',
+        country: 'South Africa',
+      }
+
+      // Create the manufacturer
+      const request = new TestRequest(requestData)
+      const manufacturer = await store(request as any)
+      const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+
+      // Make sure we have a valid manufacturer ID before proceeding
+      expect(manufacturerId).toBeDefined()
+      if (!manufacturerId) {
+        throw new Error('Failed to create test manufacturer')
+      }
+
+      // Verify the manufacturer exists
+      let fetchedManufacturer = await fetchById(manufacturerId)
+      expect(fetchedManufacturer).toBeDefined()
+
+      // Delete the manufacturer
+      const result = await destroy(manufacturerId)
+      expect(result).toBe(true)
+
+      // Verify the manufacturer no longer exists
+      fetchedManufacturer = await fetchById(manufacturerId)
+      expect(fetchedManufacturer).toBeUndefined()
+    })
+  })
+
+  describe('bulkDestroy', () => {
+    it('should delete multiple manufacturers from the database', async () => {
+      // Create multiple manufacturers to delete
+      const manufacturers = []
+      const manufacturerIds = []
+
+      // Create 3 test manufacturers
+      const baseTime = Date.now()
+      for (let i = 0; i < 3; i++) {
+        const manufacturerName = `Bulk Delete ${i} ${baseTime}`
+        const requestData = {
+          manufacturer: manufacturerName,
+          description: `Bulk deletion test ${i}`,
+          country: 'Egypt',
+        }
+
+        const request = new TestRequest(requestData)
+        const manufacturer = await store(request as any)
+        expect(manufacturer).toBeDefined()
+        
+        const manufacturerId = manufacturer?.id !== undefined ? Number(manufacturer.id) : undefined
+        expect(manufacturerId).toBeDefined()
+        
+        if (manufacturerId) {
+          manufacturerIds.push(manufacturerId)
+          manufacturers.push(manufacturer)
+        }
+      }
+
+      // Ensure we have created the manufacturers
+      expect(manufacturerIds.length).toBe(3)
+
+      // Delete the manufacturers
+      const deletedCount = await bulkDestroy(manufacturerIds)
+      expect(deletedCount).toBe(3)
+
+      // Verify the manufacturers no longer exist
+      for (const id of manufacturerIds) {
+        const fetchedManufacturer = await fetchById(id)
+        expect(fetchedManufacturer).toBeUndefined()
+      }
+    })
+
+    it('should return 0 when trying to delete an empty array of manufacturers', async () => {
+      // Try to delete with an empty array
+      const deletedCount = await bulkDestroy([])
+      expect(deletedCount).toBe(0)
+    })
+  })
+})

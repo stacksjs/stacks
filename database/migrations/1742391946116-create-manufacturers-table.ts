@@ -6,7 +6,7 @@ export async function up(db: Database<any>) {
     .createTable('manufacturers')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
-    .addColumn('manufacturer', 'text', col => col.notNull())
+    .addColumn('manufacturer', 'text', col => col.unique().notNull())
     .addColumn('description', 'text')
     .addColumn('country', 'text', col => col.notNull())
     .addColumn('featured', 'integer')

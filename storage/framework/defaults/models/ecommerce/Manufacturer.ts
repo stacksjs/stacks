@@ -34,6 +34,7 @@ export default {
   attributes: {
     manufacturer: {
       required: true,
+      unique: true,
       order: 1,
       fillable: true,
       validation: {
