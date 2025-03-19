@@ -22,9 +22,9 @@ export interface PersonalAccessTokensTable {
   device_name?: string
   is_single_use?: boolean
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -234,11 +234,11 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     return this.attributes.is_single_use
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -282,7 +282,7 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.attributes.is_single_use = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

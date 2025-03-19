@@ -814,15 +814,15 @@ export async function generateModelString(
   }
 
   if (useTimestamps) {
-    getFields += `get created_at(): Date | undefined {
+    getFields += `get created_at(): string | undefined {
       return this.attributes.created_at
     }
 
-    get updated_at(): Date | undefined {
+    get updated_at(): string | undefined {
       return this.attributes.updated_at
     }\n\n`
 
-    setFields += `set updated_at(value: Date) {
+    setFields += `set updated_at(value: string) {
       this.attributes.updated_at = value
     }\n\n`
 
@@ -841,11 +841,11 @@ export async function generateModelString(
     // declareFields += `
     //   public deleted_at: Date | undefined
     // `
-    getFields += `get deleted_at(): Date | undefined {
+    getFields += `get deleted_at(): string | undefined {
       return this.attributes.deleted_at
     }\n\n`
 
-    setFields += `set deleted_at(value: Date) {
+    setFields += `set deleted_at(value: string) {
       this.attributes.deleted_at = value
     }\n\n`
 
@@ -883,14 +883,14 @@ export async function generateModelString(
 
   if (useTimestamps) {
     fieldString += `
-        created_at?: Date\n
-        updated_at?: Date
+        created_at?: string\n
+        updated_at?: string
       `
   }
 
   if (useSoftDeletes) {
     fieldString += `
-        deleted_at?: Date
+        deleted_at?: string
       `
   }
 

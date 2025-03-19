@@ -28,9 +28,9 @@ export interface OrdersTable {
   applied_coupon_id?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -252,11 +252,11 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     return this.attributes.applied_coupon_id
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -308,7 +308,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     this.attributes.applied_coupon_id = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

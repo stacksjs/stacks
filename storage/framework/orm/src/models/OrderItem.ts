@@ -15,9 +15,9 @@ export interface OrderItemsTable {
   price: number
   special_instructions?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -199,11 +199,11 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     return this.attributes.special_instructions
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -219,7 +219,7 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
     this.attributes.special_instructions = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

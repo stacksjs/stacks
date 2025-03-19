@@ -24,9 +24,9 @@ export interface ProductReviewsTable {
   images?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -236,11 +236,11 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     return this.attributes.images
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -284,7 +284,7 @@ export class ProductReviewModel extends BaseOrm<ProductReviewModel, ProductRevie
     this.attributes.images = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

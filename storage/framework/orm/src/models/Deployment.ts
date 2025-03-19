@@ -18,9 +18,9 @@ export interface DeploymentsTable {
   terminal_output: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -214,11 +214,11 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     return this.attributes.terminal_output
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -254,7 +254,7 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     this.attributes.terminal_output = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

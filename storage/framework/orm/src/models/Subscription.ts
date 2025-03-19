@@ -22,9 +22,9 @@ export interface SubscriptionsTable {
   last_used_at?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -234,11 +234,11 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     return this.attributes.last_used_at
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -290,7 +290,7 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     this.attributes.last_used_at = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

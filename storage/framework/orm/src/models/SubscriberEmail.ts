@@ -8,11 +8,11 @@ export interface SubscriberEmailsTable {
   id: Generated<number>
   email: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
-  deleted_at?: Date
+  deleted_at?: string
 
 }
 
@@ -170,15 +170,15 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     return this.attributes.email
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
-  get deleted_at(): Date | undefined {
+  get deleted_at(): string | undefined {
     return this.attributes.deleted_at
   }
 
@@ -186,11 +186,11 @@ export class SubscriberEmailModel extends BaseOrm<SubscriberEmailModel, Subscrib
     this.attributes.email = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 
-  set deleted_at(value: Date) {
+  set deleted_at(value: string) {
     this.attributes.deleted_at = value
   }
 

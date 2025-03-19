@@ -16,9 +16,9 @@ export interface PaymentProductsTable {
   provider_id?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -204,11 +204,11 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     return this.attributes.provider_id
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -244,7 +244,7 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
     this.attributes.provider_id = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

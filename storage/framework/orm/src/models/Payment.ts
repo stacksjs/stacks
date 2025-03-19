@@ -27,9 +27,9 @@ export interface PaymentsTable {
   notes?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -251,11 +251,11 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     return this.attributes.notes
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -311,7 +311,7 @@ export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJs
     this.attributes.notes = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

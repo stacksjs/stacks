@@ -21,9 +21,9 @@ export interface CustomersTable {
   avatar?: string
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -229,11 +229,11 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return this.attributes.avatar
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -269,7 +269,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     this.attributes.avatar = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 

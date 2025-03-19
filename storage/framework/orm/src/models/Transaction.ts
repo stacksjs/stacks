@@ -19,9 +19,9 @@ export interface TransactionsTable {
   loyalty_points_redeemed?: number
   uuid?: string
 
-  created_at?: Date
+  created_at?: string
 
-  updated_at?: Date
+  updated_at?: string
 
 }
 
@@ -215,11 +215,11 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     return this.attributes.loyalty_points_redeemed
   }
 
-  get created_at(): Date | undefined {
+  get created_at(): string | undefined {
     return this.attributes.created_at
   }
 
-  get updated_at(): Date | undefined {
+  get updated_at(): string | undefined {
     return this.attributes.updated_at
   }
 
@@ -255,7 +255,7 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     this.attributes.loyalty_points_redeemed = value
   }
 
-  set updated_at(value: Date) {
+  set updated_at(value: string) {
     this.attributes.updated_at = value
   }
 
