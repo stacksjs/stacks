@@ -124,383 +124,382 @@ describe('Gift Card Module', () => {
       expect(giftCard?.initial_balance).toBe(75)
       expect(giftCard?.currency).toBe('EUR')
       expect(giftCard?.status).toBe('ACTIVE') // Default value
-      expect(giftCard?.is_active).toBe(true) // Default value
+      expect(Boolean(giftCard?.is_active)).toBe(true) // Default value
     })
   })
 
-  // describe('fetchById and fetchByCode', () => {
-  //   it('should fetch a gift card by ID', async () => {
-  //     // First create a gift card to fetch
-  //     const uniqueCode = `GC-FETCH-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 100,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //     }
+  describe('fetchById and fetchByCode', () => {
+    it('should fetch a gift card by ID', async () => {
+      // First create a gift card to fetch
+      const uniqueCode = `GC-FETCH-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 100,
+        currency: 'USD',
+       customer_id: 1,
+      }
 
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Now fetch the gift card by ID
-  //     const fetchedGiftCard = await fetchById(giftCardId)
+      // Now fetch the gift card by ID
+      const fetchedGiftCard = await fetchById(giftCardId)
 
-  //     expect(fetchedGiftCard).toBeDefined()
-  //     expect(fetchedGiftCard?.id).toBe(giftCardId)
-  //     expect(fetchedGiftCard?.code).toBe(uniqueCode)
-  //     expect(fetchedGiftCard?.initial_balance).toBe(100)
-  //   })
+      expect(fetchedGiftCard).toBeDefined()
+      expect(fetchedGiftCard?.id).toBe(giftCardId)
+      expect(fetchedGiftCard?.code).toBe(uniqueCode)
+      expect(fetchedGiftCard?.initial_balance).toBe(100)
+    })
 
-  //   it('should fetch a gift card by code', async () => {
-  //     // Create a gift card with a unique code
-  //     const uniqueCode = `GC-FETCH-CODE-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 150,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //     }
+    it('should fetch a gift card by code', async () => {
+      // Create a gift card with a unique code
+      const uniqueCode = `GC-FETCH-CODE-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 150,
+        currency: 'USD',
+       customer_id: 1,
+      }
 
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     expect(giftCard).toBeDefined()
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      expect(giftCard).toBeDefined()
 
-  //     // Now fetch the gift card by code
-  //     const fetchedGiftCard = await fetchByCode(uniqueCode)
+      // Now fetch the gift card by code
+      const fetchedGiftCard = await fetchByCode(uniqueCode)
 
-  //     expect(fetchedGiftCard).toBeDefined()
-  //     expect(fetchedGiftCard?.code).toBe(uniqueCode)
-  //     expect(fetchedGiftCard?.initial_balance).toBe(150)
-  //   })
-  // })
+      expect(fetchedGiftCard).toBeDefined()
+      expect(fetchedGiftCard?.code).toBe(uniqueCode)
+      expect(fetchedGiftCard?.initial_balance).toBe(150)
+    })
+  })
 
-  // describe('update', () => {
-  //   it('should update an existing gift card', async () => {
-  //     // First create a gift card to update
-  //     const uniqueCode = `GC-UPDATE-${Date.now()}`
-  //     const initialData = {
-  //       code: uniqueCode,
-  //       initial_balance: 100,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //     }
+  describe('update', () => {
+    it('should update an existing gift card', async () => {
+      // First create a gift card to update
+      const uniqueCode = `GC-UPDATE-${Date.now()}`
+      const initialData = {
+        code: uniqueCode,
+        initial_balance: 100,
+        currency: 'USD',
+       customer_id: 1,
+      }
 
-  //     // Create the gift card
-  //     const createRequest = new TestRequest(initialData)
-  //     const giftCard = await store(createRequest as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      // Create the gift card
+      const createRequest = new TestRequest(initialData)
+      const giftCard = await store(createRequest as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Update the gift card with new data
-  //     const updateData = {
-  //       status: 'USED',
-  //       recipient_name: 'Jane Doe',
-  //       personal_message: 'Happy Birthday!',
-  //     }
+      // Update the gift card with new data
+      const updateData = {
+        status: 'USED',
+        recipient_name: 'Jane Doe',
+        personal_message: 'Happy Birthday!',
+      }
 
-  //     const updateRequest = new TestRequest(updateData)
-  //     const updatedGiftCard = await update(giftCardId, updateRequest as any)
+      const updateRequest = new TestRequest(updateData)
+      const updatedGiftCard = await update(giftCardId, updateRequest as any)
 
-  //     // Verify the update was successful
-  //     expect(updatedGiftCard).toBeDefined()
-  //     expect(updatedGiftCard?.id).toBe(giftCardId)
-  //     expect(updatedGiftCard?.status).toBe('USED')
-  //     expect(updatedGiftCard?.recipient_name).toBe('Jane Doe')
-  //     expect(updatedGiftCard?.personal_message).toBe('Happy Birthday!')
+      // Verify the update was successful
+      expect(updatedGiftCard).toBeDefined()
+      expect(updatedGiftCard?.id).toBe(giftCardId)
+      expect(updatedGiftCard?.status).toBe('USED')
+      expect(updatedGiftCard?.recipient_name).toBe('Jane Doe')
+      expect(updatedGiftCard?.personal_message).toBe('Happy Birthday!')
 
-  //     // The original fields should remain unchanged
-  //     expect(updatedGiftCard?.code).toBe(uniqueCode)
-  //     expect(updatedGiftCard?.initial_balance).toBe(100)
-  //     expect(updatedGiftCard?.currency).toBe('USD')
-  //   })
+      // The original fields should remain unchanged
+      expect(updatedGiftCard?.code).toBe(uniqueCode)
+      expect(updatedGiftCard?.initial_balance).toBe(100)
+      expect(updatedGiftCard?.currency).toBe('USD')
+    })
 
-  //   it('should throw an error when trying to update a gift card with an existing code', async () => {
-  //     // Create two gift cards with unique codes
-  //     const code1 = `GC-UPDATE-CONFLICT-1-${Date.now()}`
-  //     const code2 = `GC-UPDATE-CONFLICT-2-${Date.now()}`
+    it('should throw an error when trying to update a gift card with an existing code', async () => {
+      // Create two gift cards with unique codes
+      const code1 = `GC-UPDATE-CONFLICT-1-${Date.now()}`
+      const code2 = `GC-UPDATE-CONFLICT-2-${Date.now()}`
 
-  //     // Create first gift card
-  //     const firstGiftCardData = {
-  //       code: code1,
-  //       initial_balance: 100,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //     }
+      // Create first gift card
+      const firstGiftCardData = {
+        code: code1,
+        initial_balance: 100,
+        currency: 'USD',
+       customer_id: 1,
+      }
 
-  //     const firstRequest = new TestRequest(firstGiftCardData)
-  //     const firstGiftCard = await store(firstRequest as any)
-  //     const firstGiftCardId = firstGiftCard?.id !== undefined ? Number(firstGiftCard.id) : undefined
-  //     expect(firstGiftCardId).toBeDefined()
+      const firstRequest = new TestRequest(firstGiftCardData)
+      const firstGiftCard = await store(firstRequest as any)
+      const firstGiftCardId = firstGiftCard?.id !== undefined ? Number(firstGiftCard.id) : undefined
+      expect(firstGiftCardId).toBeDefined()
 
-  //     // Create second gift card
-  //     const secondGiftCardData = {
-  //       code: code2,
-  //       initial_balance: 200,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //     }
+      // Create second gift card
+      const secondGiftCardData = {
+        code: code2,
+        initial_balance: 200,
+        currency: 'USD',
+       customer_id: 1,
+      }
 
-  //     const secondRequest = new TestRequest(secondGiftCardData)
-  //     const secondGiftCard = await store(secondRequest as any)
-  //     const secondGiftCardId = secondGiftCard?.id !== undefined ? Number(secondGiftCard.id) : undefined
-  //     expect(secondGiftCardId).toBeDefined()
+      const secondRequest = new TestRequest(secondGiftCardData)
+      const secondGiftCard = await store(secondRequest as any)
+      const secondGiftCardId = secondGiftCard?.id !== undefined ? Number(secondGiftCard.id) : undefined
+      expect(secondGiftCardId).toBeDefined()
 
-  //     if (!firstGiftCardId || !secondGiftCardId)
-  //       throw new Error('Failed to create test gift cards')
+      if (!firstGiftCardId || !secondGiftCardId)
+        throw new Error('Failed to create test gift cards')
 
-  //     // Try to update the second gift card with the first gift card's code
-  //     const updateData = {
-  //       code: code1 // This should conflict with the first gift card
-  //     }
+      // Try to update the second gift card with the first gift card's code
+      const updateData = {
+        code: code1 // This should conflict with the first gift card
+      }
 
-  //     const updateRequest = new TestRequest(updateData)
+      const updateRequest = new TestRequest(updateData)
       
-  //     try {
-  //       await update(secondGiftCardId, updateRequest as any)
-  //       // If we get here, the test should fail as we expect an error
-  //       expect(true).toBe(false) // This line should not be reached
-  //     }
-  //     catch (error) {
-  //       expect(error).toBeDefined()
-  //       expect(error instanceof Error).toBe(true)
-  //       // Check for both possible error message formats
-  //       const errorMessage = (error as Error).message
-  //       expect(
-  //         errorMessage.includes('A gift card with this code already exists') || 
-  //         errorMessage.includes('Duplicate entry')
-  //       ).toBe(true)
-  //     }
-  //   })
-  // })
+      try {
+        await update(secondGiftCardId, updateRequest as any)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        // Update to use the exact error message format
+        const errorMessage = (error as Error).message
+        expect(
+          errorMessage.includes('Failed to update gift card: UNIQUE constraint failed: gift_cards.code')
+        ).toBe(true)
+      }
+    })
+  })
 
-  // describe('updateBalance', () => {
-  //   it('should update a gift card balance', async () => {
-  //     // Create a gift card with initial balance
-  //     const uniqueCode = `GC-BALANCE-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 100,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //       status: 'ACTIVE',
-  //       is_active: true,
-  //     }
+  describe('updateBalance', () => {
+    it('should update a gift card balance', async () => {
+      // Create a gift card with initial balance
+      const uniqueCode = `GC-BALANCE-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 100,
+        currency: 'USD',
+       customer_id: 1,
+        status: 'ACTIVE',
+        is_active: true,
+      }
 
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Update the balance by deducting 25
-  //     const updatedGiftCard = await updateBalance(giftCardId, -25)
+      // Update the balance by deducting 25
+      const updatedGiftCard = await updateBalance(giftCardId, -25)
 
-  //     // Verify the update was successful
-  //     expect(updatedGiftCard).toBeDefined()
-  //     expect(updatedGiftCard?.id).toBe(giftCardId)
-  //     expect(updatedGiftCard?.current_balance).toBe(75)
-  //     expect(updatedGiftCard?.status).toBe('ACTIVE')
-  //     expect(updatedGiftCard?.last_used_date).toBeDefined()
+      // Verify the update was successful
+      expect(updatedGiftCard).toBeDefined()
+      expect(updatedGiftCard?.id).toBe(giftCardId)
+      expect(updatedGiftCard?.current_balance).toBe(75)
+      expect(updatedGiftCard?.status).toBe('ACTIVE')
+      expect(updatedGiftCard?.last_used_date).toBeDefined()
 
-  //     // Deduct the remaining balance
-  //     const fullyUsedGiftCard = await updateBalance(giftCardId, -75)
-  //     expect(fullyUsedGiftCard?.current_balance).toBe(0)
-  //     expect(fullyUsedGiftCard?.status).toBe('USED')
-  //   })
+      // Deduct the remaining balance
+      const fullyUsedGiftCard = await updateBalance(giftCardId, -75)
+      expect(fullyUsedGiftCard?.current_balance).toBe(0)
+      expect(fullyUsedGiftCard?.status).toBe('USED')
+    })
 
-  //   it('should throw an error when trying to deduct more than available balance', async () => {
-  //     // Create a gift card with initial balance
-  //     const uniqueCode = `GC-INSUFFICIENT-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 50,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //       status: 'ACTIVE',
-  //       is_active: true,
-  //     }
+    it('should throw an error when trying to deduct more than available balance', async () => {
+      // Create a gift card with initial balance
+      const uniqueCode = `GC-INSUFFICIENT-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 50,
+        currency: 'USD',
+       customer_id: 1,
+        status: 'ACTIVE',
+        is_active: true,
+      }
 
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Try to deduct more than available
-  //     try {
-  //       await updateBalance(giftCardId, -100)
-  //       // If we get here, the test should fail as we expect an error
-  //       expect(true).toBe(false) // This line should not be reached
-  //     }
-  //     catch (error) {
-  //       expect(error).toBeDefined()
-  //       expect(error instanceof Error).toBe(true)
-  //       expect((error as Error).message).toContain('Insufficient gift card balance')
-  //     }
-  //   })
+      // Try to deduct more than available
+      try {
+        await updateBalance(giftCardId, -100)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        expect((error as Error).message).toContain('Insufficient gift card balance')
+      }
+    })
 
-  //   it('should throw an error when trying to update an inactive gift card', async () => {
-  //     // Create an inactive gift card
-  //     const uniqueCode = `GC-INACTIVE-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 50,
-  //       currency: 'USD',
-  //      customer_id: 1,
-  //       status: 'DEACTIVATED',
-  //       is_active: false,
-  //     }
+    it('should throw an error when trying to update an inactive gift card', async () => {
+      // Create an inactive gift card
+      const uniqueCode = `GC-INACTIVE-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 50,
+        currency: 'USD',
+       customer_id: 1,
+        status: 'DEACTIVATED',
+        is_active: false,
+      }
 
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Try to update balance of inactive gift card
-  //     try {
-  //       await updateBalance(giftCardId, -10)
-  //       // If we get here, the test should fail as we expect an error
-  //       expect(true).toBe(false) // This line should not be reached
-  //     }
-  //     catch (error) {
-  //       expect(error).toBeDefined()
-  //       expect(error instanceof Error).toBe(true)
-  //       expect((error as Error).message).toContain('Gift card is not active')
-  //     }
-  //   })
-  // })
+      // Try to update balance of inactive gift card
+      try {
+        await updateBalance(giftCardId, -10)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      }
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        expect((error as Error).message).toContain('Gift card is not active')
+      }
+    })
+  })
 
-  // describe('remove', () => {
-  //   it('should delete a gift card from the database', async () => {
-  //     // First create a gift card to delete
-  //     const uniqueCode = `GC-DELETE-${Date.now()}`
-  //     const requestData = {
-  //       code: uniqueCode,
-  //       initial_balance: 100,
-  //       currency: 'USD',
-  //       customer_id: 1,
-  //     }
+  describe('remove', () => {
+    it('should delete a gift card from the database', async () => {
+      // First create a gift card to delete
+      const uniqueCode = `GC-DELETE-${Date.now()}`
+      const requestData = {
+        code: uniqueCode,
+        initial_balance: 100,
+        currency: 'USD',
+        customer_id: 1,
+      }
 
-  //     // Create the gift card
-  //     const request = new TestRequest(requestData)
-  //     const giftCard = await store(request as any)
-  //     const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+      // Create the gift card
+      const request = new TestRequest(requestData)
+      const giftCard = await store(request as any)
+      const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
 
-  //     // Make sure we have a valid gift card ID before proceeding
-  //     expect(giftCardId).toBeDefined()
-  //     if (!giftCardId) {
-  //       throw new Error('Failed to create test gift card')
-  //     }
+      // Make sure we have a valid gift card ID before proceeding
+      expect(giftCardId).toBeDefined()
+      if (!giftCardId) {
+        throw new Error('Failed to create test gift card')
+      }
 
-  //     // Verify the gift card exists
-  //     let fetchedGiftCard = await fetchById(giftCardId)
-  //     expect(fetchedGiftCard).toBeDefined()
+      // Verify the gift card exists
+      let fetchedGiftCard = await fetchById(giftCardId)
+      expect(fetchedGiftCard).toBeDefined()
 
-  //     // Delete the gift card
-  //     const result = await remove(giftCardId)
-  //     expect(result).toBe(true)
+      // Delete the gift card
+      const result = await remove(giftCardId)
+      expect(result).toBe(true)
 
-  //     // Verify the gift card no longer exists
-  //     fetchedGiftCard = await fetchById(giftCardId)
-  //     expect(fetchedGiftCard).toBeUndefined()
-  //   })
+      // Verify the gift card no longer exists
+      fetchedGiftCard = await fetchById(giftCardId)
+      expect(fetchedGiftCard).toBeUndefined()
+    })
 
-  //   it('should throw an error when trying to delete a non-existent gift card', async () => {
-  //     // Use a very large ID that is unlikely to exist
-  //     const nonExistentId = 99999999
+    it('should throw an error when trying to delete a non-existent gift card', async () => {
+      // Use a very large ID that is unlikely to exist
+      const nonExistentId = 99999999
 
-  //     // Attempt to delete and expect an error
-  //     try {
-  //       await remove(nonExistentId)
-  //       // If we get here, the test should fail as we expect an error
-  //       expect(true).toBe(false) // This line should not be reached
-  //     } 
-  //     catch (error) {
-  //       expect(error).toBeDefined()
-  //       expect(error instanceof Error).toBe(true)
-  //       expect((error as Error).message).toContain(`Gift card with ID ${nonExistentId} not found`)
-  //     }
-  //   })
-  // })
+      // Attempt to delete and expect an error
+      try {
+        await remove(nonExistentId)
+        // If we get here, the test should fail as we expect an error
+        expect(true).toBe(false) // This line should not be reached
+      } 
+      catch (error) {
+        expect(error).toBeDefined()
+        expect(error instanceof Error).toBe(true)
+        expect((error as Error).message).toContain(`Gift card with ID ${nonExistentId} not found`)
+      }
+    })
+  })
 
-  // describe('bulkRemove', () => {
-  //   it('should delete multiple gift cards from the database', async () => {
-  //     // First create multiple gift cards to delete
-  //     const giftCards = []
-  //     const giftCardIds = []
+  describe('bulkRemove', () => {
+    it('should delete multiple gift cards from the database', async () => {
+      // First create multiple gift cards to delete
+      const giftCards = []
+      const giftCardIds = []
 
-  //     // Create 3 test gift cards
-  //     for (let i = 0; i < 3; i++) {
-  //       const uniqueCode = `GC-BULK-DELETE-${i}-${Date.now()}`
-  //       const requestData = {
-  //         code: uniqueCode,
-  //         initial_balance: 50 + (i * 10),
-  //         currency: 'USD',
-  //         customer_id: 1,
-  //       }
+      // Create 3 test gift cards
+      for (let i = 0; i < 3; i++) {
+        const uniqueCode = `GC-BULK-DELETE-${i}-${Date.now()}`
+        const requestData = {
+          code: uniqueCode,
+          initial_balance: 50 + (i * 10),
+          currency: 'USD',
+          customer_id: 1,
+        }
 
-  //       const request = new TestRequest(requestData)
-  //       const giftCard = await store(request as any)
-  //       expect(giftCard).toBeDefined()
+        const request = new TestRequest(requestData)
+        const giftCard = await store(request as any)
+        expect(giftCard).toBeDefined()
         
-  //       const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
-  //       expect(giftCardId).toBeDefined()
+        const giftCardId = giftCard?.id !== undefined ? Number(giftCard.id) : undefined
+        expect(giftCardId).toBeDefined()
         
-  //       if (giftCardId) {
-  //         giftCardIds.push(giftCardId)
-  //         giftCards.push(giftCard)
-  //       }
-  //     }
+        if (giftCardId) {
+          giftCardIds.push(giftCardId)
+          giftCards.push(giftCard)
+        }
+      }
 
-  //     // Ensure we have created the gift cards
-  //     expect(giftCardIds.length).toBe(3)
+      // Ensure we have created the gift cards
+      expect(giftCardIds.length).toBe(3)
 
-  //     // Import the bulkRemove function
-  //     const { bulkRemove } = await import('../gift-cards/destroy')
+      // Import the bulkRemove function
+      const { bulkRemove } = await import('../gift-cards/destroy')
 
-  //     // Delete the gift cards
-  //     const deletedCount = await bulkRemove(giftCardIds)
-  //     expect(deletedCount).toBe(3)
+      // Delete the gift cards
+      const deletedCount = await bulkRemove(giftCardIds)
+      expect(deletedCount).toBe(3)
 
-  //     // Verify the gift cards no longer exist
-  //     for (const id of giftCardIds) {
-  //       const fetchedGiftCard = await fetchById(id)
-  //       expect(fetchedGiftCard).toBeUndefined()
-  //     }
-  //   })
+      // Verify the gift cards no longer exist
+      for (const id of giftCardIds) {
+        const fetchedGiftCard = await fetchById(id)
+        expect(fetchedGiftCard).toBeUndefined()
+      }
+    })
 
-  //   it('should return 0 when trying to delete an empty array of gift cards', async () => {
-  //     // Import the bulkRemove function
-  //     const { bulkRemove } = await import('../gift-cards/destroy')
+    it('should return 0 when trying to delete an empty array of gift cards', async () => {
+      // Import the bulkRemove function
+      const { bulkRemove } = await import('../gift-cards/destroy')
       
-  //     // Try to delete with an empty array
-  //     const deletedCount = await bulkRemove([])
-  //     expect(deletedCount).toBe(0)
-  //   })
-  // })
+      // Try to delete with an empty array
+      const deletedCount = await bulkRemove([])
+      expect(deletedCount).toBe(0)
+    })
+  })
 })

@@ -38,7 +38,7 @@ export async function update(id: number, request: GiftCardRequestType): Promise<
     expiry_date: request.get('expiry_date'),
     last_used_date: request.get('last_used_date'),
     template_id: request.get('template_id'),
-    updated_at: new Date(),
+    updated_at: new Date().toISOString(),
   }
 
   // Remove undefined fields to avoid overwriting with null values
@@ -113,7 +113,7 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
         current_balance: newBalance,
         last_used_date: new Date().toISOString(),
         status: newBalance === 0 ? 'USED' : 'ACTIVE',
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .execute()
