@@ -34,7 +34,7 @@ export async function update(id: number, request: ProductReviewRequestType): Pro
     purchase_date: request.get('purchase_date'),
     images: request.get('images'),
     uuid: request.get('uuid'),
-    updated_at: new Date(),
+    updated_at: new Date().toISOString(),
   }
 
   // If no fields to update, just return the existing review
@@ -94,7 +94,7 @@ export async function updateVotes(
       .updateTable('product_reviews')
       .set({
         [field]: newValue,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .execute()

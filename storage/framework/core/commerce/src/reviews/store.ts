@@ -32,11 +32,13 @@ export async function store(request: ProductRequestType): Promise<ProductReviewJ
       .values(productReviewData)
       .executeTakeFirst()
 
+    const insertId = Number(createdProductReview.insertId) || Number(createdProductReview.numInsertedOrUpdatedRows)
+
     // If insert was successful, retrieve the newly created gift card
-    if (createdProductReview.insertId) {
+    if (insertId) {
       const productReview = await db
         .selectFrom('product_reviews')
-        .where('id', '=', Number(createdProductReview.insertId))
+        .where('id', '=', insertId)
         .selectAll()
         .executeTakeFirst()
 

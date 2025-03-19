@@ -11,10 +11,13 @@ export async function up(db: Database<any>) {
     .addColumn('content', 'text', col => col.notNull())
     .addColumn('is_verified_purchase', 'integer')
     .addColumn('is_approved', 'integer')
-    .addColumn('helpful_votes', 'numeric')
-    .addColumn('unhelpful_votes', 'numeric')
+    .addColumn('helpful_votes', 'numeric', col => col.defaultTo(0))
+    .addColumn('unhelpful_votes', 'numeric', col => col.defaultTo(0))
     .addColumn('purchase_date', 'text')
     .addColumn('images', 'text')
+    .addColumn('customer_id', 'integer', (col) =>
+        col.references('customers.id').onDelete('cascade')
+      ) 
     .addColumn('product_id', 'integer', (col) =>
         col.references('products.id').onDelete('cascade')
       ) 

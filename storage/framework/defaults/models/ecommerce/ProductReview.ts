@@ -95,6 +95,7 @@ export default {
     helpful_votes: {
       required: false,
       order: 8,
+      default: 0,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
@@ -105,6 +106,7 @@ export default {
     unhelpful_votes: {
       required: false,
       order: 9,
+      default: 0,
       fillable: true,
       validation: {
         rule: schema.number().min(0),
