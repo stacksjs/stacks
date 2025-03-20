@@ -29,7 +29,7 @@ export default {
     observe: true,
   },
 
-  belongsTo: ['Product', 'Manufacturer', 'ProductCategory'],
+  belongsTo: ['Product', 'Manufacturer', 'Category'],
 
   attributes: {
     name: {

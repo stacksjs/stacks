@@ -153,7 +153,7 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
 }>> {
   const today = new Date()
   const todayStr = today.toISOString()
-  
+
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - daysRange)
   const startDateStr = startDate.toISOString()
@@ -221,7 +221,7 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
   // Calculate date 12 months ago
   const today = new Date()
   const todayStr = today.toISOString()
-  
+
   const twelveMonthsAgo = new Date(today)
   twelveMonthsAgo.setMonth(today.getMonth() - 11)
 

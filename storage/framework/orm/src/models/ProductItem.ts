@@ -1,8 +1,8 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoryModel } from './Category'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductModel } from './Product'
-import type { ProductCategoryModel } from './ProductCategory'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -15,7 +15,7 @@ export interface ProductItemsTable {
   id: Generated<number>
   product_id: number
   manufacturer_id: number
-  product_category_id: number
+  category_id: number
   name: string
   size?: string
   color?: string
@@ -195,12 +195,12 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return this.attributes.manufacturer
   }
 
-  get product_category_id(): number {
-    return this.attributes.product_category_id
+  get category_id(): number {
+    return this.attributes.category_id
   }
 
-  get product_category(): ProductCategoryModel | undefined {
-    return this.attributes.product_category
+  get category(): CategoryModel | undefined {
+    return this.attributes.category
   }
 
   get id(): number {
@@ -963,12 +963,12 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
     return model
   }
 
-  async productCategoryBelong(): Promise<ProductCategoryModel> {
-    if (this.product_category_id === undefined)
+  async categoryBelong(): Promise<CategoryModel> {
+    if (this.category_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await ProductCategory
-      .where('id', '=', this.product_category_id)
+    const model = await Category
+      .where('id', '=', this.category_id)
       .first()
 
     if (!model)
@@ -1026,8 +1026,8 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
       product: this.product,
       manufacturer_id: this.manufacturer_id,
       manufacturer: this.manufacturer,
-      product_category_id: this.product_category_id,
-      product_category: this.product_category,
+      category_id: this.category_id,
+      category: this.category,
       ...this.customColumns,
     }
 

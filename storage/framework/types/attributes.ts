@@ -29,6 +29,10 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  image_url: string
+  is_active: boolean
+  parent_category_id: string
+  display_order: number
   amount: number
   method: string
   currency: string
@@ -49,7 +53,6 @@ export interface Attributes {
   total_spent: number
   last_order: string
   avatar: string
-  image_url: string
   is_available: boolean
   inventory_count: number
   category_id: string
@@ -78,7 +81,6 @@ export interface Attributes {
   personal_message: string
   is_digital: boolean
   is_reloadable: boolean
-  is_active: boolean
   expiry_date: Date | string
   last_used_date: Date | string
   template_id: string
@@ -120,8 +122,6 @@ export interface Attributes {
   reward_type: string
   discount_percentage: number
   expiry_days: number
-  parent_category_id: string
-  display_order: number
   connection: string
   queue: string
   payload: string

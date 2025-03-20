@@ -1,4 +1,5 @@
 import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
+import type { CategoriesTable } from '../src/models/Category'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
 import type { DeploymentsTable } from '../src/models/Deployment'
@@ -17,7 +18,6 @@ import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
-import type { ProductCategoriesTable } from '../src/models/ProductCategory'
 import type { ProductItemsTable } from '../src/models/ProductItem'
 import type { ProductUnitsTable } from '../src/models/ProductUnit'
 import type { ProductVariantsTable } from '../src/models/ProductVariant'
@@ -74,6 +74,7 @@ export interface Database {
   releases: ReleasesTable
   users: UsersTable
   posts: PostsTable
+  categories: CategoriesTable
   payments: PaymentsTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
@@ -89,7 +90,6 @@ export interface Database {
   loyalty_points: LoyaltyPointsTable
   product_items: ProductItemsTable
   loyalty_rewards: LoyaltyRewardsTable
-  product_categories: ProductCategoriesTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   payment_transactions: PaymentTransactionsTable

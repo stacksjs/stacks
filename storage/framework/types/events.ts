@@ -1,3 +1,4 @@
+import type { CategoryModel } from '../orm/src/models/Category'
 import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
@@ -7,7 +8,6 @@ import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { PaymentModel } from '../orm/src/models/Payment'
 import type { ProductModel } from '../orm/src/models/Product'
-import type { ProductCategoryModel } from '../orm/src/models/ProductCategory'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
@@ -20,6 +20,9 @@ export interface ModelEvents {
   'user:created': UserModel
   'user:updated': UserModel
   'user:deleted': UserModel
+  'category:created': CategoryModel
+  'category:updated': CategoryModel
+  'category:deleted': CategoryModel
   'payment:created': PaymentModel
   'payment:updated': PaymentModel
   'payment:deleted': PaymentModel
@@ -62,8 +65,5 @@ export interface ModelEvents {
   'loyalty-reward:created': LoyaltyRewardModel
   'loyalty-reward:updated': LoyaltyRewardModel
   'loyalty-reward:deleted': LoyaltyRewardModel
-  'product-category:created': ProductCategoryModel
-  'product-category:updated': ProductCategoryModel
-  'product-category:deleted': ProductCategoryModel
 
 }

@@ -25,6 +25,8 @@ interface RequestDataPayment {
   payment_provider: string
   refund_amount: number
   notes: string
+  customer_id: number
+  order_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -42,6 +44,8 @@ export class PaymentRequest extends Request<RequestDataPayment> implements Payme
   public payment_provider = ''
   public refund_amount = 0
   public notes = ''
+  public customer_id = 0
+  public order_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

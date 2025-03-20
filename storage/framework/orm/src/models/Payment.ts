@@ -52,7 +52,7 @@ export type PaymentUpdate = Updateable<PaymentsTable>
 
 export class PaymentModel extends BaseOrm<PaymentModel, PaymentsTable, PaymentJsonResponse> {
   private readonly hidden: Array<keyof PaymentJsonResponse> = []
-  private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid']
+  private readonly fillable: Array<keyof PaymentJsonResponse> = ['amount', 'method', 'status', 'currency', 'reference_number', 'card_last_four', 'card_brand', 'billing_email', 'transaction_id', 'payment_provider', 'refund_amount', 'notes', 'uuid', 'customer_id', 'order_id']
   private readonly guarded: Array<keyof PaymentJsonResponse> = []
   protected attributes = {} as PaymentJsonResponse
   protected originalAttributes = {} as PaymentJsonResponse

@@ -3,8 +3,10 @@ import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
 import type { OrderItemModel } from './OrderItem'
+import type { PaymentModel } from './Payment'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+
 import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
@@ -182,6 +184,10 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
   get order_items(): OrderItemModel[] | [] {
     return this.attributes.order_items
+  }
+
+  get payments(): PaymentModel[] | [] {
+    return this.attributes.payments
   }
 
   get customer_id(): number {
@@ -1038,6 +1044,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
       updated_at: this.updated_at,
 
       order_items: this.order_items,
+      payments: this.payments,
       customer_id: this.customer_id,
       customer: this.customer,
       coupon_id: this.coupon_id,

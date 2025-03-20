@@ -9,4 +9,4 @@ export async function up(db: Database<any>) {
     .addColumn('user_id', 'integer')
     .addColumn('created_at', 'timestamp', col => col.defaultTo(sql.raw('CURRENT_TIMESTAMP')))
     .execute()
-    }
+}

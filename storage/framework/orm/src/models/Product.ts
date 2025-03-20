@@ -1,10 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { CategoryModel } from './Category'
 import type { ManufacturerModel } from './Manufacturer'
-import type { ProductCategoryModel } from './ProductCategory'
 import type { ProductUnitModel } from './ProductUnit'
+import type { ProductVariantModel } from './ProductVariant'
 import type { ReviewModel } from './Review'
 import { randomUUIDv7 } from 'bun'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -15,7 +17,7 @@ import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface ProductsTable {
   id: Generated<number>
-  product_category_id: number
+  category_id: number
   manufacturer_id: number
   name: string
   description?: string
@@ -54,7 +56,7 @@ export type ProductUpdate = Updateable<ProductsTable>
 
 export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJsonResponse> {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
-  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'manufacturer_id', 'product_category_id']
+  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'category_id', 'manufacturer_id']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
   protected attributes = {} as ProductJsonResponse
   protected originalAttributes = {} as ProductJsonResponse
@@ -189,12 +191,16 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return this.attributes.product_units
   }
 
-  get product_category_id(): number {
-    return this.attributes.product_category_id
+  get product_variants(): ProductVariantModel[] | [] {
+    return this.attributes.product_variants
   }
 
-  get product_category(): ProductCategoryModel | undefined {
-    return this.attributes.product_category
+  get category_id(): number {
+    return this.attributes.category_id
+  }
+
+  get category(): CategoryModel | undefined {
+    return this.attributes.category
   }
 
   get manufacturer_id(): number {
@@ -953,12 +959,12 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return instance.applyWhereIn<V>(column, values)
   }
 
-  async productCategoryBelong(): Promise<ProductCategoryModel> {
-    if (this.product_category_id === undefined)
+  async categoryBelong(): Promise<CategoryModel> {
+    if (this.category_id === undefined)
       throw new HttpError(500, 'Relation Error!')
 
-    const model = await ProductCategory
-      .where('id', '=', this.product_category_id)
+    const model = await Category
+      .where('id', '=', this.category_id)
       .first()
 
     if (!model)
@@ -1028,8 +1034,9 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
       reviews: this.reviews,
       product_units: this.product_units,
-      product_category_id: this.product_category_id,
-      product_category: this.product_category,
+      product_variants: this.product_variants,
+      category_id: this.category_id,
+      category: this.category,
       manufacturer_id: this.manufacturer_id,
       manufacturer: this.manufacturer,
       ...this.customColumns,

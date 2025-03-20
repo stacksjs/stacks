@@ -224,6 +224,32 @@ export interface PostRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataCategory {
+  id: number
+  name: string
+  description: string
+  image_url: string
+  is_active: boolean
+  parent_category_id: string
+  display_order: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface CategoryRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataCategory
+  id: number
+  name: string
+  description: string
+  image_url: string
+  is_active: boolean
+  parent_category_id: string
+  display_order: number
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataPayment {
   id: number
   amount: number
@@ -238,6 +264,8 @@ interface RequestDataPayment {
   payment_provider: string
   refund_amount: number
   notes: string
+  customer_id: number
+  order_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -258,6 +286,8 @@ export interface PaymentRequestType extends Request {
   payment_provider: string
   refund_amount: number
   notes: string
+  customer_id: number
+  order_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -348,8 +378,8 @@ interface RequestDataProduct {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  category_id: number
   manufacturer_id: number
-  product_category_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -368,8 +398,8 @@ export interface ProductRequestType extends Request {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  category_id: number
   manufacturer_id: number
-  product_category_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -381,6 +411,7 @@ interface RequestDataProductVariant {
   description: string
   options: string
   status: string[]
+  product_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -394,6 +425,7 @@ export interface ProductVariantRequestType extends Request {
   description: string
   options: string
   status: string[]
+  product_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -710,32 +742,6 @@ export interface LoyaltyRewardRequestType extends Request {
   updated_at?: Date
 }
 
-interface RequestDataProductCategory {
-  id: number
-  name: string
-  description: string
-  image_url: string
-  is_active: boolean
-  parent_category_id: string
-  display_order: number
-  created_at?: Date
-  updated_at?: Date
-}
-export interface ProductCategoryRequestType extends Request {
-  validate: (attributes?: CustomAttributes) => void
-  get: <T = string>(key: string, defaultValue?: T) => T
-  all: () => RequestDataProductCategory
-  id: number
-  name: string
-  description: string
-  image_url: string
-  is_active: boolean
-  parent_category_id: string
-  display_order: number
-  created_at?: Date
-  updated_at?: Date
-}
-
 interface RequestDataFailedJob {
   id: number
   connection: string
@@ -964,4 +970,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | CustomerRequestType | ProductRequestType | ProductVariantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ProductCategoryRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | CategoryRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | CustomerRequestType | ProductRequestType | ProductVariantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType

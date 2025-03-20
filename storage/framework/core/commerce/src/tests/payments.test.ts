@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { refreshDatabase } from '@stacksjs/testing'
 import { db } from '@stacksjs/database'
-import { destroy, bulkDestroy } from '../payments/destroy'
+import { refreshDatabase } from '@stacksjs/testing'
+import { bulkDestroy, destroy } from '../payments/destroy'
+import { fetchMonthlyPaymentTrends, fetchPaymentStats, fetchPaymentStatsByMethod } from '../payments/fetch'
 import { store } from '../payments/store'
-import { fetchPaymentStats, fetchPaymentStatsByMethod, fetchMonthlyPaymentTrends } from '../payments/fetch'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -303,8 +303,8 @@ describe('Payment Module', () => {
   describe('fetchPaymentStats', () => {
     it('should return payment statistics for a specific time period', async () => {
       // Create some test payments for statistics
-      const today = new Date().toISOString() 
-      
+      const today = new Date().toISOString()
+
       // Payment within current period
       const recentPaymentData = {
         order_id: 20,
@@ -315,13 +315,13 @@ describe('Payment Module', () => {
         transaction_id: `TXN-STATS-1-${Date.now()}`,
         created_at: today,
       }
-      
+
       const recentRequest = new TestRequest(recentPaymentData)
       await store(recentRequest as any)
-      
+
       // Fetch stats with a 30-day range
       const stats = await fetchPaymentStats(30)
-      
+
       // Basic structure validation
       expect(stats).toBeDefined()
       expect(stats.total_transactions).toBeGreaterThanOrEqual(1)
@@ -339,7 +339,7 @@ describe('Payment Module', () => {
     it('should return payment statistics grouped by payment method', async () => {
       // Create some test payments with different methods
       const today = new Date().toISOString()
-      
+
       // Credit card payment
       const ccPaymentData = {
         order_id: 30,
@@ -350,7 +350,7 @@ describe('Payment Module', () => {
         transaction_id: `TXN-METHOD-CC-${Date.now()}`,
         created_at: today,
       }
-      
+
       // PayPal payment
       const ppPaymentData = {
         order_id: 31,
@@ -361,24 +361,24 @@ describe('Payment Module', () => {
         transaction_id: `TXN-METHOD-PP-${Date.now()}`,
         created_at: today,
       }
-      
+
       const ccRequest = new TestRequest(ccPaymentData)
       const ppRequest = new TestRequest(ppPaymentData)
-      
+
       await store(ccRequest as any)
       await store(ppRequest as any)
-      
+
       // Fetch stats by method
       const methodStats = await fetchPaymentStatsByMethod(30)
-      
+
       // Validate structure and content
       expect(methodStats).toBeDefined()
-      
+
       // Check if credit_card and paypal methods exist in the results
       // Note: The actual keys might be different based on how the database stores the values
       const methods = Object.keys(methodStats)
       expect(methods.length).toBeGreaterThanOrEqual(0)
-      
+
       // If we find our methods, validate their stats
       for (const method of methods) {
         expect(methodStats[method].count).toBeGreaterThanOrEqual(0)
@@ -392,12 +392,12 @@ describe('Payment Module', () => {
     it('should return monthly payment trends data', async () => {
       // Create some test payments for different months
       const today = new Date().toISOString()
-      
+
       // Previous month date as ISO string
       const previousMonth = new Date()
       previousMonth.setMonth(previousMonth.getMonth() - 1)
       const previousMonthStr = previousMonth.toISOString()
-      
+
       // Current month payment
       const currentMonthPayment = {
         order_id: 40,
@@ -408,7 +408,7 @@ describe('Payment Module', () => {
         transaction_id: `TXN-MONTHLY-1-${Date.now()}`,
         created_at: today,
       }
-      
+
       // Previous month payment
       const previousMonthPayment = {
         order_id: 41,
@@ -419,20 +419,20 @@ describe('Payment Module', () => {
         transaction_id: `TXN-MONTHLY-2-${Date.now()}`,
         created_at: previousMonthStr,
       }
-      
+
       const currentRequest = new TestRequest(currentMonthPayment)
       const previousRequest = new TestRequest(previousMonthPayment)
-      
+
       await store(currentRequest as any)
       await store(previousRequest as any)
-      
+
       // Fetch monthly trends
       const monthlyTrends = await fetchMonthlyPaymentTrends()
-      
+
       // Basic structure validation
       expect(monthlyTrends).toBeDefined()
       expect(Array.isArray(monthlyTrends)).toBe(true)
-      
+
       // Since we're testing with in-memory DB and might have issues with dates,
       // we'll just check the data structure instead of exact values
       if (monthlyTrends.length > 0) {

@@ -1,5 +1,7 @@
 export { default as AccessToken } from './AccessToken'
 
+export { default as Category } from './Category'
+
 export { default as Coupon } from './Coupon'
 
 export { default as Customer } from './Customer'
@@ -35,8 +37,6 @@ export { default as PaymentTransaction } from './PaymentTransaction'
 export { default as Post } from './Post'
 
 export { default as Product } from './Product'
-
-export { default as ProductCategory } from './ProductCategory'
 
 export { default as ProductItem } from './ProductItem'
 

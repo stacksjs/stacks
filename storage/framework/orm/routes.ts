@@ -6,6 +6,12 @@ route.post('users', 'UserStoreOrmAction')
 
 route.get('users/{id}', 'UserShowOrmAction')
 
+route.get('product-categories', 'CategoryIndexOrmAction')
+
+route.post('product-categories', 'CategoryStoreOrmAction')
+
+route.get('product-categories/{id}', 'CategoryShowOrmAction')
+
 route.get('payments', 'PaymentIndexOrmAction')
 
 route.post('payments', 'PaymentStoreOrmAction')
@@ -97,12 +103,6 @@ route.get('loyalty-rewards', 'LoyaltyRewardIndexOrmAction')
 route.post('loyalty-rewards', 'LoyaltyRewardStoreOrmAction')
 
 route.get('loyalty-rewards/{id}', 'LoyaltyRewardShowOrmAction')
-
-route.get('product-categories', 'ProductCategoryIndexOrmAction')
-
-route.post('product-categories', 'ProductCategoryStoreOrmAction')
-
-route.get('product-categories/{id}', 'ProductCategoryShowOrmAction')
 
 route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
 

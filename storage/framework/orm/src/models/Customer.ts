@@ -2,9 +2,11 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { GiftCardModel } from './GiftCard'
 import type { OrderModel } from './Order'
+import type { PaymentModel } from './Payment'
 import type { ReviewModel } from './Review'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -195,6 +197,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   get reviews(): ReviewModel[] | [] {
     return this.attributes.reviews
+  }
+
+  get payments(): PaymentModel[] | [] {
+    return this.attributes.payments
   }
 
   get user_id(): number {
@@ -962,6 +968,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       orders: this.orders,
       gift_cards: this.gift_cards,
       reviews: this.reviews,
+      payments: this.payments,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

@@ -23,8 +23,8 @@ interface RequestDataProduct {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  category_id: number
   manufacturer_id: number
-  product_category_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -40,8 +40,8 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   public preparation_time = 0
   public allergens = ''
   public nutritional_info = ''
+  public category_id = 0
   public manufacturer_id = 0
-  public product_category_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

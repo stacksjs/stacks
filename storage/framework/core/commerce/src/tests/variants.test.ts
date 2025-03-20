@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { destroy, bulkDestroy } from '../variants/destroy'
-import { store, bulkStore, formatVariantOptions, generateVariantCombinations } from '../variants/store'
-import { update, bulkUpdate, updateStatus } from '../variants/update'
+import { bulkDestroy, destroy } from '../variants/destroy'
+import { bulkStore, formatVariantOptions, generateVariantCombinations, store } from '../variants/store'
+import { bulkUpdate, update, updateStatus } from '../variants/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -24,7 +24,7 @@ class TestRequest {
 // Helper function to fetch a variant by ID (similar to fetchById in gift-cards)
 async function fetchVariantById(id: number) {
   const { db } = await import('@stacksjs/database')
-  
+
   return db
     .selectFrom('product_variants')
     .where('id', '=', id)
@@ -407,7 +407,7 @@ describe('Product Variant Module', () => {
       }
 
       const combinations = generateVariantCombinations(optionSets)
-      
+
       expect(combinations.length).toBe(6) // 3 sizes * 2 colors
       expect(combinations).toContainEqual({ size: 'S', color: 'Red' })
       expect(combinations).toContainEqual({ size: 'S', color: 'Blue' })
@@ -425,7 +425,7 @@ describe('Product Variant Module', () => {
       }
 
       const combinations = generateVariantCombinations(optionSets)
-      
+
       expect(combinations.length).toBe(8) // 2 sizes * 2 colors * 2 materials
       expect(combinations).toContainEqual({ size: 'S', color: 'Red', material: 'Cotton' })
       expect(combinations).toContainEqual({ size: 'M', color: 'Blue', material: 'Polyester' })
@@ -442,7 +442,7 @@ describe('Product Variant Module', () => {
       }
 
       const combinations = generateVariantCombinations(optionSets)
-      
+
       expect(combinations.length).toBe(3)
       expect(combinations).toContainEqual({ size: 'S' })
       expect(combinations).toContainEqual({ size: 'M' })
