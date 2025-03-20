@@ -240,6 +240,36 @@ export interface ReviewStats {
 }
 
 /**
+ * Represents comprehensive category statistics
+ */
+export interface CategoryStats {
+  /** Total number of categories in the system */
+  total: number
+  
+  /** Number of currently active categories */
+  active: number
+  
+  /** Number of root categories (no parent) */
+  root_categories: number
+  
+  /** Number of child categories (has parent) */
+  child_categories: number
+  
+  /** Number of categories with images */
+  with_images: number
+  
+  /** Recently added categories */
+  recently_added: Array<any>
+  
+  /** Top parent categories with most children */
+  top_parent_categories: Array<{
+    id: string
+    name: string
+    child_count: number
+  }>
+}
+
+/**
  * Options for fetching product manufacturers
  */
 export interface FetchProductManufacturersOptions {
