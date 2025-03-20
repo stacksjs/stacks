@@ -11,7 +11,6 @@ import type {
   Events,
   GitConfig,
   HashingConfig,
-  JobConfig,
   LibraryConfig,
   Model,
   NotificationConfig,
@@ -140,14 +139,6 @@ export function defineChat(config: ChatConfig): ChatConfig {
 }
 
 export function defineCli(config: CliConfig): CliConfig {
-  return config
-}
-
-export function defineJob(config: JobConfig): JobConfig {
-  return config
-}
-
-export function defineCronJob(config: JobConfig): JobConfig {
   return config
 }
 

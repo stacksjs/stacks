@@ -1,6 +1,6 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
-import { config } from '@stacksjs/config'
+import { getConfig } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
@@ -11,15 +11,15 @@ import { Pool } from 'pg'
 
 // Simple functions with defensive defaults in case the imports failed
 function getEnv(): string {
-  return config?.app?.env || 'local'
+  return getConfig()?.app?.env || 'local'
 }
 
 function getDriver(): string {
-  return config?.database?.default || 'sqlite'
+  return getConfig()?.database?.default || 'sqlite'
 }
 
 function getDatabaseConfig() {
-  return config?.database || { connections: {} }
+  return getConfig()?.database || { connections: {} }
 }
 
 export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {

@@ -8,6 +8,10 @@ export const config: StacksOptions = {
   ...overrides,
 }
 
+export function getConfig(): StacksOptions {
+  return config
+}
+
 export const ai: StacksOptions['ai'] = config.ai
 export const analytics: StacksOptions['analytics'] = config.analytics
 export const app: StacksOptions['app'] = config.app
@@ -37,13 +41,15 @@ export const ui: StacksOptions['ui'] = config.ui
 
 export * from './helpers'
 
-export function determineAppEnv(): string {
-  if (app.env === 'local')
+type AppEnv = 'dev' | 'stage' | 'prod' | string
+
+export function determineAppEnv(): AppEnv {
+  if (app.env === 'local' || app.env === 'development')
     return 'dev'
-  if (app.env === 'development')
-    return 'dev'
+
   if (app.env === 'staging')
     return 'stage'
+
   if (app.env === 'production')
     return 'prod'
 

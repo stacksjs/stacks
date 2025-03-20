@@ -1,3 +1,11 @@
+/**
+ * **Overrides**
+ *
+ * This file is what takes prepares the user config to be merged with
+ * the default config. For anyone that uses this, ensure you define
+ * the alias `~config/` in your tsconfig.json file.
+ */
+
 import type { StacksConfig } from '@stacksjs/types'
 import ai from '~/config/ai'
 import analytics from '~/config/analytics'

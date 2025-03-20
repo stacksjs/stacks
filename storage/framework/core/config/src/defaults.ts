@@ -1,9 +1,7 @@
 import type { StacksOptions } from '@stacksjs/types'
 import { commandsPath, userDatabasePath } from '@stacksjs/path'
 
-// import { userConfig as overrides } from './overrides'
-
-const config: StacksOptions = {
+const defaults: StacksOptions = {
   ai: {
     deploy: false,
     models: [
@@ -687,4 +685,4 @@ const config: StacksOptions = {
   },
 }
 
-export default config
+export default defaults

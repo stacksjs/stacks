@@ -259,7 +259,7 @@ interface SiteConfig {
   path: string
 }
 
-type InfrastuctureOptions = Partial<{
+type InfrastructureOptions = Partial<{
   type: 'serverless' // | 'server' coming soon
   driver: 'aws'
   api: ApiConfig
@@ -336,7 +336,7 @@ export interface CloudOptions {
     [site: string]: string | SiteConfig
   }
 
-  infrastructure: InfrastuctureOptions
+  infrastructure: InfrastructureOptions
 }
 
 export type CloudConfig = Partial<CloudOptions>
