@@ -36,11 +36,13 @@ export async function store(request: PaymentRequestType): Promise<PaymentJsonRes
       .values(paymentData)
       .executeTakeFirst()
 
+    const insertId = Number(createdPayment.insertId) || Number(createdPayment.numInsertedOrUpdatedRows)
+
     // If insert was successful, retrieve the newly created payment
-    if (createdPayment.insertId) {
+    if (insertId) {
       const payment = await db
         .selectFrom('payments')
-        .where('id', '=', Number(createdPayment.insertId))
+        .where('id', '=', insertId)
         .selectAll()
         .executeTakeFirst()
 

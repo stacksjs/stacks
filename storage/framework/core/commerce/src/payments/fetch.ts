@@ -34,17 +34,21 @@ export interface PaymentStats {
  */
 export async function fetchPaymentStats(daysRange: number = 30): Promise<PaymentStats> {
   const today = new Date()
+  const todayStr = today.toISOString()
 
   // Current period (last N days)
   const currentPeriodStart = new Date(today)
   currentPeriodStart.setDate(today.getDate() - daysRange)
+  const currentPeriodStartStr = currentPeriodStart.toISOString()
 
   // Previous period (N days before the current period)
   const previousPeriodEnd = new Date(currentPeriodStart)
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
+  const previousPeriodEndStr = previousPeriodEnd.toISOString()
 
   const previousPeriodStart = new Date(previousPeriodEnd)
   previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
+  const previousPeriodStartStr = previousPeriodStart.toISOString()
 
   // Get current period stats for completed payments
   const currentStats = await db
@@ -53,8 +57,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
       db.fn.count('id').as('transaction_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStartStr)
+    .where('created_at', '<=', todayStr)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -65,8 +69,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
       db.fn.count('id').as('transaction_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('created_at', '>=', previousPeriodStart)
-    .where('created_at', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStartStr)
+    .where('created_at', '<=', previousPeriodEndStr)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -74,8 +78,8 @@ export async function fetchPaymentStats(daysRange: number = 30): Promise<Payment
   const totalTransactions = await db
     .selectFrom('payments')
     .select(db.fn.count('id').as('count'))
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStartStr)
+    .where('created_at', '<=', todayStr)
     .executeTakeFirst()
 
   // Calculate current period stats
@@ -148,8 +152,11 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
   percentage_of_total: number
 }>> {
   const today = new Date()
+  const todayStr = today.toISOString()
+  
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - daysRange)
+  const startDateStr = startDate.toISOString()
 
   // Get total stats for the period
   const totalStats = await db
@@ -158,8 +165,8 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
       db.fn.count('id').as('total_count'),
       db.fn.sum('amount').as('total_revenue'),
     ])
-    .where('created_at', '>=', startDate)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', startDateStr)
+    .where('created_at', '<=', todayStr)
     .where('status', '=', 'completed')
     .executeTakeFirst()
 
@@ -173,8 +180,8 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
       db.fn.count('id').as('count'),
       db.fn.sum('amount').as('revenue'),
     ])
-    .where('created_at', '>=', startDate)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', startDateStr)
+    .where('created_at', '<=', todayStr)
     .where('status', '=', 'completed')
     .groupBy('method')
     .execute()
@@ -213,25 +220,28 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
 }>> {
   // Calculate date 12 months ago
   const today = new Date()
+  const todayStr = today.toISOString()
+  
   const twelveMonthsAgo = new Date(today)
   twelveMonthsAgo.setMonth(today.getMonth() - 11)
 
   // Set to first day of that month
   twelveMonthsAgo.setDate(1)
+  const twelveMonthsAgoStr = twelveMonthsAgo.toISOString()
 
-  // Use the query builder with expressions instead of raw SQL
+  // Use SQLite's strftime function for date extraction
   const monthlyData = await db
     .selectFrom('payments')
     .select([
-      sql`EXTRACT(YEAR FROM date)`.as('year'),
-      sql`EXTRACT(MONTH FROM date)`.as('month'),
+      sql`strftime('%Y', created_at)`.as('year'),
+      sql`strftime('%m', created_at)`.as('month'),
       db.fn.count('id').as('transactions'),
       db.fn.sum('amount').as('revenue'),
     ])
-    .where('created_at', '>=', twelveMonthsAgo)
+    .where('created_at', '>=', twelveMonthsAgoStr)
     .where('status', '=', 'completed')
-    .groupBy(sql`year`)
-    .groupBy(sql`month`)
+    .groupBy(sql`strftime('%Y', created_at)`)
+    .groupBy(sql`strftime('%m', created_at)`)
     .orderBy('year', 'asc')
     .orderBy('month', 'asc')
     .execute()
@@ -243,7 +253,8 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
     const average = transactions > 0 ? revenue / transactions : 0
 
     // Format month name
-    const monthDate = new Date(Number(item.year), Number(item.month) - 1, 1)
+    const monthIndex = Number(item.month) - 1 // Convert month to 0-based index
+    const monthDate = new Date(Number(item.year), monthIndex, 1)
     const monthName = monthDate.toLocaleString('default', { month: 'short' })
 
     return {

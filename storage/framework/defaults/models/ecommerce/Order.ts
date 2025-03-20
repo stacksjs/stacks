@@ -29,7 +29,7 @@ export default {
     observe: true,
   },
 
-  hasMany: ['OrderItem'],
+  hasMany: ['OrderItem', 'Payment'],
   belongsTo: ['Customer', 'Coupon'],
 
   attributes: {

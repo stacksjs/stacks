@@ -130,6 +130,7 @@ export default {
     transaction_id: {
       required: false,
       order: 12,
+      unique: true,
       fillable: true,
       validation: {
         rule: schema.string(),
