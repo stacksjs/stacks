@@ -137,13 +137,14 @@ export async function generateModelString(
         query = query.where('deleted_at', 'is', null)
       }`
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     instanceSoftDeleteStatementsSelectFrom += ` if (instance.softDeletes) {
         instance.selectFromQuery = instance.selectFromQuery.where('deleted_at', 'is', null)
       }`
 
     instanceSoftDeleteStatementsUpdateFrom += `
         const instance = new ${modelName}Model(undefined)
-  
+
         if (instance.softDeletes) {
           return await DB.instance.updateTable('${tableName}')
           .set({
@@ -154,6 +155,7 @@ export async function generateModelString(
         }
       `
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     thisSoftDeleteStatementsUpdateFrom += `if (this.softDeletes) {
         return await DB.instance.updateTable('${tableName}')
         .set({
@@ -216,19 +218,19 @@ export async function generateModelString(
         async ${relationName}() {
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
-  
+
           const firstModel = await DB.instance.selectFrom('${throughTableRelation}')
             .where('${foreignKeyRelation}', '=', this.id)
             .selectAll()
             .executeTakeFirst()
-  
+
           if (! firstModel)
             throw new HttpError(500, 'Model Relation Not Found!')
-  
+
           const finalModel = ${modelRelation}
             .where('${foreignKeyThroughRelation}', '=', firstModel.id)
             .first()
-  
+
           return new ${modelRelation}.modelInstance(finalModel)
         }\n\n`
     }
@@ -263,15 +265,15 @@ export async function generateModelString(
         async ${morphName}(): Promise<${modelRelation}Model | undefined> {
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
-    
+
           const model = await ${modelRelation}
             .where('${relation.modelKey}', '=', '${modelName}')
             .where('${relation.foreignKey}', '=', this.id)
             .first()
-    
+
           if (!model)
             return undefined
-    
+
           return model
         }\n\n`
     }
@@ -295,15 +297,15 @@ export async function generateModelString(
         async ${morphName}(): Promise<${modelRelation}Model[]> {
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
-    
+
           const models = await ${modelRelation}
             .where('${relation.modelKey}', '=', '${modelName}')
             .where('${relation.foreignKey}', '=', this.id)
             .get()
-    
+
           if (!models || !models.length)
             return []
-    
+
           return models
         }\n\n`
     }
@@ -337,14 +339,14 @@ export async function generateModelString(
         async ${relationName}Belong(): Promise<${modelRelation}Model> {
           if (this.${modelKeyRelation} === undefined)
             throw new HttpError(500, 'Relation Error!')
-  
+
           const model = await ${modelRelation}
             .where('id', '=', this.${modelKeyRelation})
             .first()
-  
+
           if (! model)
             throw new HttpError(500, 'Model Relation Not Found!')
-  
+
           return model
         }\n\n`
     }
@@ -358,19 +360,19 @@ export async function generateModelString(
         async ${relationName}() {
           if (this.id === undefined)
             throw new HttpError(500, 'Relation Error!')
-  
+
           const results = await DB.instance.selectFrom('${pivotTable}')
             .where('${pivotKey}', '=', this.id)
             .selectAll()
             .execute()
-  
+
             const tableRelationIds = results.map((result: { ${singular(tableRelation)}_id: number }) => result.${singular(tableRelation)}_id)
-  
+
             if (! tableRelationIds.length)
               throw new HttpError(500, 'Relation Error!')
-  
+
             const relationResults = await ${modelRelation}.whereIn('id', tableRelationIds).get()
-  
+
             return relationResults
         }\n\n`
     }
@@ -455,7 +457,7 @@ export async function generateModelString(
           .where('${likeableForeignKey}', '=', this.id)
           .where('user_id', '=', authUserId)
           .executeTakeFirst()
-        
+
         return !!like
       }
     `
@@ -467,159 +469,159 @@ export async function generateModelString(
 
     billableStatements += ` async createStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const customer = await manageCustomer.createStripeCustomer(this, options)
-  
+
         return customer
       }
-  
+
       async updateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
         const customer = await manageCustomer.updateStripeCustomer(this, options)
-  
+
         return customer
       }
-  
+
       async storeTransaction(productId: number): Promise<PaymentTransactionsTable | undefined> {
         const transaction = await manageTransaction.store(this, productId)
-  
+
         return transaction
       }
-  
+
       async deleteStripeUser(): Promise<Stripe.Response<Stripe.DeletedCustomer>> {
         const deletedCustomer = await manageCustomer.deleteStripeUser(this)
         return deletedCustomer
       }
-  
+
       async createOrGetStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
         const customer = await manageCustomer.createOrGetStripeUser(this, options)
         return customer
       }
-  
+
       async retrieveStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
         const customer = await manageCustomer.retrieveStripeUser(this)
         return customer
       }
-  
+
        async defaultPaymentMethod(): Promise<PaymentMethodModel | undefined> {
         const defaultPaymentMethod = await managePaymentMethod.retrieveDefaultPaymentMethod(this)
-  
+
         return defaultPaymentMethod
       }
-  
+
       async setDefaultPaymentMethod(pmId: number): Promise<Stripe.Response<Stripe.Customer>> {
         const updatedCustomer = await managePaymentMethod.setDefaultPaymentMethod(this, pmId)
-      
+
         return updatedCustomer
       }
-  
+
       async setUserDefaultPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.Customer>> {
         const updatedCustomer = await managePaymentMethod.setUserDefaultPayment(this, paymentMethodId)
-      
+
         return updatedCustomer
       }
-  
+
       async updateDefaultPaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.Customer>> {
         const updatedCustomer = this.setDefaultPaymentMethod(paymentMethodId)
-  
+
         return updatedCustomer
       }
-  
+
       async asStripeUser(): Promise<Stripe.Response<Stripe.Customer> | undefined> {
         return await this.retrieveStripeUser()
       }
-  
+
       async createOrUpdateStripeUser(options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
         const customer = await manageCustomer.createOrUpdateStripeUser(this, options)
         return customer
       }
-  
+
       stripeId(): string {
         return manageCustomer.stripeId(this)
       }
-  
+
       hasStripeId(): boolean {
         return manageCustomer.hasStripeId(this)
       }
-  
+
       async addPaymentMethod(paymentMethodId: string): Promise<Stripe.Response<Stripe.PaymentMethod>> {
         const paymentMethod = await managePaymentMethod.addPaymentMethod(this, paymentMethodId)
-  
+
         return paymentMethod
       }
-  
+
       async updatePaymentMethod(paymentMethodId: string, params?: Stripe.PaymentMethodUpdateParams): Promise<Stripe.Response<Stripe.PaymentMethod>> {
         const updatedPaymentMethod = await managePaymentMethod.updatePaymentMethod(this, paymentMethodId, params)
-  
+
         return updatedPaymentMethod
       }
-  
+
       async deletePaymentMethod(paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
         const deletedPaymentMethod = await managePaymentMethod.deletePaymentMethod(this, paymentMethodId)
         return deletedPaymentMethod
       }
-  
+
       async retrievePaymentMethod(paymentMethod: number): Promise<PaymentMethodsTable | undefined> {
         const defaultPaymentMethod = await managePaymentMethod.retrievePaymentMethod(this, paymentMethod)
-  
+
         return defaultPaymentMethod
       }
-  
+
       async paymentIntent(options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
         if (!this.hasStripeId()) {
           throw new HttpError(404, 'Customer does not exist in Stripe')
         }
-  
+
         const defaultOptions: Stripe.PaymentIntentCreateParams = {
           customer: this.stripeId(),
           currency: 'usd',
           amount: options.amount
         }
-  
+
         const mergedOptions = { ...defaultOptions, ...options }
-  
+
         return await manageCharge.createPayment(this, mergedOptions.amount, mergedOptions)
       }
-  
+
       async syncStripeCustomerDetails(options: StripeCustomerOptions): Promise<Stripe.Response<Stripe.Customer>> {
         const customer = await manageCustomer.syncStripeCustomerDetails(this, options)
-  
+
         return customer
       }
-  
+
       async subscriptionHistory(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
         return manageInvoice.list(this)
       }
-  
+
       async transactionHistory(): Promise<PaymentTransactionsTable[]> {
         return manageTransaction.list(this)
       }
-  
+
       async stripeSubscriptions(): Promise<Stripe.Response<Stripe.ApiList<Stripe.Invoice>>> {
         return manageInvoice.list(this)
       }
-  
+
       async activeSubscription() {
         const subscription = await DB.instance.selectFrom('subscriptions')
           .where('user_id', '=', this.id)
           .where('provider_status', '=', 'active')
           .selectAll()
           .executeTakeFirst()
-  
+
         if (subscription) {
           const providerSubscription = await manageSubscription.retrieve(this, subscription?.provider_id || '')
-  
+
           return { subscription, providerSubscription }
         }
-  
+
         return undefined
       }
-  
+
       async isIncomplete(type: string): Promise<boolean> {
         return await manageSubscription.isIncomplete(this, type)
       }
-      
+
       async paymentMethods(cardType?: string): Promise<PaymentMethodsTable[]> {
         return await managePaymentMethod.listPaymentMethods(this, cardType)
       }
-        
+
       async newSubscriptionInvoice(
         type: string,
         lookupKey: string,
@@ -627,72 +629,72 @@ export async function generateModelString(
       ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
         return await this.newSubscription(type, lookupKey, { ...options, days_until_due: 15, collection_method: 'send_invoice' })
       }
-  
+
       async newSubscription(
         type: string,
         lookupKey: string,
         options: Partial<Stripe.SubscriptionCreateParams> = {},
       ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
         const subscription = await manageSubscription.create(this, type, lookupKey, options)
-  
+
         const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
         const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
-  
+
         return { subscription, paymentIntent }
       }
-      
+
       async updateSubscription(
         type: string,
         lookupKey: string,
         options: Partial<Stripe.SubscriptionUpdateParams> = {},
       ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
         const subscription = await manageSubscription.update(this, type, lookupKey, options)
-  
+
         const latestInvoice = subscription.latest_invoice as Stripe.Invoice | null
         const paymentIntent = latestInvoice?.payment_intent as Stripe.PaymentIntent | undefined
-  
+
         return { subscription, paymentIntent }
       }
-  
+
       async cancelSubscription(
         providerId: string,
         options: Partial<Stripe.SubscriptionCreateParams> = {},
       ): Promise<{ subscription: Stripe.Subscription, paymentIntent?: Stripe.PaymentIntent }> {
         const subscription = await manageSubscription.cancel(providerId, options)
-  
+
         return { subscription }
       }
-  
+
       async createSetupIntent(
         options: Stripe.SetupIntentCreateParams = {}
       ): Promise<Stripe.Response<Stripe.SetupIntent>> {
         const defaultOptions: Partial<Stripe.SetupIntentCreateParams> = {
           metadata: options.metadata,
         }
-      
+
         // Merge any additional provided options
         const mergedOptions = { ...defaultOptions, ...options }
-      
+
         // Call Stripe to create the SetupIntent
         return await manageSetupIntent.create(this, mergedOptions)
       }
-  
+
       async checkout(
         priceIds: CheckoutLineItem[],
         options: CheckoutOptions = {},
       ): Promise<Stripe.Response<Stripe.Checkout.Session>> {
         const newOptions: Partial<Stripe.Checkout.SessionCreateParams> = {}
-  
+
         if (options.enableTax) {
           newOptions.automatic_tax = { enabled: true }
           delete options.enableTax
         }
-  
+
         if (options.allowPromotions) {
           newOptions.allow_promotion_codes = true
           delete options.allowPromotions
         }
-  
+
         const defaultOptions: Partial<Stripe.Checkout.SessionCreateParams> = {
           mode: 'payment',
           customer: await this.createOrGetStripeUser({}).then(customer => customer.id),
@@ -700,11 +702,11 @@ export async function generateModelString(
             price: item.priceId,
             quantity: item.quantity || 1,
           })),
-  
+
         }
-  
+
         const mergedOptions = { ...defaultOptions, ...newOptions, ...options }
-  
+
         return await manageCheckout.create(this, mergedOptions)
       }
       `
@@ -738,18 +740,18 @@ export async function generateModelString(
     twoFactorStatements += `
         async generateTwoFactorForModel() {
           const secret = generateTwoFactorSecret()
-  
+
           await this.update({ 'two_factor_secret': secret })
         }
-  
+
         verifyTwoFactorCode(code: string): boolean {
           const modelTwoFactorSecret = this.two_factor_secret
           let isValid = false
-  
+
           if (typeof modelTwoFactorSecret === 'string') {
             isValid = verifyTwoFactorCode(code, modelTwoFactorSecret)
           }
-  
+
           return isValid
         }
       `
@@ -799,16 +801,16 @@ export async function generateModelString(
 
     whereStatements += `static where${pascalCase(attribute.field)}(value: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
+
           instance.selectFromQuery = instance.selectFromQuery.where('${attribute.field}', '=', value)
-  
+
           return instance
         } \n\n`
 
     whereFunctionStatements += `export async function where${pascalCase(attribute.field)}(value: ${entity}): Promise<${modelName}Model[]> {
           const query = DB.instance.selectFrom('${tableName}').where('${snakeCase(attribute.field)}', '=', value)
           const results: ${modelName}JsonResponse = await query.execute()
-  
+
           return results.map((modelItem: ${modelName}JsonResponse) => new ${modelName}Model(modelItem))
         } \n\n`
   }
@@ -914,12 +916,12 @@ export async function generateModelString(
       import { randomUUIDv7 } from 'bun'
       ${paymentImports}
       ${relationImports}
-  
+
       export interface ${formattedTableName}Table {
         id: Generated<number>
         ${fieldString}
       }
-  
+
       export interface ${modelName}Response {
         data: ${modelName}JsonResponse[]
         paging: {
@@ -933,10 +935,10 @@ export async function generateModelString(
       export interface ${modelName}JsonResponse extends Omit<Selectable<${formattedTableName}Table>, 'password'> {
         [key: string]: any
       }
-        
+
       export type New${modelName} = Insertable<${formattedTableName}Table>
       export type ${modelName}Update = Updateable<${formattedTableName}Table>
-  
+
       export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table, ${modelName}JsonResponse> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
         private readonly fillable: Array<keyof ${modelName}JsonResponse> = ${fillable}
@@ -950,12 +952,12 @@ export async function generateModelString(
         protected hasSelect: boolean
         private hasSaved: boolean
         private customColumns: Record<string, unknown> = {}
-       
+
         /**
          * This model inherits many query methods from BaseOrm:
          * - pluck, chunk, whereExists, has, doesntHave, whereHas, whereDoesntHave
          * - inRandomOrder, max, min, avg, paginate, get, and more
-         * 
+         *
          * See BaseOrm class for the full list of inherited methods.
          */
 
@@ -965,14 +967,14 @@ export async function generateModelString(
 
             this.attributes = { ...${formattedModelName} }
             this.originalAttributes = { ...${formattedModelName} }
-            
+
             Object.keys(${formattedModelName}).forEach(key => {
               if (!(key in this)) {
                  this.customColumns[key] = (${formattedModelName} as ${modelName}JsonResponse)[key]
               }
             })
           }
-  
+
           this.withRelations = []
           this.selectFromQuery = DB.instance.selectFrom('${tableName}')
           this.updateFromQuery = DB.instance.updateTable('${tableName}')
@@ -985,7 +987,7 @@ export async function generateModelString(
           // Handle both single model and array of models
           const modelArray = Array.isArray(models) ? models : [models]
           if (!modelArray.length) return
-        
+
           const modelIds = modelArray.map(model => model.id)
 
           for (const relation of this.withRelations) {
@@ -994,7 +996,7 @@ export async function generateModelString(
               .where('${formattedModelName}_id', 'in', modelIds)
               .selectAll()
               .execute()
-        
+
             if (Array.isArray(models)) {
               models.map((model: ${modelName}JsonResponse) => {
                 const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
@@ -1008,24 +1010,24 @@ export async function generateModelString(
               const records = relatedRecords.filter((record: { ${formattedModelName}_id: number }) => {
                 return record.${formattedModelName}_id === models.id
               })
-        
+
               models[relation] = records.length === 1 ? records[0] : records
             }
           }
         }
-  
+
         static with(relations: string[]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-    
+
           return instance.applyWith(relations)
         }
 
         protected mapCustomGetters(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): void {
           const data = models
-              
+
           if (Array.isArray(data)) {
             data.map((model: ${modelName}JsonResponse) => {
-               
+
               const customGetter = {
                 default: () => {
                 },
@@ -1070,25 +1072,25 @@ export async function generateModelString(
 
         ${getFields}
         ${setFields}
-        
+
         static select(params: (keyof ${modelName}JsonResponse)[] | RawBuilder<string> | string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
+
           return instance.applySelect(params)
         }
-        
+
         // Method to find a ${modelName} by ID
         static async find(id: number): Promise<${modelName}Model | undefined> {
           let query = DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll()
-  
+
           const model = await query.executeTakeFirst()
-  
+
           if (!model) return undefined
-  
+
           const instance = new ${modelName}Model(undefined)
           return instance.createInstance(model)
         }
-        
+
         static async first(): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
 
@@ -1114,7 +1116,7 @@ export async function generateModelString(
 
           return await instance.applyFirstOrFail()
         }
-  
+
         static async all(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(undefined)
 
@@ -1125,13 +1127,13 @@ export async function generateModelString(
           const data = await Promise.all(models.map(async (model: ${modelName}JsonResponse) => {
             return new ${modelName}Model(model)
           }))
-  
+
           return data
         }
-  
+
         static async findOrFail(id: number): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
-          
+
           return await instance.applyFindOrFail(id)
         }
 
@@ -1145,29 +1147,29 @@ export async function generateModelString(
 
         static async latest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
-          
+
           const model = await instance.selectFromQuery
             .selectAll()
             .orderBy(column, 'desc')
             .limit(1)
             .executeTakeFirst()
-            
+
           if (!model) return undefined
-          
+
           return new ${modelName}Model(model)
         }
-        
+
         static async oldest(column: keyof ${formattedTableName}Table = 'created_at'): Promise<${modelName}Model | undefined> {
           const instance = new ${modelName}Model(undefined)
-          
+
           const model = await instance.selectFromQuery
             .selectAll()
             .orderBy(column, 'asc')
             .limit(1)
             .executeTakeFirst()
-            
+
           if (!model) return undefined
-          
+
           return new ${modelName}Model(model)
         }
 
@@ -1299,7 +1301,7 @@ export async function generateModelString(
 
         static async sum(field: keyof ${formattedTableName}Table): Promise<number> {
           const instance = new ${modelName}Model(undefined)
-          
+
           return await instance.applySum(field)
         }
 
@@ -1308,50 +1310,50 @@ export async function generateModelString(
 
           return instance.applyCount()
         }
-        
+
         static async get(): Promise<${modelName}Model[]> {
           const instance = new ${modelName}Model(undefined)
-          
+
           const results = await instance.applyGet()
-          
+
           return results.map((item: ${modelName}JsonResponse) => instance.createInstance(item))
         }
-        
+
         static async pluck<K extends keyof ${modelName}Model>(field: K): Promise<${modelName}Model[K][]> {
           const instance = new ${modelName}Model(undefined)
-          
+
           return await instance.applyPluck(field)
         }
-        
+
         static async chunk(size: number, callback: (models: ${modelName}Model[]) => Promise<void>): Promise<void> {
           const instance = new ${modelName}Model(undefined)
-          
+
           await instance.applyChunk(size, async (models) => {
             const modelInstances = models.map((item: ${modelName}JsonResponse) => instance.createInstance(item))
             await callback(modelInstances)
           })
         }
-        
-        static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{ 
-          data: ${modelName}Model[], 
-          paging: { 
-            total_records: number, 
-            page: number, 
-            total_pages: number 
-          }, 
-          next_cursor: number | null 
+
+        static async paginate(options: { limit?: number, offset?: number, page?: number } = { limit: 10, offset: 0, page: 1 }): Promise<{
+          data: ${modelName}Model[],
+          paging: {
+            total_records: number,
+            page: number,
+            total_pages: number
+          },
+          next_cursor: number | null
         }> {
           const instance = new ${modelName}Model(undefined)
-          
+
           const result = await instance.applyPaginate(options)
-          
+
           return {
             data: result.data.map((item: ${modelName}JsonResponse) => instance.createInstance(item)),
             paging: result.paging,
             next_cursor: result.next_cursor
           }
         }
-        
+
         // Instance method for creating model instances
         createInstance(data: ${modelName}JsonResponse): ${modelName}Model {
           return new ${modelName}Model(data)
@@ -1359,13 +1361,13 @@ export async function generateModelString(
 
         async applyCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const filteredValues = Object.fromEntries(
-            Object.entries(new${modelName}).filter(([key]) => 
+            Object.entries(new${modelName}).filter(([key]) =>
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as New${modelName}
 
           await this.mapCustomSetters(filteredValues)
-          
+
           ${uuidQuery}
 
           const result = await DB.instance.insertInto('${tableName}')
@@ -1384,78 +1386,78 @@ export async function generateModelString(
           ${mittCreateStatement}
           return this.createInstance(model)
         }
-        
+
         async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           return await this.applyCreate(new${modelName})
         }
-        
+
         static async create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const instance = new ${modelName}Model(undefined)
           return await instance.applyCreate(new${modelName})
         }
-  
+
         static async firstOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
           // First try to find a record matching the search criteria
           const instance = new ${modelName}Model(undefined)
-          
+
           // Apply all search conditions
           for (const [key, value] of Object.entries(search)) {
             instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
           }
-          
+
           // Try to find the record
           const existingRecord = await instance.applyFirst()
-          
+
           if (existingRecord) {
             return instance.createInstance(existingRecord)
           }
-          
+
           // If no record exists, create a new one with combined search criteria and values
           const createData = { ...search, ...values } as New${modelName}
           return await ${modelName}Model.create(createData)
         }
-  
+
         static async updateOrCreate(search: Partial<${formattedTableName}Table>, values: New${modelName} = {} as New${modelName}): Promise<${modelName}Model> {
           // First try to find a record matching the search criteria
           const instance = new ${modelName}Model(undefined)
-          
+
           // Apply all search conditions
           for (const [key, value] of Object.entries(search)) {
             instance.selectFromQuery = instance.selectFromQuery.where(key, '=', value)
           }
-          
+
           // Try to find the record
           const existingRecord = await instance.applyFirst()
-          
+
           if (existingRecord) {
             // If record exists, update it with the new values
             const model = instance.createInstance(existingRecord)
             const updatedModel = await model.update(values as ${modelName}Update)
-            
+
             // Return the updated model instance
             if (updatedModel) {
               return updatedModel
             }
-            
+
             // If update didn't return a model, fetch it again to ensure we have latest data
             const refreshedModel = await instance.applyFirst()
             return instance.createInstance(refreshedModel!)
           }
-          
+
           // If no record exists, create a new one with combined search criteria and values
           const createData = { ...search, ...values } as New${modelName}
           return await ${modelName}Model.create(createData)
         }
-  
+
         async update(new${modelName}: ${modelName}Update): Promise<${modelName}Model | undefined> {
           const filteredValues = Object.fromEntries(
-            Object.entries(new${modelName}).filter(([key]) => 
+            Object.entries(new${modelName}).filter(([key]) =>
               !this.guarded.includes(key) && this.fillable.includes(key)
             ),
           ) as ${modelName}Update
-          
+
           await this.mapCustomSetters(filteredValues)
-          
+
           filteredValues.updated_at = new Date().toISOString()
 
           await DB.instance.updateTable('${tableName}')
@@ -1506,7 +1508,7 @@ export async function generateModelString(
 
           return undefined
         }
-  
+
         async save(): Promise<${modelName}Model> {
           // If the model has an ID, update it; otherwise, create a new record
           if (this.id) {
@@ -1515,7 +1517,7 @@ export async function generateModelString(
               .set(this.attributes as ${modelName}Update)
               .where('id', '=', this.id)
               .executeTakeFirst()
-              
+
             // Get the updated data
             const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', this.id)
@@ -1533,7 +1535,7 @@ export async function generateModelString(
             const result = await DB.instance.insertInto('${tableName}')
               .values(this.attributes as New${modelName})
               .executeTakeFirst()
-              
+
             // Get the created data
             const model = await DB.instance.selectFrom('${tableName}')
               .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
@@ -1548,7 +1550,7 @@ export async function generateModelString(
             return this.createInstance(model)
           }
         }
-  
+
         static async createMany(new${modelName}: New${modelName}[]): Promise<void> {
           const instance = new ${modelName}Model(undefined)
 
@@ -1558,9 +1560,9 @@ export async function generateModelString(
                 !instance.guarded.includes(key) && instance.fillable.includes(key),
               ),
             ) as New${modelName}
-        
+
             ${uuidQuery}
-            
+
             return filteredValues
           })
 
@@ -1568,27 +1570,27 @@ export async function generateModelString(
             .values(valuesFiltered)
             .executeTakeFirst()
         }
-  
+
         static async forceCreate(new${modelName}: New${modelName}): Promise<${modelName}Model> {
           const result = await DB.instance.insertInto('${tableName}')
             .values(new${modelName})
             .executeTakeFirst()
-  
+
           const instance = new ${modelName}Model(undefined)
           const model = await DB.instance.selectFrom('${tableName}')
             .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
             .selectAll()
             .executeTakeFirst()
-            
+
           if (!model) {
             throw new HttpError(500, 'Failed to retrieve created ${modelName}')
           }
-  
+
           ${mittCreateStatement}
-  
+
           return instance.createInstance(model)
         }
-  
+
         // Method to remove a ${modelName}
         async delete(): Promise<number> {
           if (this.id === undefined)
@@ -1606,52 +1608,52 @@ export async function generateModelString(
 
         static async remove(id: number): Promise<any> {
           ${removeInstanceStatment}
-  
+
           ${mittDeleteStaticFindStatement}
-  
+
           ${instanceSoftDeleteStatementsUpdateFrom}
-  
+
           ${mittDeleteStatement}
-        
+
           return await DB.instance.deleteFrom('${tableName}')
             .where('id', '=', id)
             .execute()
         }
-  
+
         ${whereStatements}
-        
+
         static whereIn<V = number>(column: keyof ${formattedTableName}Table, values: V[]): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-          
+
           return instance.applyWhereIn<V>(column, values)
         }
-        
+
         ${relationMethods}
-  
+
         ${displayableStatements}
-  
+
         ${billableStatements}
 
         ${likeableStatements}
-  
+
         static distinct(column: keyof ${modelName}JsonResponse): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
+
           return instance.applyDistinct(column)
         }
-  
+
         static join(table: string, firstCol: string, secondCol: string): ${modelName}Model {
           const instance = new ${modelName}Model(undefined)
-  
+
           return instance.applyJoin(table, firstCol, secondCol)
         }
-  
+
         toJSON(): ${modelName}JsonResponse {
           const output = ${jsonFields}
 
           return output
         }
-  
+
         parseResult(model: ${modelName}Model): ${modelName}Model {
           for (const hiddenAttribute of this.hidden) {
             delete model[hiddenAttribute as keyof ${modelName}Model]
@@ -1659,7 +1661,7 @@ export async function generateModelString(
 
           return model
         }
-  
+
         ${twoFactorStatements}
 
         // Add a protected applyFind implementation
@@ -1680,43 +1682,43 @@ export async function generateModelString(
           return this.createInstance(model)
         }
       }
-  
+
       export async function find(id: number): Promise<${modelName}Model | undefined> {
         let query = DB.instance.selectFrom('${tableName}').where('id', '=', id).selectAll()
-  
+
         const model = await query.executeTakeFirst()
-  
+
         if (!model) return undefined
-  
+
         const instance = new ${modelName}Model(undefined)
         return instance.createInstance(model)
       }
-  
+
       export async function count(): Promise<number> {
         const results = await ${modelName}Model.count()
-  
+
         return results
       }
-  
+
       export async function create(new${modelName}: New${modelName}): Promise<${modelName}Model> {
         const instance = new ${modelName}Model(undefined)
         return await instance.applyCreate(new${modelName})
       }
-  
+
       export async function rawQuery(rawQuery: string): Promise<any> {
         return await sql\`\${rawQuery}\`\.execute(DB.instance)
       }
-  
+
       export async function remove(id: number): Promise<void> {
         await DB.instance.deleteFrom('${tableName}')
           .where('id', '=', id)
           .execute()
       }
-  
+
       ${whereFunctionStatements}
-  
+
       export const ${modelName} = ${modelName}Model
-  
+
       export default ${modelName}
       `
 }

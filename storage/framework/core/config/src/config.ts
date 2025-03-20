@@ -1,7 +1,7 @@
 import type { StacksOptions } from '@stacksjs/types'
-import { overrides } from './overrides'
-import { defaults } from './defaults'
 import { initializeDbConfig } from '../../database/src/utils'
+import { defaults } from './defaults'
+import { overrides } from './overrides'
 
 // merged defaults and overrides
 export const config: StacksOptions = {

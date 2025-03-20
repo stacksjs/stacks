@@ -243,9 +243,9 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return this.attributes.inventory_count
   }
 
-  get category_id(): string {
-    return this.attributes.category_id
-  }
+  // get category_id(): string {
+  //   return this.attributes.category_id
+  // }
 
   get preparation_time(): number {
     return this.attributes.preparation_time

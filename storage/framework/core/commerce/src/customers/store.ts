@@ -43,7 +43,7 @@ export async function store(request: CustomerRequestType): Promise<CustomerJsonR
     return undefined
   }
   catch (error) {
-    console.log(error)
+    console.error(error)
     if (error instanceof Error) {
       if (error.message.includes('Duplicate entry') && error.message.includes('email')) {
         throw new Error('A customer with this email already exists')

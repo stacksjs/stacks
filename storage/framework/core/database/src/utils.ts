@@ -32,8 +32,8 @@ let dbConfig = {
       password: '',
       port: 5432,
       prefix: '',
-    }
-  }
+    },
+  },
 }
 
 // Function to initialize the config when it's available

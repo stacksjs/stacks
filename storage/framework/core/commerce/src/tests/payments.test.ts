@@ -145,7 +145,7 @@ describe('Payment Module', () => {
         await store(secondRequest as any)
       }
       catch (error) {
-        console.log(error)
+        console.error(error)
         expect(error).toBeDefined()
         expect(error instanceof Error).toBe(true)
         // Check for the specific error message format

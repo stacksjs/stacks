@@ -220,7 +220,7 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
 }>> {
   // Calculate date 12 months ago
   const today = new Date()
-  const todayStr = today.toISOString()
+  // const todayStr = today.toISOString()
 
   const twelveMonthsAgo = new Date(today)
   twelveMonthsAgo.setMonth(today.getMonth() - 11)
