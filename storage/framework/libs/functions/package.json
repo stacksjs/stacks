@@ -1,7 +1,7 @@
 {
   "name": "hello-world-fx",
   "type": "module",
-  "version": "",
+  "version": "0.70.0",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
@@ -25,11 +25,9 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     }
   },
-  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist"],
