@@ -5,5 +5,19 @@
     "devUrl": "http://localhost:3004/",
     "frontendDist": "../../dashboard/dist"
   },
-  "identifier": "com.stacks.localhost"
+  "identifier": "com.stacks.localhost",
+  "app": {
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "Stacks App",
+        "width": 800
+      }
+    ]
+  }
 }

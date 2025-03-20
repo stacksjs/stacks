@@ -34,9 +34,9 @@
   "types": "dist/index.d.ts",
   "files": ["README.md", "dist"],
   "scripts": {
-    "dev": "bunx --bun vite -c ../../core/vite-config/src/desktop.ts",
+    "dev": "bunx --bun vite -c ../../core/vite-config/src/dashboard.ts",
     "dev:app": "bunx --bun tauri dev",
-    "build": "bunx --bun vite build -c ../../core/vite-config/src/desktop.ts",
+    "build": "bunx --bun vite build -c ../../core/vite-config/src/dashboard.ts",
     "build:app": "bunx --bun tauri build",
     "prepublishOnly": "bun run build",
     "typecheck": "bun tsc --noEmit"

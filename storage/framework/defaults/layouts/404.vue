@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// import backgroundImage from '../../storage/framework/defaults/public/images/background-auth.jpg'
+import backgroundImage from '../../storage/framework/defaults/public/images/background-auth.jpg'
 </script>
 
 <template>
