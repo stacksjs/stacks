@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# delete ../../../bun.lockb
+# delete ../../../bun.lock
 rm ../../bun.lock
 
 # delete all node_modules and dist folders

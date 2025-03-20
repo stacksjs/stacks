@@ -210,7 +210,7 @@ const sidebar = {
             },
             { text: 'Unit & Feature Tests', link: '/bootcamp/how-to/testing' },
             {
-              text: 'Review bun.lockb Diff',
+              text: 'Review bun.lock Diff',
               link: '/bootcamp/how-to/bun-lockb',
             },
           ],

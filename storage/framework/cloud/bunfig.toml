@@ -44,11 +44,11 @@ disableManifest = false
 
 [install.lockfile]
 
-# path to read bun.lockb from
-path = "bun.lockb"
+# path to read bun.lock from
+path = "bun.lock"
 
-# path to save bun.lockb to
-savePath = "bun.lockb"
+# path to save bun.lock to
+savePath = "bun.lock"
 
 # whether to save the lockfile to disk
 save = true

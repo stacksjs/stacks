@@ -2,7 +2,7 @@ import { path as p } from '@stacksjs/path'
 
 export async function cleanProject(): Promise<void> {
   const $ = Bun.$
-  await $`rm -rf ${p.projectPath('bun.lockb')}`
+  await $`rm -rf ${p.projectPath('bun.lock')}`
   await $`rm -rf ${p.projectPath('yarn.lock')}` // just in case
   await $`rm -rf ${p.projectPath('node_modules/')}`
   await $`rm -rf ${p.frameworkPath('dist')}`
