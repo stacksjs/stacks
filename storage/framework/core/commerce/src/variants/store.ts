@@ -30,7 +30,7 @@ export async function store(request: ProductVariantRequestType): Promise<Product
       .values(variantData)
       .executeTakeFirst()
 
-    const variantId = Number(result.insertId)
+    const variantId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
     // Retrieve the newly created product variant
     const variant = await db

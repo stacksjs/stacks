@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('product_reviews')
+    .createTable('reviews')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
     .addColumn('rating', 'numeric', col => col.notNull())
@@ -15,10 +15,12 @@ export async function up(db: Database<any>) {
     .addColumn('unhelpful_votes', 'numeric', col => col.defaultTo(0))
     .addColumn('purchase_date', 'text')
     .addColumn('images', 'text')
-    .addColumn('customer_id', 'integer', col =>
-      col.references('customers.id').onDelete('cascade'))
-    .addColumn('product_id', 'integer', col =>
-      col.references('products.id').onDelete('cascade'))
+    .addColumn('customer_id', 'integer', (col) =>
+        col.references('customers.id').onDelete('cascade')
+      ) 
+    .addColumn('product_id', 'integer', (col) =>
+        col.references('products.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
