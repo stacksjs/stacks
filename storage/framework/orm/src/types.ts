@@ -19,12 +19,12 @@ import type { PostsTable } from '../src/models/Post'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductCategoriesTable } from '../src/models/ProductCategory'
 import type { ProductItemsTable } from '../src/models/ProductItem'
-import type { ProductReviewsTable } from '../src/models/ProductReview'
 import type { ProductUnitsTable } from '../src/models/ProductUnit'
 import type { ProductVariantsTable } from '../src/models/ProductVariant'
 import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
+import type { ReviewsTable } from '../src/models/Review'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
@@ -78,9 +78,9 @@ export interface Database {
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
   customers: CustomersTable
-  product_reviews: ProductReviewsTable
   products: ProductsTable
   product_variants: ProductVariantsTable
+  reviews: ReviewsTable
   product_units: ProductUnitsTable
   gift_cards: GiftCardsTable
   orders: OrdersTable

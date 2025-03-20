@@ -9,9 +9,9 @@ import type { PaymentModel } from '../orm/src/models/Payment'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductCategoryModel } from '../orm/src/models/ProductCategory'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
-import type { ProductReviewModel } from '../orm/src/models/ProductReview'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
+import type { ReviewModel } from '../orm/src/models/Review'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 
@@ -29,15 +29,15 @@ export interface ModelEvents {
   'customer:created': CustomerModel
   'customer:updated': CustomerModel
   'customer:deleted': CustomerModel
-  'product-review:created': ProductReviewModel
-  'product-review:updated': ProductReviewModel
-  'product-review:deleted': ProductReviewModel
   'product:created': ProductModel
   'product:updated': ProductModel
   'product:deleted': ProductModel
   'product-variant:created': ProductVariantModel
   'product-variant:updated': ProductVariantModel
   'product-variant:deleted': ProductVariantModel
+  'review:created': ReviewModel
+  'review:updated': ReviewModel
+  'review:deleted': ReviewModel
   'product-unit:created': ProductUnitModel
   'product-unit:updated': ProductUnitModel
   'product-unit:deleted': ProductUnitModel

@@ -1,10 +1,14 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { GiftCardModel } from './GiftCard'
 import type { OrderModel } from './Order'
+import type { ReviewModel } from './Review'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+
 import { HttpError } from '@stacksjs/error-handling'
+
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -183,6 +187,14 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   get orders(): OrderModel[] | [] {
     return this.attributes.orders
+  }
+
+  get gift_cards(): GiftCardModel[] | [] {
+    return this.attributes.gift_cards
+  }
+
+  get reviews(): ReviewModel[] | [] {
+    return this.attributes.reviews
   }
 
   get user_id(): number {
@@ -948,6 +960,8 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       updated_at: this.updated_at,
 
       orders: this.orders,
+      gift_cards: this.gift_cards,
+      reviews: this.reviews,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

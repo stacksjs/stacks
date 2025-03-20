@@ -42,7 +42,7 @@ export type ProductUnitUpdate = Updateable<ProductUnitsTable>
 
 export class ProductUnitModel extends BaseOrm<ProductUnitModel, ProductUnitsTable, ProductUnitJsonResponse> {
   private readonly hidden: Array<keyof ProductUnitJsonResponse> = []
-  private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid']
+  private readonly fillable: Array<keyof ProductUnitJsonResponse> = ['name', 'abbreviation', 'type', 'description', 'is_default', 'uuid', 'product_id']
   private readonly guarded: Array<keyof ProductUnitJsonResponse> = []
   protected attributes = {} as ProductUnitJsonResponse
   protected originalAttributes = {} as ProductUnitJsonResponse

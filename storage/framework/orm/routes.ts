@@ -28,12 +28,6 @@ route.patch('customers/{id}', 'CustomerUpdateOrmAction')
 
 route.delete('customers/{id}', 'CustomerDestroyOrmAction')
 
-route.get('product-reviews', 'ProductReviewIndexOrmAction')
-
-route.post('product-reviews', 'ProductReviewStoreOrmAction')
-
-route.get('product-reviews/{id}', 'ProductReviewShowOrmAction')
-
 route.get('products', 'ProductIndexOrmAction')
 
 route.post('products', 'ProductStoreOrmAction')
@@ -49,6 +43,12 @@ route.get('product-variants/{id}', 'ProductVariantShowOrmAction')
 route.patch('product-variants/{id}', 'ProductVariantUpdateOrmAction')
 
 route.delete('product-variants/{id}', 'ProductVariantDestroyOrmAction')
+
+route.get('product-reviews', 'ReviewIndexOrmAction')
+
+route.post('product-reviews', 'ReviewStoreOrmAction')
+
+route.get('product-reviews/{id}', 'ReviewShowOrmAction')
 
 route.get('product-units', 'ProductUnitIndexOrmAction')
 

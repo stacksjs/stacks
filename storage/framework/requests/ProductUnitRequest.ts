@@ -18,6 +18,7 @@ interface RequestDataProductUnit {
   type: string
   description: string
   is_default: boolean
+  product_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -28,6 +29,7 @@ export class ProductUnitRequest extends Request<RequestDataProductUnit> implemen
   public type = ''
   public description = ''
   public is_default = false
+  public product_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

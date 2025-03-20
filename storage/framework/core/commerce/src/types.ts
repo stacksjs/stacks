@@ -11,7 +11,6 @@ import type { GiftCardJsonResponse } from '../../../orm/src/models/GiftCard'
 import type { ManufacturerJsonResponse } from '../../../orm/src/models/Manufacturer'
 import type { OrderJsonResponse } from '../../../orm/src/models/Order'
 import type { OrderItemModel } from '../../../orm/src/models/OrderItem'
-import type { ProductReviewJsonResponse } from '../../../orm/src/models/ProductReview'
 
 // Re-export the types
 export type {

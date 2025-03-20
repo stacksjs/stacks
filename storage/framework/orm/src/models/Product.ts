@@ -2,9 +2,13 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductCategoryModel } from './ProductCategory'
+import type { ProductUnitModel } from './ProductUnit'
+import type { ReviewModel } from './Review'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
+
 import { HttpError } from '@stacksjs/error-handling'
+
 import { dispatch } from '@stacksjs/events'
 
 import { BaseOrm, DB } from '@stacksjs/orm'
@@ -175,6 +179,14 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get reviews(): ReviewModel[] | [] {
+    return this.attributes.reviews
+  }
+
+  get product_units(): ProductUnitModel[] | [] {
+    return this.attributes.product_units
   }
 
   get product_category_id(): number {
@@ -1014,6 +1026,8 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
       updated_at: this.updated_at,
 
+      reviews: this.reviews,
+      product_units: this.product_units,
       product_category_id: this.product_category_id,
       product_category: this.product_category,
       manufacturer_id: this.manufacturer_id,

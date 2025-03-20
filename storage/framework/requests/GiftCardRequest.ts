@@ -28,6 +28,7 @@ interface RequestDataGiftCard {
   expiry_date: date
   last_used_date: date
   template_id: string
+  customer_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -48,6 +49,7 @@ export class GiftCardRequest extends Request<RequestDataGiftCard> implements Gif
   public expiry_date = ''
   public last_used_date = ''
   public template_id = ''
+  public customer_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

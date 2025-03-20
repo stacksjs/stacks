@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { destroy, bulkDestroy } from '../unit/destroy'
-import { store, bulkStore, formatUnitOptions, getDefaultUnit } from '../unit/store'
-import { update, bulkUpdate, updateDefaultStatus } from '../unit/update'
+import { bulkDestroy, destroy } from '../unit/destroy'
+import { bulkStore, formatUnitOptions, getDefaultUnit, store } from '../unit/store'
+import { bulkUpdate, update, updateDefaultStatus } from '../unit/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -94,14 +94,14 @@ describe('Product Unit Module', () => {
       // Verify first unit is no longer default
       const firstUnitId = firstUnit?.id !== undefined ? Number(firstUnit.id) : undefined
       const secondUnitId = secondUnit?.id !== undefined ? Number(secondUnit.id) : undefined
-      
+
       expect(firstUnitId).toBeDefined()
       expect(secondUnitId).toBeDefined()
-      
+
       if (!firstUnitId || !secondUnitId) {
         throw new Error('Failed to get unit IDs')
       }
-      
+
       // Import fetch functionality to check status
       const { db } = await import('@stacksjs/database')
       const updatedFirstUnit = await db
@@ -109,9 +109,9 @@ describe('Product Unit Module', () => {
         .where('id', '=', firstUnitId)
         .selectAll()
         .executeTakeFirst()
-      
+
       expect(Boolean(updatedFirstUnit?.is_default)).toBe(false)
-      
+
       // Verify second unit is now the default
       const defaultUnit = await getDefaultUnit('weight')
       expect(defaultUnit?.id).toBe(secondUnitId)
@@ -215,7 +215,7 @@ describe('Product Unit Module', () => {
       // Verify only one unit is default
       const weightUnits = await formatUnitOptions('weight')
       expect(weightUnits.length).toBe(2)
-      
+
       // Count default units
       const defaultUnits = weightUnits.filter(unit => unit.is_default)
       expect(defaultUnits.length).toBe(1)
@@ -369,11 +369,11 @@ describe('Product Unit Module', () => {
       // Get the units
       const weightUnits = await formatUnitOptions('weight')
       expect(weightUnits.length).toBe(2)
-      
+
       // Find the non-default unit and make it default
       const nonDefaultUnit = weightUnits.find(unit => !unit.is_default)
       expect(nonDefaultUnit).toBeDefined()
-      
+
       if (!nonDefaultUnit) {
         throw new Error('Could not find non-default unit')
       }
@@ -385,7 +385,7 @@ describe('Product Unit Module', () => {
 
       const updateRequest = new TestRequest(updateData)
       const updatedUnit = await update(Number(nonDefaultUnit.id), updateRequest as any)
-      
+
       expect(updatedUnit).toBeDefined()
       expect(Boolean(updatedUnit?.is_default)).toBe(true)
 
@@ -425,7 +425,7 @@ describe('Product Unit Module', () => {
         .selectFrom('product_units')
         .selectAll()
         .execute()
-      
+
       expect(createdUnits.length).toBe(2)
 
       // Update both units
@@ -502,7 +502,7 @@ describe('Product Unit Module', () => {
         .where('type', '=', 'weight')
         .selectAll()
         .execute()
-      
+
       expect(createdUnits.length).toBe(3)
 
       // Update two non-default units to be default
@@ -526,7 +526,7 @@ describe('Product Unit Module', () => {
       // Get updated units and verify only the last updated unit is default
       const updatedUnits = await formatUnitOptions('weight')
       const defaultUnits = updatedUnits.filter(unit => unit.is_default)
-      
+
       expect(defaultUnits.length).toBe(3)
     })
   })
@@ -594,11 +594,11 @@ describe('Product Unit Module', () => {
       // Get the units
       const weightUnits = await formatUnitOptions('weight')
       expect(weightUnits.length).toBe(2)
-      
+
       // Find the non-default unit
       const nonDefaultUnit = weightUnits.find(unit => !unit.is_default)
       expect(nonDefaultUnit).toBeDefined()
-      
+
       if (!nonDefaultUnit) {
         throw new Error('Could not find non-default unit')
       }
@@ -641,7 +641,7 @@ describe('Product Unit Module', () => {
         .where('id', '=', unitId)
         .selectAll()
         .executeTakeFirst()
-      
+
       expect(fetchedUnit).toBeDefined()
 
       // Delete the unit
@@ -654,7 +654,7 @@ describe('Product Unit Module', () => {
         .where('id', '=', unitId)
         .selectAll()
         .executeTakeFirst()
-      
+
       expect(fetchedUnit).toBeUndefined()
     })
   })
@@ -691,7 +691,7 @@ describe('Product Unit Module', () => {
         .selectFrom('product_units')
         .selectAll()
         .execute()
-      
+
       expect(createdUnits.length).toBe(3)
 
       const unitIds = createdUnits.map(unit => Number(unit.id))
@@ -705,7 +705,7 @@ describe('Product Unit Module', () => {
         .selectFrom('product_units')
         .selectAll()
         .execute()
-      
+
       expect(remainingUnits.length).toBe(0)
     })
 

@@ -4,7 +4,6 @@ import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../orders/destroy'
 import { compareOrdersByPeriod, fetchAll, fetchById, fetchStats } from '../orders/fetch'
 
-
 // Helper function to create test orders
 async function createTestOrder(orderData = {}) {
   const defaultData = {
