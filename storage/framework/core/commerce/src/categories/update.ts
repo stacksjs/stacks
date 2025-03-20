@@ -99,7 +99,7 @@ export async function updateDisplayOrder(id: number, newOrder: number): Promise<
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to update category display order: ${error.message}`)
+      throw new TypeError(`Failed to update category display order: ${error.message}`)
     }
 
     throw error
@@ -137,7 +137,7 @@ export async function updateActiveStatus(id: number, isActive: boolean): Promise
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to update category active status: ${error.message}`)
+      throw new TypeError(`Failed to update category active status: ${error.message}`)
     }
 
     throw error
@@ -163,7 +163,7 @@ export async function updateParent(id: number, newParentId: string | null): Prom
   if (newParentId) {
     // Convert to number for comparison since id is number
     const newParentIdNum = Number(newParentId)
-    
+
     if (newParentIdNum === id) {
       throw new Error('A category cannot be its own parent')
     }
@@ -195,7 +195,8 @@ export async function updateParent(id: number, newParentId: string | null): Prom
         })
         .where('id', '=', id)
         .execute()
-    } else {
+    }
+    else {
       await db
         .updateTable('categories')
         .set({
@@ -211,7 +212,7 @@ export async function updateParent(id: number, newParentId: string | null): Prom
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Failed to update category parent: ${error.message}`)
+      throw new TypeError(`Failed to update category parent: ${error.message}`)
     }
 
     throw error

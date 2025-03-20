@@ -1,0 +1,21 @@
+# Please note, this file is auto-generated based on your ./config & local environment.
+# It's recommended to keep it in your project's root directory, and to commit it.
+#
+# The framework understands your project's dependencies, knows which ones are
+# already installed in your environment, and which aren't — prompting
+# to automatically install missing dependencies when needed.
+#
+# To learn more, please visit:
+# https://stacksjs.org/docs/dependency-management
+
+dependencies:
+  aws.amazon.com/cli: ^2.22.26
+  bun.sh: ^1.2.5
+  info-zip.org/zip: ^3.0
+  info-zip.org/unzip: ^6.0
+  # mailpit.axllent.org: ^1.21.8
+  # redis.io: ^7.4.1
+  sqlite.org: ^3.47.2
+  nodejs.org: ^22.12.0 # only temporarily needed until bun & vue-tsc issue is resolved
+  # openjdk.org: ^21.0.3.6
+  # rust-lang.org: ^1.74.1

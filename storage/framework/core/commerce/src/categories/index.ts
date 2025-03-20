@@ -1,15 +1,24 @@
+// Export all functions from destroy.ts
+export {
+  bulkRemove,
+  deactivate,
+  deactivateChildCategories,
+  remove,
+  removeChildCategories,
+} from './destroy'
+
 // Export all functions from fetch.ts
 export {
+  compareCategoryGrowth,
+  fetchActive,
   fetchAll,
+  fetchByDisplayOrder,
   fetchById,
   fetchByName,
-  fetchActive,
-  fetchRootCategories,
-  fetchChildCategories,
-  fetchByDisplayOrder,
-  fetchStats,
-  compareCategoryGrowth,
   fetchCategoryTree,
+  fetchChildCategories,
+  fetchRootCategories,
+  fetchStats,
 } from './fetch'
 
 // Export all functions from store.ts
@@ -17,19 +26,10 @@ export {
   store,
 } from './store'
 
-// Export all functions from destroy.ts
-export {
-  remove,
-  bulkRemove,
-  removeChildCategories,
-  deactivate,
-  deactivateChildCategories,
-} from './destroy'
-
 // Export all functions from update.ts
 export {
   update,
-  updateDisplayOrder,
   updateActiveStatus,
+  updateDisplayOrder,
   updateParent,
 } from './update'

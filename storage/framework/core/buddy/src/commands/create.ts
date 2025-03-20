@@ -47,7 +47,7 @@ export function create(buddy: CLI): void {
     .action(async (name, options: CreateOptions) => {
       log.debug('Running `buddy new <name>` ...', options)
 
-      const startTime = await intro('stacks new')
+      const startTime = await intro('buddy new')
 
       name = name ?? options.name
       const path = resolve(process.cwd(), name)

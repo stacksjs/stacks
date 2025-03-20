@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { deleteCoupon, deleteCoupons, deleteExpiredCoupons } from '../coupons/destroy'
-import { fetchAll, fetchActive, fetchById, fetchByCode } from '../coupons/fetch'
+import { fetchActive, fetchAll, fetchByCode, fetchById } from '../coupons/fetch'
 import { store } from '../coupons/store'
 import { update } from '../coupons/update'
 
@@ -168,7 +168,7 @@ describe('Coupon Module', () => {
       expect(fetchedCoupon?.id).toBe(couponId)
       expect(fetchedCoupon?.code).toBe(uniqueCode)
       expect(fetchedCoupon?.discount_value).toBe(10)
-      
+
       // Check proper JSON parsing of arrays in fetched data
       expect(Array.isArray(fetchedCoupon?.applicable_products)).toBe(true)
       expect(Array.isArray(fetchedCoupon?.applicable_categories)).toBe(true)
@@ -199,14 +199,14 @@ describe('Coupon Module', () => {
       expect(fetchedCoupon?.discount_type).toBe('fixed')
       expect(fetchedCoupon?.discount_value).toBe(5)
     })
-    
+
     it('should fetch all coupons', async () => {
       // Create multiple coupons
       const codes = []
       for (let i = 0; i < 3; i++) {
         const code = `COUPON-ALL-${i}-${Date.now()}`
         codes.push(code)
-        
+
         const requestData = {
           code,
           discount_type: 'percentage',
@@ -215,32 +215,32 @@ describe('Coupon Module', () => {
           start_date: '2023-01-01',
           end_date: '2023-12-31',
         }
-        
+
         await store(new TestRequest(requestData) as any)
       }
-      
+
       // Fetch all coupons
       const allCoupons = await fetchAll()
-      
+
       // Verify all coupons are fetched
       expect(allCoupons.length).toBeGreaterThanOrEqual(3)
-      
+
       // Check if our created coupons are in the results
       for (const code of codes) {
         const found = allCoupons.some(coupon => coupon.code === code)
         expect(found).toBe(true)
       }
     })
-    
+
     it('should fetch active coupons', async () => {
       // Create an active coupon (current date within range)
       const today = new Date()
       const futureDate = new Date(today)
       futureDate.setMonth(today.getMonth() + 1)
-      
+
       const todayStr = today.toISOString().split('T')[0]
       const futureDateStr = futureDate.toISOString().split('T')[0]
-      
+
       const activeCode = `COUPON-ACTIVE-${Date.now()}`
       const activeData = {
         code: activeCode,
@@ -251,9 +251,9 @@ describe('Coupon Module', () => {
         end_date: futureDateStr,
         is_active: true,
       }
-      
+
       await store(new TestRequest(activeData) as any)
-      
+
       // Create an inactive coupon (same date range but is_active = false)
       const inactiveCode = `COUPON-INACTIVE-${Date.now()}`
       const inactiveData = {
@@ -265,16 +265,16 @@ describe('Coupon Module', () => {
         end_date: futureDateStr,
         is_active: false,
       }
-      
+
       await store(new TestRequest(inactiveData) as any)
-      
+
       // Fetch active coupons
       const activeCoupons = await fetchActive()
-      
+
       // Check that active coupon is included
       const hasActiveCoupon = activeCoupons.data.some(coupon => coupon.code === activeCode)
       expect(hasActiveCoupon).toBe(true)
-      
+
       // Check that inactive coupon is not included
       const hasInactiveCoupon = activeCoupons.data.some(coupon => coupon.code === inactiveCode)
       expect(hasInactiveCoupon).toBe(false)
@@ -324,7 +324,7 @@ describe('Coupon Module', () => {
       expect(updatedCoupon?.description).toBe('Updated description')
       expect(updatedCoupon?.discount_value).toBe(15)
       expect(updatedCoupon?.is_active).toBe(true)
-      
+
       // Check JSON arrays are properly parsed
       expect(updatedCoupon?.applicable_products).toEqual(JSON.parse(JSON.stringify(['product1', 'product2'])))
       expect(updatedCoupon?.applicable_categories).toEqual(JSON.parse(JSON.stringify(['category1'])))
@@ -478,10 +478,10 @@ describe('Coupon Module', () => {
       const pastDate = new Date()
       pastDate.setMonth(pastDate.getMonth() - 1)
       const pastDateStr = pastDate.toISOString().split('T')[0]
-      
+
       const expiredCoupons = []
       const expiredCouponIds = []
-      
+
       // Create 3 expired coupons
       for (let i = 0; i < 3; i++) {
         const uniqueCode = `COUPON-EXPIRED-${i}-${Date.now()}`
@@ -504,12 +504,12 @@ describe('Coupon Module', () => {
           expiredCoupons.push(coupon)
         }
       }
-      
+
       // Create a non-expired coupon
       const futureDate = new Date()
       futureDate.setMonth(futureDate.getMonth() + 1)
       const futureDateStr = futureDate.toISOString().split('T')[0]
-      
+
       const validCode = `COUPON-VALID-${Date.now()}`
       const validData = {
         code: validCode,
@@ -519,21 +519,21 @@ describe('Coupon Module', () => {
         start_date: '2022-01-01',
         end_date: futureDateStr, // End date in the future
       }
-      
+
       const validRequest = new TestRequest(validData)
       const validCoupon = await store(validRequest as any)
       const validCouponId = validCoupon?.id !== undefined ? Number(validCoupon.id) : undefined
-      
+
       // Delete expired coupons
       const deletedCount = await deleteExpiredCoupons()
       expect(deletedCount).toBeGreaterThanOrEqual(expiredCoupons.length)
-      
+
       // Verify expired coupons no longer exist
       for (const id of expiredCouponIds) {
         const fetchedCoupon = await fetchById(id)
         expect(fetchedCoupon).toBeUndefined()
       }
-      
+
       // Verify non-expired coupon still exists
       if (validCouponId) {
         const fetchedValidCoupon = await fetchById(validCouponId)

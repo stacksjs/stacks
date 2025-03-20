@@ -88,7 +88,8 @@ export async function fetchByDisplayOrder(ascending: boolean = true): Promise<Ca
 
   if (ascending) {
     return await query.orderBy('display_order', 'asc').execute()
-  } else {
+  }
+  else {
     return await query.orderBy('display_order', 'desc').execute()
   }
 }
@@ -128,7 +129,7 @@ export async function fetchStats(): Promise<CategoryStats> {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
-  
+
   const recentlyAddedCategories = await db
     .selectFrom('categories')
     .where('created_at', '>=', thirtyDaysAgoStr)
@@ -234,48 +235,49 @@ export async function compareCategoryGrowth(daysRange: number = 30): Promise<{
 export async function fetchCategoryTree(): Promise<any[]> {
   // First get all categories
   const allCategories = await fetchAll()
-  
+
   // Create a map for quick access
   const categoryMap = new Map()
-  allCategories.forEach(category => {
+  allCategories.forEach((category) => {
     categoryMap.set(category.id, {
       ...category,
       children: [],
     })
   })
-  
+
   // Build the tree
   const rootCategories: any[] = []
-  
-  allCategories.forEach(category => {
+
+  allCategories.forEach((category) => {
     const categoryWithChildren = categoryMap.get(category.id)
-    
+
     if (category.parent_category_id) {
       // This is a child category
       const parent = categoryMap.get(category.parent_category_id)
       if (parent) {
         parent.children.push(categoryWithChildren)
       }
-    } else {
+    }
+    else {
       // This is a root category
       rootCategories.push(categoryWithChildren)
     }
   })
-  
+
   // Sort root categories by display_order
   rootCategories.sort((a, b) => a.display_order - b.display_order)
-  
+
   // Sort children by display_order
   const sortChildrenByDisplayOrder = (categories: any[]) => {
     categories.sort((a, b) => a.display_order - b.display_order)
-    categories.forEach(category => {
+    categories.forEach((category) => {
       if (category.children.length > 0) {
         sortChildrenByDisplayOrder(category.children)
       }
     })
   }
-  
+
   sortChildrenByDisplayOrder(rootCategories)
-  
+
   return rootCategories
 }
