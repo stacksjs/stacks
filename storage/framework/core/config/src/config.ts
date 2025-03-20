@@ -1,6 +1,6 @@
 import type { StacksOptions } from '@stacksjs/types'
-import defaults from './defaults'
-import overrides from './overrides'
+import { defaults } from './defaults'
+import { overrides } from './overrides'
 
 // merged defaults and overrides
 export const config: StacksOptions = {
@@ -9,7 +9,10 @@ export const config: StacksOptions = {
 }
 
 export function getConfig(): StacksOptions {
-  return config
+  return {
+    ...defaults,
+    ...overrides,
+  }
 }
 
 export const ai: StacksOptions['ai'] = config.ai

@@ -34,7 +34,7 @@ import team from '~/config/team'
 import ui from '~/config/ui'
 // import docs from '~/docs/config'
 
-const config: StacksConfig = {
+export const overrides: StacksConfig = {
   ai,
   analytics,
   app,
@@ -63,4 +63,4 @@ const config: StacksConfig = {
   ui,
 }
 
-export default config
+export default overrides

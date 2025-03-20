@@ -1,7 +1,7 @@
 import type { StacksOptions } from '@stacksjs/types'
 import { commandsPath, userDatabasePath } from '@stacksjs/path'
 
-const defaults: StacksOptions = {
+export const defaults: StacksOptions = {
   ai: {
     deploy: false,
     models: [
