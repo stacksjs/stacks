@@ -2,8 +2,8 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'ProductCategory',
-  table: 'product_categories',
+  name: 'Category',
+  table: 'categories',
   primaryKey: 'id',
   autoIncrement: false, // Using UUID instead of auto-increment
 
