@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../reviews/destroy'
-import { fetchApprovedByProductId, fetchById, fetchByProductId, fetchByUserId, fetchMostHelpfulByProductId, fetchProductReviewStats } from '../reviews/fetch'
+import { fetchApprovedByProductId, fetchById, fetchByProductId, fetchByUserId, fetchMostHelpfulByProductId, fetchReviewStats } from '../reviews/fetch'
 import { store } from '../reviews/store'
 import { update, updateVotes } from '../reviews/update'
 
@@ -262,7 +262,7 @@ describe('Product Review Module', () => {
       await store(request3 as any)
 
       // Now fetch review statistics
-      const stats = await fetchProductReviewStats(productId)
+      const stats = await fetchReviewStats(productId)
 
       expect(stats).toBeDefined()
       expect(stats.total).toBe(3)

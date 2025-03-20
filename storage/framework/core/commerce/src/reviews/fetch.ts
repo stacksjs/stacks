@@ -1,11 +1,11 @@
 import type { ReviewJsonResponse } from '../../../../orm/src/models/Review'
-import type { FetchProductReviewsOptions, ProductReviewResponse, ProductReviewStats } from '../types'
+import type { FetchReviewsOptions, ReviewResponse, ReviewStats } from '../types'
 import { db } from '@stacksjs/database'
 
 /**
  * Fetch product reviews with pagination
  */
-export async function fetchPaginated(options: FetchProductReviewsOptions = {}): Promise<ProductReviewResponse> {
+export async function fetchPaginated(options: FetchReviewsOptions = {}): Promise<ReviewResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -22,7 +22,7 @@ export async function fetchPaginated(options: FetchProductReviewsOptions = {}): 
   const total = Number(countResult?.total || 0)
 
   // Apply pagination
-  const productReviews = await query
+  const reviews = await query
     .selectAll()
     .limit(limit)
     .offset((page - 1) * limit)
@@ -32,7 +32,7 @@ export async function fetchPaginated(options: FetchProductReviewsOptions = {}): 
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: productReviews,
+    data: reviews,
     paging: {
       total_records: total,
       page,
@@ -56,7 +56,7 @@ export async function fetchById(id: number): Promise<ReviewJsonResponse | undefi
 /**
  * Fetch reviews for a specific product
  */
-  export async function fetchByProductId(productId: number, options: FetchProductReviewsOptions = {}): Promise<ProductReviewResponse> {
+export async function fetchByProductId(productId: number, options: FetchReviewsOptions = {}): Promise<ReviewResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -76,7 +76,7 @@ export async function fetchById(id: number): Promise<ReviewJsonResponse | undefi
   const total = Number(countResult?.total || 0)
 
   // Apply pagination
-  const productReviews = await query
+  const reviews = await query
     .selectAll()
     .limit(limit)
     .offset((page - 1) * limit)
@@ -86,7 +86,7 @@ export async function fetchById(id: number): Promise<ReviewJsonResponse | undefi
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: productReviews,
+    data: reviews,
     paging: {
       total_records: total,
       page,
@@ -99,7 +99,7 @@ export async function fetchById(id: number): Promise<ReviewJsonResponse | undefi
 /**
  * Fetch reviews by user ID
  */
-export async function fetchByUserId(userId: number, options: FetchProductReviewsOptions = {}): Promise<ProductReviewResponse> {
+export async function fetchByUserId(userId: number, options: FetchReviewsOptions = {}): Promise<ReviewResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -119,7 +119,7 @@ export async function fetchByUserId(userId: number, options: FetchProductReviews
   const total = Number(countResult?.total || 0)
 
   // Apply pagination
-  const productReviews = await query
+  const reviews = await query
     .selectAll()
     .limit(limit)
     .offset((page - 1) * limit)
@@ -129,7 +129,7 @@ export async function fetchByUserId(userId: number, options: FetchProductReviews
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: productReviews,
+    data: reviews,
     paging: {
       total_records: total,
       page,
@@ -142,7 +142,7 @@ export async function fetchByUserId(userId: number, options: FetchProductReviews
 /**
  * Fetch approved reviews for a product
  */
-export async function fetchApprovedByProductId(productId: number, options: FetchProductReviewsOptions = {}): Promise<ProductReviewResponse> {
+export async function fetchApprovedByProductId(productId: number, options: FetchReviewsOptions = {}): Promise<ReviewResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -164,7 +164,7 @@ export async function fetchApprovedByProductId(productId: number, options: Fetch
   const total = Number(countResult?.total || 0)
 
   // Apply pagination
-  const productReviews = await query
+  const reviews = await query
     .selectAll()
     .limit(limit)
     .offset((page - 1) * limit)
@@ -174,7 +174,7 @@ export async function fetchApprovedByProductId(productId: number, options: Fetch
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: productReviews,
+    data: reviews,
     paging: {
       total_records: total,
       page,
@@ -187,7 +187,7 @@ export async function fetchApprovedByProductId(productId: number, options: Fetch
 /**
  * Get review statistics for a product
  */
-export async function fetchProductReviewStats(productId: number): Promise<ProductReviewStats> {
+export async function fetchReviewStats(productId: number): Promise<ReviewStats> {
   // Total reviews for the product
   const totalReviews = await db
     .selectFrom('reviews')

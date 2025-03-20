@@ -11,7 +11,7 @@ import type { GiftCardJsonResponse } from '../../../orm/src/models/GiftCard'
 import type { ManufacturerJsonResponse } from '../../../orm/src/models/Manufacturer'
 import type { OrderJsonResponse } from '../../../orm/src/models/Order'
 import type { OrderItemModel } from '../../../orm/src/models/OrderItem'
-
+import type { ReviewJsonResponse } from '../../../orm/src/models/Review'
 // Re-export the types
 export type {
   CustomerJsonResponse,
@@ -214,19 +214,19 @@ export interface GiftCardStats {
   recently_used: GiftCardJsonResponse[]
 }
 
-export interface FetchProductReviewsOptions {
+export interface FetchReviewsOptions {
   page?: number
   limit?: number
 }
 
-export interface ProductReviewResponse extends BaseResponse {
-  data: ProductReviewJsonResponse[]
+export interface ReviewResponse extends BaseResponse {
+  data: ReviewJsonResponse[]
 }
 
 export interface ProductManufacturerResponse extends BaseResponse {
   data: ManufacturerJsonResponse[]
 }
-export interface ProductReviewStats {
+export interface ReviewStats {
   total: number
   average_rating: number
   rating_distribution: {
@@ -236,7 +236,7 @@ export interface ProductReviewStats {
     four_star: number
     five_star: number
   }
-  recent_reviews: ProductReviewJsonResponse[]
+  recent_reviews: ReviewJsonResponse[]
 }
 
 /**

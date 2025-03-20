@@ -1,5 +1,5 @@
-import type { ProductReviewRequestType } from '@stacksjs/orm'
-import type { ProductReviewJsonResponse } from '../../../../orm/src/models/ProductReview'
+import type { ReviewRequestType } from '@stacksjs/orm'
+import type { ReviewJsonResponse } from '../../../../orm/src/models/Review'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -10,7 +10,7 @@ import { fetchById } from './fetch'
  * @param request The updated review data
  * @returns The updated review record
  */
-export async function update(id: number, request: ProductReviewRequestType): Promise<ProductReviewJsonResponse | undefined> {
+export async function update(id: number, request: ReviewRequestType): Promise<ReviewJsonResponse | undefined> {
   // Validate the request data
   await request.validate()
 
@@ -45,7 +45,7 @@ export async function update(id: number, request: ProductReviewRequestType): Pro
   try {
     // Update the review
     await db
-      .updateTable('product_reviews')
+      .updateTable('reviews')
       .set(updateData)
       .where('id', '=', id)
       .execute()
@@ -74,7 +74,7 @@ export async function updateVotes(
   id: number,
   voteType: 'helpful' | 'unhelpful',
   increment: boolean = true,
-): Promise<ProductReviewJsonResponse | undefined> {
+): Promise<ReviewJsonResponse | undefined> {
   // Check if review exists
   const review = await fetchById(id)
 
@@ -91,7 +91,7 @@ export async function updateVotes(
   try {
     // Update the review vote count
     await db
-      .updateTable('product_reviews')
+      .updateTable('reviews')
       .set({
         [field]: newValue,
         updated_at: new Date().toISOString(),
