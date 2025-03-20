@@ -1,25 +1,64 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
-import { getConfig } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
 import { BunWorkerDialect } from 'kysely-bun-worker'
 import { createPool } from 'mysql2'
-
 import { Pool } from 'pg'
 
-// Simple functions with defensive defaults in case the imports failed
+// Use default values to avoid circular dependencies initially
+// These can be overridden later once config is fully loaded
+let appEnv = 'local'
+let dbDriver = 'sqlite'
+let dbConfig = {
+  connections: {
+    sqlite: {
+      database: 'database/stacks.sqlite',
+      prefix: '',
+    },
+    mysql: {
+      name: 'stacks',
+      host: '127.0.0.1',
+      username: 'root',
+      password: '',
+      port: 3306,
+      prefix: '',
+    },
+    postgres: {
+      name: 'stacks',
+      host: '127.0.0.1',
+      username: '',
+      password: '',
+      port: 5432,
+      prefix: '',
+    }
+  }
+}
+
+// Function to initialize the config when it's available
+export function initializeDbConfig(config: any): void {
+  if (config?.app?.env)
+    appEnv = config.app.env
+
+  if (config?.database?.default)
+    dbDriver = config.database.default
+
+  if (config?.database)
+    dbConfig = config.database
+}
+
+// Simple functions with defensive defaults
 function getEnv(): string {
-  return getConfig()?.app?.env || 'local'
+  return appEnv
 }
 
 function getDriver(): string {
-  return getConfig()?.database?.default || 'sqlite'
+  return dbDriver
 }
 
 function getDatabaseConfig() {
-  return getConfig()?.database || { connections: {} }
+  return dbConfig
 }
 
 export function getDialect(): MysqlDialect | PostgresDialect | BunWorkerDialect {

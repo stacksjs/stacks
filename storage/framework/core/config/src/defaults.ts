@@ -76,48 +76,53 @@ export const defaults: StacksOptions = {
   },
 
   cloud: {
-    type: 'serverless',
+    infrastructure: {
+      type: 'serverless',
+      driver: 'aws',
+      environments: ['production', 'staging', 'development'],
 
-    driver: 'aws',
-
-    storage: {},
-
-    environments: ['production', 'staging', 'development'],
-
-    firewall: {
-      enabled: true,
-      countryCodes: [],
-      ipAddresses: [],
-      queryString: [],
-      httpHeaders: [],
-      // ipSets: [],
-      rateLimitPerMinute: 1000,
-      useIpReputationLists: true,
-      useKnownBadInputsRuleSet: true,
-    },
-
-    cdn: {
-      allowedMethods: 'GET_HEAD',
-      cachedMethods: 'GET_HEAD',
-      minTtl: 0,
-      defaultTtl: 86400,
-      maxTtl: 31536000,
-      compress: true,
-      priceClass: 'PriceClass_All',
-      originShieldRegion: 'us-east-1',
-      cookieBehavior: 'none',
-      allowList: {
-        cookies: [],
-        headers: [],
-        queryStrings: [],
-      },
-      realtimeLogs: {
+      firewall: {
         enabled: true,
-        samplingRate: 2,
+        countryCodes: [],
+        ipAddresses: [],
+        queryString: [],
+        httpHeaders: [],
+        // ipSets: [],
+        rateLimitPerMinute: 1000,
+        useIpReputationLists: true,
+        useKnownBadInputsRuleSet: true,
       },
+
+      cdn: {
+        allowedMethods: 'GET_HEAD',
+        cachedMethods: 'GET_HEAD',
+        minTtl: 0,
+        defaultTtl: 86400,
+        maxTtl: 31536000,
+        compress: true,
+        priceClass: 'PriceClass_All',
+        originShieldRegion: 'us-east-1',
+        cookieBehavior: 'none',
+        allowList: {
+          cookies: [],
+          headers: [],
+          queryStrings: [],
+        },
+        realtimeLogs: {
+          enabled: true,
+          samplingRate: 2,
+        },
+      },
+
+      fileSystem: false,
+      storage: {},
     },
 
-    fileSystem: false,
+    // Default site configuration
+    sites: {
+      root: '',
+      path: '',
+    },
   },
 
   database: {
@@ -322,69 +327,69 @@ export const defaults: StacksOptions = {
     ],
 
     messages: {
-      type: 'Select the type of change that you’re committing:',
-      scope: 'Select the SCOPE of this change (optional):',
-      customScope: 'Select the SCOPE of this change:',
-      subject: 'Write a SHORT, IMPERATIVE tense description of the change:\n',
-      body: 'Provide a LONGER description of the change (optional). Use "|" to break new line:\n',
-      breaking: 'List any BREAKING CHANGES (optional). Use "|" to break new line:\n',
-      footerPrefixesSelect: 'Select the ISSUES type of the change list by this change (optional):',
-      customFooterPrefixes: 'Input ISSUES prefix:',
-      footer: 'List any ISSUES by this change. E.g.: #31, #34:\n',
-      confirmCommit: 'Are you sure you want to proceed with the commit above?',
+      type: "Select the type of change that you're committing:",
+      scope: "Select the SCOPE of this change (optional):",
+      customScope: "Select the SCOPE of this change:",
+      subject: "Write a SHORT, IMPERATIVE tense description of the change:\n",
+      body: "Provide a LONGER description of the change (optional). Use \"|\" to break new line:\n",
+      breaking: "List any BREAKING CHANGES (optional). Use \"|\" to break new line:\n",
+      footerPrefixesSelect: "Select the ISSUES type of the change list by this change (optional):",
+      customFooterPrefixes: "Input ISSUES prefix:",
+      footer: "List any ISSUES by this change. E.g.: #31, #34:\n",
+      confirmCommit: "Are you sure you want to proceed with the commit above?",
     },
 
     types: [
       {
-        value: 'feat',
-        name: 'feat:     ✨  A new feature',
-        emoji: ':sparkles:',
+        value: "feat",
+        name: "feat:     ✨  A new feature",
+        emoji: ":sparkles:",
       },
-      { value: 'fix', name: 'fix:      🐛  A bug fix', emoji: ':bug:' },
+      { value: "fix", name: "fix:      🐛  A bug fix", emoji: ":bug:" },
       {
-        value: 'docs',
-        name: 'docs:     📝  Documentation only changes',
-        emoji: ':memo:',
-      },
-      {
-        value: 'style',
-        name: 'style:    💄  Changes that do not affect the meaning of the code',
-        emoji: ':lipstick:',
+        value: "docs",
+        name: "docs:     📝  Documentation only changes",
+        emoji: ":memo:",
       },
       {
-        value: 'refactor',
-        name: 'refactor: ♻️   A code change that neither fixes a bug nor adds a feature',
-        emoji: ':recycle:',
+        value: "style",
+        name: "style:    💄  Changes that do not affect the meaning of the code",
+        emoji: ":lipstick:",
       },
       {
-        value: 'perf',
-        name: 'perf:     ⚡️  A code change that improves performance',
-        emoji: ':zap:',
+        value: "refactor",
+        name: "refactor: ♻️   A code change that neither fixes a bug nor adds a feature",
+        emoji: ":recycle:",
       },
       {
-        value: 'test',
-        name: 'test:     ✅  Adding missing tests or adjusting existing tests',
-        emoji: ':white_check_mark:',
+        value: "perf",
+        name: "perf:     ⚡️  A code change that improves performance",
+        emoji: ":zap:",
       },
       {
-        value: 'build',
-        name: 'build:    📦️  Changes that affect the build system or external dependencies',
-        emoji: ':package:',
+        value: "test",
+        name: "test:     ✅  Adding missing tests or adjusting existing tests",
+        emoji: ":white_check_mark:",
       },
       {
-        value: 'ci',
-        name: 'ci:       🎡  Changes to our CI configuration files and scripts',
-        emoji: ':ferris_wheel:',
+        value: "build",
+        name: "build:    📦️  Changes that affect the build system or external dependencies",
+        emoji: ":package:",
       },
       {
-        value: 'chore',
-        name: 'chore:    🔨  Other changes that don’t modify src or test files',
-        emoji: ':hammer:',
+        value: "ci",
+        name: "ci:       🎡  Changes to our CI configuration files and scripts",
+        emoji: ":ferris_wheel:",
       },
       {
-        value: 'revert',
-        name: 'revert:   ⏪️  Reverts a previous commit',
-        emoji: ':rewind:',
+        value: "chore",
+        name: "chore:    🔨  Other changes that don't modify src or test files",
+        emoji: ":hammer:",
+      },
+      {
+        value: "revert",
+        name: "revert:   ⏪️  Reverts a previous commit",
+        emoji: ":rewind:",
       },
     ],
   },

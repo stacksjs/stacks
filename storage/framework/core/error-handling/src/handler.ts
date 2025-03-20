@@ -3,11 +3,10 @@ import { appendFile, mkdir } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import process from 'node:process'
 import { italic, stripAnsi } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
 import * as path from '@stacksjs/path'
-import { fs } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { isString } from '@stacksjs/validation'
+import fs from 'fs-extra'
 
 type ErrorMessage = string
 
@@ -102,10 +101,20 @@ interface WriteOptions {
   logFile?: string
 }
 
+// Default log path that will be used if config isn't initialized yet
+let defaultLogPath = 'storage/logs/stacks.log'
+
+// Function to update the default log path when config is available
+export function setLogPath(path: string): void {
+  defaultLogPath = path
+}
+
 export async function writeToLogFile(message: string, options?: WriteOptions): Promise<void> {
   const timestamp = new Date().toISOString()
   const formattedMessage = `[${timestamp}] ${message}\n`
-  const logFile = options?.logFile ?? config.logging.logsPath ?? 'storage/logs/stacks.log'
+
+  // Use options or default path instead of config
+  const logFile = options?.logFile ?? defaultLogPath
   const dirPath = dirname(logFile)
 
   if (!fs.existsSync(dirPath)) {

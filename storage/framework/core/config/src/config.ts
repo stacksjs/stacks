@@ -1,6 +1,7 @@
 import type { StacksOptions } from '@stacksjs/types'
-import { defaults } from './defaults'
 import { overrides } from './overrides'
+import { defaults } from './defaults'
+import { initializeDbConfig } from '../../database/src/utils'
 
 // merged defaults and overrides
 export const config: StacksOptions = {
@@ -8,11 +9,11 @@ export const config: StacksOptions = {
   ...overrides,
 }
 
+// Initialize the database config to avoid circular dependencies
+initializeDbConfig(config)
+
 export function getConfig(): StacksOptions {
-  return {
-    ...defaults,
-    ...overrides,
-  }
+  return config
 }
 
 export const ai: StacksOptions['ai'] = config.ai
@@ -43,6 +44,7 @@ export const team: StacksOptions['team'] = config.team
 export const ui: StacksOptions['ui'] = config.ui
 
 export * from './helpers'
+export { defaults, overrides }
 
 type AppEnv = 'dev' | 'stage' | 'prod' | string
 
@@ -61,5 +63,3 @@ export function determineAppEnv(): AppEnv {
 
   return app.env
 }
-
-export { defaults, overrides }
