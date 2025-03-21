@@ -13,7 +13,7 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   // minify: true,
   external: [
-    '@stacksjs/logging'
+    '@stacksjs/logging',
   ],
   plugins: [
     dts({

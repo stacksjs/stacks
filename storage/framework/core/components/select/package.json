@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/select",
   "type": "module",
-  "version": "0.70.1",
+  "version": "0.70.2",
   "description": "Opinionated select components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
