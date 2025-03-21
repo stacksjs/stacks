@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/shell",
   "type": "module",
-  "version": "0.70.7",
+  "version": "0.70.8",
   "description": "A better Stacks shell experience. Currently only fully supporting Oh My Zsh. Stay tuned for more. Or request one!",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
