@@ -50,7 +50,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.8.0",
     "@stacksjs/development": "workspace:*",
-    "@stacksjs/eslint-config": "^4.10.2-beta.1",
+    "@stacksjs/eslint-config": "^4.10.2-beta.2",
     "bun-git-hooks": "^0.1.0",
     "lint-staged": "^15.5.0",
     "publint": "^0.3.9"

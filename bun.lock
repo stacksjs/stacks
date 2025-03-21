@@ -12,11 +12,11 @@
     },
     "storage/framework": {
       "name": "stacks-framework",
-      "version": "0.70.2",
+      "version": "0.70.3",
     },
     "storage/framework/core": {
       "name": "stacks",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/ai": "workspace:*",
@@ -39,7 +39,7 @@
         "@stacksjs/enums": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
-        "@stacksjs/eslint-config": "^4.10.2-beta.1",
+        "@stacksjs/eslint-config": "^4.10.2-beta.2",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/faker": "workspace:*",
         "@stacksjs/git": "workspace:*",
@@ -71,7 +71,7 @@
     },
     "storage/framework/core/actions": {
       "name": "@stacksjs/actions",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -95,7 +95,7 @@
     },
     "storage/framework/core/ai": {
       "name": "@stacksjs/ai",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@aws-sdk/client-bedrock-runtime": "^3.772.0",
         "@aws-sdk/credential-providers": "^3.772.0",
@@ -105,7 +105,7 @@
     },
     "storage/framework/core/alias": {
       "name": "@stacksjs/alias",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -113,14 +113,14 @@
     },
     "storage/framework/core/analytics": {
       "name": "@stacksjs/analytics",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/api": {
       "name": "@stacksjs/api",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/utils": "workspace:*",
@@ -130,7 +130,7 @@
     },
     "storage/framework/core/arrays": {
       "name": "@stacksjs/arrays",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/utils": "workspace:*",
@@ -138,7 +138,7 @@
     },
     "storage/framework/core/auth": {
       "name": "@stacksjs/auth",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@simplewebauthn/browser": "^13.1.0",
         "@simplewebauthn/server": "^13.1.1",
@@ -152,7 +152,7 @@
     },
     "storage/framework/core/browser": {
       "name": "@stacksjs/browser",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/utils": "workspace:*",
@@ -160,7 +160,7 @@
     },
     "storage/framework/core/buddy": {
       "name": "@stacksjs/buddy",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "bin": {
         "stacks": "dist/cli.js",
         "stx": "dist/cli.js",
@@ -218,7 +218,7 @@
     },
     "storage/framework/core/build": {
       "name": "@stacksjs/build",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -232,42 +232,42 @@
     },
     "storage/framework/core/bun-create/bud": {
       "name": "@bun-examples/bud",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/buddy": {
       "name": "@bun-examples/buddy",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stack": {
       "name": "@bun-examples/stack",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stacks": {
       "name": "@bun-examples/stacks",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/bun-create/stx": {
       "name": "@bun-examples/stx",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/core/cache": {
       "name": "@stacksjs/cache",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@aws-sdk/client-dynamodb": "^3.772.0",
         "@stacksjs/config": "workspace:*",
@@ -279,7 +279,7 @@
     },
     "storage/framework/core/calendar": {
       "name": "@stacksjs/calendar-api",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -288,7 +288,7 @@
     },
     "storage/framework/core/chat": {
       "name": "@stacksjs/chat",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -299,7 +299,7 @@
     },
     "storage/framework/core/cli": {
       "name": "@stacksjs/cli",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@antfu/install-pkg": "^1.0.0",
         "@clack/core": "^0.4.1",
@@ -324,7 +324,7 @@
     },
     "storage/framework/core/cloud": {
       "name": "@stacksjs/cloud",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@aws-sdk/client-bedrock": "^3.772.0",
         "@aws-sdk/client-cloudformation": "^3.772.0",
@@ -360,7 +360,7 @@
     },
     "storage/framework/core/collections": {
       "name": "@stacksjs/collections",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "ts-collect": "^0.4.0",
@@ -368,7 +368,7 @@
     },
     "storage/framework/core/commerce": {
       "name": "@stacksjs/commerce",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "ts-spreadsheets": "^0.2.0",
       },
@@ -378,7 +378,7 @@
     },
     "storage/framework/core/components": {
       "name": "@stacksjs/components",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/notification": "workspace:*",
       },
@@ -388,7 +388,7 @@
     },
     "storage/framework/core/components/audio": {
       "name": "@stacksjs/audio",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -403,7 +403,7 @@
     },
     "storage/framework/core/components/auth": {
       "name": "@stacksjs/auths",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -418,7 +418,7 @@
     },
     "storage/framework/core/components/button": {
       "name": "@stacksjs/button",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -433,7 +433,7 @@
     },
     "storage/framework/core/components/calendar": {
       "name": "@stacksjs/calendar",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -448,7 +448,7 @@
     },
     "storage/framework/core/components/combobox": {
       "name": "@stacksjs/combobox",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -465,7 +465,7 @@
     },
     "storage/framework/core/components/command-palette": {
       "name": "@stacksjs/command-palette",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ui": "workspace:*",
@@ -483,7 +483,7 @@
     },
     "storage/framework/core/components/dialog": {
       "name": "@stacksjs/dialog",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -500,7 +500,7 @@
     },
     "storage/framework/core/components/drawer": {
       "name": "@stacksjs/drawer",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -517,7 +517,7 @@
     },
     "storage/framework/core/components/dropdown": {
       "name": "@stacksjs/dropdown",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -534,7 +534,7 @@
     },
     "storage/framework/core/components/image": {
       "name": "@stacksjs/image",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -549,7 +549,7 @@
     },
     "storage/framework/core/components/listbox": {
       "name": "@stacksjs/listbox",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -566,7 +566,7 @@
     },
     "storage/framework/core/components/navigator": {
       "name": "@stacksjs/navigator",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -583,7 +583,7 @@
     },
     "storage/framework/core/components/notification": {
       "name": "@stacksjs/notification",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -599,7 +599,7 @@
     },
     "storage/framework/core/components/payment": {
       "name": "@stacksjs/payment",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -615,7 +615,7 @@
     },
     "storage/framework/core/components/popover": {
       "name": "@stacksjs/popover",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -632,7 +632,7 @@
     },
     "storage/framework/core/components/radio-group": {
       "name": "@stacksjs/radio-group",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -649,7 +649,7 @@
     },
     "storage/framework/core/components/select": {
       "name": "@stacksjs/select",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -664,7 +664,7 @@
     },
     "storage/framework/core/components/stepper": {
       "name": "@stacksjs/stepper",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -682,7 +682,7 @@
     },
     "storage/framework/core/components/switch": {
       "name": "@stacksjs/switch",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -699,7 +699,7 @@
     },
     "storage/framework/core/components/table": {
       "name": "@stacksjs/table",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@vueform/multiselect": "^2.6.11",
       },
@@ -710,7 +710,7 @@
     },
     "storage/framework/core/components/transition": {
       "name": "@stacksjs/transition",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -727,7 +727,7 @@
     },
     "storage/framework/core/components/video": {
       "name": "@stacksjs/video",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
@@ -742,7 +742,7 @@
     },
     "storage/framework/core/config": {
       "name": "@stacksjs/config",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -751,7 +751,7 @@
     },
     "storage/framework/core/cron": {
       "name": "@stacksjs/cron",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "croner": "^9.0.0",
@@ -759,7 +759,7 @@
     },
     "storage/framework/core/database": {
       "name": "@stacksjs/database",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -782,7 +782,7 @@
     },
     "storage/framework/core/datetime": {
       "name": "@stacksjs/datetime",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@formkit/tempo": "^0.1.2",
         "@stacksjs/development": "workspace:*",
@@ -791,7 +791,7 @@
     },
     "storage/framework/core/desktop": {
       "name": "@stacksjs/desktop",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -806,7 +806,7 @@
     },
     "storage/framework/core/development": {
       "name": "@stacksjs/development",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/build": "workspace:*",
@@ -826,7 +826,7 @@
     },
     "storage/framework/core/dns": {
       "name": "@stacksjs/dns",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@aws-sdk/client-route-53": "^3.772.0",
         "@stacksjs/actions": "workspace:*",
@@ -842,7 +842,7 @@
     },
     "storage/framework/core/docs": {
       "name": "@stacksjs/docs",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@iconify-json/carbon": "^1.2.8",
         "@shikijs/vitepress-twoslash": "^3.2.1",
@@ -864,7 +864,7 @@
     },
     "storage/framework/core/email": {
       "name": "@stacksjs/email",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -877,14 +877,14 @@
     },
     "storage/framework/core/enums": {
       "name": "@stacksjs/enums",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/env": {
       "name": "@stacksjs/env",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@dotenvx/dotenvx": "^1.39.0",
       },
@@ -898,7 +898,7 @@
     },
     "storage/framework/core/error-handling": {
       "name": "@stacksjs/error-handling",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -911,14 +911,14 @@
     },
     "storage/framework/core/events": {
       "name": "@stacksjs/events",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/faker": {
       "name": "@stacksjs/faker",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@faker-js/faker": "^9.5.1",
         "@stacksjs/cli": "workspace:*",
@@ -928,7 +928,7 @@
     },
     "storage/framework/core/git": {
       "name": "@stacksjs/git",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "bumpp": "^10.1.0",
@@ -941,7 +941,7 @@
     },
     "storage/framework/core/health": {
       "name": "@stacksjs/health",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/notifications": "workspace:*",
@@ -949,18 +949,18 @@
     },
     "storage/framework/core/http": {
       "name": "@stacksjs/http",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/lint": {
       "name": "@stacksjs/lint",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@commitlint/cli": "^19.8.0",
         "@stacksjs/development": "workspace:*",
-        "@stacksjs/eslint-config": "^4.10.2-beta.1",
+        "@stacksjs/eslint-config": "^4.10.2-beta.2",
         "bun-git-hooks": "^0.1.0",
         "lint-staged": "^15.5.0",
         "publint": "^0.3.9",
@@ -968,7 +968,7 @@
     },
     "storage/framework/core/logging": {
       "name": "@stacksjs/logging",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -981,7 +981,7 @@
     },
     "storage/framework/core/notifications": {
       "name": "@stacksjs/notifications",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/chat": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -996,7 +996,7 @@
     },
     "storage/framework/core/objects": {
       "name": "@stacksjs/objects",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1007,7 +1007,7 @@
     },
     "storage/framework/core/orm": {
       "name": "@stacksjs/orm",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1018,14 +1018,14 @@
     },
     "storage/framework/core/path": {
       "name": "@stacksjs/path",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/payments": {
       "name": "@stacksjs/payments",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1037,14 +1037,14 @@
     },
     "storage/framework/core/plugins": {
       "name": "@stacksjs/slugs",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/push": {
       "name": "@stacksjs/push",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1054,7 +1054,7 @@
     },
     "storage/framework/core/query-builder": {
       "name": "@stacksjs/query-builder",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1068,14 +1068,14 @@
     },
     "storage/framework/core/queue": {
       "name": "@stacksjs/queue",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/raycast": {
       "name": "buddy",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@raycast/api": "^1.94.0",
         "@raycast/utils": "^1.19.1",
@@ -1085,21 +1085,21 @@
     },
     "storage/framework/core/realtime": {
       "name": "@stacksjs/realtime",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/registry": {
       "name": "@stacksjs/registry",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/repl": {
       "name": "@stacksjs/repl",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/tinker": "workspace:*",
@@ -1107,7 +1107,7 @@
     },
     "storage/framework/core/router": {
       "name": "@stacksjs/router",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1125,7 +1125,7 @@
     },
     "storage/framework/core/scheduler": {
       "name": "@stacksjs/scheduler",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/cron": "workspace:*",
@@ -1134,7 +1134,7 @@
     },
     "storage/framework/core/search-engine": {
       "name": "@stacksjs/search-engine",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@opensearch-project/opensearch": "^3.4.0",
         "@stacksjs/config": "workspace:*",
@@ -1144,7 +1144,7 @@
     },
     "storage/framework/core/security": {
       "name": "@stacksjs/security",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1157,7 +1157,7 @@
     },
     "storage/framework/core/server": {
       "name": "@stacksjs/server",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1170,14 +1170,14 @@
     },
     "storage/framework/core/shell": {
       "name": "@stacksjs/shell",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/slug": {
       "name": "@stacksjs/slug",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1189,7 +1189,7 @@
     },
     "storage/framework/core/sms": {
       "name": "@stacksjs/sms",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1200,7 +1200,7 @@
     },
     "storage/framework/core/storage": {
       "name": "@stacksjs/storage",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@aws-sdk/client-s3": "^3.772.0",
         "@flystorage/aws-s3": "^1.0.1",
@@ -1222,7 +1222,7 @@
     },
     "storage/framework/core/strings": {
       "name": "@stacksjs/strings",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1234,7 +1234,7 @@
     },
     "storage/framework/core/testing": {
       "name": "@stacksjs/testing",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@happy-dom/global-registrator": "^17.4.4",
         "@stacksjs/config": "workspace:*",
@@ -1244,21 +1244,21 @@
     },
     "storage/framework/core/tinker": {
       "name": "@stacksjs/tinker",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/tunnel": {
       "name": "@stacksjs/tunnel",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
       },
     },
     "storage/framework/core/types": {
       "name": "@stacksjs/types",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@mdit-vue/plugin-component": "^2.1.3",
         "@mdit-vue/plugin-frontmatter": "^2.1.3",
@@ -1293,7 +1293,7 @@
     },
     "storage/framework/core/ui": {
       "name": "@stacksjs/ui",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@headlessui/vue": "^1.7.23",
         "@iconify-json/hugeicons": "^1.2.4",
@@ -1318,7 +1318,7 @@
     },
     "storage/framework/core/utils": {
       "name": "@stacksjs/utils",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/arrays": "workspace:*",
@@ -1358,7 +1358,7 @@
     },
     "storage/framework/core/validation": {
       "name": "@stacksjs/validation",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/strings": "workspace:*",
@@ -1368,7 +1368,7 @@
     },
     "storage/framework/core/vite-config": {
       "name": "@stacksjs/vite-config",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@babel/preset-typescript": "latest",
         "@stacksjs/alias": "workspace:*",
@@ -1400,7 +1400,7 @@
     },
     "storage/framework/core/vite-plugin": {
       "name": "@stacksjs/vite-plugin",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@babel/preset-typescript": "latest",
         "@stacksjs/alias": "workspace:*",
@@ -1430,7 +1430,7 @@
     },
     "storage/framework/core/whois": {
       "name": "@stacksjs/whois",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "node-fetch": "^3.3.2",
@@ -1439,7 +1439,7 @@
     },
     "storage/framework/core/x-ray": {
       "name": "@stacksjs/x-ray",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/desktop": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1448,7 +1448,7 @@
     },
     "storage/framework/docs": {
       "name": "stacks-docs",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -1464,7 +1464,7 @@
     },
     "storage/framework/email": {
       "name": "stacks-email",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/path": "workspace:*",
         "@vue-email/compiler": "^0.8.14",
@@ -1472,28 +1472,28 @@
     },
     "storage/framework/libs/components/vue": {
       "name": "@stacksjs/hello-world-vue",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/libs/components/web": {
       "name": "@stacksjs/hello-world-elements",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/libs/functions": {
       "name": "hello-world-fx",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "stacks": "workspace:*",
       },
     },
     "storage/framework/server": {
       "name": "stacks-server",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/development": "workspace:*",
         "@stacksjs/logging": "workspace:*",
@@ -1505,7 +1505,7 @@
     },
     "storage/framework/views/dashboard": {
       "name": "stacks-dashboard",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/desktop": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1515,7 +1515,7 @@
     },
     "storage/framework/views/desktop": {
       "name": "stacks-desktop",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "devDependencies": {
         "@stacksjs/desktop": "workspace:*",
         "@stacksjs/development": "workspace:*",
@@ -1523,11 +1523,11 @@
     },
     "storage/framework/views/system-tray": {
       "name": "stacks-system-tray",
-      "version": "0.70.2",
+      "version": "0.70.3",
     },
     "storage/framework/views/web": {
       "name": "stacks-web",
-      "version": "0.70.2",
+      "version": "0.70.3",
       "dependencies": {
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2583,9 +2583,9 @@
 
     "@stacksjs/error-handling": ["@stacksjs/error-handling@workspace:storage/framework/core/error-handling"],
 
-    "@stacksjs/eslint-config": ["@stacksjs/eslint-config@4.10.2-beta.1", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.10.0", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.3.0", "@stacksjs/eslint-plugin": "^0.2.2", "@stylistic/eslint-plugin": "^4.2.0", "@typescript-eslint/eslint-plugin": "^8.27.0", "@typescript-eslint/parser": "^8.27.0", "@vitest/eslint-plugin": "^1.1.38", "eslint-config-flat-gitignore": "^2.1.0", "eslint-flat-config-utils": "^2.0.1", "eslint-merge-processors": "^2.0.0", "eslint-plugin-antfu": "^3.1.1", "eslint-plugin-command": "^3.2.0", "eslint-plugin-import-x": "^4.9.1", "eslint-plugin-jsdoc": "^50.6.8", "eslint-plugin-jsonc": "^2.19.1", "eslint-plugin-n": "^17.16.2", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.10.1", "eslint-plugin-pnpm": "^0.3.1", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^57.0.0", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^10.0.0", "eslint-plugin-yml": "^1.17.0", "eslint-processor-vue-blocks": "^2.0.0", "globals": "^16.0.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.1.1", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^10.1.1", "yaml-eslint-parser": "^1.3.0" } }, "sha512-8iWjSLFL7XHjH3Hn1a1F2KpI/OUz7hG593gfwdl/p0X/9S/hUGoxjbJqfqS+0ofyU5/5LhfJf0sSXA1QrUXfsg=="],
+    "@stacksjs/eslint-config": ["@stacksjs/eslint-config@4.10.2-beta.2", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.10.0", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.3.0", "@stacksjs/eslint-plugin": "^0.2.3", "@stylistic/eslint-plugin": "^4.2.0", "@typescript-eslint/eslint-plugin": "^8.27.0", "@typescript-eslint/parser": "^8.27.0", "@vitest/eslint-plugin": "^1.1.38", "eslint-config-flat-gitignore": "^2.1.0", "eslint-flat-config-utils": "^2.0.1", "eslint-merge-processors": "^2.0.0", "eslint-plugin-antfu": "^3.1.1", "eslint-plugin-command": "^3.2.0", "eslint-plugin-import-x": "^4.9.1", "eslint-plugin-jsdoc": "^50.6.8", "eslint-plugin-jsonc": "^2.19.1", "eslint-plugin-n": "^17.16.2", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.10.1", "eslint-plugin-pnpm": "^0.3.1", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^57.0.0", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^10.0.0", "eslint-plugin-yml": "^1.17.0", "eslint-processor-vue-blocks": "^2.0.0", "globals": "^16.0.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.1.1", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^10.1.1", "yaml-eslint-parser": "^1.3.0" } }, "sha512-r0PjMmAlXjX66QMBetDXGApdnWaFZ4O/WFpp+O45WDxh2XectkYFEwrw2XReqGkPHvoO2W2RPQC6orvt2YC/xg=="],
 
-    "@stacksjs/eslint-plugin": ["@stacksjs/eslint-plugin@0.2.2", "", { "dependencies": { "@stacksjs/eslint-config": "^4.8.2-beta.1", "@typescript-eslint/utils": "^8.27.0", "@unocss/config": "66.0.0", "@unocss/core": "66.0.0", "magic-string": "^0.30.17", "synckit": "^0.10.0", "unocss": "^66.0.0" } }, "sha512-x4PRky/Q7y3rDSZ4rA1Q/TPHOkgvBCY15BEeh2olERZy1DY0K6145NX+u8sGTt7PJlqguILg+06IYL1mFuVHVQ=="],
+    "@stacksjs/eslint-plugin": ["@stacksjs/eslint-plugin@0.2.3", "", { "dependencies": { "@stacksjs/eslint-config": "^4.10.2-beta.1", "@typescript-eslint/utils": "^8.27.0", "@unocss/config": "66.0.0", "@unocss/core": "66.0.0", "magic-string": "^0.30.17", "synckit": "^0.10.0", "unocss": "^66.0.0" } }, "sha512-BumVBL52fdJH+wwsUVfr4JCAKnGJNBwmMPZnfnOdFtP94vSPUbH02+HXHdA/wt6RFfNGex8wvTBspDE1Ht1Ovw=="],
 
     "@stacksjs/events": ["@stacksjs/events@workspace:storage/framework/core/events"],
 
@@ -2857,7 +2857,7 @@
 
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
-    "@types/node": ["@types/node@22.13.10", "", { "dependencies": { "undici-types": "~6.20.0" } }, "sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw=="],
+    "@types/node": ["@types/node@22.13.11", "", { "dependencies": { "undici-types": "~6.20.0" } }, "sha512-iEUCUJoU0i3VnrCmgoWCXttklWcvoCIx4jzcP22fioIVSdTmjgoEvmAO/QPw6TcS9k5FrNgn4w7q5lGOd1CT5g=="],
 
     "@types/normalize-package-data": ["@types/normalize-package-data@2.4.4", "", {}, "sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA=="],
 
@@ -3107,7 +3107,7 @@
 
     "algoliasearch": ["algoliasearch@5.21.0", "", { "dependencies": { "@algolia/client-abtesting": "5.21.0", "@algolia/client-analytics": "5.21.0", "@algolia/client-common": "5.21.0", "@algolia/client-insights": "5.21.0", "@algolia/client-personalization": "5.21.0", "@algolia/client-query-suggestions": "5.21.0", "@algolia/client-search": "5.21.0", "@algolia/ingestion": "1.21.0", "@algolia/monitoring": "1.21.0", "@algolia/recommend": "5.21.0", "@algolia/requester-browser-xhr": "5.21.0", "@algolia/requester-fetch": "5.21.0", "@algolia/requester-node-http": "5.21.0" } }, "sha512-hexLq2lSO1K5SW9j21Ubc+q9Ptx7dyRTY7se19U8lhIlVMLCNXWCyQ6C22p9ez8ccX0v7QVmwkl2l1CnuGoO2Q=="],
 
-    "alien-signals": ["alien-signals@1.0.5", "", {}, "sha512-fEonez3dgeA5DFpKZoM0zEcPx+hoPHxJOPT9wUx0YKH9I+MbA1ZUimEjbypEL0wcMDPDxNLSXO07jOU9iufBKw=="],
+    "alien-signals": ["alien-signals@1.0.6", "", {}, "sha512-aITl4ODHNX9mqBqwZWr5oTYP74hemqVGV4KRLSQacjoZIdwNxbedHF656+c4zuGLtRtcowitoXdIfyrXgzniVg=="],
 
     "ansi-colors": ["ansi-colors@4.1.3", "", {}, "sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw=="],
 
@@ -3927,7 +3927,7 @@
 
     "indent-string": ["indent-string@5.0.0", "", {}, "sha512-m6FAo/spmsW2Ab2fU35JTYwtOKa2yAwXSwgjSv1TJzh4Mh7mC3lzAOVLBprb72XsTrgkEIsl7YrFNAiDiRhIGg=="],
 
-    "index-to-position": ["index-to-position@0.1.2", "", {}, "sha512-MWDKS3AS1bGCHLBA2VLImJz42f7bJh8wQsTGCzI3j519/CASStoDONUBVz2I/VID0MpiX3SGSnbOD2xUalbE5g=="],
+    "index-to-position": ["index-to-position@1.0.0", "", {}, "sha512-sCO7uaLVhRJ25vz1o8s9IFM3nVS4DkuQnyjMwiQPKvQuBYBDmb8H7zx8ki7nVh4HJQOdVWebyvLE0qt+clruxA=="],
 
     "inflight": ["inflight@1.0.6", "", { "dependencies": { "once": "^1.3.0", "wrappy": "1" } }, "sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA=="],
 
@@ -4471,7 +4471,7 @@
 
     "parse-imports": ["parse-imports@2.2.1", "", { "dependencies": { "es-module-lexer": "^1.5.3", "slashes": "^3.0.12" } }, "sha512-OL/zLggRp8mFhKL0rNORUTR4yBYujK/uU+xZL+/0Rgm2QE4nLO9v8PzEweSJEbMGKmDRjJE4R3IMJlL2di4JeQ=="],
 
-    "parse-json": ["parse-json@8.1.0", "", { "dependencies": { "@babel/code-frame": "^7.22.13", "index-to-position": "^0.1.2", "type-fest": "^4.7.1" } }, "sha512-rum1bPifK5SSar35Z6EKZuYPJx85pkNaFrxBK3mwdfSJ1/WKbYrjoW/zTPSjRRamfmVX1ACBIdFAO0VRErW/EA=="],
+    "parse-json": ["parse-json@8.2.0", "", { "dependencies": { "@babel/code-frame": "^7.26.2", "index-to-position": "^1.0.0", "type-fest": "^4.37.0" } }, "sha512-eONBZy4hm2AgxjNFd8a4nyDJnzUAH0g34xSQAwWEVGCjdZ4ZL7dKZBfq267GWP/JaS9zW62Xs2FeAdDvpHHJGQ=="],
 
     "parse-ms": ["parse-ms@4.0.0", "", {}, "sha512-TXfryirbmq34y8QBwgqCVLi+8oA3oWx2eAnSn62ITyEhEYaWRlVZ2DvMM9eZbMs/RfxPu/PK/aBLyGj4IrqMHw=="],
 
@@ -4650,8 +4650,6 @@
     "read-package-up": ["read-package-up@11.0.0", "", { "dependencies": { "find-up-simple": "^1.0.0", "read-pkg": "^9.0.0", "type-fest": "^4.6.0" } }, "sha512-MbgfoNPANMdb4oRBNg5eqLbB2t2r+o5Ua1pNt8BqGp4I0FJZhuVSOj3PaBPni4azWuSzEdNn2evevzVmEk1ohQ=="],
 
     "read-pkg": ["read-pkg@9.0.1", "", { "dependencies": { "@types/normalize-package-data": "^2.4.3", "normalize-package-data": "^6.0.0", "parse-json": "^8.0.0", "type-fest": "^4.6.0", "unicorn-magic": "^0.1.0" } }, "sha512-9viLL4/n1BJUCT1NXVTdS1jtm80yDEgR5T4yCelII49Mbj0v1rZdKqj7zCiYdbB0CuCgdrvHcNogAKTFPBocFA=="],
-
-    "read-pkg-up": ["read-pkg-up@7.0.1", "", { "dependencies": { "find-up": "^4.1.0", "read-pkg": "^5.2.0", "type-fest": "^0.8.1" } }, "sha512-zK0TB7Xd6JpCLmlLmufqykGE+/TlOePD6qKClNW7hHDKFh/J7/7gCWGR7joEQEW1bKq3a3yUZSObOoWLFQ4ohg=="],
 
     "readable-stream": ["readable-stream@4.7.0", "", { "dependencies": { "abort-controller": "^3.0.0", "buffer": "^6.0.3", "events": "^3.3.0", "process": "^0.11.10", "string_decoder": "^1.3.0" } }, "sha512-oIGGmcpTLwPga8Bn6/Z75SVaH1z5dUut2ibSyAMVhmUggWpmDn2dapB0n7f8nwaSiRtepAsfJyfXIO5DCVAODg=="],
 
@@ -5097,7 +5095,7 @@
 
     "unocss-preset-primitives": ["unocss-preset-primitives@0.0.2-beta.1", "", { "dependencies": { "@unocss/core": "^0.61.0" } }, "sha512-bGNUK8G1V720gPe0ToOKEeMQqgJsDIBz6IuSRDQNBVBvWVx/OzXtsn6hjkKlhw/TjROSawaxpwcULRoPAZ5Gvg=="],
 
-    "unplugin": ["unplugin@2.2.1", "", { "dependencies": { "acorn": "^8.14.1", "webpack-virtual-modules": "^0.6.2" } }, "sha512-Q0YDhwViJaSnHf1cxLf+/VKhmfdr/ZAS/RL2GQVO0cAbAfJAVUef2bvNu+veyWcEPNwsTlFmMiFLjf8Xeqog8g=="],
+    "unplugin": ["unplugin@2.2.2", "", { "dependencies": { "acorn": "^8.14.1", "webpack-virtual-modules": "^0.6.2" } }, "sha512-Qp+iiD+qCRnUek+nDoYvtWX7tfnYyXsrOnJ452FRTgOyKmTM7TUJ3l+PLPJOOWPTUyKISKp4isC5JJPSXUjGgw=="],
 
     "unplugin-auto-import": ["unplugin-auto-import@19.1.1", "", { "dependencies": { "local-pkg": "^1.0.0", "magic-string": "^0.30.17", "picomatch": "^4.0.2", "unimport": "^4.1.2", "unplugin": "^2.2.0", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "@nuxt/kit": "^3.2.2", "@vueuse/core": "*" }, "optionalPeers": ["@nuxt/kit", "@vueuse/core"] }, "sha512-sCGZZrSR1Bc8RfN8Q0RUDxXtC20rdAt7UB4lDyq8MNtKVHiXXh+5af6Nz4JRp9Q+7HjnbgQfQox0TkEymjdUAQ=="],
 
@@ -5409,8 +5407,6 @@
 
     "@isaacs/fs-minipass/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
 
-    "@julr/unocss-preset-forms/unocss": ["unocss@65.5.0", "", { "dependencies": { "@unocss/astro": "65.5.0", "@unocss/cli": "65.5.0", "@unocss/core": "65.5.0", "@unocss/postcss": "65.5.0", "@unocss/preset-attributify": "65.5.0", "@unocss/preset-icons": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/preset-tagify": "65.5.0", "@unocss/preset-typography": "65.5.0", "@unocss/preset-uno": "65.5.0", "@unocss/preset-web-fonts": "65.5.0", "@unocss/preset-wind": "65.5.0", "@unocss/transformer-attributify-jsx": "65.5.0", "@unocss/transformer-compile-class": "65.5.0", "@unocss/transformer-directives": "65.5.0", "@unocss/transformer-variant-group": "65.5.0", "@unocss/vite": "65.5.0" }, "peerDependencies": { "@unocss/webpack": "65.5.0", "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" }, "optionalPeers": ["@unocss/webpack", "vite"] }, "sha512-dLTW89YK+5KCcB3vG/wxiwdpejkLLmZlK9hjWmP52sdeUFcmywc+/khD2/nid7or8dL3YCv1gwoyvnA7JRCwjA=="],
-
     "@oclif/core/ansi-escapes": ["ansi-escapes@4.3.2", "", { "dependencies": { "type-fest": "^0.21.3" } }, "sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ=="],
 
     "@oclif/core/indent-string": ["indent-string@4.0.0", "", {}, "sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg=="],
@@ -5426,6 +5422,8 @@
     "@oclif/core/supports-color": ["supports-color@8.1.1", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q=="],
 
     "@poppinss/utils/secure-json-parse": ["secure-json-parse@3.0.2", "", {}, "sha512-H6nS2o8bWfpFEV6U38sOSjS7bTbdgbCGU9wEM6W14P5H0QOsz94KCusifV44GpHDTu2nqZbuDNhTzu+mjDSw1w=="],
+
+    "@raycast/api/@types/node": ["@types/node@22.13.10", "", { "dependencies": { "undici-types": "~6.20.0" } }, "sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw=="],
 
     "@redocly/openapi-core/colorette": ["colorette@1.4.0", "", {}, "sha512-Y2oEozpomLn7Q3HFP7dpww7AtMJplbM9lGZP6RDfHqmbeRjiwRg4n6VM6j4KLmRke85uWEI7JqF17f3pqdRA0g=="],
 
@@ -5465,11 +5463,11 @@
 
     "@sinonjs/samsam/type-detect": ["type-detect@4.1.0", "", {}, "sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw=="],
 
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config": ["@stacksjs/eslint-config@4.8.2-beta.1", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.10.0", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.3.0", "@stacksjs/eslint-plugin": "^0.1.5", "@stylistic/eslint-plugin": "^4.2.0", "@typescript-eslint/eslint-plugin": "^8.26.1", "@typescript-eslint/parser": "^8.26.1", "@vitest/eslint-plugin": "^1.1.37", "eslint-config-flat-gitignore": "^2.1.0", "eslint-flat-config-utils": "^2.0.1", "eslint-merge-processors": "^2.0.0", "eslint-plugin-antfu": "^3.1.1", "eslint-plugin-command": "^3.1.0", "eslint-plugin-import-x": "^4.6.1", "eslint-plugin-jsdoc": "^50.6.6", "eslint-plugin-jsonc": "^2.19.1", "eslint-plugin-n": "^17.16.2", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.10.1", "eslint-plugin-pnpm": "^0.1.2", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^57.0.0", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^10.0.0", "eslint-plugin-yml": "^1.17.0", "eslint-processor-vue-blocks": "^2.0.0", "globals": "^15.14.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.1.1", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^10.1.1", "yaml-eslint-parser": "^1.3.0" } }, "sha512-j9vun+Nmkc/SCVPqkuUC+TiXgPXsJpfZHlVxdZI+7QANh3DG5JWm7Ni2xpJS4ZDRvOQYjjrF8MvnN9e+O4srkA=="],
-
     "@stacksjs/eslint-plugin/synckit": ["synckit@0.10.0", "", { "dependencies": { "@pkgr/core": "^0.1.1", "tslib": "^2.8.1" } }, "sha512-Jiv0SYq91y6UGQGDpxIxhlPSX/hcq/f9XExoge2+muBGUmURpQ+DUUzf6MpgJQZCOAfI/uT5BDC5X8hlQb1Fkg=="],
 
     "@surma/rollup-plugin-off-main-thread/magic-string": ["magic-string@0.25.9", "", { "dependencies": { "sourcemap-codec": "^1.4.8" } }, "sha512-RmF0AsMzgt25qzqqLc1+MbHmhdx0ojF2Fvs4XnOqz2ZOBXzzkEwc/dJQZCYHAn7v1jbVOjAZfK8msRn4BxO4VQ=="],
+
+    "@tauri-apps/cli/semver": ["semver@7.7.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
 
     "@typescript-eslint/typescript-estree/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
@@ -5507,7 +5505,7 @@
 
     "babel-plugin-polyfill-corejs2/semver": ["semver@6.3.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="],
 
-    "bl/buffer": ["buffer@5.6.0", "", { "dependencies": { "base64-js": "^1.0.2", "ieee754": "^1.1.4" } }, "sha512-/gDYp/UtU0eA1ys8bOs9J6a+E/KWIY+DZ+Q2WESNUA0jFRsJOc0SNUO6xJ5SGA1xueg3NL65W6s+NY5l9cunuw=="],
+    "bl/buffer": ["buffer@5.7.1", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.1.13" } }, "sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ=="],
 
     "bl/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
 
@@ -5727,10 +5725,6 @@
 
     "read-pkg/unicorn-magic": ["unicorn-magic@0.1.0", "", {}, "sha512-lRfVq8fE8gz6QMBuDM6a+LO3IAzTi05H6gCVaUpir2E1Rwpo4ZUog45KpNXKC/Mn3Yb9UDuHumeFTo9iV/D9FQ=="],
 
-    "read-pkg-up/read-pkg": ["read-pkg@5.2.0", "", { "dependencies": { "@types/normalize-package-data": "^2.4.0", "normalize-package-data": "^2.5.0", "parse-json": "^5.0.0", "type-fest": "^0.6.0" } }, "sha512-Ug69mNOpfvKDAc2Q8DRpMjjzdtrnv9HcSMX+4VsZxD1aZ6ZzrIE7rlzXBtWTyhULSMKg076AW6WR5iZpD0JiOg=="],
-
-    "read-pkg-up/type-fest": ["type-fest@0.8.1", "", {}, "sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA=="],
-
     "readable-stream/buffer": ["buffer@6.0.3", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.2.1" } }, "sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA=="],
 
     "readable-stream/events": ["events@3.3.0", "", {}, "sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q=="],
@@ -5935,40 +5929,6 @@
 
     "@isaacs/cliui/wrap-ansi/ansi-styles": ["ansi-styles@6.2.1", "", {}, "sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug=="],
 
-    "@julr/unocss-preset-forms/unocss/@unocss/astro": ["@unocss/astro@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/reset": "65.5.0", "@unocss/vite": "65.5.0" }, "peerDependencies": { "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" }, "optionalPeers": ["vite"] }, "sha512-z0uLbOQhINYpd57p0p/fpVeBY1+Rv0t4GQQUMF00tH8tpIHGUdyHH9aE/yGZaeLI2onmaShTDgIVXT+7fR9fMw=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/cli": ["@unocss/cli@65.5.0", "", { "dependencies": { "@ampproject/remapping": "^2.3.0", "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/preset-uno": "65.5.0", "cac": "^6.7.14", "chokidar": "^3.6.0", "colorette": "^2.0.20", "consola": "^3.4.0", "magic-string": "^0.30.17", "pathe": "^2.0.3", "perfect-debounce": "^1.0.0", "tinyglobby": "^0.2.10", "unplugin-utils": "^0.2.4" }, "bin": { "unocss": "bin/unocss.mjs" } }, "sha512-RZvAlu7vWIyeQr1TqFb5JsL95MWmDfopX9EaScUy5zuMjE05kvlPj4kM5y39N3XIpEDYWqI7WdwwrPqU45UraQ=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/core": ["@unocss/core@65.5.0", "", {}, "sha512-XYWdS09M2XOjZNDotGhI2TIW/6duLNiyssopwjCbv4AlPklF0bZI86SKI55syYDBt6GRadoQbuvUkhSiTV/hzQ=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/postcss": ["@unocss/postcss@65.5.0", "", { "dependencies": { "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "css-tree": "^3.1.0", "postcss": "^8.5.2", "tinyglobby": "^0.2.10" } }, "sha512-mSGLX0KgygPhICZlUrjLgDJsEkgtrTjkDRI4skC7ZB/2pwQaESg8M3vhtWK/6XK+WGriUowfd5n6F6cfX3c2eg=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-attributify": ["@unocss/preset-attributify@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-l3xQK6Om5fNknck04OZy3X7+k0EmVTEzF6BBMCYVaT2ZtCLhlznVt7tEg4ESLuXIZfx/+jd2sW3E3UY/EJ8rUA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-icons": ["@unocss/preset-icons@65.5.0", "", { "dependencies": { "@iconify/utils": "^2.3.0", "@unocss/core": "65.5.0", "ofetch": "^1.4.1" } }, "sha512-lSwMNtj4nufpQDBFoioAM9S6hP8028lA9fLFM3Vw+KmI10/3TaZyOaCXJVH5UdsfNWexGGo/Qo+K1YFWfXLZ8A=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-mini": ["@unocss/preset-mini@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/extractor-arbitrary-variants": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-oD2INmEgTOxmFsVceflv4Zs67vz9PRbpg3+CMsJLWgfX4UdQ1H4jZms72+g3N1hhXBvOFwvGvqGaMnrVMRk54g=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-tagify": ["@unocss/preset-tagify@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-m0CfBawgf4VQlbaijgeWXG6vXEOt4VsNIk1NLUyRM0GBMiOB3usb1tPLWJtRpje6p+bR+k4rpe4LsPMHhKtFfQ=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-typography": ["@unocss/preset-typography@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-lokYOVF/y1Zt1QufxrD/oJe4aUCK6hHPlisSJRReyKXuGUrBR9yWiIZfINqhkj3kMO6zzN23QiaA5E5cpUkDPg=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-uno": ["@unocss/preset-uno@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/preset-wind": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-aVlSjzBc7IqNFgfu06qyP+CBRRGMNQLoQtZteRwa/vsUcTqGLzo7KhvkDazPEKpurmurXiymrvujTHInW0IooQ=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-web-fonts": ["@unocss/preset-web-fonts@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "ofetch": "^1.4.1" } }, "sha512-zWPsQiMSCoP61J8DX++3Z8Ncs20a3rdBb3uI7bDzHdf9MZEIhKzYYchpYO9Dfw7pzclECeuKhq5IjPjM1lmPUQ=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-wind": ["@unocss/preset-wind@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-3krOUZ5qC2J3JGheZsTDNbzqr9qYJw9GP1yEcfeE6K3qVcZnf+3DyJ0i1PuaM5SusOA0MBsHmCU49rLKurdyoA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/transformer-attributify-jsx": ["@unocss/transformer-attributify-jsx@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-ZWSGKw52h8nJSO1DaYGccjjNaBifl4LKJ4U0YpjaF2LDLA5BLBapUtyjTS7ffl6p7GZNokA6VUGL+MXPw+oDXg=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/transformer-compile-class": ["@unocss/transformer-compile-class@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-7QMtWhUVKkSYFCDzinR8PPubhLFA+KVJMoHCTX1KTw/lQ5Zt7/FiwLX5zepc50K3074dPgR3hWn5PpK+CZeq7g=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/transformer-directives": ["@unocss/transformer-directives@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "css-tree": "^3.1.0" } }, "sha512-IsUd7L28bRAoN5fyWyNzHu7HOa1yjPqTU/QZfUEViJXApOEKUZ4anBSyU0lPU+59kMneg40xOvCBR70qNMCw4w=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/transformer-variant-group": ["@unocss/transformer-variant-group@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-I0ibbLRGI/9+BJy0yybxtmoYPIwGPMfwQDAvChhFXmokJG1YMpeJqPBI7fypHfbk/iO00W5lOGQ4XiIfsHfiHg=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/vite": ["@unocss/vite@65.5.0", "", { "dependencies": { "@ampproject/remapping": "^2.3.0", "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/inspector": "65.5.0", "chokidar": "^3.6.0", "magic-string": "^0.30.17", "tinyglobby": "^0.2.10", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" } }, "sha512-v2rFIrBaWGQmSJeKv7us+2OMos2RqdZYpf/seOpf4MFHrmjjiFQ1ZWkTqFyNfUxAwj6VID5frVJhxJfZuEhhug=="],
-
     "@oclif/core/ansi-escapes/type-fest": ["type-fest@0.21.3", "", {}, "sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w=="],
 
     "@oclif/core/is-wsl/is-docker": ["is-docker@2.2.1", "", { "bin": { "is-docker": "cli.js" } }, "sha512-F+i2BKsFrH66iaUFc0woD8sLy8getkwTwtOBjvs56Cx4CgJDeKQeqfz8wAYiSb8JOprWhHH5p77PbmYCvvUuXQ=="],
@@ -6001,12 +5961,6 @@
 
     "@shikijs/core/@shikijs/engine-javascript/oniguruma-to-es": ["oniguruma-to-es@3.1.1", "", { "dependencies": { "emoji-regex-xs": "^1.0.0", "regex": "^6.0.1", "regex-recursion": "^6.0.2" } }, "sha512-bUH8SDvPkH3ho3dvwJwfonjlQ4R80vjyvrU8YpxuROddv55vAEJrTuCuCVUhhsHbtlD9tGGbaNApGQckXhS8iQ=="],
 
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin": ["@stacksjs/eslint-plugin@0.1.5", "", { "dependencies": { "@stacksjs/eslint-config": "^3.15.1-beta.1", "@typescript-eslint/utils": "^8.21.0", "@unocss/config": "65.4.2", "@unocss/core": "65.4.2", "magic-string": "^0.30.17", "synckit": "^0.9.2", "unocss": "^65.4.2" } }, "sha512-MeJVcuvWccAzc8cR7pmgDeUsK+Lc99bnTp9bt32Cod5/wrVWwaPB+JnYIxcjef9kqwqkG7Xax2h1vClI/XC3nA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-pnpm": ["eslint-plugin-pnpm@0.1.2", "", { "dependencies": { "find-up-simple": "^1.0.1", "jsonc-eslint-parser": "^2.4.0", "pnpm-workspace-yaml": "0.1.2" }, "peerDependencies": { "eslint": "^9.0.0" } }, "sha512-Ta70r1MEUEv8Q5KqJBOklYE/Bal/qrCClu/jhLMC8US6emkYvYPgkoO4QCO/fmDECKU8GWZB8b91GIiapXbm2w=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/globals": ["globals@15.15.0", "", {}, "sha512-7ACyT3wmyp3I61S4fG682L0VA2RGD9otkqGJIwNUMF1SWUombIIk+af1unuDYgMm082aHYwD+mzJvv9Iu8dsgg=="],
-
     "@typescript-eslint/typescript-estree/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 
     "@vue-macros/volar/@vue/language-core/alien-signals": ["alien-signals@0.2.2", "", {}, "sha512-cZIRkbERILsBOXTQmMrxc9hgpxglstn69zm+F1ARf4aPAzdAFYd6sBq87ErO0Fj3DV94tglcyHG5kQz9nDC/8A=="],
@@ -6020,8 +5974,6 @@
     "archiver-utils/glob/minimatch": ["minimatch@9.0.5", "", { "dependencies": { "brace-expansion": "^2.0.1" } }, "sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow=="],
 
     "archiver-utils/glob/minipass": ["minipass@7.1.2", "", {}, "sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw=="],
-
-    "bl/buffer/ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
     "c12/chokidar/readdirp": ["readdirp@4.1.2", "", {}, "sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg=="],
 
@@ -6237,12 +6189,6 @@
 
     "prebuild-install/tar-fs/tar-stream": ["tar-stream@2.2.0", "", { "dependencies": { "bl": "^4.0.3", "end-of-stream": "^1.4.1", "fs-constants": "^1.0.0", "inherits": "^2.0.3", "readable-stream": "^3.1.1" } }, "sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ=="],
 
-    "read-pkg-up/read-pkg/normalize-package-data": ["normalize-package-data@2.5.0", "", { "dependencies": { "hosted-git-info": "^2.1.4", "resolve": "^1.10.0", "semver": "2 || 3 || 4 || 5", "validate-npm-package-license": "^3.0.1" } }, "sha512-/5CMN3T0R4XTj4DcGaexo+roZSdSFW/0AOOTROrjxzCG1wrWXEsGbRKevjlIL+ZDE4sZlJr5ED4YW0yqmkK+eA=="],
-
-    "read-pkg-up/read-pkg/parse-json": ["parse-json@5.2.0", "", { "dependencies": { "@babel/code-frame": "^7.0.0", "error-ex": "^1.3.1", "json-parse-even-better-errors": "^2.3.0", "lines-and-columns": "^1.1.6" } }, "sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg=="],
-
-    "read-pkg-up/read-pkg/type-fest": ["type-fest@0.6.0", "", {}, "sha512-q+MB8nYR1KDLrgr4G5yemftpMC7/QLqVndBmEEdqzmNj5dcFOO4Oo8qlwZE3ULT3+Zim1F8Kq4cBnikNhlCMlg=="],
-
     "readable-stream/buffer/ieee754": ["ieee754@1.2.1", "", {}, "sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA=="],
 
     "readdir-glob/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
@@ -6381,43 +6327,7 @@
 
     "@intlify/vue-i18n-extensions/vue-i18n/@intlify/core-base/@intlify/message-compiler": ["@intlify/message-compiler@10.0.6", "", { "dependencies": { "@intlify/shared": "10.0.6", "source-map-js": "^1.0.2" } }, "sha512-QcUYprK+e4X2lU6eJDxLuf/mUtCuVPj2RFBoFRlJJxK3wskBejzlRvh1Q0lQCi9tDOnD4iUK1ftcGylE3X3idA=="],
 
-    "@julr/unocss-preset-forms/unocss/@unocss/astro/@unocss/reset": ["@unocss/reset@65.5.0", "", {}, "sha512-jADqiBAfOO9aZNpnsmxc7WX7vIIxyalcmCJ7fwdyPRmFhxZZ5ZoSYsHDt0Wfn/W2BRQkLjXWL0956nXH0lz79Q=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/cli/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/postcss/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/postcss/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-mini/@unocss/extractor-arbitrary-variants": ["@unocss/extractor-arbitrary-variants@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-7K3gftOdkv9jbWvbkExTcx6/FDP2Xk/NSsOYTvR9oITLnLjmdQvp+9276WSnNfKF3frBl8ZcqpkC2EsuL2Yutw=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-mini/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-typography/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-uno/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/preset-wind/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/transformer-directives/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/vite/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@julr/unocss-preset-forms/unocss/@unocss/vite/@unocss/inspector": ["@unocss/inspector@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "colorette": "^2.0.20", "gzip-size": "^6.0.0", "sirv": "^3.0.0", "vue-flow-layout": "^0.1.1" } }, "sha512-dhAijjVblrAUqHjqB2p4JhNTpRo85BTi6SLbG+ePwGsIL9oxNXtN57O2mzp1mSEKS1C+QjHmRV7u+gh8Bj93Zg=="],
-
     "@oclif/core/string-width/strip-ansi/ansi-regex": ["ansi-regex@5.0.1", "", {}, "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config": ["@stacksjs/eslint-config@3.15.1-beta.4", "", { "dependencies": { "@antfu/install-pkg": "^1.0.0", "@clack/prompts": "^0.9.1", "@eslint-community/eslint-plugin-eslint-comments": "^4.4.1", "@eslint/markdown": "^6.2.1", "@stacksjs/eslint-plugin": "^0.1.5", "@stylistic/eslint-plugin": "^2.13.0", "@typescript-eslint/eslint-plugin": "^8.20.0", "@typescript-eslint/parser": "^8.20.0", "@vitest/eslint-plugin": "^1.1.25", "eslint-config-flat-gitignore": "^1.0.0", "eslint-flat-config-utils": "^1.0.0", "eslint-merge-processors": "^1.0.0", "eslint-plugin-antfu": "^2.7.0", "eslint-plugin-command": "^2.1.0", "eslint-plugin-import-x": "^4.6.1", "eslint-plugin-jsdoc": "^50.6.2", "eslint-plugin-jsonc": "^2.18.2", "eslint-plugin-n": "^17.15.1", "eslint-plugin-no-only-tests": "^3.3.0", "eslint-plugin-perfectionist": "^4.6.0", "eslint-plugin-regexp": "^2.7.0", "eslint-plugin-toml": "^0.12.0", "eslint-plugin-unicorn": "^56.0.1", "eslint-plugin-unused-imports": "^4.1.4", "eslint-plugin-vue": "^9.32.0", "eslint-plugin-yml": "^1.16.0", "eslint-processor-vue-blocks": "^1.0.0", "globals": "^15.14.0", "jsonc-eslint-parser": "^2.4.0", "local-pkg": "^1.0.0", "parse-gitignore": "^2.0.0", "toml-eslint-parser": "^0.10.0", "vue-eslint-parser": "^9.4.3", "yaml-eslint-parser": "^1.2.3" } }, "sha512-rPIguQT3bsirw6+5OFAO7IYCQ8633Wy8FhcelDrmum/K0z64cWlxsTTSWb1lDfDZOgAu/Wk5lrr0lwSl/HH3ow=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@unocss/config": ["@unocss/config@65.4.2", "", { "dependencies": { "@unocss/core": "65.4.2", "unconfig": "~0.6.0" } }, "sha512-2xyWDt6t879rsdxJ0TiRbk9ENkGuLjAWjl3aAph5HHxwgGaBN1c9S5G9607j/WXP+tO6c37B4Q1iG/XYx35HBA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@unocss/core": ["@unocss/core@65.4.2", "", {}, "sha512-VmXy5D25por+pt9LBlKZ3gk4rOE5ldm80MyVOEnLcpaFb9LqB0g/8qUU9/Dk3TSA+ZPeoGm53Juo0p8LMFIigA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/synckit": ["synckit@0.9.2", "", { "dependencies": { "@pkgr/core": "^0.1.0", "tslib": "^2.6.2" } }, "sha512-vrozgXDQwYO72vHjUb/HnFbQx1exDjoKzqx23aXEg2a9VIg2TSFZ8FmeZpTjUCFMYw7mpX4BE2SFu8wI7asYsw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss": ["unocss@65.5.0", "", { "dependencies": { "@unocss/astro": "65.5.0", "@unocss/cli": "65.5.0", "@unocss/core": "65.5.0", "@unocss/postcss": "65.5.0", "@unocss/preset-attributify": "65.5.0", "@unocss/preset-icons": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/preset-tagify": "65.5.0", "@unocss/preset-typography": "65.5.0", "@unocss/preset-uno": "65.5.0", "@unocss/preset-web-fonts": "65.5.0", "@unocss/preset-wind": "65.5.0", "@unocss/transformer-attributify-jsx": "65.5.0", "@unocss/transformer-compile-class": "65.5.0", "@unocss/transformer-directives": "65.5.0", "@unocss/transformer-variant-group": "65.5.0", "@unocss/vite": "65.5.0" }, "peerDependencies": { "@unocss/webpack": "65.5.0", "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" }, "optionalPeers": ["@unocss/webpack", "vite"] }, "sha512-dLTW89YK+5KCcB3vG/wxiwdpejkLLmZlK9hjWmP52sdeUFcmywc+/khD2/nid7or8dL3YCv1gwoyvnA7JRCwjA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-pnpm/pnpm-workspace-yaml": ["pnpm-workspace-yaml@0.1.2", "", { "dependencies": { "yaml": "^2.7.0" } }, "sha512-FaSo51Psz+jHV8YtnuIVemTheOIO5EnMtw0HSPTUsASEdOf3ppM5OBxKO5Dpvx4fWKNZF44vEEMFKc5YZG4qjA=="],
 
     "@vue-macros/volar/@vue/language-core/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 
@@ -6454,10 +6364,6 @@
     "lint-staged/execa/onetime/mimic-fn": ["mimic-fn@4.0.0", "", {}, "sha512-vqiC06CuhBTUdZH+RYl8sFrL096vA45Ok5ISO6sE/Mr1jRbGH4Csnhi8f3wKVl7x8mO4Au7Ir9D3Oyv1VYMFJw=="],
 
     "prebuild-install/tar-fs/tar-stream/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "^2.0.3", "string_decoder": "^1.1.1", "util-deprecate": "^1.0.1" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
-
-    "read-pkg-up/read-pkg/normalize-package-data/hosted-git-info": ["hosted-git-info@2.8.9", "", {}, "sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw=="],
-
-    "read-pkg-up/read-pkg/normalize-package-data/semver": ["semver@5.7.2", "", { "bin": { "semver": "bin/semver" } }, "sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g=="],
 
     "rimraf/glob/minimatch/brace-expansion": ["brace-expansion@2.0.1", "", { "dependencies": { "balanced-match": "^1.0.0" } }, "sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA=="],
 
@@ -6587,64 +6493,6 @@
 
     "@commitlint/top-level/find-up/locate-path/p-locate/p-limit": ["p-limit@4.0.0", "", { "dependencies": { "yocto-queue": "^1.0.0" } }, "sha512-5b0R4txpzjPWVw/cXXUResoD4hb6U/x9BH08L7nw+GN1sezDzPdxeRvpc9c433fZhBan/wusjbCsqwqm4EIBIQ=="],
 
-    "@julr/unocss-preset-forms/unocss/@unocss/vite/@unocss/inspector/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/@clack/prompts": ["@clack/prompts@0.9.1", "", { "dependencies": { "@clack/core": "0.4.1", "picocolors": "^1.0.0", "sisteransi": "^1.0.5" } }, "sha512-JIpyaboYZeWYlyP0H+OoPPxd6nqueG/CmN6ixBiNFsIDHREevjIf0n0Ohh5gr5C8pEDknzgvz+pIJ8dMhzWIeg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stylistic/eslint-plugin": ["@stylistic/eslint-plugin@2.13.0", "", { "dependencies": { "@typescript-eslint/utils": "^8.13.0", "eslint-visitor-keys": "^4.2.0", "espree": "^10.3.0", "estraverse": "^5.3.0", "picomatch": "^4.0.2" }, "peerDependencies": { "eslint": ">=8.40.0" } }, "sha512-RnO1SaiCFHn666wNz2QfZEFxvmiNRqhzaMXHXxXXKt+MEP7aajlPxUSMIQpKAaJfverpovEYqjBOXDq6dDcaOQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-config-flat-gitignore": ["eslint-config-flat-gitignore@1.0.1", "", { "dependencies": { "@eslint/compat": "^1.2.5" }, "peerDependencies": { "eslint": "^9.5.0" } }, "sha512-wjBmJ8TAb67G2or/gBp/H62uCIkDCjpCmlGPSG41/7QagUjMgh+iegVB3gY8eNYhTAmecjKtclT4wGAjHz5yWA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-flat-config-utils": ["eslint-flat-config-utils@1.1.0", "", { "dependencies": { "pathe": "^2.0.0" } }, "sha512-W49wz7yQJGRfg4QSV3nwdO/fYcWetiSKhLV5YykfQMcqnIATNpoS7EPdINhLB9P3fmdjNmFtOgZjiKnCndWAnw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-merge-processors": ["eslint-merge-processors@1.0.0", "", { "peerDependencies": { "eslint": "*" } }, "sha512-4GybyHmhXtT7/W8RAouQzNM0791sYasJCTYHIAYjuiJvbNFY0jMKkoESREhX+mjX37dxiN6v4EqhZ1nc0tJF7A=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-antfu": ["eslint-plugin-antfu@2.7.0", "", { "dependencies": { "@antfu/utils": "^0.7.10" }, "peerDependencies": { "eslint": "*" } }, "sha512-gZM3jq3ouqaoHmUNszb1Zo2Ux7RckSvkGksjLWz9ipBYGSv1EwwBETN6AdiUXn+RpVHXTbEMPAPlXJazcA6+iA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-command": ["eslint-plugin-command@2.1.0", "", { "dependencies": { "@es-joy/jsdoccomment": "^0.50.0" }, "peerDependencies": { "eslint": "*" } }, "sha512-S3gvDSCRHLdRG7NYaevLvGA0g/txOju7NEB2di7SE80NtbCwsvpi/fft045YuTZpOzqCRUfuye39raldmpXXYQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn": ["eslint-plugin-unicorn@56.0.1", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.24.7", "@eslint-community/eslint-utils": "^4.4.0", "ci-info": "^4.0.0", "clean-regexp": "^1.0.0", "core-js-compat": "^3.38.1", "esquery": "^1.6.0", "globals": "^15.9.0", "indent-string": "^4.0.0", "is-builtin-module": "^3.2.1", "jsesc": "^3.0.2", "pluralize": "^8.0.0", "read-pkg-up": "^7.0.1", "regexp-tree": "^0.1.27", "regjsparser": "^0.10.0", "semver": "^7.6.3", "strip-indent": "^3.0.0" }, "peerDependencies": { "eslint": ">=8.56.0" } }, "sha512-FwVV0Uwf8XPfVnKSGpMg7NtlZh0G0gBarCaFcMUOoqPxXryxdYxTRRv4kH6B9TFCVIrjRXG+emcxIk2ayZilog=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-vue": ["eslint-plugin-vue@9.33.0", "", { "dependencies": { "@eslint-community/eslint-utils": "^4.4.0", "globals": "^13.24.0", "natural-compare": "^1.4.0", "nth-check": "^2.1.1", "postcss-selector-parser": "^6.0.15", "semver": "^7.6.3", "vue-eslint-parser": "^9.4.3", "xml-name-validator": "^4.0.0" }, "peerDependencies": { "eslint": "^6.2.0 || ^7.0.0 || ^8.0.0 || ^9.0.0" } }, "sha512-174lJKuNsuDIlLpjeXc5E2Tss8P44uIimAfGD0b90k0NoirJqpG7stLuU9Vp/9ioTOrQdWVREc4mRd1BD+CvGw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-processor-vue-blocks": ["eslint-processor-vue-blocks@1.0.0", "", { "peerDependencies": { "@vue/compiler-sfc": "^3.3.0", "eslint": "^8.50.0 || ^9.0.0" } }, "sha512-q+Wn9bCml65NwYtuINVCE5dUqZa/uVoY4jfc8qEDwWbcGqdRyfJJmAONNZsreA4Q9EJqjYGjk8Hk1QuwAktgkw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/vue-eslint-parser": ["vue-eslint-parser@9.4.3", "", { "dependencies": { "debug": "^4.3.4", "eslint-scope": "^7.1.1", "eslint-visitor-keys": "^3.3.0", "espree": "^9.3.1", "esquery": "^1.4.0", "lodash": "^4.17.21", "semver": "^7.3.6" }, "peerDependencies": { "eslint": ">=6.0.0" } }, "sha512-2rYRLWlIpaiN8xbPiDyXZXRgLGOtWxERV7ND5fFAv5qo1D2N9Fu9MNajBNc6o13lZ+24DAWCkQCvj4klgmcITg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/astro": ["@unocss/astro@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/reset": "65.5.0", "@unocss/vite": "65.5.0" }, "peerDependencies": { "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" }, "optionalPeers": ["vite"] }, "sha512-z0uLbOQhINYpd57p0p/fpVeBY1+Rv0t4GQQUMF00tH8tpIHGUdyHH9aE/yGZaeLI2onmaShTDgIVXT+7fR9fMw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/cli": ["@unocss/cli@65.5.0", "", { "dependencies": { "@ampproject/remapping": "^2.3.0", "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/preset-uno": "65.5.0", "cac": "^6.7.14", "chokidar": "^3.6.0", "colorette": "^2.0.20", "consola": "^3.4.0", "magic-string": "^0.30.17", "pathe": "^2.0.3", "perfect-debounce": "^1.0.0", "tinyglobby": "^0.2.10", "unplugin-utils": "^0.2.4" }, "bin": { "unocss": "bin/unocss.mjs" } }, "sha512-RZvAlu7vWIyeQr1TqFb5JsL95MWmDfopX9EaScUy5zuMjE05kvlPj4kM5y39N3XIpEDYWqI7WdwwrPqU45UraQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/core": ["@unocss/core@65.5.0", "", {}, "sha512-XYWdS09M2XOjZNDotGhI2TIW/6duLNiyssopwjCbv4AlPklF0bZI86SKI55syYDBt6GRadoQbuvUkhSiTV/hzQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/postcss": ["@unocss/postcss@65.5.0", "", { "dependencies": { "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "css-tree": "^3.1.0", "postcss": "^8.5.2", "tinyglobby": "^0.2.10" } }, "sha512-mSGLX0KgygPhICZlUrjLgDJsEkgtrTjkDRI4skC7ZB/2pwQaESg8M3vhtWK/6XK+WGriUowfd5n6F6cfX3c2eg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-attributify": ["@unocss/preset-attributify@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-l3xQK6Om5fNknck04OZy3X7+k0EmVTEzF6BBMCYVaT2ZtCLhlznVt7tEg4ESLuXIZfx/+jd2sW3E3UY/EJ8rUA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-icons": ["@unocss/preset-icons@65.5.0", "", { "dependencies": { "@iconify/utils": "^2.3.0", "@unocss/core": "65.5.0", "ofetch": "^1.4.1" } }, "sha512-lSwMNtj4nufpQDBFoioAM9S6hP8028lA9fLFM3Vw+KmI10/3TaZyOaCXJVH5UdsfNWexGGo/Qo+K1YFWfXLZ8A=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-mini": ["@unocss/preset-mini@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/extractor-arbitrary-variants": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-oD2INmEgTOxmFsVceflv4Zs67vz9PRbpg3+CMsJLWgfX4UdQ1H4jZms72+g3N1hhXBvOFwvGvqGaMnrVMRk54g=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-tagify": ["@unocss/preset-tagify@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-m0CfBawgf4VQlbaijgeWXG6vXEOt4VsNIk1NLUyRM0GBMiOB3usb1tPLWJtRpje6p+bR+k4rpe4LsPMHhKtFfQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-typography": ["@unocss/preset-typography@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-lokYOVF/y1Zt1QufxrD/oJe4aUCK6hHPlisSJRReyKXuGUrBR9yWiIZfINqhkj3kMO6zzN23QiaA5E5cpUkDPg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-uno": ["@unocss/preset-uno@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/preset-wind": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-aVlSjzBc7IqNFgfu06qyP+CBRRGMNQLoQtZteRwa/vsUcTqGLzo7KhvkDazPEKpurmurXiymrvujTHInW0IooQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-web-fonts": ["@unocss/preset-web-fonts@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "ofetch": "^1.4.1" } }, "sha512-zWPsQiMSCoP61J8DX++3Z8Ncs20a3rdBb3uI7bDzHdf9MZEIhKzYYchpYO9Dfw7pzclECeuKhq5IjPjM1lmPUQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-wind": ["@unocss/preset-wind@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/preset-mini": "65.5.0", "@unocss/rule-utils": "65.5.0" } }, "sha512-3krOUZ5qC2J3JGheZsTDNbzqr9qYJw9GP1yEcfeE6K3qVcZnf+3DyJ0i1PuaM5SusOA0MBsHmCU49rLKurdyoA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/transformer-attributify-jsx": ["@unocss/transformer-attributify-jsx@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-ZWSGKw52h8nJSO1DaYGccjjNaBifl4LKJ4U0YpjaF2LDLA5BLBapUtyjTS7ffl6p7GZNokA6VUGL+MXPw+oDXg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/transformer-compile-class": ["@unocss/transformer-compile-class@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-7QMtWhUVKkSYFCDzinR8PPubhLFA+KVJMoHCTX1KTw/lQ5Zt7/FiwLX5zepc50K3074dPgR3hWn5PpK+CZeq7g=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/transformer-directives": ["@unocss/transformer-directives@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "css-tree": "^3.1.0" } }, "sha512-IsUd7L28bRAoN5fyWyNzHu7HOa1yjPqTU/QZfUEViJXApOEKUZ4anBSyU0lPU+59kMneg40xOvCBR70qNMCw4w=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/transformer-variant-group": ["@unocss/transformer-variant-group@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-I0ibbLRGI/9+BJy0yybxtmoYPIwGPMfwQDAvChhFXmokJG1YMpeJqPBI7fypHfbk/iO00W5lOGQ4XiIfsHfiHg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/vite": ["@unocss/vite@65.5.0", "", { "dependencies": { "@ampproject/remapping": "^2.3.0", "@unocss/config": "65.5.0", "@unocss/core": "65.5.0", "@unocss/inspector": "65.5.0", "chokidar": "^3.6.0", "magic-string": "^0.30.17", "tinyglobby": "^0.2.10", "unplugin-utils": "^0.2.4" }, "peerDependencies": { "vite": "^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0" } }, "sha512-v2rFIrBaWGQmSJeKv7us+2OMos2RqdZYpf/seOpf4MFHrmjjiFQ1ZWkTqFyNfUxAwj6VID5frVJhxJfZuEhhug=="],
-
     "cz-conventional-changelog/chalk/ansi-styles/color-convert/color-name": ["color-name@1.1.3", "", {}, "sha512-72fSenhMw2HZMTVHeCA9KCmpEIbzWiQsjN+BHcBbS9vr1mtt+vJjPdksIBNUmKAW8TFUDPJK5SUU3QhE9NEXDw=="],
 
     "eslint/find-up/locate-path/p-locate/p-limit": ["p-limit@3.1.0", "", { "dependencies": { "yocto-queue": "^0.1.0" } }, "sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ=="],
@@ -6657,62 +6505,6 @@
 
     "rollup-plugin-visualizer/yargs/string-width/strip-ansi/ansi-regex": ["ansi-regex@5.0.1", "", {}, "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ=="],
 
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-antfu/@antfu/utils": ["@antfu/utils@0.7.10", "", {}, "sha512-+562v9k4aI80m1+VuMHehNJWLOFjBnXn3tdOitzD0il5b7smkSBal4+a3oKiQTbrwMmN/TBUMDvbdoWDehgOww=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/indent-string": ["indent-string@4.0.0", "", {}, "sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/is-builtin-module": ["is-builtin-module@3.2.1", "", { "dependencies": { "builtin-modules": "^3.3.0" } }, "sha512-BSLE3HnV2syZ0FK0iMA/yUGplUeMmNz4AW5fnTunbCIqZi4vG3WjJT9FHMy5D69xmAYBHXQhJdALdpwVxV501A=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/regjsparser": ["regjsparser@0.10.0", "", { "dependencies": { "jsesc": "~0.5.0" }, "bin": { "regjsparser": "bin/parser" } }, "sha512-qx+xQGZVsy55CH0a1hiVwHmqjLryfh7wQyF5HO07XJ9f7dQMY/gPQHhlyDkIzJKC+x2fUCpCcUODUUUFrm7SHA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/semver": ["semver@7.7.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/strip-indent": ["strip-indent@3.0.0", "", { "dependencies": { "min-indent": "^1.0.0" } }, "sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-vue/globals": ["globals@13.24.0", "", { "dependencies": { "type-fest": "^0.20.2" } }, "sha512-AhO5QUcj8llrbG09iWhPU2B204J1xnPeL8kQmVorSsy+Sjj1sk8gIyh6cUocGmH4L0UuhAJy+hJMRA4mgA4mFQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-vue/semver": ["semver@7.7.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/vue-eslint-parser/eslint-scope": ["eslint-scope@7.2.2", "", { "dependencies": { "esrecurse": "^4.3.0", "estraverse": "^5.2.0" } }, "sha512-dOt21O7lTMhDM+X9mB4GX+DZrZtCUJPL/wlcTqxyrx5IvO0IYtILdtrQGQp+8n5S0gwSVmOf9NQrjMOgfQZlIg=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/vue-eslint-parser/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/vue-eslint-parser/espree": ["espree@9.6.1", "", { "dependencies": { "acorn": "^8.9.0", "acorn-jsx": "^5.3.2", "eslint-visitor-keys": "^3.4.1" } }, "sha512-oruZaFkjorTpF32kDSI5/75ViwGeZginGGy2NoOSg3Q9bnwlnmDm4HLnkl0RE3n+njDXR037aY1+x58Z/zFdwQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/vue-eslint-parser/semver": ["semver@7.7.1", "", { "bin": { "semver": "bin/semver.js" } }, "sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/astro/@unocss/reset": ["@unocss/reset@65.5.0", "", {}, "sha512-jADqiBAfOO9aZNpnsmxc7WX7vIIxyalcmCJ7fwdyPRmFhxZZ5ZoSYsHDt0Wfn/W2BRQkLjXWL0956nXH0lz79Q=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/cli/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/postcss/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/postcss/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-mini/@unocss/extractor-arbitrary-variants": ["@unocss/extractor-arbitrary-variants@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0" } }, "sha512-7K3gftOdkv9jbWvbkExTcx6/FDP2Xk/NSsOYTvR9oITLnLjmdQvp+9276WSnNfKF3frBl8ZcqpkC2EsuL2Yutw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-mini/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-typography/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-uno/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/preset-wind/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/transformer-directives/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/vite/@unocss/config": ["@unocss/config@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "unconfig": "~7.0.0" } }, "sha512-XK9Y3Z1m3oPXQl5pVOYk6+pltsk70RHFvsAtTyFd5G5kAHzQS/em4/lL6/0IubU7rn2j+9eHeCVOiWXW9lnvYA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/vite/@unocss/inspector": ["@unocss/inspector@65.5.0", "", { "dependencies": { "@unocss/core": "65.5.0", "@unocss/rule-utils": "65.5.0", "colorette": "^2.0.20", "gzip-size": "^6.0.0", "sirv": "^3.0.0", "vue-flow-layout": "^0.1.1" } }, "sha512-dhAijjVblrAUqHjqB2p4JhNTpRo85BTi6SLbG+ePwGsIL9oxNXtN57O2mzp1mSEKS1C+QjHmRV7u+gh8Bj93Zg=="],
-
     "eslint/find-up/locate-path/p-locate/p-limit/yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/is-builtin-module/builtin-modules": ["builtin-modules@3.3.0", "", {}, "sha512-zhaCDicdLuWN5UbN5IMnFqNMhNfo919sH85y2/ea+5Yg9TsTkeZxpL+JLbp6cgYFS4sRLp3YV4S6yDuqVWHYOw=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-unicorn/regjsparser/jsesc": ["jsesc@0.5.0", "", { "bin": { "jsesc": "bin/jsesc" } }, "sha512-uZz5UnB7u4T9LvwmFqXii7pZSouaRPorGs5who1Ip7VO0wxanFvBL7GkM6dTHlgX+jhBApRetaWpnDabOeTcnA=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/@stacksjs/eslint-config/eslint-plugin-vue/globals/type-fest": ["type-fest@0.20.2", "", {}, "sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ=="],
-
-    "@stacksjs/eslint-plugin/@stacksjs/eslint-config/@stacksjs/eslint-plugin/unocss/@unocss/vite/@unocss/inspector/@unocss/rule-utils": ["@unocss/rule-utils@65.5.0", "", { "dependencies": { "@unocss/core": "^65.5.0", "magic-string": "^0.30.17" } }, "sha512-xT4N0EY1dl1mqY5gTKD0H/Fg6xApe7xbfNTUwctOu02DMeJhqv9BTqfoAihH/hzGSI69+FtzVtz7hUxTypfehA=="],
   }
 }
