@@ -18,6 +18,8 @@ export default config({
 
   ignores: [
     '**/fixtures',
+    '**/*.md',
+    '**/*.yaml',
     // ...globs
   ],
 })
