@@ -370,7 +370,7 @@
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/eslint-config": "^4.2.1-beta.1",
+    "@stacksjs/eslint-config": "^4.10.2-beta.1",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/faker": "workspace:*",
     "@stacksjs/git": "workspace:*",
