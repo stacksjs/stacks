@@ -1,5 +1,5 @@
 import { intro, outro } from '../build/src'
-import { version } from '../package.json'
+import { version } from './package.json'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
