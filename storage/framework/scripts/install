@@ -1,0 +1,8 @@
+#!/bin/sh
+
+cd ../../..
+
+bun install
+
+# run linter and formatter
+# eslint . --fix
