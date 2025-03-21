@@ -15,7 +15,7 @@ const result = await Bun.build({
 })
 
 // Update the package.json workspace:* references to the specific version
-const packageJsonPath = '../package.json'
+const packageJsonPath = './package.json'
 const packageJson = await Bun.file(packageJsonPath).json()
 
 // Find all workspace:* dependencies in the main package.json and update them to use the current version
