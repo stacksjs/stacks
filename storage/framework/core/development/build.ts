@@ -20,7 +20,8 @@ const packageJson = await Bun.file(packageJsonPath).json()
 
 // Find all workspace:* dependencies in the main package.json and update them to use the current version
 for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
-  if (!packageJson[section]) continue
+  if (!packageJson[section])
+    continue
 
   for (const [dep, depVersion] of Object.entries(packageJson[section])) {
     // Update all workspace:* references to use the current version

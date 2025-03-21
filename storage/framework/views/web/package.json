@@ -1,7 +1,7 @@
 {
   "name": "stacks-web",
   "type": "module",
-  "version": "0.70.5",
+  "version": "0.70.6",
   "private": true,
   "scripts": {
     "build": "bun --bun vite-ssg build -c ../../core/vite-config/src/views.ts",
