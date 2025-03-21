@@ -16,7 +16,6 @@ import {
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
-import { runCommandSync } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -937,7 +936,7 @@ export function projectPath(filePath = '', options?: { relative: boolean }): str
  * @throws Error if the project with the specified name cannot be found.
  */
 export async function findProjectPath(project: string): Promise<string> {
-  const projectList = await runCommandSync('buddy projects:list --quiet')
+  const projectList = Bun.spawnSync(['buddy', 'projects:list', '--quiet']).stdout.toString()
   log.debug(`ProjectList in findProjectPath ${projectList}`)
 
   // get the list of all Stacks project paths (on the system)
