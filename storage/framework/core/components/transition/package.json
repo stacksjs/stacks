@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/transition",
   "type": "module",
-  "version": "0.70.6",
+  "version": "0.70.7",
   "description": "A modern transition component.",
   "author": "Chris Breuer",
   "contributors": [

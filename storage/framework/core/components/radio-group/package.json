@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/radio-group",
   "type": "module",
-  "version": "0.70.6",
+  "version": "0.70.7",
   "description": "A modern radio group component.",
   "author": "Chris Breuer",
   "contributors": [
