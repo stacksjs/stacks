@@ -60,7 +60,7 @@
     "@vueuse/head": "^2.0.0",
     "@vueuse/math": "^13.0.0",
     "@vueuse/shared": "^13.0.0",
-    "ace-builds": "^1.39.0",
+    "ace-builds": "^1.39.1",
     "bun-plugin-dotenvx": "^0.6.3",
     "bun-plugin-yml": "^0.3.1",
     "defu": "^6.1.4",
