@@ -2,7 +2,7 @@
   "publisher": "Stacks",
   "name": "vscode-stacks",
   "displayName": "Stacks",
-  "version": "0.70.3",
+  "version": "0.70.4",
   "description": "A modern Stacks development environment.",
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",

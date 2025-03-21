@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/git",
   "type": "module",
-  "version": "0.70.3",
+  "version": "0.70.4",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],

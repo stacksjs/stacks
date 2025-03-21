@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/payment",
   "type": "module",
-  "version": "0.70.3",
+  "version": "0.70.4",
   "description": "An opinionated payment component for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
