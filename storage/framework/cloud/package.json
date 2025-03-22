@@ -41,7 +41,7 @@
     "dev": "./dev local"
   },
   "dependencies": {
-    "@aws-sdk/client-bedrock": "^3.772.0",
+    "@aws-sdk/client-bedrock": "^3.773.0",
     "@aws-sdk/client-cloudformation": "^3.772.0",
     "@aws-sdk/client-cloudfront": "^3.772.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.772.0",
