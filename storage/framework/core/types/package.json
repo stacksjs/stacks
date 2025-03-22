@@ -69,7 +69,7 @@
     "unplugin-vue-components": "^28.4.1",
     "vite": "^6.2.2",
     "vite-plugin-inspect": "^11.0.0",
-    "vite-plugin-pwa": "^0.21.1",
+    "vite-plugin-pwa": "^0.21.2",
     "vite-ssg": "^25.2.0",
     "vitepress": "1.6.3",
     "vue": "^3.5.13"

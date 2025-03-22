@@ -45,7 +45,7 @@
     "vite": "^6.2.2",
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-inspect": "^11.0.0",
-    "vite-plugin-pwa": "^0.21.1",
+    "vite-plugin-pwa": "^0.21.2",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vite-plugin-vue-layouts": "^0.11.0",
     "vite-ssg": "^25.2.0",
