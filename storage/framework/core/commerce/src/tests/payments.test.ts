@@ -145,10 +145,9 @@ describe('Payment Module', () => {
         await store(secondRequest as any)
       }
       catch (error) {
-        console.error(error)
         expect(error).toBeDefined()
         expect(error instanceof Error).toBe(true)
-        // Check for the specific error message format
+        
         const errorMessage = (error as Error).message
         expect(
           errorMessage.includes('Failed to create payment: UNIQUE constraint failed: payments.transaction_id'),
