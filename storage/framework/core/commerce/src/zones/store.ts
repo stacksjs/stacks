@@ -23,7 +23,6 @@ export async function store(request: ShippingZoneRequestType): Promise<ShippingZ
       postal_codes: request.get('postal_codes'),
       status: request.get('status'),
       shipping_method_id: request.get<number>('shipping_method_id'),
-      uuid: randomUUIDv7(),
     }
 
     // Insert the shipping zone
@@ -32,7 +31,7 @@ export async function store(request: ShippingZoneRequestType): Promise<ShippingZ
       .values(zoneData)
       .executeTakeFirst()
 
-    const zoneId = Number(result.insertId)
+    const zoneId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
     // Retrieve the newly created shipping zone
     const shippingZone = await db
