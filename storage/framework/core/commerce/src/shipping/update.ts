@@ -32,7 +32,7 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
   }
 
   // Remove undefined values
-  Object.keys(updateData).forEach(key => {
+  Object.keys(updateData).forEach((key) => {
     if (updateData[key as keyof typeof updateData] === undefined) {
       delete updateData[key as keyof typeof updateData]
     }

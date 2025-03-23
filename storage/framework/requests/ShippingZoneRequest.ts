@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { ShippingMethodRequestType } from '../types/requests'
+import type { ShippingZoneRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,29 +11,31 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataShippingMethod {
+interface RequestDataShippingZone {
   id: number
   name: string
-  description: string
-  base_rate: number
-  free_shipping: number
+  countries: string
+  regions: string
+  postal_codes: string
   status: string[]
+  shipping_method_id: number
   created_at?: Date
   updated_at?: Date
 }
-export class ShippingMethodRequest extends Request<RequestDataShippingMethod> implements ShippingMethodRequestType {
+export class ShippingZoneRequest extends Request<RequestDataShippingZone> implements ShippingZoneRequestType {
   public id = 1
   public name = ''
-  public description = ''
-  public base_rate = 0
-  public free_shipping = 0
+  public countries = ''
+  public regions = ''
+  public postal_codes = ''
   public status = ''
+  public shipping_method_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('ShippingMethod', this.all())
+      await validateField('ShippingZone', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -41,4 +43,4 @@ export class ShippingMethodRequest extends Request<RequestDataShippingMethod> im
   }
 }
 
-export const shippingMethodRequest = new ShippingMethodRequest()
+export const shippingZoneRequest = new ShippingZoneRequest()

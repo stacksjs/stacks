@@ -1,8 +1,8 @@
 // Import dependencies
 import type { ShippingMethodRequestType } from '@stacksjs/orm'
 import type { NewShippingMethod, ShippingMethodJsonResponse } from '../../../../orm/src/models/ShippingMethod'
-import { db } from '@stacksjs/database'
 import { randomUUIDv7 } from 'bun'
+import { db } from '@stacksjs/database'
 
 /**
  * Create a new shipping method

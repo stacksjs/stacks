@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'description', 'base_rate', 'free_shipping', 'zones', 'status'],
+      displayable: ['id', 'name', 'description', 'base_rate', 'free_shipping', 'status'],
       searchable: ['name', 'description'],
       sortable: ['name', 'base_rate', 'created_at', 'updated_at'],
-      filterable: ['status', 'zones'],
+      filterable: ['status'],
     },
 
     useSeeder: {
@@ -28,6 +28,8 @@ export default {
 
     observe: true,
   },
+
+  hasOne: ['ShippingZone'],
 
   attributes: {
     name: {
@@ -81,29 +83,6 @@ export default {
         return faker.datatype.boolean({ probability: 0.3 })
           ? null
           : faker.number.int({ min: 5000, max: 20000 }) // 50.00 to 200.00
-      },
-    },
-
-    zones: {
-      required: true,
-      order: 6,
-      fillable: true,
-      validation: {
-        rule: schema.string(),
-      },
-      factory: (faker) => {
-        const regions = [
-          'North America',
-          'South America',
-          'Europe',
-          'Asia',
-          'Africa',
-          'Oceania',
-          'Middle East',
-        ]
-        const count = faker.number.int({ min: 1, max: 4 })
-        const selectedRegions = faker.helpers.arrayElements(regions, count)
-        return JSON.stringify(selectedRegions)
       },
     },
 

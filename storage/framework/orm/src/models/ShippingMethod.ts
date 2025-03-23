@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ShippingZoneModel } from './ShippingZone'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -12,7 +13,6 @@ export interface ShippingMethodsTable {
   description?: string
   base_rate: number
   free_shipping?: number
-  zones: string
   status: string | string[]
   uuid?: string
 
@@ -41,7 +41,7 @@ export type ShippingMethodUpdate = Updateable<ShippingMethodsTable>
 
 export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []
-  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'zones', 'status', 'uuid']
+  private readonly fillable: Array<keyof ShippingMethodJsonResponse> = ['name', 'description', 'base_rate', 'free_shipping', 'status', 'uuid']
   private readonly guarded: Array<keyof ShippingMethodJsonResponse> = []
   protected attributes = {} as ShippingMethodJsonResponse
   protected originalAttributes = {} as ShippingMethodJsonResponse
@@ -168,6 +168,10 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
     }
   }
 
+  get shipping_zone(): ShippingZoneModel | undefined {
+    return this.attributes.shipping_zone
+  }
+
   get id(): number {
     return this.attributes.id
   }
@@ -190,10 +194,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
 
   get free_shipping(): number | undefined {
     return this.attributes.free_shipping
-  }
-
-  get zones(): string {
-    return this.attributes.zones
   }
 
   get status(): string | string[] {
@@ -226,10 +226,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
 
   set free_shipping(value: number) {
     this.attributes.free_shipping = value
-  }
-
-  set zones(value: string) {
-    this.attributes.zones = value
   }
 
   set status(value: string | string[]) {
@@ -830,14 +826,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
     return instance
   }
 
-  static whereZones(value: string): ShippingMethodModel {
-    const instance = new ShippingMethodModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('zones', '=', value)
-
-    return instance
-  }
-
   static whereStatus(value: string): ShippingMethodModel {
     const instance = new ShippingMethodModel(undefined)
 
@@ -859,7 +847,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
       description: this.description,
       base_rate: this.base_rate,
       free_shipping: this.free_shipping,
-      zones: this.zones,
       status: this.status,
     }
   }
@@ -886,7 +873,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
       description: this.description,
       base_rate: this.base_rate,
       free_shipping: this.free_shipping,
-      zones: this.zones,
       status: this.status,
 
       created_at: this.created_at,
@@ -982,13 +968,6 @@ export async function whereBaseRate(value: number): Promise<ShippingMethodModel[
 
 export async function whereFreeShipping(value: number): Promise<ShippingMethodModel[]> {
   const query = DB.instance.selectFrom('shipping_methods').where('free_shipping', '=', value)
-  const results: ShippingMethodJsonResponse = await query.execute()
-
-  return results.map((modelItem: ShippingMethodJsonResponse) => new ShippingMethodModel(modelItem))
-}
-
-export async function whereZones(value: string): Promise<ShippingMethodModel[]> {
-  const query = DB.instance.selectFrom('shipping_methods').where('zones', '=', value)
   const results: ShippingMethodJsonResponse = await query.execute()
 
   return results.map((modelItem: ShippingMethodJsonResponse) => new ShippingMethodModel(modelItem))

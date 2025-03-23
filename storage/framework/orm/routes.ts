@@ -24,6 +24,16 @@ route.post('product-manufacturers', 'ManufacturerStoreOrmAction')
 
 route.get('product-manufacturers/{id}', 'ManufacturerShowOrmAction')
 
+route.get('shipping-zones', 'ShippingZoneIndexOrmAction')
+
+route.post('shipping-zones', 'ShippingZoneStoreOrmAction')
+
+route.get('shipping-zones/{id}', 'ShippingZoneShowOrmAction')
+
+route.patch('shipping-zones/{id}', 'ShippingZoneUpdateOrmAction')
+
+route.delete('shipping-zones/{id}', 'ShippingZoneDestroyOrmAction')
+
 route.get('customers', 'CustomerIndexOrmAction')
 
 route.post('customers', 'CustomerStoreOrmAction')

@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy, softDelete, bulkSoftDelete } from '../shipping/destroy'
+import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../shipping/destroy'
 import { fetchById, fetchByUuid } from '../shipping/fetch'
-import { store, bulkStore, formatShippingOptions, getActiveShippingMethods } from '../shipping/store'
-import { update, updateStatus, updatePricing } from '../shipping/update'
+import { bulkStore, formatShippingOptions, getActiveShippingMethods, store } from '../shipping/store'
+import { update, updatePricing, updateStatus } from '../shipping/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -34,7 +34,6 @@ describe('Shipping Methods Module', () => {
         description: 'Next day delivery service',
         base_rate: 1500, // $15.00
         free_shipping: 10000, // Free for orders over $100
-        zones: JSON.stringify(['North America', 'Europe']),
         status: 'active',
       }
 
@@ -46,7 +45,6 @@ describe('Shipping Methods Module', () => {
       expect(shippingMethod?.description).toBe('Next day delivery service')
       expect(shippingMethod?.base_rate).toBe(1500)
       expect(shippingMethod?.free_shipping).toBe(10000)
-      expect(shippingMethod?.zones).toBe(JSON.stringify(['North America', 'Europe']))
       expect(shippingMethod?.status).toBe('active')
       expect(shippingMethod?.uuid).toBeDefined()
 
@@ -66,7 +64,6 @@ describe('Shipping Methods Module', () => {
       const minimalRequestData = {
         name: 'Standard Shipping',
         base_rate: 500,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -76,7 +73,6 @@ describe('Shipping Methods Module', () => {
       expect(shippingMethod).toBeDefined()
       expect(shippingMethod?.name).toBe('Standard Shipping')
       expect(shippingMethod?.base_rate).toBe(500)
-      expect(shippingMethod?.zones).toBe(JSON.stringify(['North America']))
       expect(shippingMethod?.status).toBe('active')
       expect(shippingMethod?.description).toBeNull() // Optional field should be null
     })
@@ -86,7 +82,6 @@ describe('Shipping Methods Module', () => {
         new TestRequest({
           name: 'Standard Shipping',
           base_rate: 500,
-          zones: JSON.stringify(['North America']),
           status: 'active',
         }),
         new TestRequest({
@@ -125,7 +120,7 @@ describe('Shipping Methods Module', () => {
 
       // Get formatted options
       const options = await formatShippingOptions()
-      
+
       expect(options.length).toBe(2)
       expect(options[0].name).toBeDefined()
       expect(options[0].base_rate).toBeDefined()
@@ -141,8 +136,7 @@ describe('Shipping Methods Module', () => {
         description: 'Initial description',
         base_rate: 1000,
         free_shipping: 5000,
-        zones: JSON.stringify(['North America']),
-        status: 'active',
+        status: 'active', 
       }
 
       // Create the shipping method
@@ -184,7 +178,6 @@ describe('Shipping Methods Module', () => {
       const requestData = {
         name: 'Status Test Shipping',
         base_rate: 1000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -213,7 +206,6 @@ describe('Shipping Methods Module', () => {
         name: 'Pricing Test Shipping',
         base_rate: 1000,
         free_shipping: 5000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -250,7 +242,6 @@ describe('Shipping Methods Module', () => {
       const requestData = {
         name: 'Method to Delete',
         base_rate: 1000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -283,7 +274,6 @@ describe('Shipping Methods Module', () => {
       const requestData = {
         name: 'Method to Soft Delete',
         base_rate: 1000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -385,8 +375,8 @@ describe('Shipping Methods Module', () => {
 
       // Verify they don't appear in active shipping methods
       const activeMethods = await getActiveShippingMethods()
-      const hasAnyTestMethod = activeMethods.some(method => 
-        methodIds.includes(Number(method.id))
+      const hasAnyTestMethod = activeMethods.some(method =>
+        methodIds.includes(Number(method.id)),
       )
       expect(hasAnyTestMethod).toBe(false)
     })
@@ -414,7 +404,7 @@ describe('Shipping Methods Module', () => {
 
       const request = new TestRequest(requestData)
       const method = await store(request as any)
-      
+
       expect(method?.uuid).toBeDefined()
       const uuid = method?.uuid
 
@@ -461,7 +451,7 @@ describe('Shipping Methods Module', () => {
 
       // Get active shipping methods
       const activeMethods = await getActiveShippingMethods()
-      
+
       // Should only return active methods
       expect(activeMethods.length).toBe(1)
       expect(activeMethods[0].name).toBe('Active Shipping')

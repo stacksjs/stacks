@@ -13,6 +13,7 @@ import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
 import type { ReviewModel } from '../orm/src/models/Review'
 import type { ShippingMethodModel } from '../orm/src/models/ShippingMethod'
+import type { ShippingZoneModel } from '../orm/src/models/ShippingZone'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 
@@ -30,6 +31,9 @@ export interface ModelEvents {
   'manufacturer:created': ManufacturerModel
   'manufacturer:updated': ManufacturerModel
   'manufacturer:deleted': ManufacturerModel
+  'shipping-zone:created': ShippingZoneModel
+  'shipping-zone:updated': ShippingZoneModel
+  'shipping-zone:deleted': ShippingZoneModel
   'customer:created': CustomerModel
   'customer:updated': CustomerModel
   'customer:deleted': CustomerModel

@@ -26,6 +26,7 @@ import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
 import type { ReviewsTable } from '../src/models/Review'
 import type { ShippingMethodsTable } from '../src/models/ShippingMethod'
+import type { ShippingZonesTable } from '../src/models/ShippingZone'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
@@ -79,6 +80,7 @@ export interface Database {
   payments: PaymentsTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
+  shipping_zones: ShippingZonesTable
   customers: CustomersTable
   products: ProductsTable
   product_variants: ProductVariantsTable

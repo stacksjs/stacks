@@ -336,6 +336,32 @@ export interface OrderItemRequestType extends Request {
   updated_at?: Date
 }
 
+interface RequestDataShippingZone {
+  id: number
+  name: string
+  countries: string
+  regions: string
+  postal_codes: string
+  status: string[]
+  shipping_method_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+export interface ShippingZoneRequestType extends Request {
+  validate: (attributes?: CustomAttributes) => void
+  get: <T = string>(key: string, defaultValue?: T) => T
+  all: () => RequestDataShippingZone
+  id: number
+  name: string
+  countries: string
+  regions: string
+  postal_codes: string
+  status: string[]
+  shipping_method_id: number
+  created_at?: Date
+  updated_at?: Date
+}
+
 interface RequestDataCustomer {
   id: number
   name: string
@@ -748,7 +774,6 @@ interface RequestDataShippingMethod {
   description: string
   base_rate: number
   free_shipping: number
-  zones: string
   status: string[]
   created_at?: Date
   updated_at?: Date
@@ -762,7 +787,6 @@ export interface ShippingMethodRequestType extends Request {
   description: string
   base_rate: number
   free_shipping: number
-  zones: string
   status: string[]
   created_at?: Date
   updated_at?: Date
@@ -996,4 +1020,4 @@ export interface ErrorRequestType extends Request {
   updated_at?: Date
 }
 
-export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | CategoryRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | CustomerRequestType | ProductRequestType | ProductVariantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType
+export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | CategoryRequestType | PaymentRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ProductVariantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | SubscriptionRequestType | PaymentProductRequestType | ErrorRequestType

@@ -49,6 +49,9 @@ export interface Attributes {
   quantity: number
   price: number
   special_instructions: string
+  countries: string
+  regions: string
+  postal_codes: string
   phone: string
   total_spent: number
   last_order: string
@@ -124,7 +127,6 @@ export interface Attributes {
   expiry_days: number
   base_rate: number
   free_shipping: number
-  zones: string
   connection: string
   queue: string
   payload: string
