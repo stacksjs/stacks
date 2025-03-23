@@ -151,7 +151,7 @@ export async function getActiveShippingZones(): Promise<ShippingZoneJsonResponse
 
 /**
  * Get shipping zones by country code
- * 
+ *
  * @param countryCode ISO country code
  * @returns List of shipping zones covering the specified country
  */

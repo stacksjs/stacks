@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy, softDelete, bulkSoftDelete } from '../zones/destroy'
+import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../zones/destroy'
 import { fetchById } from '../zones/fetch'
-import { store, bulkStore, formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../zones/store'
-import { update, updateStatus, updateCountries, updateRegionsAndPostalCodes } from '../zones/update'
+import { bulkStore, formatZoneOptions, getActiveShippingZones, getZonesByCountry, store } from '../zones/store'
+import { update, updateCountries, updateRegionsAndPostalCodes, updateStatus } from '../zones/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -138,10 +138,10 @@ describe('Shipping Zone Module', () => {
 
       // Now get formatted options
       const options = await formatZoneOptions()
-      
+
       expect(options).toBeDefined()
       expect(options.length).toBe(2)
-      
+
       // Verify structure of options
       expect(options[0].id).toBeDefined()
       expect(options[0].name).toBeDefined()
@@ -173,7 +173,7 @@ describe('Shipping Zone Module', () => {
 
       // Get active zones
       const activeZones = await getActiveShippingZones()
-      
+
       expect(activeZones).toBeDefined()
       expect(activeZones.length).toBe(1)
       expect(activeZones[0].name).toBe('Active Zone')
@@ -278,7 +278,7 @@ describe('Shipping Zone Module', () => {
       // Update countries
       const updatedCountries = JSON.stringify(['US', 'CA', 'MX'])
       const updatedZone = await updateCountries(zoneId, updatedCountries)
-      
+
       expect(updatedZone).toBeDefined()
       expect(updatedZone?.countries).toBe(updatedCountries)
     })
@@ -307,9 +307,9 @@ describe('Shipping Zone Module', () => {
       // Update regions and postal codes
       const updatedRegions = JSON.stringify(['California', 'New York', 'Texas'])
       const updatedPostalCodes = JSON.stringify(['90210', '10001', '77001'])
-      
+
       const updatedZone = await updateRegionsAndPostalCodes(zoneId, updatedRegions, updatedPostalCodes)
-      
+
       expect(updatedZone).toBeDefined()
       expect(updatedZone?.regions).toBe(updatedRegions)
       expect(updatedZone?.postal_codes).toBe(updatedPostalCodes)
@@ -338,7 +338,7 @@ describe('Shipping Zone Module', () => {
       // Update only postal codes
       const updatedPostalCodes = JSON.stringify(['90210', '10001', '77001'])
       const updatedZone = await updateRegionsAndPostalCodes(zoneId, undefined, updatedPostalCodes)
-      
+
       expect(updatedZone).toBeDefined()
       expect(updatedZone?.regions).toBe(JSON.stringify(['California'])) // Should remain unchanged
       expect(updatedZone?.postal_codes).toBe(updatedPostalCodes)

@@ -127,6 +127,10 @@ export interface Attributes {
   expiry_days: number
   base_rate: number
   free_shipping: number
+  zone: string
+  weight_from: number
+  weight_to: number
+  rate: number
   connection: string
   queue: string
   payload: string

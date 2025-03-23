@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../shipping/destroy'
-import { fetchById, fetchByUuid } from '../shipping/fetch'
+import { fetchById } from '../shipping/fetch'
 import { bulkStore, formatShippingOptions, getActiveShippingMethods, store } from '../shipping/store'
 import { update, updatePricing, updateStatus } from '../shipping/update'
 
@@ -40,7 +40,6 @@ describe('Shipping Methods Module', () => {
       const request = new TestRequest(requestData)
       const shippingMethod = await store(request as any)
 
-      console.log(shippingMethod?.free_shipping)
       expect(shippingMethod).toBeDefined()
       expect(shippingMethod?.name).toBe('Express Delivery')
       expect(shippingMethod?.description).toBe('Next day delivery service')
@@ -136,7 +135,7 @@ describe('Shipping Methods Module', () => {
         description: 'Initial description',
         base_rate: 1000,
         free_shipping: 5000,
-        status: 'active', 
+        status: 'active',
       }
 
       // Create the shipping method
@@ -391,7 +390,6 @@ describe('Shipping Methods Module', () => {
   })
 
   describe('fetch', () => {
-
     it('should get active shipping methods only', async () => {
       // Create an active shipping method
       const activeRequest = new TestRequest({

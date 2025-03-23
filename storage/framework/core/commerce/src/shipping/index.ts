@@ -1,9 +1,9 @@
 // Functions from destroy.ts
 export {
-  destroy,
-  softDelete,
   bulkDestroy,
   bulkSoftDelete,
+  destroy,
+  softDelete,
 } from './destroy'
 
 // Functions from fetch.ts
@@ -13,15 +13,15 @@ export {
 
 // Functions from store.ts
 export {
-  store,
   bulkStore,
   formatShippingOptions,
   getActiveShippingMethods,
+  store,
 } from './store'
 
 // Functions from update.ts
 export {
   update,
-  updateStatus,
   updatePricing,
+  updateStatus,
 } from './update'

@@ -13,6 +13,7 @@ import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
 import type { ReviewModel } from '../orm/src/models/Review'
 import type { ShippingMethodModel } from '../orm/src/models/ShippingMethod'
+import type { ShippingRateModel } from '../orm/src/models/ShippingRate'
 import type { ShippingZoneModel } from '../orm/src/models/ShippingZone'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
@@ -73,5 +74,8 @@ export interface ModelEvents {
   'shipping-method:created': ShippingMethodModel
   'shipping-method:updated': ShippingMethodModel
   'shipping-method:deleted': ShippingMethodModel
+  'shipping-rate:created': ShippingRateModel
+  'shipping-rate:updated': ShippingRateModel
+  'shipping-rate:deleted': ShippingRateModel
 
 }
