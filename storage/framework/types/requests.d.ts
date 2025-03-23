@@ -437,6 +437,7 @@ interface RequestDataReview {
   content: string
   is_verified_purchase: boolean
   is_approved: boolean
+  is_featured: boolean
   helpful_votes: number
   unhelpful_votes: number
   purchase_date: string
@@ -456,6 +457,7 @@ export interface ReviewRequestType extends Request {
   content: string
   is_verified_purchase: boolean
   is_approved: boolean
+  is_featured: boolean
   helpful_votes: number
   unhelpful_votes: number
   purchase_date: string

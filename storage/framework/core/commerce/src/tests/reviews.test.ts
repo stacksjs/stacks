@@ -37,6 +37,7 @@ describe('Product Review Module', () => {
         content: 'This is an excellent product, highly recommend!',
         is_verified_purchase: true,
         is_approved: true,
+        is_featured: true,
         helpful_votes: 0,
         unhelpful_votes: 0,
         purchase_date: new Date().toISOString(),
@@ -54,6 +55,7 @@ describe('Product Review Module', () => {
       expect(review?.content).toBe('This is an excellent product, highly recommend!')
       expect(Boolean(review?.is_verified_purchase)).toBe(true)
       expect(Boolean(review?.is_approved)).toBe(true)
+      expect(Boolean(review?.is_featured)).toBe(true)
 
       // Save the ID for further testing
       const reviewId = review?.id !== undefined ? Number(review.id) : undefined
@@ -87,6 +89,7 @@ describe('Product Review Module', () => {
       expect(review?.content).toBe('I like it')
       expect(review?.helpful_votes).toBe(0) // Default value
       expect(review?.unhelpful_votes).toBe(0) // Default value
+      expect(Boolean(review?.is_featured)).toBe(false) // Default value should be false
     })
   })
 
@@ -308,6 +311,64 @@ describe('Product Review Module', () => {
       expect(helpfulReviews[0].helpful_votes).toBe(10)
       expect(helpfulReviews[1].helpful_votes).toBe(5)
     })
+
+    it('should correctly handle the is_featured flag', async () => {
+      const productId = 6
+
+      // Create featured review
+      const request1 = new TestRequest({
+        product_id: productId,
+        customer_id: 1,
+        rating: 5,
+        title: 'Featured review',
+        content: 'This is a featured review',
+        is_approved: true,
+        is_featured: true,
+      })
+      await store(request1 as any)
+
+      // Create non-featured review
+      const request2 = new TestRequest({
+        product_id: productId,
+        customer_id: 2,
+        rating: 4,
+        title: 'Regular review',
+        content: 'This is a regular review',
+        is_approved: true,
+        is_featured: false,
+      })
+      await store(request2 as any)
+
+      // Fetch all reviews for this product
+      const result = await fetchByProductId(productId)
+
+      // Verify both reviews exist
+      expect(result).toBeDefined()
+      expect(result.data.length).toBe(2)
+
+      // Find the featured review
+      const featuredReview = result.data.find(review => Boolean(review.is_featured) === true)
+      expect(featuredReview).toBeDefined()
+      expect(featuredReview?.title).toBe('Featured review')
+
+      // Find the non-featured review
+      const regularReview = result.data.find(review => Boolean(review.is_featured) === false)
+      expect(regularReview).toBeDefined()
+      expect(regularReview?.title).toBe('Regular review')
+
+      // Test updating featured status
+      if (regularReview?.id) {
+        const updateData = {
+          is_featured: true,
+        }
+
+        const updateRequest = new TestRequest(updateData)
+        const updatedReview = await update(Number(regularReview.id), updateRequest as any)
+
+        expect(updatedReview).toBeDefined()
+        expect(Boolean(updatedReview?.is_featured)).toBe(true)
+      }
+    })
   })
 
   describe('update', () => {
@@ -320,6 +381,7 @@ describe('Product Review Module', () => {
         title: 'Initial review',
         content: 'Initial content',
         is_approved: false,
+        is_featured: false,
       }
 
       // Create the review
@@ -339,6 +401,7 @@ describe('Product Review Module', () => {
         title: 'Updated title',
         content: 'Updated content',
         is_approved: true,
+        is_featured: true,
       }
 
       const updateRequest = new TestRequest(updateData)
@@ -351,6 +414,7 @@ describe('Product Review Module', () => {
       expect(updatedReview?.title).toBe('Updated title')
       expect(updatedReview?.content).toBe('Updated content')
       expect(Boolean(updatedReview?.is_approved)).toBe(true)
+      expect(Boolean(updatedReview?.is_featured)).toBe(true)
 
       // The original fields should remain unchanged
       expect(updatedReview?.product_id).toBe(1)

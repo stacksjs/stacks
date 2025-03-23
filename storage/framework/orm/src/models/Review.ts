@@ -18,6 +18,7 @@ export interface ReviewsTable {
   content: string
   is_verified_purchase?: boolean
   is_approved?: boolean
+  is_featured?: boolean
   helpful_votes?: number
   unhelpful_votes?: number
   purchase_date?: string
@@ -49,7 +50,7 @@ export type ReviewUpdate = Updateable<ReviewsTable>
 
 export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonResponse> {
   private readonly hidden: Array<keyof ReviewJsonResponse> = []
-  private readonly fillable: Array<keyof ReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid', 'customer_id', 'product_id']
+  private readonly fillable: Array<keyof ReviewJsonResponse> = ['rating', 'title', 'content', 'is_verified_purchase', 'is_approved', 'is_featured', 'helpful_votes', 'unhelpful_votes', 'purchase_date', 'images', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof ReviewJsonResponse> = []
   protected attributes = {} as ReviewJsonResponse
   protected originalAttributes = {} as ReviewJsonResponse
@@ -220,6 +221,10 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     return this.attributes.is_approved
   }
 
+  get is_featured(): boolean | undefined {
+    return this.attributes.is_featured
+  }
+
   get helpful_votes(): number | undefined {
     return this.attributes.helpful_votes
   }
@@ -266,6 +271,10 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
 
   set is_approved(value: boolean) {
     this.attributes.is_approved = value
+  }
+
+  set is_featured(value: boolean) {
+    this.attributes.is_featured = value
   }
 
   set helpful_votes(value: number) {
@@ -886,6 +895,14 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     return instance
   }
 
+  static whereIsFeatured(value: string): ReviewModel {
+    const instance = new ReviewModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('is_featured', '=', value)
+
+    return instance
+  }
+
   static whereHelpfulVotes(value: string): ReviewModel {
     const instance = new ReviewModel(undefined)
 
@@ -987,6 +1004,7 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
       content: this.content,
       is_verified_purchase: this.is_verified_purchase,
       is_approved: this.is_approved,
+      is_featured: this.is_featured,
       helpful_votes: this.helpful_votes,
       unhelpful_votes: this.unhelpful_votes,
       purchase_date: this.purchase_date,
@@ -1096,6 +1114,13 @@ export async function whereIsVerifiedPurchase(value: boolean): Promise<ReviewMod
 
 export async function whereIsApproved(value: boolean): Promise<ReviewModel[]> {
   const query = DB.instance.selectFrom('reviews').where('is_approved', '=', value)
+  const results: ReviewJsonResponse = await query.execute()
+
+  return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))
+}
+
+export async function whereIsFeatured(value: boolean): Promise<ReviewModel[]> {
+  const query = DB.instance.selectFrom('reviews').where('is_featured', '=', value)
   const results: ReviewJsonResponse = await query.execute()
 
   return results.map((modelItem: ReviewJsonResponse) => new ReviewModel(modelItem))

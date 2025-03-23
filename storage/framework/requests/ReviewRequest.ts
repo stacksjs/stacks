@@ -18,6 +18,7 @@ interface RequestDataReview {
   content: string
   is_verified_purchase: boolean
   is_approved: boolean
+  is_featured: boolean
   helpful_votes: number
   unhelpful_votes: number
   purchase_date: string
@@ -34,6 +35,7 @@ export class ReviewRequest extends Request<RequestDataReview> implements ReviewR
   public content = ''
   public is_verified_purchase = false
   public is_approved = false
+  public is_featured = false
   public helpful_votes = 0
   public unhelpful_votes = 0
   public purchase_date = ''

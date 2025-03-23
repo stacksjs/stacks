@@ -66,6 +66,7 @@ export interface Attributes {
   content: string
   is_verified_purchase: boolean
   is_approved: boolean
+  is_featured: boolean
   helpful_votes: number
   unhelpful_votes: number
   purchase_date: string

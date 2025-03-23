@@ -92,6 +92,16 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }),
     },
 
+    is_featured: {
+      required: false,
+      order: 7,
+      fillable: true,
+      validation: {
+        rule: schema.boolean(),
+      },
+      factory: faker => faker.datatype.boolean({ probability: 0.9 }),
+    },
+
     helpful_votes: {
       required: false,
       order: 8,
