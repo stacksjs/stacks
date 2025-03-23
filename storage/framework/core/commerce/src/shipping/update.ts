@@ -31,13 +31,6 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
     status: request.get('status'),
   }
 
-  // Remove undefined values
-  Object.keys(updateData).forEach((key) => {
-    if (updateData[key as keyof typeof updateData] === undefined) {
-      delete updateData[key as keyof typeof updateData]
-    }
-  })
-
   // If no fields to update, just return the existing shipping method
   if (Object.keys(updateData).length === 0) {
     return existingMethod
