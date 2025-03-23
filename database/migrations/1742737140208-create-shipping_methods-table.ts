@@ -3,16 +3,14 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('product_variants')
+    .createTable('shipping_methods')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
-    .addColumn('variant', 'text', col => col.notNull())
-    .addColumn('type', 'text', col => col.notNull())
+    .addColumn('name', 'text', col => col.notNull())
     .addColumn('description', 'text')
-    .addColumn('options', 'text')
+    .addColumn('base_rate', 'numeric', col => col.notNull())
+    .addColumn('free_shipping', 'numeric')
     .addColumn('status', 'text', col => col.notNull())
-    .addColumn('product_id', 'integer', col =>
-      col.references('products.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

@@ -72,11 +72,10 @@ export default {
     },
 
     free_shipping: {
-      required: false,
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.number().nullable(),
+        rule: schema.number(),
       },
       factory: (faker) => {
         // 30% chance of being null (N/A), otherwise a minimum order amount

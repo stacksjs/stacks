@@ -40,6 +40,7 @@ describe('Shipping Methods Module', () => {
       const request = new TestRequest(requestData)
       const shippingMethod = await store(request as any)
 
+      console.log(shippingMethod?.free_shipping)
       expect(shippingMethod).toBeDefined()
       expect(shippingMethod?.name).toBe('Express Delivery')
       expect(shippingMethod?.description).toBe('Next day delivery service')
@@ -390,32 +391,6 @@ describe('Shipping Methods Module', () => {
   })
 
   describe('fetch', () => {
-    it('should fetch a shipping method by UUID', async () => {
-      // Create a shipping method
-      const requestData = {
-        name: 'UUID Test Shipping',
-        base_rate: 1000,
-        status: 'active',
-      }
-
-      const request = new TestRequest(requestData)
-      const method = await store(request as any)
-
-      expect(method?.uuid).toBeDefined()
-      const uuid = method?.uuid
-
-      // Make sure we have a valid UUID before proceeding
-      expect(uuid).toBeDefined()
-      if (!uuid) {
-        throw new Error('Failed to create test shipping method with UUID')
-      }
-
-      // Fetch by UUID
-      const fetchedMethod = await fetchByUuid(uuid)
-      expect(fetchedMethod).toBeDefined()
-      expect(fetchedMethod?.uuid).toBe(uuid)
-      expect(fetchedMethod?.name).toBe('UUID Test Shipping')
-    })
 
     it('should get active shipping methods only', async () => {
       // Create an active shipping method

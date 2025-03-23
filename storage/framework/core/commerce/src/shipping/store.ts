@@ -31,7 +31,7 @@ export async function store(request: ShippingMethodRequestType): Promise<Shippin
       .values(shippingData)
       .executeTakeFirst()
 
-    const shippingId = Number(result.insertId)
+    const shippingId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
     // Retrieve the newly created shipping method
     const shippingMethod = await db
