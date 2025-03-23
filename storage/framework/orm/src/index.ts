@@ -52,6 +52,8 @@ export { default as Request } from './Request'
 
 export { default as Review } from './Review'
 
+export { default as ShippingMethod } from './ShippingMethod'
+
 export { default as Subscriber } from './Subscriber'
 
 export { default as SubscriberEmail } from './SubscriberEmail'

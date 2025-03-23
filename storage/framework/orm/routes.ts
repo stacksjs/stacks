@@ -104,6 +104,16 @@ route.post('loyalty-rewards', 'LoyaltyRewardStoreOrmAction')
 
 route.get('loyalty-rewards/{id}', 'LoyaltyRewardShowOrmAction')
 
+route.get('shipping-methods', 'ShippingMethodIndexOrmAction')
+
+route.post('shipping-methods', 'ShippingMethodStoreOrmAction')
+
+route.get('shipping-methods/{id}', 'ShippingMethodShowOrmAction')
+
+route.patch('shipping-methods/{id}', 'ShippingMethodUpdateOrmAction')
+
+route.delete('shipping-methods/{id}', 'ShippingMethodDestroyOrmAction')
+
 route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
 
 route.get('requests/{id}', 'storage/framework/actions/src/RequestShowOrmAction.ts')

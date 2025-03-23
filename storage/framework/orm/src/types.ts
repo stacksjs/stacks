@@ -25,6 +25,7 @@ import type { ProjectsTable } from '../src/models/Project'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
 import type { ReviewsTable } from '../src/models/Review'
+import type { ShippingMethodsTable } from '../src/models/ShippingMethod'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
@@ -90,6 +91,7 @@ export interface Database {
   loyalty_points: LoyaltyPointsTable
   product_items: ProductItemsTable
   loyalty_rewards: LoyaltyRewardsTable
+  shipping_methods: ShippingMethodsTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   payment_transactions: PaymentTransactionsTable

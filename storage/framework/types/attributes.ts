@@ -122,6 +122,9 @@ export interface Attributes {
   reward_type: string
   discount_percentage: number
   expiry_days: number
+  base_rate: number
+  free_shipping: number
+  zones: string
   connection: string
   queue: string
   payload: string
