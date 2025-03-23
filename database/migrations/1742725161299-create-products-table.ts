@@ -12,14 +12,13 @@ export async function up(db: Database<any>) {
     .addColumn('image_url', 'text')
     .addColumn('is_available', 'integer')
     .addColumn('inventory_count', 'numeric')
-    .addColumn('category_id', 'text', col => col.notNull())
     .addColumn('preparation_time', 'numeric', col => col.notNull())
     .addColumn('allergens', 'text')
     .addColumn('nutritional_info', 'text')
+    .addColumn('category_id', 'integer', col =>
+      col.references('categories.id').onDelete('cascade'))
     .addColumn('manufacturer_id', 'integer', col =>
       col.references('manufacturers.id').onDelete('cascade'))
-    .addColumn('product_category_id', 'integer', col =>
-      col.references('product_categories.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

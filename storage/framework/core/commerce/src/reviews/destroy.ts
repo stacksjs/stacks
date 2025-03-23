@@ -10,7 +10,7 @@ export async function destroy(id: number): Promise<boolean> {
   try {
     // Perform the delete operation
     const result = await db
-      .deleteFrom('product_reviews')
+      .deleteFrom('reviews')
       .where('id', '=', id)
       .executeTakeFirst()
 
@@ -39,7 +39,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   try {
     // Perform the delete operation
     const result = await db
-      .deleteFrom('product_reviews')
+      .deleteFrom('reviews')
       .where('id', 'in', ids)
       .executeTakeFirst()
 

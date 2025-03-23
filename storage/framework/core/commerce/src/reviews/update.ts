@@ -26,6 +26,7 @@ export async function update(id: number, request: ReviewRequestType): Promise<Re
     customer_id: request.get<number>('customer_id'),
     rating: request.get<number>('rating'),
     title: request.get('title'),
+    is_featured: request.get<boolean>('is_featured'),
     content: request.get('content'),
     is_verified_purchase: request.get<boolean>('is_verified_purchase'),
     is_approved: request.get<boolean>('is_approved'),

@@ -19,7 +19,6 @@ interface RequestDataProduct {
   image_url: string
   is_available: boolean
   inventory_count: number
-  category_id: string
   preparation_time: number
   allergens: string
   nutritional_info: string
@@ -36,7 +35,6 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   public image_url = ''
   public is_available = false
   public inventory_count = 0
-  public category_id = ''
   public preparation_time = 0
   public allergens = ''
   public nutritional_info = ''

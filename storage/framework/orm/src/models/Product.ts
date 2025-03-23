@@ -25,7 +25,6 @@ export interface ProductsTable {
   image_url?: string
   is_available?: boolean
   inventory_count?: number
-  category_id: string
   preparation_time: number
   allergens?: string
   nutritional_info?: string
@@ -56,7 +55,7 @@ export type ProductUpdate = Updateable<ProductsTable>
 
 export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJsonResponse> {
   private readonly hidden: Array<keyof ProductJsonResponse> = []
-  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'category_id', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'category_id', 'manufacturer_id']
+  private readonly fillable: Array<keyof ProductJsonResponse> = ['name', 'description', 'price', 'image_url', 'is_available', 'inventory_count', 'preparation_time', 'allergens', 'nutritional_info', 'uuid', 'category_id', 'manufacturer_id']
   private readonly guarded: Array<keyof ProductJsonResponse> = []
   protected attributes = {} as ProductJsonResponse
   protected originalAttributes = {} as ProductJsonResponse
@@ -243,10 +242,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return this.attributes.inventory_count
   }
 
-  get category_id(): string {
-    return this.attributes.category_id
-  }
-
   get preparation_time(): number {
     return this.attributes.preparation_time
   }
@@ -293,10 +288,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   set inventory_count(value: number) {
     this.attributes.inventory_count = value
-  }
-
-  set category_id(value: string) {
-    this.attributes.category_id = value
   }
 
   set preparation_time(value: number) {
@@ -921,14 +912,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return instance
   }
 
-  static whereCategoryId(value: string): ProductModel {
-    const instance = new ProductModel(undefined)
-
-    instance.selectFromQuery = instance.selectFromQuery.where('category_id', '=', value)
-
-    return instance
-  }
-
   static wherePreparationTime(value: string): ProductModel {
     const instance = new ProductModel(undefined)
 
@@ -1023,7 +1006,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       image_url: this.image_url,
       is_available: this.is_available,
       inventory_count: this.inventory_count,
-      category_id: this.category_id,
       preparation_time: this.preparation_time,
       allergens: this.allergens,
       nutritional_info: this.nutritional_info,
@@ -1142,13 +1124,6 @@ export async function whereIsAvailable(value: boolean): Promise<ProductModel[]> 
 
 export async function whereInventoryCount(value: number): Promise<ProductModel[]> {
   const query = DB.instance.selectFrom('products').where('inventory_count', '=', value)
-  const results: ProductJsonResponse = await query.execute()
-
-  return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))
-}
-
-export async function whereCategoryId(value: string): Promise<ProductModel[]> {
-  const query = DB.instance.selectFrom('products').where('category_id', '=', value)
   const results: ProductJsonResponse = await query.execute()
 
   return results.map((modelItem: ProductJsonResponse) => new ProductModel(modelItem))

@@ -11,6 +11,7 @@ export async function up(db: Database<any>) {
     .addColumn('content', 'text', col => col.notNull())
     .addColumn('is_verified_purchase', 'integer')
     .addColumn('is_approved', 'integer')
+    .addColumn('is_featured', 'integer')
     .addColumn('helpful_votes', 'numeric', col => col.defaultTo(0))
     .addColumn('unhelpful_votes', 'numeric', col => col.defaultTo(0))
     .addColumn('purchase_date', 'text')

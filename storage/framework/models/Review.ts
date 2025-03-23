@@ -92,9 +92,19 @@ export default {
       factory: faker => faker.datatype.boolean({ probability: 0.9 }),
     },
 
-    helpful_votes: {
+    is_featured: {
       required: false,
       order: 8,
+      fillable: true,
+      validation: {
+        rule: schema.boolean(),
+      },
+      factory: faker => faker.datatype.boolean({ probability: 0.9 }),
+    },
+
+    helpful_votes: {
+      required: false,
+      order: 9,
       default: 0,
       fillable: true,
       validation: {
@@ -105,7 +115,7 @@ export default {
 
     unhelpful_votes: {
       required: false,
-      order: 9,
+      order: 10,
       default: 0,
       fillable: true,
       validation: {
@@ -116,7 +126,7 @@ export default {
 
     purchase_date: {
       required: false,
-      order: 10,
+      order: 11,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -126,7 +136,7 @@ export default {
 
     images: {
       required: false,
-      order: 11,
+      order: 12,
       fillable: true,
       validation: {
         rule: schema.string(),

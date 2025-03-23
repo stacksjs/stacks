@@ -55,7 +55,6 @@ export interface Attributes {
   avatar: string
   is_available: boolean
   inventory_count: number
-  category_id: string
   preparation_time: number
   allergens: string
   nutritional_info: string

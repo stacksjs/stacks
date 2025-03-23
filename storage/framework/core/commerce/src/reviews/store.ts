@@ -20,6 +20,7 @@ export async function store(request: ProductRequestType): Promise<ReviewJsonResp
     is_verified_purchase: request.get<boolean>('is_verified_purchase'),
     is_approved: request.get<boolean>('is_approved'),
     helpful_votes: request.get<number>('helpful_votes'),
+    is_featured: request.get<boolean>('is_featured'),
     unhelpful_votes: request.get<number>('unhelpful_votes'),
     purchase_date: request.get('purchase_date'),
     images: request.get('purchase_date'),
