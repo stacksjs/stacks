@@ -17,6 +17,7 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
 
   // Check if shipping method exists
   const existingMethod = await fetchById(id)
+
   if (!existingMethod) {
     throw new Error(`Shipping method with ID ${id} not found`)
   }
@@ -27,7 +28,6 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
     description: request.get('description'),
     base_rate: request.get<number>('base_rate'),
     free_shipping: request.get<number>('free_shipping'),
-    zones: request.get('zones'),
     status: request.get('status'),
   }
 

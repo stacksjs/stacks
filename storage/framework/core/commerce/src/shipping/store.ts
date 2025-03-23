@@ -21,7 +21,6 @@ export async function store(request: ShippingMethodRequestType): Promise<Shippin
       description: request.get('description'),
       base_rate: request.get<number>('base_rate'),
       free_shipping: request.get<number>('free_shipping'),
-      zones: request.get('zones'),
       status: request.get('status'),
       uuid: randomUUIDv7(),
     }
@@ -77,7 +76,6 @@ export async function bulkStore(requests: ShippingMethodRequestType[]): Promise<
           description: request.get('description'),
           base_rate: request.get<number>('base_rate'),
           free_shipping: request.get<number>('free_shipping'),
-          zones: request.get('zones'),
           status: request.get('status'),
           uuid: randomUUIDv7(),
         }

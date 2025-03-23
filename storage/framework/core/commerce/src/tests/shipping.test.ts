@@ -105,7 +105,6 @@ describe('Shipping Methods Module', () => {
       const request1 = new TestRequest({
         name: 'Standard Shipping',
         base_rate: 500,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       })
       await store(request1 as any)
@@ -156,7 +155,6 @@ describe('Shipping Methods Module', () => {
         description: 'Updated description',
         base_rate: 1200,
         free_shipping: 7500,
-        zones: JSON.stringify(['North America', 'Europe']),
         status: 'active',
       }
 
@@ -170,7 +168,6 @@ describe('Shipping Methods Module', () => {
       expect(updatedMethod?.description).toBe('Updated description')
       expect(updatedMethod?.base_rate).toBe(1200)
       expect(updatedMethod?.free_shipping).toBe(7500)
-      expect(updatedMethod?.zones).toBe(JSON.stringify(['North America', 'Europe']))
     })
 
     it('should update a shipping method\'s status', async () => {
@@ -398,7 +395,6 @@ describe('Shipping Methods Module', () => {
       const requestData = {
         name: 'UUID Test Shipping',
         base_rate: 1000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       }
 
@@ -426,7 +422,6 @@ describe('Shipping Methods Module', () => {
       const activeRequest = new TestRequest({
         name: 'Active Shipping',
         base_rate: 1000,
-        zones: JSON.stringify(['North America']),
         status: 'active',
       })
       await store(activeRequest as any)
@@ -435,7 +430,6 @@ describe('Shipping Methods Module', () => {
       const inactiveRequest = new TestRequest({
         name: 'Inactive Shipping',
         base_rate: 1500,
-        zones: JSON.stringify(['Europe']),
         status: 'inactive',
       })
       await store(inactiveRequest as any)
@@ -444,7 +438,6 @@ describe('Shipping Methods Module', () => {
       const draftRequest = new TestRequest({
         name: 'Draft Shipping',
         base_rate: 2000,
-        zones: JSON.stringify(['Asia']),
         status: 'draft',
       })
       await store(draftRequest as any)
