@@ -147,4 +147,4 @@ export async function getShippingRatesByMethod(method: string): Promise<Shipping
 
     throw error
   }
-} 
+}
