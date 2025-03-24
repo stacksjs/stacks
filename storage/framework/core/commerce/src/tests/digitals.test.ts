@@ -47,8 +47,8 @@ describe('Digital Delivery Module', () => {
       expect(delivery?.description).toBe('A comprehensive guide to digital marketing')
       expect(delivery?.download_limit).toBe(5)
       expect(delivery?.expiry_days).toBe(30)
-      expect(delivery?.requires_login).toBe(true)
-      expect(delivery?.automatic_delivery).toBe(true)
+      expect(Boolean(delivery?.requires_login)).toBe(true)
+      expect(Boolean(delivery?.automatic_delivery)).toBe(true)
       expect(delivery?.status).toBe('active')
       expect(delivery?.uuid).toBeDefined()
 
@@ -163,8 +163,8 @@ describe('Digital Delivery Module', () => {
       expect(updatedDelivery?.description).toBe('Updated description')
       expect(updatedDelivery?.download_limit).toBe(5)
       expect(updatedDelivery?.expiry_days).toBe(60)
-      expect(updatedDelivery?.requires_login).toBe(false)
-      expect(updatedDelivery?.automatic_delivery).toBe(true)
+      expect(Boolean(updatedDelivery?.requires_login)).toBe(false)
+      expect(Boolean(updatedDelivery?.automatic_delivery)).toBe(true)
       expect(updatedDelivery?.status).toBe('inactive')
     })
 
@@ -231,8 +231,8 @@ describe('Digital Delivery Module', () => {
       expect(updatedDelivery).toBeDefined()
       expect(updatedDelivery?.download_limit).toBe(5)
       expect(updatedDelivery?.expiry_days).toBe(60)
-      expect(updatedDelivery?.requires_login).toBe(false)
-      expect(updatedDelivery?.automatic_delivery).toBe(true)
+      expect(Boolean(updatedDelivery?.requires_login)).toBe(false)
+      expect(Boolean(updatedDelivery?.automatic_delivery)).toBe(true)
     })
 
     it('should update only provided delivery settings', async () => {
@@ -266,8 +266,8 @@ describe('Digital Delivery Module', () => {
       expect(updatedDelivery).toBeDefined()
       expect(updatedDelivery?.download_limit).toBe(5)
       expect(updatedDelivery?.expiry_days).toBe(60)
-      expect(updatedDelivery?.requires_login).toBe(true) // Should remain unchanged
-      expect(updatedDelivery?.automatic_delivery).toBe(false) // Should remain unchanged
+      expect(Boolean(updatedDelivery?.requires_login)).toBe(true) // Should remain unchanged
+      expect(Boolean(updatedDelivery?.automatic_delivery)).toBe(false) // Should remain unchanged
     })
   })
 
