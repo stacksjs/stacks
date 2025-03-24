@@ -24,7 +24,6 @@ export async function store(request: LicenseKeyRequestType): Promise<LicenseKeyJ
       customer_id: request.get<number>('customer_id'),
       product_id: request.get<number>('product_id'),
       order_id: request.get<number>('order_id'),
-      uuid: randomUUIDv7(),
     }
 
     // Insert the license key

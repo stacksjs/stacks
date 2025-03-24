@@ -65,7 +65,7 @@ export default {
       validation: {
         rule: schema.date(),
       },
-      factory: faker => faker.date.future(),
+      factory: faker => faker.date.future().toISOString(),
     },
 
     status: {
