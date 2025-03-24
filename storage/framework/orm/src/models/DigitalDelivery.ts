@@ -12,9 +12,9 @@ export interface DigitalDeliveriesTable {
   description: string
   download_limit?: number
   expiry_days: number
-  requires_login: boolean
-  automatic_delivery: boolean
-  status: string | string[]
+  requires_login?: boolean
+  automatic_delivery?: boolean
+  status?: string | string[]
   uuid?: string
 
   created_at?: string
@@ -193,15 +193,15 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     return this.attributes.expiry_days
   }
 
-  get requires_login(): boolean {
+  get requires_login(): boolean | undefined {
     return this.attributes.requires_login
   }
 
-  get automatic_delivery(): boolean {
+  get automatic_delivery(): boolean | undefined {
     return this.attributes.automatic_delivery
   }
 
-  get status(): string | string[] {
+  get status(): string | string[] | undefined {
     return this.attributes.status
   }
 

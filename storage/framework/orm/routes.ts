@@ -70,6 +70,16 @@ route.patch('product-variants/{id}', 'ProductVariantUpdateOrmAction')
 
 route.delete('product-variants/{id}', 'ProductVariantDestroyOrmAction')
 
+route.get('license-keys', 'LicenseKeyIndexOrmAction')
+
+route.post('license-keys', 'LicenseKeyStoreOrmAction')
+
+route.get('license-keys/{id}', 'LicenseKeyShowOrmAction')
+
+route.patch('license-keys/{id}', 'LicenseKeyUpdateOrmAction')
+
+route.delete('license-keys/{id}', 'LicenseKeyDestroyOrmAction')
+
 route.get('product-reviews', 'ReviewIndexOrmAction')
 
 route.post('product-reviews', 'ReviewStoreOrmAction')

@@ -3,6 +3,7 @@ import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
 import type { DigitalDeliveryModel } from '../orm/src/models/DigitalDelivery'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
+import type { LicenseKeyModel } from '../orm/src/models/LicenseKey'
 import type { LoyaltyPointModel } from '../orm/src/models/LoyaltyPoint'
 import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
 import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
@@ -48,6 +49,9 @@ export interface ModelEvents {
   'product-variant:created': ProductVariantModel
   'product-variant:updated': ProductVariantModel
   'product-variant:deleted': ProductVariantModel
+  'license-key:created': LicenseKeyModel
+  'license-key:updated': LicenseKeyModel
+  'license-key:deleted': LicenseKeyModel
   'review:created': ReviewModel
   'review:updated': ReviewModel
   'review:deleted': ReviewModel

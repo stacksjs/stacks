@@ -68,6 +68,9 @@ export interface Attributes {
   variant: string
   type: string
   options: string
+  key: string
+  template: string | string[]
+  expiry_date: Date | string
   rating: number
   content: string
   is_verified_purchase: boolean
@@ -88,7 +91,6 @@ export interface Attributes {
   personal_message: string
   is_digital: boolean
   is_reloadable: boolean
-  expiry_date: Date | string
   last_used_date: Date | string
   template_id: string
   total_amount: number
@@ -159,7 +161,6 @@ export interface Attributes {
   provider_price_id: string
   trial_ends_at: string
   ends_at: string
-  key: number
   image: string
   message: string
   stack: string

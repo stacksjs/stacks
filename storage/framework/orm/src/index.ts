@@ -18,6 +18,8 @@ export { default as GiftCard } from './GiftCard'
 
 export { default as Job } from './Job'
 
+export { default as LicenseKey } from './LicenseKey'
+
 export { default as LoyaltyPoint } from './LoyaltyPoint'
 
 export { default as LoyaltyReward } from './LoyaltyReward'

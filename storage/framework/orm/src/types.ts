@@ -8,6 +8,7 @@ import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { GiftCardsTable } from '../src/models/GiftCard'
 import type { JobsTable } from '../src/models/Job'
+import type { LicenseKeysTable } from '../src/models/LicenseKey'
 import type { LoyaltyPointsTable } from '../src/models/LoyaltyPoint'
 import type { LoyaltyRewardsTable } from '../src/models/LoyaltyReward'
 import type { ManufacturersTable } from '../src/models/Manufacturer'
@@ -87,6 +88,7 @@ export interface Database {
   customers: CustomersTable
   products: ProductsTable
   product_variants: ProductVariantsTable
+  license_keys: LicenseKeysTable
   reviews: ReviewsTable
   product_units: ProductUnitsTable
   gift_cards: GiftCardsTable
