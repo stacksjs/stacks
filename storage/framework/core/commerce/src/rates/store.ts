@@ -16,19 +16,18 @@ export async function store(request: ShippingRateRequestType): Promise<ShippingR
 
   try {
     // Prepare shipping rate data
-    const shippingRateData: NewShippingRate = {
+    const rateData: NewShippingRate = {
       method: request.get('method'),
       zone: request.get('zone'),
-      weight_from: request.get<number>('weight_from'),
-      weight_to: request.get<number>('weight_to'),
-      rate: request.get<number>('rate'),
-      uuid: randomUUIDv7(),
+      weight_from: request.get('weight_from'),
+      weight_to: request.get('weight_to'),
+      rate: request.get('rate'),
     }
 
     // Insert the shipping rate
     const result = await db
       .insertInto('shipping_rates')
-      .values(shippingRateData)
+      .values(rateData)
       .executeTakeFirst()
 
     const rateId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
@@ -71,19 +70,19 @@ export async function bulkStore(requests: ShippingRateRequestType[]): Promise<nu
         request.validate()
 
         // Prepare shipping rate data
-        const shippingRateData: NewShippingRate = {
+        const rateData: NewShippingRate = {
           method: request.get('method'),
           zone: request.get('zone'),
-          weight_from: request.get<number>('weight_from'),
-          weight_to: request.get<number>('weight_to'),
-          rate: request.get<number>('rate'),
+          weight_from: request.get('weight_from'),
+          weight_to: request.get('weight_to'),
+          rate: request.get('rate'),
           uuid: randomUUIDv7(),
         }
 
         // Insert the shipping rate
         await trx
           .insertInto('shipping_rates')
-          .values(shippingRateData)
+          .values(rateData)
           .execute()
 
         createdCount++
@@ -95,6 +94,60 @@ export async function bulkStore(requests: ShippingRateRequestType[]): Promise<nu
   catch (error) {
     if (error instanceof Error) {
       throw new TypeError(`Failed to create shipping rates in bulk: ${error.message}`)
+    }
+
+    throw error
+  }
+}
+
+/**
+ * Get shipping rates by zone
+ *
+ * @param zone Shipping zone identifier
+ * @returns List of shipping rates for the specified zone
+ */
+export async function getRatesByZone(zone: string): Promise<ShippingRateJsonResponse[]> {
+  try {
+    const rates = await db
+      .selectFrom('shipping_rates')
+      .selectAll()
+      .where('zone', '=', zone)
+      .orderBy('weight_from')
+      .execute()
+
+    return rates
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to get shipping rates by zone: ${error.message}`)
+    }
+
+    throw error
+  }
+}
+
+/**
+ * Get shipping rate based on weight and zone
+ *
+ * @param weight Weight in the appropriate unit
+ * @param zone Shipping zone identifier
+ * @returns Matching shipping rate or undefined
+ */
+export async function getRateByWeightAndZone(weight: number, zone: string): Promise<ShippingRateJsonResponse | undefined> {
+  try {
+    const rate = await db
+      .selectFrom('shipping_rates')
+      .selectAll()
+      .where('zone', '=', zone)
+      .where('weight_from', '<=', weight)
+      .where('weight_to', '>=', weight)
+      .executeTakeFirst()
+
+    return rate
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to get shipping rate by weight and zone: ${error.message}`)
     }
 
     throw error
