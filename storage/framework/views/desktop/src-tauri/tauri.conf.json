@@ -7,8 +7,10 @@
   },
   "identifier": "com.stacks.localhost",
   "app": {
+    "withGlobalTauri": true,
     "security": {
-      "csp": null
+      "csp": null,
+      "capabilities": ["main-capability"]
     },
     "windows": [
       {

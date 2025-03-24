@@ -6,7 +6,6 @@ import App from './App.vue'
 import '@unocss/reset/tailwind.css'
 import 'unocss'
 import '../../../../../resources/assets/styles/main.css'
-import './system-tray.ts'
 
 const pinia = createPinia()
 ViteSSG(
