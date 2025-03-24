@@ -1,4 +1,3 @@
-// Functions from destroy.ts
 export {
   bulkDestroy,
   bulkSoftDelete,
@@ -6,21 +5,18 @@ export {
   softDelete,
 } from './destroy'
 
-// Functions from fetch.ts
 export {
   fetchById,
-} from './fetch'
-
-// Functions from store.ts
-export {
-  bulkStore,
   formatZoneOptions,
   getActiveShippingZones,
   getZonesByCountry,
+} from './fetch'
+
+export {
+  bulkStore,
   store,
 } from './store'
 
-// Functions from update.ts
 export {
   update,
   updateCountries,

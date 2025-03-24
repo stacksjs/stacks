@@ -12,7 +12,6 @@ import * as unit from './unit'
 import * as variants from './variants'
 import * as zones from './zones'
 
-// Define types for each module
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
 type GiftCardsModule = typeof giftCards
@@ -25,7 +24,6 @@ type ShippingModule = typeof shipping
 type RatesModule = typeof rates
 type ZonesModule = typeof zones
 type VariantsModule = typeof variants
-// Define the ecommerce namespace interface
 export interface EcommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
@@ -41,7 +39,6 @@ export interface EcommerceNamespace {
   unit: UnitModule
 }
 
-// Create the main ecommerce namespace object with explicit type
 export const ecommerce: EcommerceNamespace = {
   coupons,
   customers,
@@ -57,10 +54,8 @@ export const ecommerce: EcommerceNamespace = {
   unit,
 }
 
-// Default export for easier import
 export default ecommerce
 
-// Also provide direct access to all submodules
 export {
   coupons,
   customers,
