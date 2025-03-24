@@ -18,6 +18,16 @@ route.post('payments', 'PaymentStoreOrmAction')
 
 route.get('payments/{id}', 'PaymentShowOrmAction')
 
+route.get('digital-deliveries', 'DigitalDeliveryIndexOrmAction')
+
+route.post('digital-deliveries', 'DigitalDeliveryStoreOrmAction')
+
+route.get('digital-deliveries/{id}', 'DigitalDeliveryShowOrmAction')
+
+route.patch('digital-deliveries/{id}', 'DigitalDeliveryUpdateOrmAction')
+
+route.delete('digital-deliveries/{id}', 'DigitalDeliveryDestroyOrmAction')
+
 route.get('product-manufacturers', 'ManufacturerIndexOrmAction')
 
 route.post('product-manufacturers', 'ManufacturerStoreOrmAction')

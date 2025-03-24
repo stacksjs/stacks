@@ -1,6 +1,7 @@
 import type { CategoryModel } from '../orm/src/models/Category'
 import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
+import type { DigitalDeliveryModel } from '../orm/src/models/DigitalDelivery'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
 import type { LoyaltyPointModel } from '../orm/src/models/LoyaltyPoint'
 import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
@@ -29,6 +30,9 @@ export interface ModelEvents {
   'payment:created': PaymentModel
   'payment:updated': PaymentModel
   'payment:deleted': PaymentModel
+  'digital-delivery:created': DigitalDeliveryModel
+  'digital-delivery:updated': DigitalDeliveryModel
+  'digital-delivery:deleted': DigitalDeliveryModel
   'manufacturer:created': ManufacturerModel
   'manufacturer:updated': ManufacturerModel
   'manufacturer:deleted': ManufacturerModel

@@ -43,6 +43,10 @@ export interface Attributes {
   payment_provider: string
   refund_amount: number
   notes: string
+  download_limit: number
+  expiry_days: number
+  requires_login: boolean
+  automatic_delivery: boolean
   manufacturer: string
   country: string
   featured: boolean
@@ -124,7 +128,6 @@ export interface Attributes {
   points_required: number
   reward_type: string
   discount_percentage: number
-  expiry_days: number
   base_rate: number
   free_shipping: number
   zone: string

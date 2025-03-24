@@ -3,6 +3,7 @@ import type { CategoriesTable } from '../src/models/Category'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
 import type { DeploymentsTable } from '../src/models/Deployment'
+import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
 import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { GiftCardsTable } from '../src/models/GiftCard'
@@ -79,6 +80,7 @@ export interface Database {
   posts: PostsTable
   categories: CategoriesTable
   payments: PaymentsTable
+  digital_deliveries: DigitalDeliveriesTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable
   shipping_zones: ShippingZonesTable
