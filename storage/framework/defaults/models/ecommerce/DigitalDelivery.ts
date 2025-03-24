@@ -5,7 +5,7 @@ export default {
   name: 'DigitalDelivery',
   table: 'digital_deliveries',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: true,
 
   traits: {
     useUuid: true,

@@ -5,7 +5,7 @@ export default {
   name: 'Order',
   table: 'orders',
   primaryKey: 'id',
-  autoIncrement: false,
+  autoIncrement: true,
 
   traits: {
     useUuid: true,

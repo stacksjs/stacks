@@ -5,7 +5,7 @@ export default {
   name: 'LicenseKey',
   table: 'license_keys',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: true,
 
   traits: {
     useUuid: true,

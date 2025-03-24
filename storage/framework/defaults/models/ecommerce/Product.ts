@@ -5,7 +5,7 @@ export default {
   name: 'Product',
   table: 'products',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: true,
 
   traits: {
     useUuid: true,
