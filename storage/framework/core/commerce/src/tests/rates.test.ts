@@ -3,7 +3,7 @@ import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy, destroyByMethod, destroyByZone } from '../rates/destroy'
 import { fetchById, formatShippingRateOptions, getRateByWeightAndZone, getRatesByZone, getShippingRatesByMethod } from '../rates/fetch'
 import { bulkStore, store } from '../rates/store'
-import { bulkUpdate, update, updateByMethod, updateByZone } from '../rates/update'
+import { update, updateByMethod, updateByZone } from '../rates/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -177,7 +177,8 @@ describe('Shipping Rate Module', () => {
       const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
 
       expect(rateId).toBeDefined()
-      if (!rateId) throw new Error('Failed to create test shipping rate')
+      if (!rateId)
+        throw new Error('Failed to create test shipping rate')
 
       // Update the rate
       const updateData = {
@@ -280,7 +281,8 @@ describe('Shipping Rate Module', () => {
       const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
 
       expect(rateId).toBeDefined()
-      if (!rateId) throw new Error('Failed to create test shipping rate')
+      if (!rateId)
+        throw new Error('Failed to create test shipping rate')
 
       // Verify the rate exists
       let fetchedRate = await fetchById(rateId)
@@ -311,7 +313,8 @@ describe('Shipping Rate Module', () => {
         const rate = await store(request as any)
         const rateId = rate?.id !== undefined ? Number(rate.id) : undefined
         expect(rateId).toBeDefined()
-        if (rateId) rateIds.push(rateId)
+        if (rateId)
+          rateIds.push(rateId)
       }
 
       expect(rateIds.length).toBe(3)

@@ -1,30 +1,29 @@
 export {
-    bulkDestroy,
-    destroy,
-    destroyByZone,
-    destroyByMethod,
-  } from './destroy'
-  
-  // Functions from fetch.ts
-  export {
-    fetchById,
-    getRatesByZone,
-    getRateByWeightAndZone,
-    formatShippingRateOptions,
-    getShippingRatesByMethod,
-  } from './fetch'
-  
-  // Functions from store.ts
-  export {
-    bulkStore,
-    store,
-  } from './store'
-  
-  // Functions from update.ts
-  export {  
-    update,
-    updateByZone,
-    bulkUpdate,
-    updateByMethod,
-  } from './update'
-  
+  bulkDestroy,
+  destroy,
+  destroyByMethod,
+  destroyByZone,
+} from './destroy'
+
+// Functions from fetch.ts
+export {
+  fetchById,
+  formatShippingRateOptions,
+  getRateByWeightAndZone,
+  getRatesByZone,
+  getShippingRatesByMethod,
+} from './fetch'
+
+// Functions from store.ts
+export {
+  bulkStore,
+  store,
+} from './store'
+
+// Functions from update.ts
+export {
+  bulkUpdate,
+  update,
+  updateByMethod,
+  updateByZone,
+} from './update'
