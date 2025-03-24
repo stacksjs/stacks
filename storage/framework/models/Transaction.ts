@@ -5,7 +5,7 @@ export default {
   name: 'Transaction',
   table: 'transactions',
   primaryKey: 'id',
-  autoIncrement: false,
+  autoIncrement: true,
 
   traits: {
     useUuid: true,

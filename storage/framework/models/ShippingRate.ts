@@ -5,7 +5,7 @@ export default {
   name: 'ShippingRate',
   table: 'shipping_rates',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: true,
 
   traits: {
     useUuid: true,

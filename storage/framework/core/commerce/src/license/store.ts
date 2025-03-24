@@ -1,6 +1,6 @@
 // Import dependencies
 import type { LicenseKeyRequestType } from '@stacksjs/orm'
-import type { NewLicenseKey, LicenseKeyJsonResponse } from '../../../../orm/src/models/LicenseKey'
+import type { LicenseKeyJsonResponse, NewLicenseKey } from '../../../../orm/src/models/LicenseKey'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

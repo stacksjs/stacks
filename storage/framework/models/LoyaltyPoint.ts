@@ -6,7 +6,7 @@ export default {
   name: 'LoyaltyPoint',
   table: 'loyalty_points',
   primaryKey: 'id',
-  autoIncrement: false, // Using UUID instead of auto-increment
+  autoIncrement: true,
 
   traits: {
     useUuid: true,
