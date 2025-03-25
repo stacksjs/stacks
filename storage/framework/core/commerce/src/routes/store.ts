@@ -1,6 +1,7 @@
 // Import dependencies
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import type { DeliveryRouteJsonResponse, NewDeliveryRoute } from '../../../../orm/src/models/DeliveryRoute'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -23,6 +24,8 @@ export async function store(request: DeliveryRouteRequestType): Promise<Delivery
       total_distance: request.get('total_distance'),
       last_active: request.get('last_active'),
     }
+
+    routeData.uuid = randomUUIDv7()
 
     // Insert the delivery route
     const result = await db

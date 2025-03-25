@@ -1,6 +1,7 @@
 // Import dependencies
 import type { ProductUnitRequestType } from '@stacksjs/orm'
 import type { NewProductUnit, ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -15,7 +16,7 @@ export async function store(request: ProductUnitRequestType): Promise<ProductUni
 
   try {
     // Prepare product unit data
-    const unitData = {
+    const unitData: NewProductUnit = {
       name: request.get<string>('name'),
       product_id: request.get<number>('product_id'),
       abbreviation: request.get<string>('abbreviation'),
@@ -23,6 +24,8 @@ export async function store(request: ProductUnitRequestType): Promise<ProductUni
       description: request.get<string>('description'),
       is_default: request.get<boolean>('is_default', false),
     }
+
+    unitData.uuid = randomUUIDv7()
 
     // Insert the product unit
     const result = await db

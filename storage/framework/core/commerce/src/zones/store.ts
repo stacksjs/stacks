@@ -25,6 +25,8 @@ export async function store(request: ShippingZoneRequestType): Promise<ShippingZ
       shipping_method_id: request.get<number>('shipping_method_id'),
     }
 
+    zoneData.uuid = randomUUIDv7()
+
     // Insert the shipping zone
     const result = await db
       .insertInto('shipping_zones')
@@ -78,8 +80,9 @@ export async function bulkStore(requests: ShippingZoneRequestType[]): Promise<nu
           postal_codes: request.get('postal_codes'),
           status: request.get('status'),
           shipping_method_id: request.get<number>('shipping_method_id'),
-          uuid: randomUUIDv7(),
         }
+
+        zoneData.uuid = randomUUIDv7()
 
         // Insert the shipping zone
         await trx

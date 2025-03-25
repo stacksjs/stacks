@@ -26,6 +26,8 @@ export async function store(request: TaxRateRequestType): Promise<TaxRateJsonRes
       is_default: request.get('is_default'),
     }
 
+    taxData.uuid = randomUUIDv7()
+
     // Insert the tax rate
     const result = await db
       .insertInto('tax_rates')
@@ -80,8 +82,9 @@ export async function bulkStore(requests: TaxRateRequestType[]): Promise<number>
           region: request.get('region'),
           status: request.get('status'),
           is_default: request.get('is_default'),
-          uuid: randomUUIDv7(),
         }
+
+        taxData.uuid = randomUUIDv7()
 
         // Insert the tax rate
         await trx

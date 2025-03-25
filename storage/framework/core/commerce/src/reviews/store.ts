@@ -1,5 +1,6 @@
 import type { ProductRequestType } from '@stacksjs/orm'
 import type { NewReview, ReviewJsonResponse } from '../../../../orm/src/models/Review'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -25,6 +26,8 @@ export async function store(request: ProductRequestType): Promise<ReviewJsonResp
     purchase_date: request.get('purchase_date'),
     images: request.get('purchase_date'),
   }
+
+  reviewData.uuid = randomUUIDv7()
 
   try {
     // Insert the gift card record

@@ -22,8 +22,9 @@ export async function store(request: ShippingMethodRequestType): Promise<Shippin
       base_rate: request.get<number>('base_rate'),
       free_shipping: request.get<number>('free_shipping'),
       status: request.get('status'),
-      uuid: randomUUIDv7(),
     }
+
+    shippingData.uuid = randomUUIDv7()
 
     // Insert the shipping method
     const result = await db

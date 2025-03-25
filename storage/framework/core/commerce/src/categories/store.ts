@@ -1,5 +1,6 @@
 import type { CategoryRequestType } from '@stacksjs/orm'
 import type { CategoryJsonResponse, NewCategory } from '../../../../orm/src/models/Category'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -19,6 +20,8 @@ export async function store(request: CategoryRequestType): Promise<CategoryJsonR
     parent_category_id: request.get('parent_category_id'),
     display_order: request.get<number>('display_order') ?? 0,
   }
+
+  categoryData.uuid = randomUUIDv7()
 
   try {
     // Insert the category record

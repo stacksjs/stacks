@@ -1,5 +1,6 @@
 import type { ManufacturerRequestType } from '@stacksjs/orm'
 import type { ManufacturerJsonResponse, NewManufacturer } from '../../../../orm/src/models/Manufacturer'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -18,6 +19,8 @@ export async function store(request: ManufacturerRequestType): Promise<Manufactu
     country: request.get('country'),
     featured: request.get<boolean>('featured') || false,
   }
+
+  manufacturerData.uuid = randomUUIDv7()
 
   try {
     // Insert the manufacturer record

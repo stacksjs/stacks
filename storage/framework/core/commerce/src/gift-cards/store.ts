@@ -1,7 +1,7 @@
 import type { GiftCardRequestType } from '@stacksjs/orm'
 import type { GiftCardJsonResponse, NewGiftCard } from '../../../../orm/src/models/GiftCard'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-
 /**
  * Create a new gift card
  *
@@ -28,6 +28,8 @@ export async function store(request: GiftCardRequestType): Promise<GiftCardJsonR
     expiry_date: request.get('expiry_date'),
     template_id: request.get('template_id'),
   }
+
+  giftCardData.uuid = randomUUIDv7()
 
   try {
     // Insert the gift card record

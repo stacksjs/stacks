@@ -24,6 +24,8 @@ export async function store(request: ShippingRateRequestType): Promise<ShippingR
       rate: request.get('rate'),
     }
 
+    rateData.uuid = randomUUIDv7()
+
     // Insert the shipping rate
     const result = await db
       .insertInto('shipping_rates')

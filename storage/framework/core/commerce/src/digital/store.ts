@@ -26,6 +26,8 @@ export async function store(request: DigitalDeliveryRequestType): Promise<Digita
       status: request.get('status'),
     }
 
+    deliveryData.uuid = randomUUIDv7()
+
     // Insert the digital delivery
     const result = await db
       .insertInto('digital_deliveries')

@@ -1,6 +1,7 @@
 // Import dependencies
 import type { ProductVariantRequestType } from '@stacksjs/orm'
 import type { NewProductVariant, ProductVariantJsonResponse } from '../../../../orm/src/models/ProductVariant'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -23,6 +24,8 @@ export async function store(request: ProductVariantRequestType): Promise<Product
       options: request.get('options'),
       status: request.get('status', 'draft'),
     }
+
+    variantData.uuid = randomUUIDv7()
 
     // Insert the product variant
     const result = await db

@@ -1,5 +1,6 @@
 import type { PaymentRequestType } from '@stacksjs/orm'
 import type { NewPayment, PaymentJsonResponse } from '../../../../orm/src/models/Payment'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -28,6 +29,8 @@ export async function store(request: PaymentRequestType): Promise<PaymentJsonRes
     notes: request.get('notes'),
     uuid: request.get('uuid'),
   }
+
+  paymentData.uuid = randomUUIDv7()
 
   try {
     // Insert the payment record

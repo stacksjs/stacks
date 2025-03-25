@@ -24,6 +24,8 @@ export async function store(request: DriverRequestType): Promise<DriverJsonRespo
       status: request.get('status'),
     }
 
+    driverData.uuid = randomUUIDv7()
+
     // Insert the driver
     const result = await db
       .insertInto('drivers')

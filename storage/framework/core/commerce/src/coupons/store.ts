@@ -1,5 +1,6 @@
 import type { CouponRequestType } from '@stacksjs/orm'
-import type { CouponsTable, NewCoupon } from '../../../../orm/src/models/Coupon'
+import type { CouponJsonResponse, NewCoupon } from '../../../../orm/src/models/Coupon'
+import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**
@@ -8,7 +9,7 @@ import { db } from '@stacksjs/database'
  * @param request The coupon data to store
  * @returns The newly created coupon record
  */
-export async function store(request: CouponRequestType): Promise<CouponsTable | undefined> {
+export async function store(request: CouponRequestType): Promise<CouponJsonResponse | undefined> {
   await request.validate()
 
   const couponData: NewCoupon = {
@@ -32,6 +33,8 @@ export async function store(request: CouponRequestType): Promise<CouponsTable | 
       ? JSON.stringify(request.get<string[]>('applicable_categories'))
       : JSON.stringify([]),
   }
+
+  couponData.uuid = randomUUIDv7()
 
   try {
     // Insert the coupon record

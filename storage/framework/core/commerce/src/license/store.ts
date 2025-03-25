@@ -26,6 +26,8 @@ export async function store(request: LicenseKeyRequestType): Promise<LicenseKeyJ
       order_id: request.get<number>('order_id'),
     }
 
+    licenseData.uuid = randomUUIDv7()
+
     // Insert the license key
     const result = await db
       .insertInto('license_keys')
