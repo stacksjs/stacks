@@ -154,6 +154,16 @@ route.patch('shipping-rates/{id}', 'ShippingRateUpdateOrmAction')
 
 route.delete('shipping-rates/{id}', 'ShippingRateDestroyOrmAction')
 
+route.get('delivery-routes', 'DeliveryRouteIndexOrmAction')
+
+route.post('delivery-routes', 'DeliveryRouteStoreOrmAction')
+
+route.get('delivery-routes/{id}', 'DeliveryRouteShowOrmAction')
+
+route.patch('delivery-routes/{id}', 'DeliveryRouteUpdateOrmAction')
+
+route.delete('delivery-routes/{id}', 'DeliveryRouteDestroyOrmAction')
+
 route.get('requests', 'storage/framework/actions/src/RequestIndexOrmAction.ts')
 
 route.get('requests/{id}', 'storage/framework/actions/src/RequestShowOrmAction.ts')

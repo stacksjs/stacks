@@ -2,6 +2,7 @@ import type { PersonalAccessTokensTable } from '../src/models/AccessToken'
 import type { CategoriesTable } from '../src/models/Category'
 import type { CouponsTable } from '../src/models/Coupon'
 import type { CustomersTable } from '../src/models/Customer'
+import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
 import type { ErrorsTable } from '../src/models/Error'
@@ -100,6 +101,7 @@ export interface Database {
   loyalty_rewards: LoyaltyRewardsTable
   shipping_methods: ShippingMethodsTable
   shipping_rates: ShippingRatesTable
+  delivery_routes: DeliveryRoutesTable
   failed_jobs: FailedJobsTable
   payment_methods: PaymentMethodsTable
   payment_transactions: PaymentTransactionsTable

@@ -136,6 +136,12 @@ export interface Attributes {
   weight_from: number
   weight_to: number
   rate: number
+  driver: string
+  vehicle: string
+  stops: number
+  delivery_time: number
+  total_distance: number
+  last_active: Date | string
   connection: string
   queue: string
   payload: string

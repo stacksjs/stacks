@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CategoryModel } from './Category'
+import type { LicenseKeyModel } from './LicenseKey'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductUnitModel } from './ProductUnit'
 import type { ProductVariantModel } from './ProductVariant'
@@ -192,6 +193,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   get product_variants(): ProductVariantModel[] | [] {
     return this.attributes.product_variants
+  }
+
+  get license_keys(): LicenseKeyModel[] | [] {
+    return this.attributes.license_keys
   }
 
   get category_id(): number {
@@ -1017,6 +1022,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       reviews: this.reviews,
       product_units: this.product_units,
       product_variants: this.product_variants,
+      license_keys: this.license_keys,
       category_id: this.category_id,
       category: this.category,
       manufacturer_id: this.manufacturer_id,

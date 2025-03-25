@@ -2,9 +2,11 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import type { CouponModel } from './Coupon'
 import type { CustomerModel } from './Customer'
+import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderItemModel } from './OrderItem'
 import type { PaymentModel } from './Payment'
 import { randomUUIDv7 } from 'bun'
+
 import { sql } from '@stacksjs/database'
 
 import { HttpError } from '@stacksjs/error-handling'
@@ -188,6 +190,10 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
   get payments(): PaymentModel[] | [] {
     return this.attributes.payments
+  }
+
+  get license_keys(): LicenseKeyModel[] | [] {
+    return this.attributes.license_keys
   }
 
   get customer_id(): number {
@@ -1045,6 +1051,7 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
 
       order_items: this.order_items,
       payments: this.payments,
+      license_keys: this.license_keys,
       customer_id: this.customer_id,
       customer: this.customer,
       coupon_id: this.coupon_id,

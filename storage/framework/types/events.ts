@@ -1,6 +1,7 @@
 import type { CategoryModel } from '../orm/src/models/Category'
 import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
+import type { DeliveryRouteModel } from '../orm/src/models/DeliveryRoute'
 import type { DigitalDeliveryModel } from '../orm/src/models/DigitalDelivery'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
 import type { LicenseKeyModel } from '../orm/src/models/LicenseKey'
@@ -85,5 +86,8 @@ export interface ModelEvents {
   'shipping-rate:created': ShippingRateModel
   'shipping-rate:updated': ShippingRateModel
   'shipping-rate:deleted': ShippingRateModel
+  'delivery-route:created': DeliveryRouteModel
+  'delivery-route:updated': DeliveryRouteModel
+  'delivery-route:deleted': DeliveryRouteModel
 
 }

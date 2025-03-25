@@ -6,6 +6,8 @@ export { default as Coupon } from './Coupon'
 
 export { default as Customer } from './Customer'
 
+export { default as DeliveryRoute } from './DeliveryRoute'
+
 export { default as Deployment } from './Deployment'
 
 export { default as DigitalDelivery } from './DigitalDelivery'

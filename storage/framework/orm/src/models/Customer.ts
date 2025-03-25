@@ -1,6 +1,7 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { GiftCardModel } from './GiftCard'
+import type { LicenseKeyModel } from './LicenseKey'
 import type { OrderModel } from './Order'
 import type { PaymentModel } from './Payment'
 import type { ReviewModel } from './Review'
@@ -201,6 +202,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   get payments(): PaymentModel[] | [] {
     return this.attributes.payments
+  }
+
+  get license_keys(): LicenseKeyModel[] | [] {
+    return this.attributes.license_keys
   }
 
   get user_id(): number {
@@ -969,6 +974,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       gift_cards: this.gift_cards,
       reviews: this.reviews,
       payments: this.payments,
+      license_keys: this.license_keys,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,
