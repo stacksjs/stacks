@@ -1,7 +1,6 @@
 // Import dependencies
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import type { DeliveryRouteJsonResponse, NewDeliveryRoute } from '../../../../orm/src/models/DeliveryRoute'
-import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
 /**

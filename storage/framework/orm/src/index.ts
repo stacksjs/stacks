@@ -12,6 +12,8 @@ export { default as Deployment } from './Deployment'
 
 export { default as DigitalDelivery } from './DigitalDelivery'
 
+export { default as Driver } from './Driver'
+
 export { default as Error } from './Error'
 
 export { default as FailedJob } from './FailedJob'

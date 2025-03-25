@@ -43,6 +43,9 @@ export interface Attributes {
   payment_provider: string
   refund_amount: number
   notes: string
+  phone: string
+  vehicle_number: string
+  license: string
   download_limit: number
   expiry_days: number
   requires_login: boolean
@@ -56,7 +59,6 @@ export interface Attributes {
   countries: string
   regions: string
   postal_codes: string
-  phone: string
   total_spent: number
   last_order: string
   avatar: string

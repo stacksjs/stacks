@@ -3,6 +3,7 @@ import type { CouponModel } from '../orm/src/models/Coupon'
 import type { CustomerModel } from '../orm/src/models/Customer'
 import type { DeliveryRouteModel } from '../orm/src/models/DeliveryRoute'
 import type { DigitalDeliveryModel } from '../orm/src/models/DigitalDelivery'
+import type { DriverModel } from '../orm/src/models/Driver'
 import type { GiftCardModel } from '../orm/src/models/GiftCard'
 import type { LicenseKeyModel } from '../orm/src/models/LicenseKey'
 import type { LoyaltyPointModel } from '../orm/src/models/LoyaltyPoint'
@@ -32,6 +33,9 @@ export interface ModelEvents {
   'payment:created': PaymentModel
   'payment:updated': PaymentModel
   'payment:deleted': PaymentModel
+  'driver:created': DriverModel
+  'driver:updated': DriverModel
+  'driver:deleted': DriverModel
   'digital-delivery:created': DigitalDeliveryModel
   'digital-delivery:updated': DigitalDeliveryModel
   'digital-delivery:deleted': DigitalDeliveryModel

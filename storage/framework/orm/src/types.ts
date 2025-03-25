@@ -5,6 +5,7 @@ import type { CustomersTable } from '../src/models/Customer'
 import type { DeliveryRoutesTable } from '../src/models/DeliveryRoute'
 import type { DeploymentsTable } from '../src/models/Deployment'
 import type { DigitalDeliveriesTable } from '../src/models/DigitalDelivery'
+import type { DriversTable } from '../src/models/Driver'
 import type { ErrorsTable } from '../src/models/Error'
 import type { FailedJobsTable } from '../src/models/FailedJob'
 import type { GiftCardsTable } from '../src/models/GiftCard'
@@ -82,6 +83,7 @@ export interface Database {
   posts: PostsTable
   categories: CategoriesTable
   payments: PaymentsTable
+  drivers: DriversTable
   digital_deliveries: DigitalDeliveriesTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable

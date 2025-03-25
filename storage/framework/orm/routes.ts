@@ -18,6 +18,16 @@ route.post('payments', 'PaymentStoreOrmAction')
 
 route.get('payments/{id}', 'PaymentShowOrmAction')
 
+route.get('drivers', 'DriverIndexOrmAction')
+
+route.post('drivers', 'DriverStoreOrmAction')
+
+route.get('drivers/{id}', 'DriverShowOrmAction')
+
+route.patch('drivers/{id}', 'DriverUpdateOrmAction')
+
+route.delete('drivers/{id}', 'DriverDestroyOrmAction')
+
 route.get('digital-deliveries', 'DigitalDeliveryIndexOrmAction')
 
 route.post('digital-deliveries', 'DigitalDeliveryStoreOrmAction')

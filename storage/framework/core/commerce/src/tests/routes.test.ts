@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../routes/destroy'
-import { fetchAll, fetchByDriver, fetchById } from '../routes/fetch'
+import { bulkDestroy, bulkSoftDelete, destroy } from '../routes/destroy'
+import { fetchByDriver, fetchById } from '../routes/fetch'
 import { store } from '../routes/store'
 import { update, updateMetrics, updateStops } from '../routes/update'
 
