@@ -120,6 +120,16 @@ route.post('coupons', 'CouponStoreOrmAction')
 
 route.get('coupons/{id}', 'CouponShowOrmAction')
 
+route.get('tax-rates', 'TaxRateIndexOrmAction')
+
+route.post('tax-rates', 'TaxRateStoreOrmAction')
+
+route.get('tax-rates/{id}', 'TaxRateShowOrmAction')
+
+route.patch('tax-rates/{id}', 'TaxRateUpdateOrmAction')
+
+route.delete('tax-rates/{id}', 'TaxRateDestroyOrmAction')
+
 route.get('transactions', 'TransactionIndexOrmAction')
 
 route.post('transactions', 'TransactionStoreOrmAction')

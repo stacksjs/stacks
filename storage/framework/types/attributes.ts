@@ -115,6 +115,8 @@ export interface Attributes {
   end_date: Date | string
   applicable_products: string
   applicable_categories: string
+  rate: number
+  region: string | string[]
   payment_method: string
   payment_details: string
   transaction_reference: string
@@ -137,7 +139,6 @@ export interface Attributes {
   zone: string
   weight_from: number
   weight_to: number
-  rate: number
   driver: string
   vehicle: string
   stops: number

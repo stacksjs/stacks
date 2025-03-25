@@ -35,6 +35,7 @@ import type { ShippingZonesTable } from '../src/models/ShippingZone'
 import type { SubscribersTable } from '../src/models/Subscriber'
 import type { SubscriberEmailsTable } from '../src/models/SubscriberEmail'
 import type { SubscriptionsTable } from '../src/models/Subscription'
+import type { TaxRatesTable } from '../src/models/TaxRate'
 import type { TeamsTable } from '../src/models/Team'
 import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
@@ -97,6 +98,7 @@ export interface Database {
   gift_cards: GiftCardsTable
   orders: OrdersTable
   coupons: CouponsTable
+  tax_rates: TaxRatesTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
   product_items: ProductItemsTable

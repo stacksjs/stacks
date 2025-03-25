@@ -72,6 +72,8 @@ export { default as SubscriberEmail } from './SubscriberEmail'
 
 export { default as Subscription } from './Subscription'
 
+export { default as TaxRate } from './TaxRate'
+
 export { default as Team } from './Team'
 
 export { default as Transaction } from './Transaction'

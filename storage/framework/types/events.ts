@@ -19,6 +19,7 @@ import type { ReviewModel } from '../orm/src/models/Review'
 import type { ShippingMethodModel } from '../orm/src/models/ShippingMethod'
 import type { ShippingRateModel } from '../orm/src/models/ShippingRate'
 import type { ShippingZoneModel } from '../orm/src/models/ShippingZone'
+import type { TaxRateModel } from '../orm/src/models/TaxRate'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 
@@ -72,6 +73,9 @@ export interface ModelEvents {
   'coupon:created': CouponModel
   'coupon:updated': CouponModel
   'coupon:deleted': CouponModel
+  'tax-rate:created': TaxRateModel
+  'tax-rate:updated': TaxRateModel
+  'tax-rate:deleted': TaxRateModel
   'transaction:created': TransactionModel
   'transaction:updated': TransactionModel
   'transaction:deleted': TransactionModel

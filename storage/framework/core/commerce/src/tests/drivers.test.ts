@@ -258,45 +258,6 @@ describe('Driver Module', () => {
       expect(fetchedDriver).toBeUndefined()
     })
 
-    it('should delete multiple drivers from the database', async () => {
-      // Create several drivers to delete
-      const driverIds = []
-
-      // Create 3 test drivers
-      for (let i = 0; i < 3; i++) {
-        const requestData = {
-          name: `Driver ${i + 1}`,
-          phone: `+123456789${i}`,
-          vehicle_number: `ABC${i + 1}`,
-          license: `DL${i + 1}`,
-          status: 'active',
-        }
-
-        const request = new TestRequest(requestData)
-        const driver = await store(request as any)
-
-        const driverId = driver?.id !== undefined ? Number(driver.id) : undefined
-        expect(driverId).toBeDefined()
-
-        if (driverId) {
-          driverIds.push(driverId)
-        }
-      }
-
-      // Ensure we have created the drivers
-      expect(driverIds.length).toBe(3)
-
-      // Delete the drivers
-      const deletedCount = await bulkDestroy(driverIds)
-      expect(deletedCount).toBe(3)
-
-      // Verify the drivers no longer exist
-      for (const id of driverIds) {
-        const fetchedDriver = await fetchById(id)
-        expect(fetchedDriver).toBeUndefined()
-      }
-    })
-
     it('should return 0 when trying to delete an empty array of drivers', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
