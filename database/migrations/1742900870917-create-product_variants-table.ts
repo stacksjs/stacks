@@ -3,18 +3,17 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('payment_methods')
+    .createTable('product_variants')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
+    .addColumn('variant', 'text', col => col.notNull())
     .addColumn('type', 'text', col => col.notNull())
-    .addColumn('last_four', 'numeric', col => col.notNull())
-    .addColumn('brand', 'text', col => col.notNull())
-    .addColumn('exp_month', 'numeric', col => col.notNull())
-    .addColumn('exp_year', 'numeric', col => col.notNull())
-    .addColumn('is_default', 'integer')
-    .addColumn('provider_id', 'text')
-    .addColumn('user_id', 'integer', col =>
-      col.references('users.id').onDelete('cascade'))
+    .addColumn('description', 'text')
+    .addColumn('options', 'text')
+    .addColumn('status', 'text', col => col.notNull())
+    .addColumn('product_id', 'integer', (col) =>
+        col.references('products.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
