@@ -15,7 +15,7 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@unhead/vue": "^1.11.20",
+    "@unhead/vue": "^2.0.0",
     "@unocss/reset": "66.0.0",
     "@vueuse/core": "^13.0.0",
     "@vueuse/head": "^2.0.0",
