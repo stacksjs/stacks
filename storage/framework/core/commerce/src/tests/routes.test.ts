@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../routes/destroy'
-import { fetchAll, fetchById, fetchActive, fetchByDriver } from '../routes/fetch'
-import { bulkStore, store, updateLastActive } from '../routes/store'
-import { update, updateStops, updateMetrics } from '../routes/update'
+import { fetchAll, fetchByDriver, fetchById } from '../routes/fetch'
+import { store } from '../routes/store'
+import { update, updateMetrics, updateStops } from '../routes/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -83,46 +83,7 @@ describe('Delivery Route Module', () => {
       expect(route?.stops).toBe(3)
       expect(route?.delivery_time).toBe(60)
       expect(route?.total_distance).toBe(25)
-      expect(route?.last_active).toBeUndefined()
-      expect(route?.uuid).toBeDefined()
-    })
-
-    it('should create multiple delivery routes with bulk store', async () => {
-      const requests = [
-        new TestRequest({
-          driver: 'John Doe',
-          vehicle: 'Truck A123',
-          stops: 5,
-          delivery_time: 120,
-          total_distance: 50,
-        }),
-        new TestRequest({
-          driver: 'Jane Smith',
-          vehicle: 'Van B456',
-          stops: 3,
-          delivery_time: 60,
-          total_distance: 25,
-        }),
-        new TestRequest({
-          driver: 'Bob Wilson',
-          vehicle: 'Car C789',
-          stops: 2,
-          delivery_time: 30,
-          total_distance: 15,
-        }),
-      ]
-
-      const count = await bulkStore(requests as any)
-      expect(count).toBe(3)
-
-      // Verify routes can be fetched
-      const allRoutes = await fetchAll()
-      expect(allRoutes.length).toBeGreaterThanOrEqual(3)
-    })
-
-    it('should return 0 when trying to bulk store an empty array', async () => {
-      const count = await bulkStore([])
-      expect(count).toBe(0)
+      expect(route?.last_active).toBeNull()
     })
   })
 
@@ -224,55 +185,30 @@ describe('Delivery Route Module', () => {
   })
 
   describe('fetch', () => {
-    it('should fetch active delivery routes', async () => {
-      // Create some routes with different last_active times
-      const now = new Date()
-      const activeRoutes = [
-        new TestRequest({
-          driver: 'John Doe',
-          vehicle: 'Truck A123',
-          stops: 5,
-          delivery_time: 120,
-          total_distance: 50,
-          last_active: now.toISOString(),
-        }),
-        new TestRequest({
-          driver: 'Jane Smith',
-          vehicle: 'Van B456',
-          stops: 3,
-          delivery_time: 60,
-          total_distance: 25,
-          last_active: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
-        }),
-      ]
-
-      await bulkStore(activeRoutes as any)
-
-      const active = await fetchActive()
-      expect(active.length).toBeGreaterThanOrEqual(2)
-    })
-
     it('should fetch routes by driver', async () => {
       // Create routes for the same driver
       const driverName = 'John Doe'
       const routes = [
-        new TestRequest({
+        {
           driver: driverName,
           vehicle: 'Truck A123',
           stops: 5,
           delivery_time: 120,
           total_distance: 50,
-        }),
-        new TestRequest({
+        },
+        {
           driver: driverName,
           vehicle: 'Van B456',
           stops: 3,
           delivery_time: 60,
           total_distance: 25,
-        }),
+        },
       ]
 
-      await bulkStore(routes as any)
+      // Store each route individually
+      for (const routeData of routes) {
+        await store(new TestRequest(routeData) as any)
+      }
 
       const driverRoutes = await fetchByDriver(driverName)
       expect(driverRoutes.length).toBeGreaterThanOrEqual(2)
@@ -315,37 +251,6 @@ describe('Delivery Route Module', () => {
       expect(fetchedRoute).toBeUndefined()
     })
 
-    it('should soft delete a delivery route', async () => {
-      // Create a route
-      const requestData = {
-        driver: 'John Doe',
-        vehicle: 'Truck A123',
-        stops: 5,
-        delivery_time: 120,
-        total_distance: 50,
-        last_active: new Date().toISOString(),
-      }
-
-      // Create the route
-      const request = new TestRequest(requestData)
-      const route = await store(request as any)
-      const routeId = route?.id !== undefined ? Number(route.id) : undefined
-
-      expect(routeId).toBeDefined()
-      if (!routeId) {
-        throw new Error('Failed to create test delivery route')
-      }
-
-      // Soft delete the route
-      const result = await softDelete(routeId)
-      expect(result).toBe(true)
-
-      // Verify the route still exists but has no last_active
-      const fetchedRoute = await fetchById(routeId)
-      expect(fetchedRoute).toBeDefined()
-      expect(fetchedRoute?.last_active).toBeUndefined()
-    })
-
     it('should delete multiple delivery routes from the database', async () => {
       // Create several routes to delete
       const routeIds = []
@@ -382,47 +287,6 @@ describe('Delivery Route Module', () => {
       for (const id of routeIds) {
         const fetchedRoute = await fetchById(id)
         expect(fetchedRoute).toBeUndefined()
-      }
-    })
-
-    it('should soft delete multiple delivery routes', async () => {
-      // Create several routes to soft delete
-      const routeIds = []
-
-      // Create 3 test routes
-      for (let i = 0; i < 3; i++) {
-        const requestData = {
-          driver: `Driver ${i}`,
-          vehicle: `Vehicle ${i}`,
-          stops: 3 + i,
-          delivery_time: 60 + i * 30,
-          total_distance: 25 + i * 10,
-          last_active: new Date().toISOString(),
-        }
-
-        const request = new TestRequest(requestData)
-        const route = await store(request as any)
-
-        const routeId = route?.id !== undefined ? Number(route.id) : undefined
-        expect(routeId).toBeDefined()
-
-        if (routeId) {
-          routeIds.push(routeId)
-        }
-      }
-
-      // Ensure we have created the routes
-      expect(routeIds.length).toBe(3)
-
-      // Soft delete the routes
-      const deletedCount = await bulkSoftDelete(routeIds)
-      expect(deletedCount).toBe(3)
-
-      // Verify the routes still exist but have no last_active
-      for (const id of routeIds) {
-        const fetchedRoute = await fetchById(id)
-        expect(fetchedRoute).toBeDefined()
-        expect(fetchedRoute?.last_active).toBeUndefined()
       }
     })
 

@@ -35,9 +35,9 @@ export async function softDelete(id: number): Promise<boolean> {
     // Update the status to inactive instead of deleting
     const result = await db
       .updateTable('delivery_routes')
-      .set({ 
+      .set({
         last_active: undefined,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .executeTakeFirst()
@@ -97,9 +97,9 @@ export async function bulkSoftDelete(ids: number[]): Promise<number> {
     // Update the status to inactive instead of deleting
     const result = await db
       .updateTable('delivery_routes')
-      .set({ 
+      .set({
         last_active: undefined,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       })
       .where('id', 'in', ids)
       .executeTakeFirst()

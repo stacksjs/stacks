@@ -28,12 +28,18 @@ export async function update(id: number, request: DeliveryRouteRequestType): Pro
   }
 
   // Add fields only if they are present in the request
-  if (request.has('driver')) updateData.driver = request.get('driver')
-  if (request.has('vehicle')) updateData.vehicle = request.get('vehicle')
-  if (request.has('stops')) updateData.stops = Number(request.get('stops'))
-  if (request.has('delivery_time')) updateData.delivery_time = Number(request.get('delivery_time'))
-  if (request.has('total_distance')) updateData.total_distance = Number(request.get('total_distance'))
-  if (request.has('last_active')) updateData.last_active = request.get('last_active')
+  if (request.has('driver'))
+    updateData.driver = request.get('driver')
+  if (request.has('vehicle'))
+    updateData.vehicle = request.get('vehicle')
+  if (request.has('stops'))
+    updateData.stops = Number(request.get('stops'))
+  if (request.has('delivery_time'))
+    updateData.delivery_time = Number(request.get('delivery_time'))
+  if (request.has('total_distance'))
+    updateData.total_distance = Number(request.get('total_distance'))
+  if (request.has('last_active'))
+    updateData.last_active = request.get('last_active')
 
   // If no fields to update, just return the existing delivery route
   if (Object.keys(updateData).length === 1) { // Only updated_at was set

@@ -52,57 +52,6 @@ export async function store(request: DeliveryRouteRequestType): Promise<Delivery
 }
 
 /**
- * Create multiple delivery routes at once
- *
- * @param requests Array of delivery route data to store
- * @returns Number of delivery routes created
- */
-export async function bulkStore(requests: DeliveryRouteRequestType[]): Promise<number> {
-  if (!requests.length)
-    return 0
-
-  let createdCount = 0
-
-  try {
-    // Process each delivery route
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
-
-        // Prepare delivery route data
-        const routeData: NewDeliveryRoute = {
-          driver: request.get('driver'),
-          vehicle: request.get('vehicle'),
-          stops: request.get('stops'),
-          delivery_time: request.get('delivery_time'),
-          total_distance: request.get('total_distance'),
-          last_active: request.get('last_active'),
-          uuid: randomUUIDv7(),
-        }
-
-        // Insert the delivery route
-        await trx
-          .insertInto('delivery_routes')
-          .values(routeData)
-          .execute()
-
-        createdCount++
-      }
-    })
-
-    return createdCount
-  }
-  catch (error) {
-    if (error instanceof Error) {
-      throw new TypeError(`Failed to create delivery routes in bulk: ${error.message}`)
-    }
-
-    throw error
-  }
-}
-
-/**
  * Update a delivery route's last active timestamp
  *
  * @param id The ID of the delivery route to update

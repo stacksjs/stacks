@@ -8,10 +8,10 @@ export {
 
 // Functions from fetch.ts
 export {
-  fetchAll,
-  fetchById,
   fetchActive,
+  fetchAll,
   fetchByDriver,
+  fetchById,
 } from './fetch'
 
 // Functions from store.ts
@@ -24,6 +24,6 @@ export {
 // Functions from update.ts
 export {
   update,
-  updateStops,
   updateMetrics,
+  updateStops,
 } from './update'
