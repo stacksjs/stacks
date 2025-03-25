@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -8,6 +9,7 @@ import { BaseOrm, DB } from '@stacksjs/orm'
 
 export interface DriversTable {
   id: Generated<number>
+  user_id: number
   name: string
   phone: string
   vehicle_number: string
@@ -40,7 +42,7 @@ export type DriverUpdate = Updateable<DriversTable>
 
 export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> {
   private readonly hidden: Array<keyof DriverJsonResponse> = []
-  private readonly fillable: Array<keyof DriverJsonResponse> = ['name', 'phone', 'vehicle_number', 'license', 'status', 'uuid']
+  private readonly fillable: Array<keyof DriverJsonResponse> = ['name', 'phone', 'vehicle_number', 'license', 'status', 'uuid', 'user_id']
   private readonly guarded: Array<keyof DriverJsonResponse> = []
   protected attributes = {} as DriverJsonResponse
   protected originalAttributes = {} as DriverJsonResponse
@@ -165,6 +167,14 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get user_id(): number {
+    return this.attributes.user_id
+  }
+
+  get user(): UserModel | undefined {
+    return this.attributes.user
   }
 
   get id(): number {
@@ -835,6 +845,20 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
     return instance.applyWhereIn<V>(column, values)
   }
 
+  async userBelong(): Promise<UserModel> {
+    if (this.user_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await User
+      .where('id', '=', this.user_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   toSearchableObject(): Partial<DriverJsonResponse> {
     return {
       id: this.id,
@@ -874,6 +898,8 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
 
       updated_at: this.updated_at,
 
+      user_id: this.user_id,
+      user: this.user,
       ...this.customColumns,
     }
 

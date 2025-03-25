@@ -18,6 +18,7 @@ interface RequestDataDriver {
   vehicle_number: string
   license: string
   status: string[]
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -28,6 +29,7 @@ export class DriverRequest extends Request<RequestDataDriver> implements DriverR
   public vehicle_number = ''
   public license = ''
   public status = ''
+  public user_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

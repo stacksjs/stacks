@@ -7,6 +7,7 @@ export default {
   primaryKey: 'id',
   autoIncrement: true,
 
+  belongsTo: ['User'],
   traits: {
     useUuid: true,
     useTimestamps: true,

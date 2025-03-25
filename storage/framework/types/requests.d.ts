@@ -299,6 +299,7 @@ interface RequestDataDriver {
   vehicle_number: string
   license: string
   status: string[]
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -312,6 +313,7 @@ export interface DriverRequestType extends Request {
   vehicle_number: string
   license: string
   status: string[]
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }

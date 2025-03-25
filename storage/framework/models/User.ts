@@ -39,7 +39,7 @@ export default {
     billable: true,
   },
 
-  hasOne: ['Subscriber'],
+  hasOne: ['Subscriber', 'Driver'],
   hasMany: ['Deployment', 'Subscription', 'PaymentMethod', 'Post', 'PaymentTransaction', 'Customer'],
 
   belongsToMany: ['Team'],

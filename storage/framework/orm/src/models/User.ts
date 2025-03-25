@@ -4,10 +4,12 @@ import type { Stripe } from '@stacksjs/payments'
 import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
 import type { CustomerModel } from './Customer'
 import type { DeploymentModel } from './Deployment'
+import type { DriverModel } from './Driver'
 import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
+
 import type { SubscriptionModel } from './Subscription'
 
 import { randomUUIDv7 } from 'bun'
@@ -195,6 +197,10 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
 
   get subscriber(): SubscriberModel | undefined {
     return this.attributes.subscriber
+  }
+
+  get driver(): DriverModel | undefined {
+    return this.attributes.driver
   }
 
   get deployments(): DeploymentModel[] | [] {
