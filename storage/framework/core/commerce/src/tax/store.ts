@@ -1,6 +1,6 @@
 // Import dependencies
 import type { TaxRateRequestType } from '@stacksjs/orm'
-import type { TaxRateJsonResponse, NewTaxRate } from '../../../../orm/src/models/TaxRate'
+import type { NewTaxRate, TaxRateJsonResponse } from '../../../../orm/src/models/TaxRate'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

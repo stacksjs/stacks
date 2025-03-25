@@ -11,6 +11,7 @@ import * as payments from './payments'
 import * as rates from './rates'
 import * as reviews from './reviews'
 import * as shipping from './shipping'
+import * as tax from './tax'
 import * as unit from './unit'
 import * as variants from './variants'
 import * as zones from './zones'
@@ -30,6 +31,7 @@ type VariantsModule = typeof variants
 type DriversModule = typeof drivers
 type LicensesModule = typeof licenses
 type DigitalModule = typeof digital
+type TaxModule = typeof tax
 export interface EcommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
@@ -46,6 +48,7 @@ export interface EcommerceNamespace {
   unit: UnitModule
   licenses: LicensesModule
   digital: DigitalModule
+  tax: TaxModule
 }
 
 export const ecommerce: EcommerceNamespace = {
@@ -64,6 +67,7 @@ export const ecommerce: EcommerceNamespace = {
   licenses,
   unit,
   digital,
+  tax,
 }
 
 export default ecommerce
@@ -81,6 +85,7 @@ export {
   rates,
   reviews,
   shipping,
+  tax,
   unit,
   variants,
   zones,
