@@ -9,7 +9,6 @@ import type { PaymentMethodModel, PaymentMethodsTable } from './PaymentMethod'
 import type { PaymentTransactionModel, PaymentTransactionsTable } from './PaymentTransaction'
 import type { PostModel } from './Post'
 import type { SubscriberModel } from './Subscriber'
-
 import type { SubscriptionModel } from './Subscription'
 
 import { randomUUIDv7 } from 'bun'
@@ -20,8 +19,10 @@ import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
 import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSetupIntent, manageSubscription, manageTransaction } from '@stacksjs/payments'
+
+import { BaseOrm } from '../utils/base'
 
 export interface UsersTable {
   id: Generated<number>
@@ -67,7 +68,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

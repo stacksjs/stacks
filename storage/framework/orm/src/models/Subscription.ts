@@ -4,7 +4,9 @@ import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+
+import { BaseOrm } from '../utils/base'
 
 export interface SubscriptionsTable {
   id: Generated<number>
@@ -56,7 +58,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

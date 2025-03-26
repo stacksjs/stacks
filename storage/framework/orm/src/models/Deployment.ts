@@ -4,7 +4,9 @@ import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+
+import { BaseOrm } from '../utils/base'
 
 export interface DeploymentsTable {
   id: Generated<number>
@@ -52,7 +54,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

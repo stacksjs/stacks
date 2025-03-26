@@ -4,8 +4,9 @@ import type { OrderModel } from './Order'
 import type { ProductModel } from './Product'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface OrderItemsTable {
   id: Generated<number>
@@ -49,7 +50,6 @@ export class OrderItemModel extends BaseOrm<OrderItemModel, OrderItemsTable, Ord
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

@@ -5,8 +5,9 @@ import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface PaymentTransactionsTable {
   id: Generated<number>
@@ -53,7 +54,6 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

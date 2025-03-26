@@ -6,8 +6,9 @@ import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+import { DB } from '@stacksjs/orm'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface CouponsTable {
   id: Generated<number>
@@ -62,7 +63,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

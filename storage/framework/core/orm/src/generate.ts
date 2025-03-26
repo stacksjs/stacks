@@ -905,7 +905,9 @@ export async function generateModelString(
   return `import type { Generated, Insertable, RawBuilder, Selectable, Updateable, Sql} from '@stacksjs/database'
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
-      import { DB, BaseOrm } from '@stacksjs/orm'
+      import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
+      import { BaseOrm } from '../utils/base'
       import type { Operator } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
       import { HttpError } from '@stacksjs/error-handling'
@@ -950,7 +952,6 @@ export async function generateModelString(
         protected updateFromQuery: any
         protected deleteFromQuery: any
         protected hasSelect: boolean
-        private hasSaved: boolean
         private customColumns: Record<string, unknown> = {}
 
         /**

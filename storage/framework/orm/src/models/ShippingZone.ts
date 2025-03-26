@@ -5,7 +5,9 @@ import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+
+import { BaseOrm } from '../utils/base'
 
 export interface ShippingZonesTable {
   id: Generated<number>
@@ -51,7 +53,6 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

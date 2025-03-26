@@ -3,7 +3,8 @@ import type { Operator } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface PaymentProductsTable {
   id: Generated<number>
@@ -50,7 +51,6 @@ export class PaymentProductModel extends BaseOrm<PaymentProductModel, PaymentPro
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

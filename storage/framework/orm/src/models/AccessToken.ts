@@ -4,8 +4,9 @@ import type { TeamModel } from './Team'
 import type { UserModel } from './User'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import { DB } from '@stacksjs/orm'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface PersonalAccessTokensTable {
   id: Generated<number>
@@ -56,7 +57,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

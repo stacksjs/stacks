@@ -6,8 +6,9 @@ import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
+import { DB } from '@stacksjs/orm'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface ReviewsTable {
   id: Generated<number>
@@ -59,7 +60,6 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

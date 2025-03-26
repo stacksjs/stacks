@@ -14,7 +14,9 @@ import { HttpError } from '@stacksjs/error-handling'
 
 import { dispatch } from '@stacksjs/events'
 
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+
+import { BaseOrm } from '../utils/base'
 
 export interface ProductsTable {
   id: Generated<number>
@@ -65,7 +67,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**

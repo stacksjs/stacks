@@ -1,5 +1,6 @@
 import type { TaxRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { TaxRate } from '@stacksjs/orm'
 
 import { response } from '@stacksjs/router'
 

@@ -2,7 +2,8 @@ import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '
 import type { Operator } from '@stacksjs/orm'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
-import { BaseOrm, DB } from '@stacksjs/orm'
+import { DB } from '@stacksjs/orm'
+import { BaseOrm } from '../utils/base'
 
 export interface SubscribersTable {
   id: Generated<number>
@@ -42,7 +43,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
   protected updateFromQuery: any
   protected deleteFromQuery: any
   protected hasSelect: boolean
-  private hasSaved: boolean
   private customColumns: Record<string, unknown> = {}
 
   /**
