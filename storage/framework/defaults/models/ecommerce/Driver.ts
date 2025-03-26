@@ -8,6 +8,7 @@ export default {
   autoIncrement: true,
 
   belongsTo: ['User'],
+  
   traits: {
     useUuid: true,
     useTimestamps: true,
