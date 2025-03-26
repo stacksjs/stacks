@@ -1,6 +1,4 @@
-// Import dependencies
-import type { DigitalDeliveryJsonResponse, NewDigitalDelivery } from '@stacksjs/orm'
-import type { DigitalDeliveryRequestType } from '@stacksjs/orm'
+import type { DigitalDeliveryJsonResponse, DigitalDeliveryRequestType, NewDigitalDelivery } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

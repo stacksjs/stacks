@@ -1,4 +1,4 @@
-import type { GiftCardJsonResponse } from '../../../../orm/src/models/GiftCard'
+import type { GiftCardJsonResponse } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
 
@@ -220,8 +220,8 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
       eb('expiry_date', '>=', today),
       eb('expiry_date', 'is', null),
     ]))
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .executeTakeFirst()
 
   // Get active gift cards for previous period
@@ -234,8 +234,8 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
       eb('expiry_date', '>=', previousPeriodStart),
       eb('expiry_date', 'is', null),
     ]))
-    .where('created_at', '>=', previousPeriodStart)
-    .where('created_at', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
     .executeTakeFirst()
 
   const currentCount = Number(currentPeriodActive?.count || 0)
@@ -322,8 +322,8 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
       eb('expiry_date', '>=', today),
       eb('expiry_date', 'is', null),
     ]))
-    .where('created_at', '>=', currentPeriodStart)
-    .where('created_at', '<=', today)
+    .where('created_at', '>=', currentPeriodStart.toISOString())
+    .where('created_at', '<=', today.toISOString())
     .executeTakeFirst()
 
   // Get values for previous period
@@ -340,8 +340,8 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
       eb('expiry_date', '>=', previousPeriodStart),
       eb('expiry_date', 'is', null),
     ]))
-    .where('created_at', '>=', previousPeriodStart)
-    .where('created_at', '<=', previousPeriodEnd)
+    .where('created_at', '>=', previousPeriodStart.toISOString())
+    .where('created_at', '<=', previousPeriodEnd.toISOString())
     .executeTakeFirst()
 
   // Calculate values for current period

@@ -1,6 +1,5 @@
 // Import dependencies
-import type { ShippingRateRequestType } from '@stacksjs/orm'
-import type { NewShippingRate, ShippingRateJsonResponse } from '../../../../orm/src/models/ShippingRate'
+import type { NewShippingRate, ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

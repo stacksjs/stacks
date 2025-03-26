@@ -1,6 +1,4 @@
-// Import dependencies
-import type { ShippingMethodRequestType } from '@stacksjs/orm'
-import type { ShippingMethodJsonResponse } from '../../../../orm/src/models/ShippingMethod'
+import type { ShippingMethodJsonResponse, ShippingMethodRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

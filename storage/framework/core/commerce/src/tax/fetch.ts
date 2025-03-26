@@ -1,4 +1,4 @@
-import type { TaxRateJsonResponse } from '../../../../orm/src/models/TaxRate'
+import type { TaxRateJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

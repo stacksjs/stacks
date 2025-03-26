@@ -1,4 +1,4 @@
-import type { DeliveryRouteJsonResponse } from '../../../../orm/src/models/DeliveryRoute'
+import type { DeliveryRouteJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

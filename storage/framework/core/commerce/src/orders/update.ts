@@ -1,6 +1,5 @@
 // Import dependencies
-import type { OrderRequestType } from '@stacksjs/orm'
-import type { OrderType } from '../types'
+import type { OrderJsonResponse, OrderRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -11,7 +10,7 @@ import { fetchById } from './fetch'
  * @param request The updated order data
  * @returns The updated order record
  */
-export async function update(id: number, request: OrderRequestType): Promise<OrderType | undefined> {
+export async function update(id: number, request: OrderRequestType): Promise<OrderJsonResponse | undefined> {
   // Validate the request data
   await request.validate()
 
@@ -73,7 +72,7 @@ export async function update(id: number, request: OrderRequestType): Promise<Ord
 export async function updateStatus(
   id: number,
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED',
-): Promise<OrderType | undefined> {
+): Promise<OrderJsonResponse | undefined> {
   // Check if order exists
   const order = await fetchById(id)
 
@@ -87,7 +86,7 @@ export async function updateStatus(
       .updateTable('orders')
       .set({
         status,
-        updated_at: new Date(),
+        updated_at: new Date().toISOString(),
       })
       .where('id', '=', id)
       .execute()
@@ -116,7 +115,7 @@ export async function updateDeliveryInfo(
   id: number,
   delivery_address?: string,
   estimated_delivery_time?: string,
-): Promise<OrderType | undefined> {
+): Promise<OrderJsonResponse | undefined> {
   // Check if order exists
   const order = await fetchById(id)
 
@@ -126,7 +125,7 @@ export async function updateDeliveryInfo(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date(),
+    updated_at: new Date().toISOString(),
   }
 
   if (delivery_address !== undefined) {

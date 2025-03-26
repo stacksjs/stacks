@@ -1,4 +1,4 @@
-import type { DriverJsonResponse } from '../../../../orm/src/models/Driver'
+import type { DriverJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

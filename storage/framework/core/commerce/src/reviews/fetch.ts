@@ -1,46 +1,6 @@
-import type { ReviewJsonResponse } from '../../../../orm/src/models/Review'
+import type { ReviewJsonResponse } from '@stacksjs/orm'
 import type { FetchReviewsOptions, ReviewResponse, ReviewStats } from '../types'
 import { db } from '@stacksjs/database'
-
-/**
- * Fetch product reviews with pagination
- */
-export async function fetchPaginated(options: FetchReviewsOptions = {}): Promise<ReviewResponse> {
-  // Set default values
-  const page = options.page || 1
-  const limit = options.limit || 10
-
-  // Start building the query
-  const query = db.selectFrom('reviews')
-  const countQuery = db.selectFrom('reviews')
-
-  // Get total count for pagination
-  const countResult = await countQuery
-    .select(eb => eb.fn.count('id').as('total'))
-    .executeTakeFirst()
-
-  const total = Number(countResult?.total || 0)
-
-  // Apply pagination
-  const reviews = await query
-    .selectAll()
-    .limit(limit)
-    .offset((page - 1) * limit)
-    .execute()
-
-  // Calculate pagination info
-  const totalPages = Math.ceil(total / limit)
-
-  return {
-    data: reviews,
-    paging: {
-      total_records: total,
-      page,
-      total_pages: totalPages,
-    },
-    next_cursor: page < totalPages ? page + 1 : null,
-  }
-}
 
 /**
  * Fetch a product review by ID

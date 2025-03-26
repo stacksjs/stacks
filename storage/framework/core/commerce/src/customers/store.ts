@@ -1,4 +1,4 @@
-import type { CustomerRequestType, CustomerJsonResponse, NewCustomer } from '@stacksjs/orm'
+import type { CustomerJsonResponse, CustomerRequestType, NewCustomer } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

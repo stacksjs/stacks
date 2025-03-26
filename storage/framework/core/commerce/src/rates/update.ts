@@ -1,6 +1,4 @@
-// Import dependencies
-import type { ShippingRateRequestType } from '@stacksjs/orm'
-import type { ShippingRateJsonResponse } from '../../../../orm/src/models/ShippingRate'
+import type { ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

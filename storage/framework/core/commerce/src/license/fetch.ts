@@ -1,4 +1,4 @@
-import type { LicenseKeyJsonResponse } from '../../../../orm/src/models/LicenseKey'
+import type { LicenseKeyJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

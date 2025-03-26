@@ -1,4 +1,4 @@
-import type { ShippingRateJsonResponse } from '../../../../orm/src/models/ShippingRate'
+import type { ShippingRateJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

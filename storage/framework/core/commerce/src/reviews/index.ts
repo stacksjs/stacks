@@ -10,7 +10,6 @@ export {
   fetchByProductId,
   fetchByUserId,
   fetchMostHelpfulByProductId,
-  fetchPaginated,
   fetchReviewStats,
 } from './fetch'
 

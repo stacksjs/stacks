@@ -1,4 +1,4 @@
-import type { CouponRequestType, CouponJsonResponse } from '@stacksjs/orm'
+import type { CouponJsonResponse, CouponRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

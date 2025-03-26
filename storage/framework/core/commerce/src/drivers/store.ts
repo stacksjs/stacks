@@ -1,6 +1,4 @@
-// Import dependencies
-import type { DriverRequestType } from '@stacksjs/orm'
-import type { DriverJsonResponse, NewDriver } from '../../../../orm/src/models/Driver'
+import type { DriverJsonResponse, DriverRequestType, NewDriver } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -17,6 +15,7 @@ export async function store(request: DriverRequestType): Promise<DriverJsonRespo
   try {
     // Prepare driver data
     const driverData: NewDriver = {
+      user_id: request.get('user_id'),
       name: request.get('name'),
       phone: request.get('phone'),
       vehicle_number: request.get('vehicle_number'),
@@ -73,6 +72,7 @@ export async function bulkStore(requests: DriverRequestType[]): Promise<number> 
 
         // Prepare driver data
         const driverData: NewDriver = {
+          user_id: request.get('user_id'),
           name: request.get('name'),
           phone: request.get('phone'),
           vehicle_number: request.get('vehicle_number'),

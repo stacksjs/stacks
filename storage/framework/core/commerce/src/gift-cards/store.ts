@@ -1,5 +1,4 @@
-import type { GiftCardRequestType } from '@stacksjs/orm'
-import type { GiftCardJsonResponse, NewGiftCard } from '../../../../orm/src/models/GiftCard'
+import type { GiftCardJsonResponse, GiftCardRequestType, NewGiftCard } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 /**

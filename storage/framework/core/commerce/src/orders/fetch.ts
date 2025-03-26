@@ -1,4 +1,4 @@
-import type { OrderJsonResponse } from '../../../../orm/src/models/Order'
+import type { OrderJsonResponse } from '@stacksjs/orm'
 import type {
   OrderStats,
   OrderTypeCount,

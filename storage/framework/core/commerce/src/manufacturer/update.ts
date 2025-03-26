@@ -1,5 +1,4 @@
-import type { ManufacturerRequestType } from '@stacksjs/orm'
-import type { ManufacturerJsonResponse } from '../../../../orm/src/models/Manufacturer'
+import type { ManufacturerJsonResponse, ManufacturerRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

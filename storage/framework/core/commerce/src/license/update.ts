@@ -1,6 +1,5 @@
 // Import dependencies
-import type { LicenseKeyRequestType } from '@stacksjs/orm'
-import type { LicenseKeyJsonResponse } from '../../../../orm/src/models/LicenseKey'
+import type { LicenseKeyJsonResponse, LicenseKeyRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

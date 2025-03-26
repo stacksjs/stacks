@@ -1,5 +1,4 @@
-import type { ProductRequestType } from '@stacksjs/orm'
-import type { NewReview, ReviewJsonResponse } from '../../../../orm/src/models/Review'
+import type { NewReview, ReviewJsonResponse, ReviewRequestType } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -9,7 +8,7 @@ import { db } from '@stacksjs/database'
  * @param request The gift card data to store
  * @returns The newly created gift card record
  */
-export async function store(request: ProductRequestType): Promise<ReviewJsonResponse | undefined> {
+export async function store(request: ReviewRequestType): Promise<ReviewJsonResponse | undefined> {
   await request.validate()
 
   const reviewData: NewReview = {

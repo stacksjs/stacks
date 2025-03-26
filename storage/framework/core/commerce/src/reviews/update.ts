@@ -1,5 +1,4 @@
-import type { ReviewRequestType } from '@stacksjs/orm'
-import type { ReviewJsonResponse } from '../../../../orm/src/models/Review'
+import type { ReviewJsonResponse, ReviewRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

@@ -1,6 +1,5 @@
 // Import dependencies
-import type { DriverRequestType } from '@stacksjs/orm'
-import type { DriverJsonResponse } from '../../../../orm/src/models/Driver'
+import type { DriverJsonResponse, DriverRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

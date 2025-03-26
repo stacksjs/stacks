@@ -1,5 +1,4 @@
-import type { PaymentRequestType } from '@stacksjs/orm'
-import type { NewPayment, PaymentJsonResponse } from '../../../../orm/src/models/Payment'
+import type { NewPayment, PaymentJsonResponse, PaymentRequestType } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

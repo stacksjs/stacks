@@ -1,6 +1,4 @@
-// Import dependencies
-import type { TaxRateRequestType } from '@stacksjs/orm'
-import type { TaxRateJsonResponse } from '../../../../orm/src/models/TaxRate'
+import type { TaxRateJsonResponse, TaxRateRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

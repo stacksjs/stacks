@@ -1,6 +1,4 @@
-// Import dependencies
-import type { DeliveryRouteRequestType } from '@stacksjs/orm'
-import type { DeliveryRouteJsonResponse } from '../../../../orm/src/models/DeliveryRoute'
+import type { DeliveryRouteJsonResponse, DeliveryRouteRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

@@ -1,5 +1,4 @@
-import type { ManufacturerRequestType } from '@stacksjs/orm'
-import type { ManufacturerJsonResponse, NewManufacturer } from '../../../../orm/src/models/Manufacturer'
+import type { ManufacturerJsonResponse, ManufacturerRequestType, NewManufacturer } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

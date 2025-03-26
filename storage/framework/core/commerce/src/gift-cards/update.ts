@@ -1,5 +1,4 @@
-import type { GiftCardRequestType } from '@stacksjs/orm'
-import type { GiftCardJsonResponse } from '../../../../orm/src/models/GiftCard'
+import type { GiftCardJsonResponse, GiftCardRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

@@ -384,16 +384,16 @@ export async function fetchTopRedeemedCoupons(limit: number = 5): Promise<any[]>
  * Get redemption trend data in a simplified manner
  */
 export async function fetchRedemptionTrend(days: number = 30): Promise<any[]> {
-  const endDate = new Date()
+  const endDate = new Date().toISOString()
   const startDate = new Date()
-  startDate.setDate(endDate.getDate() - days)
+  startDate.setDate(startDate.getDate() - days)
 
   // Get coupons updated in the specified timeframe
   const coupons = await db
     .selectFrom('coupons')
     .select(['id', 'code', 'updated_at', 'usage_count'])
     .where('updated_at', '>=', startDate.toISOString())
-    .where('updated_at', '<=', endDate.toISOString())
+    .where('updated_at', '<=', endDate)
     .where('usage_count', '>', 0)
     .orderBy('updated_at', 'desc')
     .execute()

@@ -1,4 +1,4 @@
-import type { ShippingMethodJsonResponse } from '../../../../orm/src/models/ShippingMethod'
+import type { ShippingMethodJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**
