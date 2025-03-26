@@ -1,83 +1,83 @@
-export { default as AccessToken, type AccessTokenJsonResponse } from './models/AccessToken'
+export { default as AccessToken, type AccessTokenJsonResponse, type AccessTokenUpdate, type NewAccessToken } from './models/AccessToken'
 
-export { default as Category, type CategoryJsonResponse } from './models/Category'
+export { default as Category, type CategoryJsonResponse, type CategoryUpdate, type NewCategory } from './models/Category'
 
-export { default as Coupon, type CouponJsonResponse } from './models/Coupon'
+export { default as Coupon, type CouponJsonResponse, type CouponUpdate, type NewCoupon } from './models/Coupon'
 
-export { default as Customer, type CustomerJsonResponse } from './models/Customer'
+export { default as Customer, type CustomerJsonResponse, type CustomerUpdate, type NewCustomer } from './models/Customer'
 
-export { default as DeliveryRoute, type DeliveryRouteJsonResponse } from './models/DeliveryRoute'
+export { default as DeliveryRoute, type DeliveryRouteJsonResponse, type DeliveryRouteUpdate, type NewDeliveryRoute } from './models/DeliveryRoute'
 
-export { default as Deployment, type DeploymentJsonResponse } from './models/Deployment'
+export { default as Deployment, type DeploymentJsonResponse, type DeploymentUpdate, type NewDeployment } from './models/Deployment'
 
-export { default as DigitalDelivery, type DigitalDeliveryJsonResponse } from './models/DigitalDelivery'
+export { default as DigitalDelivery, type DigitalDeliveryJsonResponse, type DigitalDeliveryUpdate, type NewDigitalDelivery } from './models/DigitalDelivery'
 
-export { default as Driver, type DriverJsonResponse } from './models/Driver'
+export { default as Driver, type DriverJsonResponse, type DriverUpdate, type NewDriver } from './models/Driver'
 
-export { default as Error, type ErrorJsonResponse } from './models/Error'
+export { default as Error, type ErrorJsonResponse, type ErrorUpdate, type NewError } from './models/Error'
 
-export { default as FailedJob, type FailedJobJsonResponse } from './models/FailedJob'
+export { default as FailedJob, type FailedJobJsonResponse, type FailedJobUpdate, type NewFailedJob } from './models/FailedJob'
 
-export { default as GiftCard, type GiftCardJsonResponse } from './models/GiftCard'
+export { default as GiftCard, type GiftCardJsonResponse, type GiftCardUpdate, type NewGiftCard } from './models/GiftCard'
 
-export { default as Job, type JobJsonResponse } from './models/Job'
+export { default as Job, type JobJsonResponse, type JobUpdate, type NewJob } from './models/Job'
 
-export { default as LicenseKey, type LicenseKeyJsonResponse } from './models/LicenseKey'
+export { default as LicenseKey, type LicenseKeyJsonResponse, type LicenseKeyUpdate, type NewLicenseKey } from './models/LicenseKey'
 
-export { default as LoyaltyPoint, type LoyaltyPointJsonResponse } from './models/LoyaltyPoint'
+export { default as LoyaltyPoint, type LoyaltyPointJsonResponse, type LoyaltyPointUpdate, type NewLoyaltyPoint } from './models/LoyaltyPoint'
 
-export { default as LoyaltyReward, type LoyaltyRewardJsonResponse } from './models/LoyaltyReward'
+export { default as LoyaltyReward, type LoyaltyRewardJsonResponse, type LoyaltyRewardUpdate, type NewLoyaltyReward } from './models/LoyaltyReward'
 
-export { default as Manufacturer, type ManufacturerJsonResponse } from './models/Manufacturer'
+export { default as Manufacturer, type ManufacturerJsonResponse, type ManufacturerUpdate, type NewManufacturer } from './models/Manufacturer'
 
-export { default as Order, type OrderJsonResponse } from './models/Order'
+export { type NewOrder, default as Order, type OrderJsonResponse, type OrderUpdate } from './models/Order'
 
-export { default as OrderItem, type OrderItemJsonResponse } from './models/OrderItem'
+export { type NewOrderItem, default as OrderItem, type OrderItemJsonResponse, type OrderItemUpdate } from './models/OrderItem'
 
-export { default as Payment, type PaymentJsonResponse } from './models/Payment'
+export { type NewPayment, default as Payment, type PaymentJsonResponse, type PaymentUpdate } from './models/Payment'
 
-export { default as PaymentMethod, type PaymentMethodJsonResponse } from './models/PaymentMethod'
+export { type NewPaymentMethod, default as PaymentMethod, type PaymentMethodJsonResponse, type PaymentMethodUpdate } from './models/PaymentMethod'
 
-export { default as PaymentProduct, type PaymentProductJsonResponse } from './models/PaymentProduct'
+export { type NewPaymentProduct, default as PaymentProduct, type PaymentProductJsonResponse, type PaymentProductUpdate } from './models/PaymentProduct'
 
-export { default as PaymentTransaction, type PaymentTransactionJsonResponse } from './models/PaymentTransaction'
+export { type NewPaymentTransaction, default as PaymentTransaction, type PaymentTransactionJsonResponse, type PaymentTransactionUpdate } from './models/PaymentTransaction'
 
-export { default as Post, type PostJsonResponse } from './models/Post'
+export { type NewPost, default as Post, type PostJsonResponse, type PostUpdate } from './models/Post'
 
-export { default as Product, type ProductJsonResponse } from './models/Product'
+export { type NewProduct, default as Product, type ProductJsonResponse, type ProductUpdate } from './models/Product'
 
-export { default as ProductItem, type ProductItemJsonResponse } from './models/ProductItem'
+export { type NewProductItem, default as ProductItem, type ProductItemJsonResponse, type ProductItemUpdate } from './models/ProductItem'
 
-export { default as ProductUnit, type ProductUnitJsonResponse } from './models/ProductUnit'
+export { type NewProductUnit, default as ProductUnit, type ProductUnitJsonResponse, type ProductUnitUpdate } from './models/ProductUnit'
 
-export { default as ProductVariant, type ProductVariantJsonResponse } from './models/ProductVariant'
+export { type NewProductVariant, default as ProductVariant, type ProductVariantJsonResponse, type ProductVariantUpdate } from './models/ProductVariant'
 
-export { default as Project, type ProjectJsonResponse } from './models/Project'
+export { type NewProject, default as Project, type ProjectJsonResponse, type ProjectUpdate } from './models/Project'
 
-export { default as Release, type ReleaseJsonResponse } from './models/Release'
+export { type NewRelease, default as Release, type ReleaseJsonResponse, type ReleaseUpdate } from './models/Release'
 
-export { default as Request, type RequestJsonResponse } from './models/Request'
+export { type NewRequest, default as Request, type RequestJsonResponse, type RequestUpdate } from './models/Request'
 
-export { default as Review, type ReviewJsonResponse } from './models/Review'
+export { type NewReview, default as Review, type ReviewJsonResponse, type ReviewUpdate } from './models/Review'
 
-export { default as ShippingMethod, type ShippingMethodJsonResponse } from './models/ShippingMethod'
+export { type NewShippingMethod, default as ShippingMethod, type ShippingMethodJsonResponse, type ShippingMethodUpdate } from './models/ShippingMethod'
 
-export { default as ShippingRate, type ShippingRateJsonResponse } from './models/ShippingRate'
+export { type NewShippingRate, default as ShippingRate, type ShippingRateJsonResponse, type ShippingRateUpdate } from './models/ShippingRate'
 
-export { default as ShippingZone, type ShippingZoneJsonResponse } from './models/ShippingZone'
+export { type NewShippingZone, default as ShippingZone, type ShippingZoneJsonResponse, type ShippingZoneUpdate } from './models/ShippingZone'
 
-export { default as Subscriber, type SubscriberJsonResponse } from './models/Subscriber'
+export { type NewSubscriber, default as Subscriber, type SubscriberJsonResponse, type SubscriberUpdate } from './models/Subscriber'
 
-export { default as SubscriberEmail, type SubscriberEmailJsonResponse } from './models/SubscriberEmail'
+export { type NewSubscriberEmail, default as SubscriberEmail, type SubscriberEmailJsonResponse, type SubscriberEmailUpdate } from './models/SubscriberEmail'
 
-export { default as Subscription, type SubscriptionJsonResponse } from './models/Subscription'
+export { type NewSubscription, default as Subscription, type SubscriptionJsonResponse, type SubscriptionUpdate } from './models/Subscription'
 
-export { default as TaxRate, type TaxRateJsonResponse } from './models/TaxRate'
+export { type NewTaxRate, default as TaxRate, type TaxRateJsonResponse, type TaxRateUpdate } from './models/TaxRate'
 
-export { default as Team, type TeamJsonResponse } from './models/Team'
+export { type NewTeam, default as Team, type TeamJsonResponse, type TeamUpdate } from './models/Team'
 
-export { default as Transaction, type TransactionJsonResponse } from './models/Transaction'
+export { type NewTransaction, default as Transaction, type TransactionJsonResponse, type TransactionUpdate } from './models/Transaction'
 
-export { default as User, type UserJsonResponse } from './models/User'
+export { type NewUser, default as User, type UserJsonResponse, type UserUpdate } from './models/User'
 
-export { default as WaitlistProduct, type WaitlistProductJsonResponse } from './models/WaitlistProduct'
+export { type NewWaitlistProduct, default as WaitlistProduct, type WaitlistProductJsonResponse, type WaitlistProductUpdate } from './models/WaitlistProduct'
