@@ -1,4 +1,4 @@
-import type { CategoryJsonResponse } from '../../../../orm/src/models/Category'
+import type { CategoryJsonResponse } from '@stacksjs/orm'
 import type { CategoryStats } from '../types'
 import { db } from '@stacksjs/database'
 
