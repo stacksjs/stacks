@@ -1,5 +1,4 @@
-import type { CouponRequestType } from '@stacksjs/orm'
-import type { CouponJsonResponse, NewCoupon } from '../../../../orm/src/models/Coupon'
+import type { CouponJsonResponse, CouponRequestType, NewCoupon } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

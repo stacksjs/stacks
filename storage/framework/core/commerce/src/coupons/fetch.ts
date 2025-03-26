@@ -1,5 +1,5 @@
-import type { CouponJsonResponse, CouponResponse } from '../../../../orm/src/models/Coupon'
-import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats, FetchCouponsOptions } from '../types'
+import type { CouponJsonResponse } from '@stacksjs/orm'
+import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
 
 /**
@@ -77,15 +77,18 @@ export async function fetchByCode(code: string): Promise<CouponJsonResponse | un
 /**
  * Fetch active coupons (is_active = true and within date range)
  */
-export async function fetchActive(options: FetchCouponsOptions = {}): Promise<CouponResponse> {
+export async function fetchActive(): Promise<CouponJsonResponse[]> {
   const currentDate = new Date().toISOString().split('T')[0]
 
-  return fetchPaginated({
-    ...options,
-    is_active: true,
-    from_date: currentDate,
-    to_date: currentDate,
-  })
+  const coupons = await db
+    .selectFrom('coupons')
+    .where('is_active', '=', true)
+    .where('start_date', '<=', currentDate)
+    .where('end_date', '>=', currentDate)
+    .selectAll()
+    .execute()
+
+  return coupons.map(processCouponData)
 }
 
 /**
@@ -194,12 +197,12 @@ async function fetchCountsForPeriod(
 
   // Apply date filter if startDate is provided
   if (startDate) {
-    query = query.where('created_at', '>=', startDate)
+    query = query.where('created_at', '>=', startDate.toISOString())
   }
 
   // Apply end date filter if endDate is provided
   if (endDate) {
-    query = query.where('created_at', '<=', endDate)
+    query = query.where('created_at', '<=', endDate.toISOString())
   }
 
   // Get total count
@@ -213,11 +216,11 @@ async function fetchCountsForPeriod(
 
   // Apply the same date filters as the total query if needed
   if (startDate) {
-    activeQuery = activeQuery.where('created_at', '>=', startDate)
+    activeQuery = activeQuery.where('created_at', '>=', startDate.toISOString())
   }
 
   if (endDate) {
-    activeQuery = activeQuery.where('created_at', '<=', endDate)
+    activeQuery = activeQuery.where('created_at', '<=', endDate.toISOString())
   }
 
   // Add active coupon conditions
@@ -317,21 +320,21 @@ export async function fetchRedemptionStats(): Promise<CouponRedemptionStats> {
   // Weekly redemptions (for coupons updated in the last week)
   const weekResult = await db
     .selectFrom('coupons')
-    .where('updated_at', '>=', weekStart)
+    .where('updated_at', '>=', weekStart.toISOString())
     .select(db.fn.sum('usage_count').as('total'))
     .executeTakeFirst()
 
   // Monthly redemptions
   const monthResult = await db
     .selectFrom('coupons')
-    .where('updated_at', '>=', monthStart)
+    .where('updated_at', '>=', monthStart.toISOString())
     .select(db.fn.sum('usage_count').as('total'))
     .executeTakeFirst()
 
   // Yearly redemptions
   const yearResult = await db
     .selectFrom('coupons')
-    .where('updated_at', '>=', yearStart)
+    .where('updated_at', '>=', yearStart.toISOString())
     .select(db.fn.sum('usage_count').as('total'))
     .executeTakeFirst()
 
@@ -389,8 +392,8 @@ export async function fetchRedemptionTrend(days: number = 30): Promise<any[]> {
   const coupons = await db
     .selectFrom('coupons')
     .select(['id', 'code', 'updated_at', 'usage_count'])
-    .where('updated_at', '>=', startDate)
-    .where('updated_at', '<=', endDate)
+    .where('updated_at', '>=', startDate.toISOString())
+    .where('updated_at', '<=', endDate.toISOString())
     .where('usage_count', '>', 0)
     .orderBy('updated_at', 'desc')
     .execute()
@@ -400,11 +403,8 @@ export async function fetchRedemptionTrend(days: number = 30): Promise<any[]> {
 
   coupons.forEach((coupon) => {
     // Format date as YYYY-MM-DD
-    // Format date as YYYY-MM-DD
     const dateString = coupon.updated_at
-      ? (coupon.updated_at instanceof Date
-          ? coupon.updated_at.toISOString().split('T')[0]
-          : new Date(coupon.updated_at).toISOString().split('T')[0])
+      ? new Date(coupon.updated_at).toISOString().split('T')[0]
       : 'unknown-date' // Fallback for undefined date
 
     // Add or increment the count for this date

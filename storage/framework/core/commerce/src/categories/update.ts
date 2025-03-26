@@ -1,5 +1,4 @@
-import type { CategoryRequestType } from '@stacksjs/orm'
-import type { CategoryJsonResponse } from '../../../../orm/src/models/Category'
+import type { CategoryJsonResponse, CategoryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
