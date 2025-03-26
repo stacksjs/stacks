@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../waitlist/destroy'
-import { fetchAll, fetchById } from '../waitlist/fetch'
+import { fetchAll, fetchById, fetchCountBySource } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
 
@@ -306,6 +306,75 @@ describe('Waitlist Product Module', () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
       expect(deletedCount).toBe(0)
+    })
+  })
+
+  describe('fetch', () => {
+    it('should fetch count of waitlist products grouped by source', async () => {
+      // Create test waitlist products with different sources
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 3,
+          notification_preference: 'email',
+          source: 'social_media',
+          status: 'waiting',
+          product_id: 4,
+          customer_id: 4,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch the counts by source
+      const sourceCounts = await fetchCountBySource()
+
+      // Verify the counts
+      expect(sourceCounts).toBeDefined()
+      expect(Object.keys(sourceCounts).length).toBe(3) // website, app, social_media
+
+      // Verify each source count
+      expect(sourceCounts.website).toBe(2)
+      expect(sourceCounts.app).toBe(1)
+      expect(sourceCounts.social_media).toBe(1)
+    })
+
+    it('should return empty object when no waitlist products exist', async () => {
+      const sourceCounts = await fetchCountBySource()
+      expect(sourceCounts).toBeDefined()
+      expect(Object.keys(sourceCounts).length).toBe(0)
     })
   })
 })
