@@ -1,6 +1,5 @@
 // Import dependencies
-import type { DigitalDeliveryRequestType } from '@stacksjs/orm'
-import type { DigitalDeliveryJsonResponse } from '../../../../orm/src/models/DigitalDelivery'
+import type { DigitalDeliveryJsonResponse, DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 

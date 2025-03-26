@@ -1,4 +1,4 @@
-import type { DigitalDeliveryJsonResponse } from '../../../../orm/src/models/DigitalDelivery'
+import type { DigitalDeliveryJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**

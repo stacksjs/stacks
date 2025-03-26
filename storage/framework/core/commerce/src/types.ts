@@ -1,35 +1,9 @@
 // Import the CustomerTable type from the ORM
-import type { CouponModel } from '../../../orm/src/models/Coupon'
-import type {
-  CustomerJsonResponse,
-  CustomerModel,
-  CustomersTable,
-  CustomerUpdate,
-  NewCustomer,
-} from '../../../orm/src/models/Customer'
-import type { GiftCardJsonResponse } from '../../../orm/src/models/GiftCard'
-import type { ManufacturerJsonResponse } from '../../../orm/src/models/Manufacturer'
-import type { OrderJsonResponse } from '../../../orm/src/models/Order'
-import type { OrderItemModel } from '../../../orm/src/models/OrderItem'
-import type { ReviewJsonResponse } from '../../../orm/src/models/Review'
-// Re-export the types
-export type {
-  CustomerJsonResponse,
-  CustomersTable,
-  CustomerUpdate,
-  NewCustomer,
-}
 
-// Define response structure for paginated customers
-export interface CustomerResponse {
-  data: CustomerJsonResponse[]
-  paging: {
-    total_records: number
-    page: number
-    total_pages: number
-  }
-  next_cursor: number | null
-}
+import type { CouponJsonResponse, CustomerJsonResponse, GiftCardJsonResponse, OrderItemJsonResponse } from '@stacksjs/orm'
+import type { ManufacturerJsonResponse } from '@stacksjs/orm'
+import type { OrderJsonResponse } from '@stacksjs/orm'
+import type { ReviewJsonResponse } from '@stacksjs/orm'
 
 // Define the input for creating a customer
 export interface CreateCustomerInput {
@@ -144,12 +118,12 @@ export interface CouponStats {
   }[]
 }
 export interface OrderWithTotals {
-  order_items: OrderItemModel[] | []
+  order_items: OrderItemJsonResponse[] | []
   id: number
   customer_id: number
-  customer: CustomerModel | undefined
+  customer: CustomerJsonResponse | undefined
   coupon_id: number
-  coupon: CouponModel | undefined
+  coupon: CouponJsonResponse | undefined
   status: string
   total_amount: number
   tax_amount: number | undefined
