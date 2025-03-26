@@ -79,3 +79,5 @@ export { default as Team } from './models/Team'
 export { default as Transaction } from './models/Transaction'
 
 export { default as User } from './models/User'
+
+export { default as WaitlistProduct } from './models/WaitlistProduct'

@@ -28,6 +28,16 @@ route.patch('drivers/{id}', 'DriverUpdateOrmAction')
 
 route.delete('drivers/{id}', 'DriverDestroyOrmAction')
 
+route.get('waitlist-products', 'WaitlistProductIndexOrmAction')
+
+route.post('waitlist-products', 'WaitlistProductStoreOrmAction')
+
+route.get('waitlist-products/{id}', 'WaitlistProductShowOrmAction')
+
+route.patch('waitlist-products/{id}', 'WaitlistProductUpdateOrmAction')
+
+route.delete('waitlist-products/{id}', 'WaitlistProductDestroyOrmAction')
+
 route.get('digital-deliveries', 'DigitalDeliveryIndexOrmAction')
 
 route.post('digital-deliveries', 'DigitalDeliveryStoreOrmAction')

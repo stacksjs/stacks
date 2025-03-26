@@ -6,6 +6,7 @@ import type { OrderModel } from './Order'
 import type { PaymentModel } from './Payment'
 import type { ReviewModel } from './Review'
 import type { UserModel } from './User'
+import type { WaitlistProductModel } from './WaitlistProduct'
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -207,6 +208,10 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
 
   get license_keys(): LicenseKeyModel[] | [] {
     return this.attributes.license_keys
+  }
+
+  get wait_list_products(): WaitlistProductModel[] | [] {
+    return this.attributes.wait_list_products
   }
 
   get user_id(): number {
@@ -976,6 +981,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       reviews: this.reviews,
       payments: this.payments,
       license_keys: this.license_keys,
+      wait_list_products: this.wait_list_products,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

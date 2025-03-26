@@ -6,6 +6,7 @@ import type { ManufacturerModel } from './Manufacturer'
 import type { ProductUnitModel } from './ProductUnit'
 import type { ProductVariantModel } from './ProductVariant'
 import type { ReviewModel } from './Review'
+import type { WaitlistProductModel } from './WaitlistProduct'
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -198,6 +199,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   get license_keys(): LicenseKeyModel[] | [] {
     return this.attributes.license_keys
+  }
+
+  get wait_list_products(): WaitlistProductModel[] | [] {
+    return this.attributes.wait_list_products
   }
 
   get category_id(): number {
@@ -1024,6 +1029,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       product_units: this.product_units,
       product_variants: this.product_variants,
       license_keys: this.license_keys,
+      wait_list_products: this.wait_list_products,
       category_id: this.category_id,
       category: this.category,
       manufacturer_id: this.manufacturer_id,

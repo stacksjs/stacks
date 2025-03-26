@@ -22,6 +22,7 @@ import type { ShippingZoneModel } from '../orm/src/models/ShippingZone'
 import type { TaxRateModel } from '../orm/src/models/TaxRate'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
+import type { WaitlistProductModel } from '../orm/src/models/WaitlistProduct'
 
 export interface ModelEvents {
 
@@ -37,6 +38,9 @@ export interface ModelEvents {
   'driver:created': DriverModel
   'driver:updated': DriverModel
   'driver:deleted': DriverModel
+  'waitlist-product:created': WaitlistProductModel
+  'waitlist-product:updated': WaitlistProductModel
+  'waitlist-product:deleted': WaitlistProductModel
   'digital-delivery:created': DigitalDeliveryModel
   'digital-delivery:updated': DigitalDeliveryModel
   'digital-delivery:deleted': DigitalDeliveryModel

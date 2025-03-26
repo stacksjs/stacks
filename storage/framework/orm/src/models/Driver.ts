@@ -1,5 +1,6 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { DeliveryRouteModel } from './DeliveryRoute'
 import type { UserModel } from './User'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
@@ -168,6 +169,10 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get delivery_routes(): DeliveryRouteModel[] | [] {
+    return this.attributes.delivery_routes
   }
 
   get user_id(): number {
@@ -899,6 +904,7 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
 
       updated_at: this.updated_at,
 
+      delivery_routes: this.delivery_routes,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

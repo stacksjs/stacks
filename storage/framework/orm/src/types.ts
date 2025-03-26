@@ -39,6 +39,7 @@ import type { TaxRatesTable } from '../src/models/TaxRate'
 import type { TeamsTable } from '../src/models/Team'
 import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
+import type { WaitListProductsTable } from '../src/models/WaitlistProduct'
 
 export interface TeamUsersTable {
   id?: number
@@ -85,6 +86,7 @@ export interface Database {
   categories: CategoriesTable
   payments: PaymentsTable
   drivers: DriversTable
+  wait_list_products: WaitListProductsTable
   digital_deliveries: DigitalDeliveriesTable
   manufacturers: ManufacturersTable
   order_items: OrderItemsTable

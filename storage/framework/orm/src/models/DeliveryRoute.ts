@@ -42,7 +42,7 @@ export type DeliveryRouteUpdate = Updateable<DeliveryRoutesTable>
 
 export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> {
   private readonly hidden: Array<keyof DeliveryRouteJsonResponse> = []
-  private readonly fillable: Array<keyof DeliveryRouteJsonResponse> = ['driver', 'vehicle', 'stops', 'delivery_time', 'total_distance', 'last_active', 'uuid']
+  private readonly fillable: Array<keyof DeliveryRouteJsonResponse> = ['driver', 'vehicle', 'stops', 'delivery_time', 'total_distance', 'last_active', 'uuid', 'driver_id']
   private readonly guarded: Array<keyof DeliveryRouteJsonResponse> = []
   protected attributes = {} as DeliveryRouteJsonResponse
   protected originalAttributes = {} as DeliveryRouteJsonResponse

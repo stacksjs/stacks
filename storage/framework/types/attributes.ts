@@ -46,6 +46,9 @@ export interface Attributes {
   phone: string
   vehicle_number: string
   license: string
+  party_size: number
+  notification_preference: string | string[]
+  source: string
   download_limit: number
   expiry_days: number
   requires_login: boolean
@@ -124,7 +127,6 @@ export interface Attributes {
   loyalty_points_redeemed: number
   wallet_id: string
   points: number
-  source: string
   source_reference_id: string
   is_used: boolean
   size: string

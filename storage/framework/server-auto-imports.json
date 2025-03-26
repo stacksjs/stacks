@@ -152,6 +152,7 @@
     "NewTeam": true,
     "NewTransaction": true,
     "NewUser": true,
+    "NewWaitlistProduct": true,
     "Order": true,
     "OrderItem": true,
     "OrderItemJsonResponse": true,
@@ -328,6 +329,13 @@
     "UserResponse": true,
     "UserUpdate": true,
     "UsersTable": true,
+    "WaitListProductsTable": true,
+    "WaitlistProduct": true,
+    "WaitlistProductJsonResponse": true,
+    "WaitlistProductModel": true,
+    "WaitlistProductRequest": true,
+    "WaitlistProductResponse": true,
+    "WaitlistProductUpdate": true,
     "accessTokenRequest": true,
     "categoryRequest": true,
     "couponRequest": true,
@@ -368,6 +376,7 @@
     "taxRateRequest": true,
     "teamRequest": true,
     "transactionRequest": true,
-    "userRequest": true
+    "userRequest": true,
+    "waitlistProductRequest": true
   }
 }

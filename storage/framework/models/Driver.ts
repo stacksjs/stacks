@@ -8,6 +8,8 @@ export default {
   autoIncrement: true,
 
   belongsTo: ['User'],
+  hasMany: ['DeliveryRoute'],
+
   traits: {
     useUuid: true,
     useTimestamps: true,
