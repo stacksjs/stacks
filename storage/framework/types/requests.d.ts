@@ -96,6 +96,7 @@ interface RequestDataTeam {
   description: string
   path: string
   is_personal: boolean
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -112,6 +113,7 @@ export interface TeamRequestType extends Request {
   description: string
   path: string
   is_personal: boolean
+  user_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -188,6 +190,7 @@ interface RequestDataUser {
   email: string
   job_title: string
   password: string
+  team_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -200,6 +203,7 @@ export interface UserRequestType extends Request {
   email: string
   job_title: string
   password: string
+  team_id: number
   created_at?: Date
   updated_at?: Date
 }

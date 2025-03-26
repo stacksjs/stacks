@@ -1398,7 +1398,7 @@ async function writeModelOrmImports(modelFiles: string[]): Promise<void> {
 
     const modelName = getModelName(model, modelFile)
 
-    ormImportString += `export { default as ${modelName} } from './${modelName}'\n\n`
+    ormImportString += `export { default as ${modelName} } from './models/${modelName}'\n\n`
   }
 
   const file = Bun.file(path.frameworkPath(`orm/src/index.ts`))

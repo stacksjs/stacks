@@ -58,7 +58,7 @@ export type UserUpdate = Updateable<UsersTable>
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
-  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key']
+  private readonly fillable: Array<keyof UserJsonResponse> = ['name', 'email', 'job_title', 'password', 'stripe_id', 'uuid', 'two_factor_secret', 'public_key', 'team_id']
   private readonly guarded: Array<keyof UserJsonResponse> = []
   protected attributes = {} as UserJsonResponse
   protected originalAttributes = {} as UserJsonResponse
