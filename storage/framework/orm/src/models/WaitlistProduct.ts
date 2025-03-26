@@ -21,6 +21,7 @@ export interface WaitListProductsTable {
   notification_preference: string | string[]
   source: string
   notes?: string
+  status: string | string[]
   uuid?: string
 
   created_at?: string
@@ -48,7 +49,7 @@ export type WaitlistProductUpdate = Updateable<WaitListProductsTable>
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitListProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'uuid', 'customer_id', 'product_id']
+  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []
   protected attributes = {} as WaitlistProductJsonResponse
   protected originalAttributes = {} as WaitlistProductJsonResponse
@@ -226,6 +227,10 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return this.attributes.notes
   }
 
+  get status(): string | string[] {
+    return this.attributes.status
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -264,6 +269,10 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 
   set notes(value: string) {
     this.attributes.notes = value
+  }
+
+  set status(value: string | string[]) {
+    this.attributes.status = value
   }
 
   set updated_at(value: string) {
@@ -884,6 +893,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance
   }
 
+  static whereStatus(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('status', '=', value)
+
+    return instance
+  }
+
   static whereIn<V = number>(column: keyof WaitListProductsTable, values: V[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
@@ -928,6 +945,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
       notification_preference: this.notification_preference,
       source: this.source,
       notes: this.notes,
+      status: this.status,
     }
   }
 
@@ -956,6 +974,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
       notification_preference: this.notification_preference,
       source: this.source,
       notes: this.notes,
+      status: this.status,
 
       created_at: this.created_at,
 
@@ -1075,6 +1094,13 @@ export async function whereSource(value: string): Promise<WaitlistProductModel[]
 
 export async function whereNotes(value: string): Promise<WaitlistProductModel[]> {
   const query = DB.instance.selectFrom('wait_list_products').where('notes', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
+
+export async function whereStatus(value: string | string[]): Promise<WaitlistProductModel[]> {
+  const query = DB.instance.selectFrom('wait_list_products').where('status', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))

@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes'],
+      displayable: ['id', 'name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status'],
       searchable: ['name', 'email', 'phone', 'source'],
-      sortable: ['name', 'party_size', 'created_at', 'updated_at'],
-      filterable: ['notification_preference', 'source'],
+      sortable: ['name', 'party_size', 'created_at', 'updated_at', 'status'],
+      filterable: ['notification_preference', 'source', 'status'],
     },
 
     useSeeder: {
@@ -102,7 +102,7 @@ export default {
           maxLength: 'Source must have a maximum of 100 characters',
         },
       },
-      factory: faker => faker.helpers.arrayElement(['website', 'social_media', 'referral', 'other']),
+      factory: faker => faker.helpers.arrayElement(['website', 'social_media', 'in-store', 'email', 'app', 'referral', 'other']),
     },
 
     notes: {
@@ -113,6 +113,17 @@ export default {
         rule: schema.string().optional(),
       },
       factory: faker => faker.lorem.paragraph(),
+    },
+
+    status: {
+      required: true,
+      default: 'waiting',
+      order: 8,
+      fillable: true,
+      validation: {
+        rule: schema.enum(['waiting', 'purchased', 'notified', 'cancelled'] as const),
+      },
+      factory: faker => faker.helpers.arrayElement(['waiting', 'purchased', 'notified', 'cancelled']),
     },
   },
 
