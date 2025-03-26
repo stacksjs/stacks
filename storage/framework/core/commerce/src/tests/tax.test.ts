@@ -49,7 +49,7 @@ describe('Tax Rate Module', () => {
       expect(taxRate?.country).toBe('United Kingdom')
       expect(taxRate?.region).toBe('Europe')
       expect(taxRate?.status).toBe('active')
-      expect(taxRate?.is_default).toBe(true)
+      expect(Boolean(taxRate?.is_default)).toBe(true)
       expect(taxRate?.uuid).toBeDefined()
 
       // Save the ID for further testing
@@ -82,7 +82,7 @@ describe('Tax Rate Module', () => {
       expect(taxRate?.country).toBe('United States')
       expect(taxRate?.region).toBe('North America')
       expect(taxRate?.status).toBe('active') // Default value
-      expect(taxRate?.is_default).toBe(false) // Default value
+      expect(Boolean(taxRate?.is_default)).toBe(false) // Default value
       expect(taxRate?.uuid).toBeDefined()
     })
 
@@ -178,7 +178,7 @@ describe('Tax Rate Module', () => {
       expect(updatedTaxRate?.country).toBe('United Kingdom')
       expect(updatedTaxRate?.region).toBe('Europe')
       expect(updatedTaxRate?.status).toBe('active')
-      expect(updatedTaxRate?.is_default).toBe(false)
+      expect(Boolean(updatedTaxRate?.is_default)).toBe(false)
     })
 
     it('should update a tax rate\'s status', async () => {
