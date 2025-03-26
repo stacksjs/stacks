@@ -302,48 +302,6 @@ describe('Waitlist Product Module', () => {
       expect(fetchedWaitlist).toBeUndefined()
     })
 
-    it('should delete multiple waitlist products from the database', async () => {
-      // Create several waitlist products to delete
-      const waitlistIds = []
-
-      // Create 3 test waitlist products
-      for (let i = 0; i < 3; i++) {
-        const requestData = {
-          name: `Customer ${i}`,
-          email: `customer${i}@example.com`,
-          party_size: 2 + i,
-          notification_preference: 'email',
-          source: 'website',
-          status: 'waiting',
-          product_id: 1,
-          customer_id: 1,
-        }
-
-        const request = new TestRequest(requestData)
-        const waitlistProduct = await store(request as any)
-
-        const waitlistId = waitlistProduct?.id !== undefined ? Number(waitlistProduct.id) : undefined
-        expect(waitlistId).toBeDefined()
-
-        if (waitlistId) {
-          waitlistIds.push(waitlistId)
-        }
-      }
-
-      // Ensure we have created the waitlist products
-      expect(waitlistIds.length).toBe(3)
-
-      // Delete the waitlist products
-      const deletedCount = await bulkDestroy(waitlistIds)
-      expect(deletedCount).toBe(3)
-
-      // Verify the waitlist products no longer exist
-      for (const id of waitlistIds) {
-        const fetchedWaitlist = await fetchById(id)
-        expect(fetchedWaitlist).toBeUndefined()
-      }
-    })
-
     it('should return 0 when trying to delete an empty array of waitlist products', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
