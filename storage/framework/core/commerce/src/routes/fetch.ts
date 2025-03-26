@@ -25,7 +25,7 @@ export async function fetchAll(): Promise<DeliveryRouteJsonResponse[]> {
 export async function fetchActive(): Promise<DeliveryRouteJsonResponse[]> {
   return await db
     .selectFrom('delivery_routes')
-    .where('last_active', '>=', new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
+    .where('last_active', '<=', new Date(Date.now() - 24 * 60 * 60 * 1000)) // Last 24 hours
     .selectAll()
     .execute()
 }
