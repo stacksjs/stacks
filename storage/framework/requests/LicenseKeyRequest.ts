@@ -26,9 +26,9 @@ interface RequestDataLicenseKey {
 export class LicenseKeyRequest extends Request<RequestDataLicenseKey> implements LicenseKeyRequestType {
   public id = 1
   public key = ''
-  public template = ''
+  public template = []
   public expiry_date = ''
-  public status = ''
+  public status = []
   public customer_id = 0
   public product_id = 0
   public order_id = 0

@@ -27,7 +27,7 @@ interface RequestDataRequest {
 }
 export class RequestRequest extends Request<RequestDataRequest> implements RequestRequestType {
   public id = 1
-  public method = ''
+  public method = []
   public path = ''
   public status_code = 0
   public duration_ms = 0

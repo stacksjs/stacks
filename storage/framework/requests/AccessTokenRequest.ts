@@ -32,7 +32,7 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public name = ''
   public token = ''
   public plain_text_token = ''
-  public abilities = ''
+  public abilities = []
   public last_used_at = ''
   public expires_at = ''
   public revoked_at = ''

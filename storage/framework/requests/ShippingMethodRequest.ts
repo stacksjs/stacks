@@ -27,7 +27,7 @@ export class ShippingMethodRequest extends Request<RequestDataShippingMethod> im
   public description = ''
   public base_rate = 0
   public free_shipping = 0
-  public status = ''
+  public status = []
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

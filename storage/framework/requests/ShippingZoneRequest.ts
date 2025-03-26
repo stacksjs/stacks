@@ -28,7 +28,7 @@ export class ShippingZoneRequest extends Request<RequestDataShippingZone> implem
   public countries = ''
   public regions = ''
   public postal_codes = ''
-  public status = ''
+  public status = []
   public shipping_method_id = 0
   public created_at = new Date()
   public updated_at = new Date()

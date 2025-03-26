@@ -28,7 +28,7 @@ export class DriverRequest extends Request<RequestDataDriver> implements DriverR
   public phone = ''
   public vehicle_number = ''
   public license = ''
-  public status = ''
+  public status = []
   public user_id = 0
   public created_at = new Date()
   public updated_at = new Date()

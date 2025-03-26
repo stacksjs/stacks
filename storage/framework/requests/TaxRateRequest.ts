@@ -29,8 +29,8 @@ export class TaxRateRequest extends Request<RequestDataTaxRate> implements TaxRa
   public rate = 0
   public type = ''
   public country = ''
-  public region = ''
-  public status = ''
+  public region = []
+  public status = []
   public is_default = false
   public created_at = new Date()
   public updated_at = new Date()

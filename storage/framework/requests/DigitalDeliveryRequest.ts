@@ -31,7 +31,7 @@ export class DigitalDeliveryRequest extends Request<RequestDataDigitalDelivery> 
   public expiry_days = 0
   public requires_login = false
   public automatic_delivery = false
-  public status = ''
+  public status = []
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

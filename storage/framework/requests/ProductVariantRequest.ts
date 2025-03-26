@@ -28,7 +28,7 @@ export class ProductVariantRequest extends Request<RequestDataProductVariant> im
   public type = ''
   public description = ''
   public options = ''
-  public status = ''
+  public status = []
   public product_id = 0
   public created_at = new Date()
   public updated_at = new Date()

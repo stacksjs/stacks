@@ -687,12 +687,14 @@ export async function writeModelRequest(): Promise<void> {
     // Group attributes by their entity type
     for (const attribute of attributes) {
       const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
-      let defaultValue: any = `''`
+      let defaultValue: string | boolean | number | string[] = `''`
 
       if (attribute.fieldArray?.entity === 'boolean')
         defaultValue = false
       if (attribute.fieldArray?.entity === 'number')
         defaultValue = 0
+      if (attribute.fieldArray?.entity === 'enum')
+        defaultValue = '[]'
 
       // Convert the field name to snake_case
       const snakeField = snakeCase(attribute.field)

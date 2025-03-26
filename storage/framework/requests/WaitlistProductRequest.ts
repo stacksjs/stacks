@@ -32,10 +32,10 @@ export class WaitlistProductRequest extends Request<RequestDataWaitlistProduct> 
   public email = ''
   public phone = ''
   public party_size = 0
-  public notification_preference = ''
+  public notification_preference = []
   public source = ''
   public notes = ''
-  public status = ''
+  public status = []
   public customer_id = 0
   public product_id = 0
   public created_at = new Date()

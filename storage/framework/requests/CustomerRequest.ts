@@ -31,7 +31,7 @@ export class CustomerRequest extends Request<RequestDataCustomer> implements Cus
   public phone = ''
   public total_spent = 0
   public last_order = ''
-  public status = ''
+  public status = []
   public avatar = ''
   public user_id = 0
   public created_at = new Date()
