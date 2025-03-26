@@ -15,6 +15,7 @@ import * as tax from './tax'
 import * as unit from './unit'
 import * as variants from './variants'
 import * as zones from './zones'
+import * as waitlist from './waitlist'
 
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
@@ -32,6 +33,7 @@ type DriversModule = typeof drivers
 type LicensesModule = typeof licenses
 type DigitalModule = typeof digital
 type TaxModule = typeof tax
+type WaitlistModule = typeof waitlist
 export interface EcommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
@@ -49,6 +51,7 @@ export interface EcommerceNamespace {
   licenses: LicensesModule
   digital: DigitalModule
   tax: TaxModule
+  waitlist: WaitlistModule
 }
 
 export const ecommerce: EcommerceNamespace = {
@@ -68,6 +71,7 @@ export const ecommerce: EcommerceNamespace = {
   unit,
   digital,
   tax,
+  waitlist,
 }
 
 export default ecommerce
@@ -89,4 +93,5 @@ export {
   unit,
   variants,
   zones,
+  waitlist,
 }
