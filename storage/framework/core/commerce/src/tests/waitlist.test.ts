@@ -1,8 +1,19 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, type WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../waitlist/destroy'
-import { fetchAll, fetchById, fetchCountByAllQuantities, fetchCountByDate, fetchCountByQuantity, fetchCountBySource } from '../waitlist/fetch'
+import { 
+  fetchAll, 
+  fetchById, 
+  fetchCountByAllQuantities, 
+  fetchCountByDate, 
+  fetchCountByQuantity, 
+  fetchCountBySource,
+  fetchBetweenDates,
+  fetchNotifiedBetweenDates,
+  fetchPurchasedBetweenDates,
+  fetchCancelledBetweenDates
+} from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
 
@@ -561,6 +572,217 @@ describe('Waitlist Product Module', () => {
       const quantityCounts = await fetchCountByAllQuantities()
       expect(quantityCounts).toBeDefined()
       expect(Object.keys(quantityCounts).length).toBe(0)
+    })
+
+    it('should fetch waitlist products between two dates', async () => {
+      // Create test dates using today
+      const today = new Date()
+      const startDate = new Date(today.setHours(0, 0, 0, 0))
+      const endDate = new Date(today.setHours(23, 59, 59, 999))
+
+      // Create test waitlist products
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch waitlists between dates
+      const waitlists = await fetchBetweenDates(startDate, endDate)
+      expect(waitlists).toBeDefined()
+      expect(waitlists.length).toBe(3) // All entries should be within the date range since they're created now
+      expect(waitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
+      expect(waitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
+      expect(waitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Bob Wilson')
+    })
+
+    it('should fetch notified waitlist products between two dates', async () => {
+      // Create test dates using today
+      const today = new Date()
+      const startDate = new Date(today.setHours(0, 0, 0, 0))
+      const endDate = new Date(today.setHours(23, 59, 59, 999))
+
+      // Create test waitlist products with different notification dates
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'notified',
+          product_id: 1,
+          customer_id: 1,
+          notified_at: formatDate(startDate),
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'notified',
+          product_id: 2,
+          customer_id: 2,
+          notified_at: formatDate(endDate),
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch notified waitlists between dates
+      const notifiedWaitlists = await fetchNotifiedBetweenDates(startDate, endDate)
+      expect(notifiedWaitlists).toBeDefined()
+      expect(notifiedWaitlists.length).toBe(2)
+      expect(notifiedWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
+      expect(notifiedWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
+    })
+
+    it('should fetch purchased waitlist products between two dates', async () => {
+      // Create test dates using today
+      const today = new Date()
+      const startDate = new Date(today.setHours(0, 0, 0, 0))
+      const endDate = new Date(today.setHours(23, 59, 59, 999))
+
+      // Create test waitlist products with different purchase dates
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'purchased',
+          product_id: 1,
+          customer_id: 1,
+          purchased_at: formatDate(startDate),
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'purchased',
+          product_id: 2,
+          customer_id: 2,
+          purchased_at: formatDate(endDate),
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch purchased waitlists between dates
+      const purchasedWaitlists = await fetchPurchasedBetweenDates(startDate, endDate)
+      expect(purchasedWaitlists).toBeDefined()
+      expect(purchasedWaitlists.length).toBe(2)
+      expect(purchasedWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
+      expect(purchasedWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
+    })
+
+    it('should fetch cancelled waitlist products between two dates', async () => {
+      // Create test dates using today
+      const today = new Date()
+      const startDate = new Date(today.setHours(0, 0, 0, 0))
+      const endDate = new Date(today.setHours(23, 59, 59, 999))
+
+      // Create test waitlist products with different cancellation dates
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'cancelled',
+          product_id: 1,
+          customer_id: 1,
+          cancelled_at: formatDate(startDate),
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'cancelled',
+          product_id: 2,
+          customer_id: 2,
+          cancelled_at: formatDate(endDate),
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch cancelled waitlists between dates
+      const cancelledWaitlists = await fetchCancelledBetweenDates(startDate, endDate)
+      expect(cancelledWaitlists).toBeDefined()
+      expect(cancelledWaitlists.length).toBe(2)
+      expect(cancelledWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
+      expect(cancelledWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
     })
   })
 })

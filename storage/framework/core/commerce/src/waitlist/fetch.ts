@@ -144,3 +144,47 @@ export async function fetchNotifiedBetweenDates(
     .where('notified_at', 'is not', null)
     .execute()
 }
+
+/**
+ * Fetch waitlist products that were purchased between two dates
+ * @param startDate The start date of the range
+ * @param endDate The end date of the range
+ * @returns Array of waitlist products that were purchased within the date range
+ */
+export async function fetchPurchasedBetweenDates(
+  startDate: Date,
+  endDate: Date,
+): Promise<WaitlistProductJsonResponse[]> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
+  return await db
+    .selectFrom('wait_list_products')
+    .selectAll()
+    .where('purchased_at', '>=', startDateStr)
+    .where('purchased_at', '<=', endDateStr)
+    .where('purchased_at', 'is not', null)
+    .execute()
+}
+
+/**
+ * Fetch waitlist products that were cancelled between two dates
+ * @param startDate The start date of the range
+ * @param endDate The end date of the range
+ * @returns Array of waitlist products that were cancelled within the date range
+ */
+export async function fetchCancelledBetweenDates(
+  startDate: Date,
+  endDate: Date,
+): Promise<WaitlistProductJsonResponse[]> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
+  return await db
+    .selectFrom('wait_list_products')
+    .selectAll()
+    .where('cancelled_at', '>=', startDateStr)
+    .where('cancelled_at', '<=', endDateStr)
+    .where('cancelled_at', 'is not', null)
+    .execute()
+}

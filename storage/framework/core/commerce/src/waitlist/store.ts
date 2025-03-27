@@ -26,6 +26,9 @@ export async function store(request: WaitlistProductRequestType): Promise<Waitli
       product_id: Number(request.get('product_id')),
       customer_id: Number(request.get('customer_id')),
       uuid: randomUUIDv7(),
+      notified_at: request.get('notified_at'),
+      purchased_at: request.get('purchased_at'),
+      cancelled_at: request.get('cancelled_at'),
     }
 
     // Insert the waitlist product
@@ -86,6 +89,9 @@ export async function bulkStore(requests: WaitlistProductRequestType[]): Promise
           product_id: Number(request.get('product_id')),
           customer_id: Number(request.get('customer_id')),
           uuid: randomUUIDv7(),
+          notified_at: request.get('notified_at'),
+          purchased_at: request.get('purchased_at'),
+          cancelled_at: request.get('cancelled_at'),
         }
 
         // Insert the waitlist product
