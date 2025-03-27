@@ -99,7 +99,7 @@ jobs:
         run: |
           echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
 
-      - name: Create Homebrew Tap Repository
+      - name: Ensure Homebrew Tap Repository Exists
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
