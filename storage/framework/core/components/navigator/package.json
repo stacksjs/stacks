@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/navigator",
   "type": "module",
-  "version": "0.70.15",
+  "version": "0.70.16",
   "description": "An opinionated navigator component.",
   "author": "Zoltan",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],

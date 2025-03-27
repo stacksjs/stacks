@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/components",
   "type": "module",
-  "version": "0.70.15",
+  "version": "0.70.16",
   "description": "The Stacks component libraries.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
