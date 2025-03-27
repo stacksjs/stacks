@@ -14,6 +14,7 @@ import {
   fetchCountBySource,
   fetchNotifiedBetweenDates,
   fetchPurchasedBetweenDates,
+  fetchWaiting,
 } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
@@ -784,6 +785,62 @@ describe('Waitlist Product Module', () => {
       expect(cancelledWaitlists.length).toBe(2)
       expect(cancelledWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
       expect(cancelledWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
+    })
+
+    it('should fetch all waitlist products with waiting status', async () => {
+      // Create test waitlist products with different statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'notified',
+          product_id: 3,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 3,
+          notification_preference: 'email',
+          source: 'social_media',
+          status: 'purchased',
+          product_id: 4,
+          customer_id: 4,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch waitlists with waiting status
+      const waitingWaitlists = await fetchWaiting()
+      expect(waitingWaitlists).toBeDefined()
+      expect(waitingWaitlists.length).toBe(2)
+      expect(waitingWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
+      expect(waitingWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
     })
   })
 })

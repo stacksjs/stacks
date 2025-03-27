@@ -188,3 +188,15 @@ export async function fetchCancelledBetweenDates(
     .where('cancelled_at', 'is not', null)
     .execute()
 }
+
+/**
+ * Fetch all waitlist products with waiting status
+ * @returns Array of waitlist products with waiting status
+ */
+export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
+  return await db
+    .selectFrom('wait_list_products')
+    .selectAll()
+    .where('status', '=', 'waiting')
+    .execute()
+}
