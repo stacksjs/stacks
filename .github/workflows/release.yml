@@ -1,4 +1,4 @@
-name: Releaser
+name: Release
 
 on:
   push:
@@ -88,39 +88,78 @@ jobs:
           echo "Tag: ${GITHUB_REF#refs/tags/}"
           echo "Version from previous job: ${{ needs.release.outputs.version }}"
 
-      - name: Setup GitHub CLI
+      - name: Ensure Homebrew Tap Repository Exists
         run: |
-          brew install gh
-          echo "${{ secrets.PAT_TOKEN }}" | gh auth login --with-token
+          if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
+            gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for Release Assets
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "Waiting for release assets to be available..."
 
-          # Wait for assets to be available (max 5 minutes)
-          TIMEOUT=300
+          # Wait for assets to be available (max 10 minutes)
+          TIMEOUT=600
           START_TIME=$(date +%s)
 
           while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
-            if curl -s -I "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" | grep -q "HTTP/2 200"; then
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64)
+            echo "HTTP response code: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
               echo "Assets are available!"
               break
             fi
+
             echo "Assets not ready yet, waiting 10 seconds..."
             sleep 10
           done
 
           if [ $(( $(date +%s) - START_TIME )) -ge $TIMEOUT ]; then
-            echo "Timed out waiting for assets"
-            exit 1
+            echo "Timed out waiting for assets, proceeding anyway..."
           fi
 
-      - name: Ensure Homebrew Tap Repository Exists
+          # Force continue even if we couldn't detect the file
+          # Sometimes GitHub's API can be inconsistent
+          echo "Continuing with asset download..."
+
+      - name: Download Binaries Directly
         run: |
-          if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
-            gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
-          fi
+          VERSION=${GITHUB_REF#refs/tags/}
+          mkdir -p .github/temp
+          cd .github/temp
+
+          # Try direct download with retries
+          download_with_retry() {
+            local url=$1
+            local output=$2
+            local max_retries=5
+            local retry=0
+
+            while [ $retry -lt $max_retries ]; do
+              echo "Downloading $url (attempt $(($retry + 1))/$max_retries)"
+              if curl -L -s -f "$url" -o "$output"; then
+                echo "Downloaded $output successfully"
+                return 0
+              fi
+              echo "Download failed, retrying in 5 seconds..."
+              retry=$((retry + 1))
+              sleep 5
+            done
+
+            echo "Failed to download $url after $max_retries attempts"
+            return 1
+          }
+
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" "buddy-darwin-arm64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" "buddy-darwin-x64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" "buddy-linux-arm64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" "buddy-linux-x64"
+
+          cd ../..
 
       - name: Update Homebrew Formula
         run: |
@@ -129,8 +168,8 @@ jobs:
 
       - name: Push to Homebrew Tap Repository
         run: |
-          # Clone the tap repo using PAT for authentication
-          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/stacksjs/homebrew-tap.git
+          # Clone the tap repo using GitHub token
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/stacksjs/homebrew-tap.git
 
           # Set up Git config
           cd homebrew-tap
@@ -151,3 +190,5 @@ jobs:
           else
             echo "No changes to commit"
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

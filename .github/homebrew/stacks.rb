@@ -1,7 +1,7 @@
 class Stacks < Formula
   desc "Meet Buddy. The Stacks runtime."
   homepage "https://github.com/stacksjs/stacks"
-  version "0.70.11"
+  version "0.70.15"
   license "MIT"
 
   on_macos do

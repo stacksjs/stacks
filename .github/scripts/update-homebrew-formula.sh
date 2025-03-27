@@ -23,24 +23,30 @@ if [ ! -f "$FORMULA_FILE" ]; then
   exit 1
 fi
 
-echo "Creating temporary directory for binary downloads"
-# Download the binaries to calculate their SHA256
-mkdir -p .github/temp
-cd .github/temp
+# Check if files were already downloaded by the GitHub workflow
+if [ -f ".github/temp/buddy-darwin-arm64" ] && [ -f ".github/temp/buddy-darwin-x64" ] && [ -f ".github/temp/buddy-linux-arm64" ] && [ -f ".github/temp/buddy-linux-x64" ]; then
+  echo "Using pre-downloaded binaries in .github/temp/"
+  cd .github/temp
+else
+  echo "Creating temporary directory for binary downloads"
+  # Download the binaries to calculate their SHA256
+  mkdir -p .github/temp
+  cd .github/temp
 
-echo "Downloading binaries from GitHub release"
-curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" -o buddy-darwin-arm64
-curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" -o buddy-darwin-x64
-curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" -o buddy-linux-arm64
-curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" -o buddy-linux-x64
+  echo "Downloading binaries from GitHub release"
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" -o buddy-darwin-arm64
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" -o buddy-darwin-x64
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" -o buddy-linux-arm64
+  curl -sL "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" -o buddy-linux-x64
 
-# Verify downloads
-for file in buddy-darwin-arm64 buddy-darwin-x64 buddy-linux-arm64 buddy-linux-x64; do
-  if [ ! -f "$file" ] || [ ! -s "$file" ]; then
-    echo "Error: Failed to download $file"
-    exit 1
-  fi
-done
+  # Verify downloads
+  for file in buddy-darwin-arm64 buddy-darwin-x64 buddy-linux-arm64 buddy-linux-x64; do
+    if [ ! -f "$file" ] || [ ! -s "$file" ]; then
+      echo "Error: Failed to download $file"
+      exit 1
+    fi
+  done
+fi
 
 echo "Calculating SHA256 checksums"
 # Calculate SHA256 checksums
@@ -67,4 +73,5 @@ echo "SHA256 linux-x64: $SHA_LINUX_X64"
 
 # Clean up
 echo "Cleaning up temporary files"
-rm -rf .github/temp
+# Do not remove the temp directory as it might be needed by other steps
+# rm -rf .github/temp
