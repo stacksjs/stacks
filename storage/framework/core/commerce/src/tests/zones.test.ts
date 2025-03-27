@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../zones/destroy'
+import { bulkDestroy, destroy } from '../zones/destroy'
 import { fetchById } from '../zones/fetch'
-import { bulkStore, formatZoneOptions, getActiveShippingZones, getZonesByCountry, store } from '../zones/store'
+import { bulkStore, store } from '../zones/store'
+import { formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../zones/fetch'
 import { update, updateCountries, updateRegionsAndPostalCodes, updateStatus } from '../zones/update'
 
 // Create a request-like object for testing
@@ -378,40 +379,6 @@ describe('Shipping Zone Module', () => {
       expect(fetchedZone).toBeUndefined()
     })
 
-    it('should soft delete a shipping zone', async () => {
-      // Create a zone
-      const requestData = {
-        name: 'Zone to Soft Delete',
-        countries: JSON.stringify(['CA']),
-        status: 'active',
-        shipping_method_id: 1,
-      }
-
-      // Create the zone
-      const request = new TestRequest(requestData)
-      const zone = await store(request as any)
-      const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
-
-      expect(zoneId).toBeDefined()
-      if (!zoneId) {
-        throw new Error('Failed to create test shipping zone')
-      }
-
-      // Soft delete the zone
-      const result = await softDelete(zoneId)
-      expect(result).toBe(true)
-
-      // Verify the zone still exists but is inactive
-      const fetchedZone = await fetchById(zoneId)
-      expect(fetchedZone).toBeDefined()
-      expect(fetchedZone?.status).toBe('inactive')
-
-      // Verify the soft-deleted zone doesn't appear in active zones
-      const activeZones = await getActiveShippingZones()
-      const foundZone = activeZones.find(z => Number(z.id) === zoneId)
-      expect(foundZone).toBeUndefined()
-    })
-
     it('should delete multiple shipping zones from the database', async () => {
       // Create several zones to delete
       const zoneIds = []
@@ -450,61 +417,9 @@ describe('Shipping Zone Module', () => {
       }
     })
 
-    it('should soft delete multiple shipping zones', async () => {
-      // Create several zones to soft delete
-      const zoneIds = []
-
-      // Create 3 test zones
-      for (let i = 0; i < 3; i++) {
-        const requestData = {
-          name: `Bulk Soft Delete Zone ${i}`,
-          countries: JSON.stringify(['US']),
-          status: 'active',
-          shipping_method_id: 1,
-        }
-
-        const request = new TestRequest(requestData)
-        const zone = await store(request as any)
-
-        const zoneId = zone?.id !== undefined ? Number(zone.id) : undefined
-        expect(zoneId).toBeDefined()
-
-        if (zoneId) {
-          zoneIds.push(zoneId)
-        }
-      }
-
-      // Ensure we have created the zones
-      expect(zoneIds.length).toBe(3)
-
-      // Soft delete the zones
-      const deletedCount = await bulkSoftDelete(zoneIds)
-      expect(deletedCount).toBe(3)
-
-      // Verify the zones still exist but are inactive
-      for (const id of zoneIds) {
-        const fetchedZone = await fetchById(id)
-        expect(fetchedZone).toBeDefined()
-        expect(fetchedZone?.status).toBe('inactive')
-      }
-
-      // Verify none of the soft-deleted zones appear in active zones
-      const activeZones = await getActiveShippingZones()
-      for (const id of zoneIds) {
-        const foundZone = activeZones.find(z => Number(z.id) === id)
-        expect(foundZone).toBeUndefined()
-      }
-    })
-
     it('should return 0 when trying to delete an empty array of zones', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
-      expect(deletedCount).toBe(0)
-    })
-
-    it('should return 0 when trying to soft delete an empty array of zones', async () => {
-      // Try to soft delete with an empty array
-      const deletedCount = await bulkSoftDelete([])
       expect(deletedCount).toBe(0)
     })
   })

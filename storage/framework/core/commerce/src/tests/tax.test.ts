@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../tax/destroy'
+import { bulkDestroy, destroy } from '../tax/destroy'
 import { fetchAll, fetchById } from '../tax/fetch'
 import { bulkStore, store } from '../tax/store'
 import { update, updateRate, updateStatus } from '../tax/update'
@@ -279,38 +279,6 @@ describe('Tax Rate Module', () => {
       expect(fetchedTaxRate).toBeUndefined()
     })
 
-    it('should soft delete a tax rate', async () => {
-      // Create a tax rate
-      const requestData = {
-        name: 'Standard VAT',
-        rate: 20,
-        type: 'VAT',
-        country: 'United Kingdom',
-        region: 'Europe',
-        status: 'active',
-        is_default: true,
-      }
-
-      // Create the tax rate
-      const request = new TestRequest(requestData)
-      const taxRate = await store(request as any)
-      const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
-
-      expect(taxRateId).toBeDefined()
-      if (!taxRateId) {
-        throw new Error('Failed to create test tax rate')
-      }
-
-      // Soft delete the tax rate
-      const result = await softDelete(taxRateId)
-      expect(result).toBe(true)
-
-      // Verify the tax rate still exists but is inactive
-      const fetchedTaxRate = await fetchById(taxRateId)
-      expect(fetchedTaxRate).toBeDefined()
-      expect(fetchedTaxRate?.status).toBe('inactive')
-    })
-
     it('should delete multiple tax rates from the database', async () => {
       // Create several tax rates to delete
       const taxRateIds = []
@@ -352,57 +320,9 @@ describe('Tax Rate Module', () => {
       }
     })
 
-    it('should soft delete multiple tax rates', async () => {
-      // Create several tax rates to soft delete
-      const taxRateIds = []
-
-      // Create 3 test tax rates
-      for (let i = 0; i < 3; i++) {
-        const requestData = {
-          name: `Tax Rate ${i}`,
-          rate: 20 + i,
-          type: 'VAT',
-          country: 'United Kingdom',
-          region: 'Europe',
-          status: 'active',
-          is_default: false,
-        }
-
-        const request = new TestRequest(requestData)
-        const taxRate = await store(request as any)
-
-        const taxRateId = taxRate?.id !== undefined ? Number(taxRate.id) : undefined
-        expect(taxRateId).toBeDefined()
-
-        if (taxRateId) {
-          taxRateIds.push(taxRateId)
-        }
-      }
-
-      // Ensure we have created the tax rates
-      expect(taxRateIds.length).toBe(3)
-
-      // Soft delete the tax rates
-      const deletedCount = await bulkSoftDelete(taxRateIds)
-      expect(deletedCount).toBe(3)
-
-      // Verify the tax rates still exist but are inactive
-      for (const id of taxRateIds) {
-        const fetchedTaxRate = await fetchById(id)
-        expect(fetchedTaxRate).toBeDefined()
-        expect(fetchedTaxRate?.status).toBe('inactive')
-      }
-    })
-
     it('should return 0 when trying to delete an empty array of tax rates', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
-      expect(deletedCount).toBe(0)
-    })
-
-    it('should return 0 when trying to soft delete an empty array of tax rates', async () => {
-      // Try to soft delete with an empty array
-      const deletedCount = await bulkSoftDelete([])
       expect(deletedCount).toBe(0)
     })
   })

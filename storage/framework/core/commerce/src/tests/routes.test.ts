@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy } from '../routes/destroy'
+import { bulkDestroy, destroy } from '../routes/destroy'
 import { fetchByDriver, fetchById } from '../routes/fetch'
 import { store } from '../routes/store'
 import { update, updateMetrics, updateStops } from '../routes/update'
@@ -294,12 +294,6 @@ describe('Delivery Route Module', () => {
     it('should return 0 when trying to delete an empty array of routes', async () => {
       // Try to delete with an empty array
       const deletedCount = await bulkDestroy([])
-      expect(deletedCount).toBe(0)
-    })
-
-    it('should return 0 when trying to soft delete an empty array of routes', async () => {
-      // Try to soft delete with an empty array
-      const deletedCount = await bulkSoftDelete([])
       expect(deletedCount).toBe(0)
     })
   })
