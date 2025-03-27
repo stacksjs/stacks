@@ -1,4 +1,4 @@
-import type { CouponJsonResponse } from '@stacksjs/orm'
+import { formatDate, type CouponJsonResponse } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
 
@@ -102,7 +102,7 @@ export async function fetchStats(): Promise<CouponStats> {
     .executeTakeFirst()
 
   // Active coupons
-  const currentDate = new Date().toISOString().split('T')[0]
+  const currentDate = formatDate(new Date())
   const activeCoupons = await db
     .selectFrom('coupons')
     .where('is_active', '=', true)

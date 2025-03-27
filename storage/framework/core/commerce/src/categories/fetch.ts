@@ -1,4 +1,4 @@
-import type { CategoryJsonResponse } from '@stacksjs/orm'
+import { formatDate, type CategoryJsonResponse } from '@stacksjs/orm'
 import type { CategoryStats } from '../types'
 import { db } from '@stacksjs/database'
 
@@ -128,7 +128,7 @@ export async function fetchStats(): Promise<CategoryStats> {
   // Recently added categories (last 30 days)
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString()
+  const thirtyDaysAgoStr = formatDate(thirtyDaysAgo)
 
   const recentlyAddedCategories = await db
     .selectFrom('categories')
@@ -179,21 +179,21 @@ export async function compareCategoryGrowth(daysRange: number = 30): Promise<{
   days_range: number
 }> {
   const today = new Date()
-  const todayStr = today.toISOString()
+  const todayStr = formatDate(today)
 
   // Current period (last N days)
   const currentPeriodStart = new Date()
   currentPeriodStart.setDate(today.getDate() - daysRange)
-  const currentPeriodStartStr = currentPeriodStart.toISOString()
+  const currentPeriodStartStr = formatDate(currentPeriodStart)
 
   // Previous period (N days before the current period)
   const previousPeriodEnd = new Date(currentPeriodStart)
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
-  const previousPeriodEndStr = previousPeriodEnd.toISOString()
+  const previousPeriodEndStr = formatDate(previousPeriodEnd)
 
   const previousPeriodStart = new Date(previousPeriodEnd)
   previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
-  const previousPeriodStartStr = previousPeriodStart.toISOString()
+  const previousPeriodStartStr = formatDate(previousPeriodStart)
 
   // Get categories for current period
   const currentPeriodCategories = await db

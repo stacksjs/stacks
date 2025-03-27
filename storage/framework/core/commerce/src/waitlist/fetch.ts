@@ -1,4 +1,4 @@
-import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
+import { formatDate, type WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { sql } from 'kysely'
 
@@ -53,8 +53,8 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
   const endOfDay = new Date(date)
   endOfDay.setHours(23, 59, 59, 999)
 
-  const startDateStr = startOfDay.toISOString().replace('T', ' ').split('.')[0]
-  const endDateStr = endOfDay.toISOString().replace('T', ' ').split('.')[0]
+  const startDateStr = formatDate(startOfDay)
+  const endDateStr = formatDate(endOfDay)
 
   console.log('Start date:', startDateStr)
   console.log('End date:', endDateStr)
