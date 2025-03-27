@@ -75,7 +75,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   homebrew:
-    needs: release
+    needs: npm
     runs-on: macos-latest
     steps:
       - name: Checkout Repository
