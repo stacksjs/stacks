@@ -12,9 +12,8 @@ export async function up(db: Database<any>) {
     .addColumn('delivery_time', 'numeric', col => col.notNull())
     .addColumn('total_distance', 'numeric', col => col.notNull())
     .addColumn('last_active', 'text')
-    .addColumn('driver_id', 'integer', (col) =>
-        col.references('drivers.id').onDelete('cascade')
-      ) 
+    .addColumn('driver_id', 'integer', col =>
+      col.references('drivers.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

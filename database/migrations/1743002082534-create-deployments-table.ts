@@ -13,9 +13,8 @@ export async function up(db: Database<any>) {
     .addColumn('execution_time', 'numeric', col => col.notNull())
     .addColumn('deploy_script', 'text', col => col.notNull())
     .addColumn('terminal_output', 'text', col => col.notNull())
-    .addColumn('user_id', 'integer', (col) =>
-        col.references('users.id').onDelete('cascade')
-      ) 
+    .addColumn('user_id', 'integer', col =>
+      col.references('users.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

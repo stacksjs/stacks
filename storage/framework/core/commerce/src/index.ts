@@ -14,8 +14,8 @@ import * as shipping from './shipping'
 import * as tax from './tax'
 import * as unit from './unit'
 import * as variants from './variants'
-import * as zones from './zones'
 import * as waitlist from './waitlist'
+import * as zones from './zones'
 
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
@@ -92,6 +92,6 @@ export {
   tax,
   unit,
   variants,
-  zones,
   waitlist,
+  zones,
 }

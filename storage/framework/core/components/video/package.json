@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/video",
   "type": "module",
-  "version": "0.70.10",
+  "version": "0.70.11",
   "description": "Opinionated video components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],

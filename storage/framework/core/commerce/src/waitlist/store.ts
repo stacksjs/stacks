@@ -1,4 +1,4 @@
-import type { WaitlistProductRequestType, WaitlistProductJsonResponse } from '@stacksjs/orm'
+import type { WaitlistProductJsonResponse, WaitlistProductRequestType } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

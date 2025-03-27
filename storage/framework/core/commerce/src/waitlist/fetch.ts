@@ -28,7 +28,7 @@ export async function fetchCountBySource(): Promise<Record<string, number>> {
     .selectFrom('wait_list_products')
     .select([
       'source',
-      (eb) => eb.fn.count<number>('id').as('count'),
+      eb => eb.fn.count<number>('id').as('count'),
     ])
     .groupBy('source')
     .execute()
