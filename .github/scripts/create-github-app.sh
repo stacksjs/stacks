@@ -74,6 +74,7 @@ echo "     ✓ Metadata: Read-only"
 echo
 echo "   - Under Organization permissions, select:"
 echo "     ✓ Administration: Read & write"
+echo "     (Note: GitHub App can't create repositories, we'll use PAT for that)"
 echo
 echo "   - At the bottom, select 'Only on this account' for installation"
 echo
@@ -119,6 +120,9 @@ gh secret set GH_APP_ID -b"$APP_ID" -R stacksjs/stacks
 
 echo "Creating GH_APP_PRIVATE_KEY secret..."
 gh secret set GH_APP_PRIVATE_KEY -b"$PEM_KEY" -R stacksjs/stacks
+
+echo "Creating GH_PAT secret (for repository creation)..."
+gh secret set GH_PAT -b"$GITHUB_TOKEN" -R stacksjs/stacks
 
 echo
 echo "8. Installation:"
