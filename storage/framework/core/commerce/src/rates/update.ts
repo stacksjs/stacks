@@ -1,4 +1,4 @@
-import type { ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
+import { formatDate, type ShippingRateJsonResponse, type ShippingRateRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**
@@ -20,7 +20,7 @@ export async function update(id: number, request: ShippingRateRequestType): Prom
       weight_from: request.get<number>('weight_from'),
       weight_to: request.get<number>('weight_to'),
       rate: request.get<number>('rate'),
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     }
 
     // Update the shipping rate
@@ -77,7 +77,7 @@ export async function bulkUpdate(updates: Array<{
           weight_from: data.get<number>('weight_from'),
           weight_to: data.get<number>('weight_to'),
           rate: data.get<number>('rate'),
-          updated_at: new Date().toISOString(),
+          updated_at: formatDate(new Date()),
         }
 
         // Skip if no fields to update
@@ -126,7 +126,7 @@ export async function updateByZone(zone: string, data: ShippingRateRequestType):
       weight_from: data.get<number>('weight_from'),
       weight_to: data.get<number>('weight_to'),
       rate: data.get<number>('rate'),
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     }
 
     // Update all shipping rates for the specified zone
@@ -165,7 +165,7 @@ export async function updateByMethod(method: string, data: ShippingRateRequestTy
       weight_from: data.get<number>('weight_from'),
       weight_to: data.get<number>('weight_to'),
       rate: data.get<number>('rate'),
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     }
 
     // Update all shipping rates for the specified method

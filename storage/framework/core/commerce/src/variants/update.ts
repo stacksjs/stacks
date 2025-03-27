@@ -1,5 +1,5 @@
 // Import dependencies
-import type { ProductVariantRequestType } from '@stacksjs/orm'
+import { formatDate, type ProductVariantRequestType } from '@stacksjs/orm'
 import type { ProductVariantJsonResponse } from '../../../../orm/src/models/ProductVariant'
 import { db } from '@stacksjs/database'
 
@@ -22,7 +22,7 @@ export async function update(id: number, request: ProductVariantRequestType): Pr
       description: request.get('description'),
       options: request.get('options'),
       status: request.get('status'),
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     }
 
     // Update the product variant
@@ -79,7 +79,7 @@ export async function bulkUpdate(updates: Array<{
           description: data.get<string>('description'),
           options: data.get<string>('options'),
           status: data.get<string>('status'),
-          updated_at: new Date().toISOString(),
+          updated_at: formatDate(new Date()),
         }
 
         // Skip if no fields to update
@@ -123,7 +123,7 @@ export async function updateStatus(id: number, status: string): Promise<boolean>
       .updateTable('product_variants')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .executeTakeFirst()

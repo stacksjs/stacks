@@ -1,5 +1,5 @@
 // Import dependencies
-import type { OrderJsonResponse, OrderRequestType } from '@stacksjs/orm'
+import { formatDate, type OrderJsonResponse, type OrderRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -35,6 +35,7 @@ export async function update(id: number, request: OrderRequestType): Promise<Ord
     special_instructions: request.get('special_instructions'),
     estimated_delivery_time: request.get('estimated_delivery_time'),
     applied_coupon_id: request.get('applied_coupon_id'),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing order
@@ -86,7 +87,7 @@ export async function updateStatus(
       .updateTable('orders')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -125,7 +126,7 @@ export async function updateDeliveryInfo(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (delivery_address !== undefined) {

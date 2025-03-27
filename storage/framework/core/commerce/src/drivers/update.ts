@@ -1,5 +1,5 @@
 // Import dependencies
-import type { DriverJsonResponse, DriverRequestType } from '@stacksjs/orm'
+import { formatDate, type DriverJsonResponse, type DriverRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -28,6 +28,7 @@ export async function update(id: number, request: DriverRequestType): Promise<Dr
     vehicle_number: request.get('vehicle_number'),
     license: request.get('license'),
     status: request.get('status'),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing driver
@@ -79,7 +80,7 @@ export async function updateStatus(
       .updateTable('drivers')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -116,7 +117,7 @@ export async function updateContact(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (phone !== undefined) {

@@ -1,4 +1,4 @@
-import type { DeliveryRouteJsonResponse, DeliveryRouteRequestType } from '@stacksjs/orm'
+import { formatDate, type DeliveryRouteJsonResponse, type DeliveryRouteRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -22,7 +22,7 @@ export async function update(id: number, request: DeliveryRouteRequestType): Pro
 
   // Create update data object using request fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   // Add fields only if they are present in the request
@@ -88,7 +88,7 @@ export async function updateStops(
       .updateTable('delivery_routes')
       .set({
         stops,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -127,7 +127,7 @@ export async function updateMetrics(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (delivery_time !== undefined) {

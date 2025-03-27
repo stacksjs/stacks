@@ -1,4 +1,4 @@
-import type { TaxRateJsonResponse, TaxRateRequestType } from '@stacksjs/orm'
+import { formatDate, type TaxRateJsonResponse, type TaxRateRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -29,6 +29,7 @@ export async function update(id: number, request: TaxRateRequestType): Promise<T
     region: request.get('region'),
     status: request.get('status'),
     is_default: request.get<boolean>('is_default'),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing tax rate
@@ -80,7 +81,7 @@ export async function updateStatus(
       .updateTable('tax_rates')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -117,7 +118,7 @@ export async function updateRate(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (rate !== undefined) {

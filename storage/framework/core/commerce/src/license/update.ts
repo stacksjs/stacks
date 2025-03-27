@@ -1,5 +1,5 @@
 // Import dependencies
-import type { LicenseKeyJsonResponse, LicenseKeyRequestType } from '@stacksjs/orm'
+import { formatDate, type LicenseKeyJsonResponse, type LicenseKeyRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -107,7 +107,7 @@ export async function updateStatus(
  */
 export async function updateExpiration(
   id: number,
-  expiry_date?: string | Date,
+  expiryDate?: string | Date,
 ): Promise<LicenseKeyJsonResponse | undefined> {
   // Check if license key exists
   const licenseKey = await fetchById(id)
@@ -118,11 +118,11 @@ export async function updateExpiration(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
-  if (expiry_date !== undefined) {
-    updateData.expiry_date = expiry_date
+  if (expiryDate !== undefined) {
+    updateData.expiry_date = expiryDate
   }
 
   // If no expiration fields to update, just return the existing license key

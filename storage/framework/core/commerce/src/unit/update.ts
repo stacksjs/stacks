@@ -1,5 +1,5 @@
 // Import dependencies
-import type { ProductUnitRequestType } from '@stacksjs/orm'
+import { formatDate, type ProductUnitRequestType } from '@stacksjs/orm'
 import type { ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
 import { db } from '@stacksjs/database'
 
@@ -22,7 +22,7 @@ export async function update(id: number, request: ProductUnitRequestType): Promi
       type: request.get('type'),
       description: request.get('description'),
       is_default: request.get<boolean>('is_default'),
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     }
 
     // Update the product unit
@@ -89,7 +89,7 @@ export async function bulkUpdate(updates: Array<{
           type: data.get<string>('type'),
           description: data.get<string>('description'),
           is_default: data.get<boolean>('is_default'),
-          updated_at: new Date().toISOString(),
+          updated_at: formatDate(new Date()),
         }
 
         // Skip if no fields to update
@@ -154,7 +154,7 @@ export async function updateDefaultStatus(id: number, isDefault: boolean): Promi
       .updateTable('product_units')
       .set({
         is_default: isDefault,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .executeTakeFirst()

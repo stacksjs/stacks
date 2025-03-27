@@ -1,4 +1,4 @@
-import type { GiftCardJsonResponse, GiftCardRequestType } from '@stacksjs/orm'
+import { formatDate, type GiftCardJsonResponse, type GiftCardRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -37,15 +37,8 @@ export async function update(id: number, request: GiftCardRequestType): Promise<
     expiry_date: request.get('expiry_date'),
     last_used_date: request.get('last_used_date'),
     template_id: request.get('template_id'),
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
-
-  // Remove undefined fields to avoid overwriting with null values
-  Object.keys(updateData).forEach((key) => {
-    if (updateData[key] === undefined) {
-      delete updateData[key]
-    }
-  })
 
   // If no fields to update, just return the existing gift card
   if (Object.keys(updateData).length === 0) {
@@ -110,9 +103,9 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
       .updateTable('gift_cards')
       .set({
         current_balance: newBalance,
-        last_used_date: new Date().toISOString(),
+        last_used_date: formatDate(new Date()),
         status: newBalance === 0 ? 'USED' : 'ACTIVE',
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()

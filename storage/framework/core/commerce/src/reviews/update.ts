@@ -1,4 +1,4 @@
-import type { ReviewJsonResponse, ReviewRequestType } from '@stacksjs/orm'
+import { formatDate, type ReviewJsonResponse, type ReviewRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -34,7 +34,7 @@ export async function update(id: number, request: ReviewRequestType): Promise<Re
     purchase_date: request.get('purchase_date'),
     images: request.get('images'),
     uuid: request.get('uuid'),
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing review
@@ -94,7 +94,7 @@ export async function updateVotes(
       .updateTable('reviews')
       .set({
         [field]: newValue,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()

@@ -1,4 +1,4 @@
-import type { WaitlistProductJsonResponse, WaitlistProductRequestType } from '@stacksjs/orm'
+import { formatDate, type WaitlistProductJsonResponse, type WaitlistProductRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -32,6 +32,7 @@ export async function update(id: number, request: WaitlistProductRequestType): P
     status: request.get('status'),
     product_id: Number(request.get('product_id')),
     customer_id: Number(request.get('customer_id')),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing waitlist product
@@ -83,7 +84,7 @@ export async function updateStatus(
       .updateTable('wait_list_products')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -124,7 +125,7 @@ export async function updatePartySize(
       .updateTable('wait_list_products')
       .set({
         party_size: partySize,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()

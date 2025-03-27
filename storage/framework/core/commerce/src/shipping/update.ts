@@ -1,4 +1,4 @@
-import type { ShippingMethodJsonResponse, ShippingMethodRequestType } from '@stacksjs/orm'
+import { formatDate, type ShippingMethodJsonResponse, type ShippingMethodRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -27,6 +27,7 @@ export async function update(id: number, request: ShippingMethodRequestType): Pr
     base_rate: request.get<number>('base_rate'),
     free_shipping: request.get<number>('free_shipping'),
     status: request.get('status'),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing shipping method
@@ -78,7 +79,7 @@ export async function updateStatus(
       .updateTable('shipping_methods')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -117,7 +118,7 @@ export async function updatePricing(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (base_rate !== undefined) {

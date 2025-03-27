@@ -1,5 +1,5 @@
 // Import dependencies
-import type { ShippingZoneRequestType } from '@stacksjs/orm'
+import { formatDate, type ShippingZoneRequestType } from '@stacksjs/orm'
 import type { ShippingZoneJsonResponse } from '../../../../orm/src/models/ShippingZone'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
@@ -30,6 +30,7 @@ export async function update(id: number, request: ShippingZoneRequestType): Prom
     postal_codes: request.get('postal_codes'),
     status: request.get('status'),
     shipping_method_id: request.get<number>('shipping_method_id'),
+    updated_at: formatDate(new Date()),
   }
 
   // If no fields to update, just return the existing shipping zone
@@ -81,7 +82,7 @@ export async function updateStatus(
       .updateTable('shipping_zones')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+          updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -122,7 +123,7 @@ export async function updateCountries(
       .updateTable('shipping_zones')
       .set({
         countries,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -161,7 +162,7 @@ export async function updateRegionsAndPostalCodes(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (regions !== undefined) {
