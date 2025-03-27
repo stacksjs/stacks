@@ -371,14 +371,8 @@ describe('Waitlist Product Module', () => {
       expect(sourceCounts.social_media).toBe(1)
     })
 
-    it('should return empty object when no waitlist products exist', async () => {
-      const sourceCounts = await fetchCountBySource()
-      expect(sourceCounts).toBeDefined()
-      expect(Object.keys(sourceCounts).length).toBe(0)
-    })
-
-    it('should fetch count of waitlist products for a specific date', async () => {
-      // Create test waitlist products
+    it('should handle both populated and empty waitlist products', async () => {
+      // First test with data
       const requests = [
         new TestRequest({
           name: 'John Doe',
@@ -405,15 +399,60 @@ describe('Waitlist Product Module', () => {
       // Create the waitlist products
       await bulkStore(requests as any)
 
-      // Fetch today's count
-      const todayCount = await fetchCountByDate()
-      expect(todayCount).toBe(2)
+      // Verify with data
+      const sourceCounts = await fetchCountBySource()
+      expect(sourceCounts).toBeDefined()
+      expect(Object.keys(sourceCounts).length).toBe(1) // Only 'website' source
+      expect(sourceCounts.website).toBe(2)
 
-      // Fetch count for a future date (should be 0)
-      const futureDate = new Date()
-      futureDate.setDate(futureDate.getDate() + 1)
-      const futureCount = await fetchCountByDate(futureDate)
-      expect(futureCount).toBe(0)
+      // Now clear the database and test empty case
+      await refreshDatabase()
+      const emptySourceCounts = await fetchCountBySource()
+      expect(emptySourceCounts).toBeDefined()
+      expect(Object.keys(emptySourceCounts).length).toBe(0)
+    })
+
+    it('should fetch count of waitlist products for a specific date', async () => {
+      // Create a specific date for testing that matches our test data
+      const testDate = new Date('2025-03-27T12:00:00Z')
+      
+      // Create test waitlist products with explicit dates
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+          created_at: testDate.toISOString().replace('T', ' ').split('.')[0],
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+          created_at: testDate.toISOString().replace('T', ' ').split('.')[0],
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch count for our test date
+      const count = await fetchCountByDate(testDate)
+      expect(count).toBe(2)
+
+      // Fetch count for a different date (should be 0)
+      const differentDate = new Date('2025-03-28T12:00:00Z')
+      const differentCount = await fetchCountByDate(differentDate)
+      expect(differentCount).toBe(0)
     })
 
     it('should fetch count of waitlist products with specific quantity', async () => {

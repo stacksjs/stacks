@@ -1,5 +1,6 @@
 import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { sql } from 'kysely'
 
 /**
  * Fetch a waitlist product by ID
@@ -52,12 +53,28 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
   const endOfDay = new Date(date)
   endOfDay.setHours(23, 59, 59, 999)
 
+  const startDateStr = startOfDay.toISOString().replace('T', ' ').split('.')[0]
+  const endDateStr = endOfDay.toISOString().replace('T', ' ').split('.')[0]
+
+  console.log('Start date:', startDateStr)
+  console.log('End date:', endDateStr)
+
+  // First, let's see what dates we have in the database
+  const sampleDates = await db
+    .selectFrom('wait_list_products')
+    .select('created_at')
+    .execute()
+
+  console.log('Sample dates from DB:', sampleDates)
+
   const result = await db
     .selectFrom('wait_list_products')
     .select((eb) => eb.fn.count<number>('id').as('count'))
-    .where('created_at', '>=', startOfDay.toISOString())
-    .where('created_at', '<=', endOfDay.toISOString())
+    .where('created_at', '>=', startDateStr)
+    .where('created_at', '<=', endDateStr)
     .executeTakeFirst()
+
+  console.log('Query result:', result)
 
   return result?.count ?? 0
 }
