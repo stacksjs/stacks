@@ -1,7 +1,7 @@
 {
   "name": "stacks-system-tray",
   "type": "module",
-  "version": "0.70.14",
+  "version": "0.70.15",
   "description": "The Stacks System Tray app.",
   "author": "Chris Breuer",
   "license": "MIT",

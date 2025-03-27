@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/auths",
   "type": "module",
-  "version": "0.70.14",
+  "version": "0.70.15",
   "description": "Opinionated auth components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
