@@ -88,13 +88,17 @@ jobs:
           echo "Tag: ${GITHUB_REF#refs/tags/}"
           echo "Version from previous job: ${{ needs.release.outputs.version }}"
 
-      - name: Ensure Homebrew Tap Repository Exists
+      - name: Authenticate GitHub CLI
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+      - name: Create Homebrew Tap Repository If Needed
         run: |
           if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
+            echo "Creating homebrew-tap repository..."
             gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
+          else
+            echo "homebrew-tap repository already exists"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Wait for Release Assets
         run: |
@@ -169,7 +173,7 @@ jobs:
       - name: Push to Homebrew Tap Repository
         run: |
           # Clone the tap repo using GitHub token
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/stacksjs/homebrew-tap.git
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/stacksjs/homebrew-tap.git
 
           # Set up Git config
           cd homebrew-tap
@@ -190,5 +194,3 @@ jobs:
           else
             echo "No changes to commit"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
