@@ -4,6 +4,10 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write
+  repository-projects: write
+
 jobs:
   update-homebrew:
     runs-on: macos-latest
@@ -13,33 +17,48 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Update Homebrew Formula
+      - name: Debug Event
         run: |
-          .github/scripts/update-homebrew-formula.sh ${{ github.event.release.tag_name }}
+          echo "Event name: ${{ github.event_name }}"
+          echo "Release tag: ${{ github.event.release.tag_name }}"
+          echo "Release name: ${{ github.event.release.name }}"
 
-      - name: Set up Git User
+      - name: Setup GitHub CLI
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
+          brew install gh
+          echo "${{ secrets.PAT_TOKEN }}" | gh auth login --with-token
 
-      - name: Create Homebrew Tap PR
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Ensure Homebrew Tap Repository Exists
         run: |
-          # Check if homebrew tap repo exists, if not create it
-          if ! git ls-remote --exit-code https://github.com/stacksjs/homebrew-tap; then
+          if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
             gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
           fi
 
-          # Clone the tap repo
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/stacksjs/homebrew-tap.git
+      - name: Update Homebrew Formula
+        run: |
+          bash .github/scripts/update-homebrew-formula.sh ${{ github.event.release.tag_name }}
+
+      - name: Push to Homebrew Tap Repository
+        run: |
+          # Clone the tap repo using PAT for authentication
+          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/stacksjs/homebrew-tap.git
+
+          # Set up Git config
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           # Copy the formula to the tap repo
-          mkdir -p homebrew-tap/Formula
-          cp .github/homebrew/stacks.rb homebrew-tap/Formula/
+          mkdir -p Formula
+          cp ../.github/homebrew/stacks.rb Formula/
+
+          # Check if there are changes to commit
+          if git diff --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
 
           # Push the changes to the tap repo
-          cd homebrew-tap
           git add Formula/stacks.rb
-          git commit -m "chore: update formula to ${{ github.event.release.tag_name }}"
+          git commit -m "Update stacks formula to ${{ github.event.release.tag_name }}"
           git push

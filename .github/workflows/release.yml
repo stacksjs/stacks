@@ -1,9 +1,14 @@
-name: Release
+name: Releaser
 
 on:
   push:
     tags:
       - 'v*'
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write
 
 jobs:
   release:
@@ -49,12 +54,12 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
-      - name: Create GitHub Release
-        run: bunx changelogithub
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      - name: Extract tag version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      - name: Attach Binaries
+      - name: Create GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -63,3 +68,8 @@ jobs:
             storage/framework/core/buddy/bin/buddy-windows-x64.exe
             storage/framework/core/buddy/bin/buddy-darwin-x64
             storage/framework/core/buddy/bin/buddy-darwin-arm64
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
