@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-homebrew:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Homebrew Formula
+        run: |
+          .github/scripts/update-homebrew-formula.sh ${{ github.event.release.tag_name }}
+
+      - name: Set up Git User
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Create Homebrew Tap PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if homebrew tap repo exists, if not create it
+          if ! git ls-remote --exit-code https://github.com/stacksjs/homebrew-tap; then
+            gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
+          fi
+
+          # Clone the tap repo
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/stacksjs/homebrew-tap.git
+
+          # Copy the formula to the tap repo
+          mkdir -p homebrew-tap/Formula
+          cp .github/homebrew/stacks.rb homebrew-tap/Formula/
+
+          # Push the changes to the tap repo
+          cd homebrew-tap
+          git add Formula/stacks.rb
+          git commit -m "chore: update formula to ${{ github.event.release.tag_name }}"
+          git push
