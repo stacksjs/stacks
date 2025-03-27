@@ -65,7 +65,7 @@
     "ora": "^8.2.0",
     "typescript": "^5.8.2",
     "unocss": "66.0.0",
-    "unplugin-auto-import": "^19.1.1",
+    "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.4.1",
     "vite": "^6.2.3",
     "vite-plugin-inspect": "^11.0.0",
