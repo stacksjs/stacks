@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/slugs",
   "type": "module",
-  "version": "0.70.20",
+  "version": "0.70.21",
   "description": "The core of what powers Stacks Plugins.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
