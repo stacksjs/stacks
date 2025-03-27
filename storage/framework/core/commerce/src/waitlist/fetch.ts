@@ -28,7 +28,7 @@ export async function fetchCountBySource(): Promise<Record<string, number>> {
     .selectFrom('wait_list_products')
     .select([
       'source',
-      eb => eb.fn.count<number>('id').as('count'),
+      (eb) => eb.fn.count<number>('id').as('count'),
     ])
     .groupBy('source')
     .execute()
@@ -38,4 +38,62 @@ export async function fetchCountBySource(): Promise<Record<string, number>> {
     acc[source] = count
     return acc
   }, {} as Record<string, number>)
+}
+
+/**
+ * Fetch the count of waitlist products for a specific date
+ * @param date The date to count entries for (defaults to today)
+ * @returns The count of entries for the specified date
+ */
+export async function fetchCountByDate(date: Date = new Date()): Promise<number> {
+  const startOfDay = new Date(date)
+  startOfDay.setHours(0, 0, 0, 0)
+  
+  const endOfDay = new Date(date)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  const result = await db
+    .selectFrom('wait_list_products')
+    .select((eb) => eb.fn.count<number>('id').as('count'))
+    .where('created_at', '>=', startOfDay.toISOString())
+    .where('created_at', '<=', endOfDay.toISOString())
+    .executeTakeFirst()
+
+  return result?.count ?? 0
+}
+
+/**
+ * Fetch the count of waitlist products with a specific quantity
+ * @param quantity The quantity to count orders for
+ * @returns The count of orders with the specified quantity
+ */
+export async function fetchCountByQuantity(quantity: number): Promise<number> {
+  const result = await db
+    .selectFrom('wait_list_products')
+    .select((eb) => eb.fn.count<number>('id').as('count'))
+    .where('party_size', '=', quantity)
+    .executeTakeFirst()
+
+  return result?.count ?? 0
+}
+
+/**
+ * Fetch the count of waitlist products grouped by quantity
+ * @returns An object containing the count for each quantity
+ */
+export async function fetchCountByAllQuantities(): Promise<Record<number, number>> {
+  const results = await db
+    .selectFrom('wait_list_products')
+    .select([
+      'party_size',
+      (eb) => eb.fn.count<number>('id').as('count'),
+    ])
+    .groupBy('party_size')
+    .execute()
+
+  // Convert array to object with quantity as key and count as value
+  return results.reduce((acc, { party_size, count }) => {
+    acc[party_size] = count
+    return acc
+  }, {} as Record<number, number>)
 }
