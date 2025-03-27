@@ -8,6 +8,7 @@ import {
   fetchBetweenDates,
   fetchById,
   fetchCancelledBetweenDates,
+  fetchConversionRates,
   fetchCountByAllQuantities,
   fetchCountByDate,
   fetchCountByQuantity,
@@ -18,7 +19,6 @@ import {
 } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
-import { fetchConversionRates } from '../waitlist/fetch'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -884,13 +884,13 @@ describe('Waitlist Product Module', () => {
 
       // Fetch conversion rates
       const rates = await fetchConversionRates()
-      
+
       // Verify the results
       expect(rates).toBeDefined()
       expect(rates.totalConversionRate).toBeCloseTo(33.33, 2) // 1 purchased out of 3 total
       expect(rates.statusBreakdown).toBeDefined()
       expect(Object.keys(rates.statusBreakdown).length).toBe(3) // waiting, purchased, cancelled
-      
+
       // Verify each status breakdown
       expect(rates.statusBreakdown.waiting).toEqual({ count: 1, percentage: expect.closeTo(33.33, 2) })
       expect(rates.statusBreakdown.purchased).toEqual({ count: 1, percentage: expect.closeTo(33.33, 2) })

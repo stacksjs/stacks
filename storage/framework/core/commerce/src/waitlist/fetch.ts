@@ -207,7 +207,7 @@ export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
  */
 export async function fetchConversionRates(): Promise<{
   totalConversionRate: number
-  statusBreakdown: Record<string, { count: number; percentage: number }>
+  statusBreakdown: Record<string, { count: number, percentage: number }>
 }> {
   const results = await db
     .selectFrom('wait_list_products')
@@ -232,7 +232,7 @@ export async function fetchConversionRates(): Promise<{
       percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
     }
     return acc
-  }, {} as Record<string, { count: number; percentage: number }>)
+  }, {} as Record<string, { count: number, percentage: number }>)
 
   return {
     totalConversionRate,

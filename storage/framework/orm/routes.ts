@@ -100,6 +100,16 @@ route.patch('license-keys/{id}', 'LicenseKeyUpdateOrmAction')
 
 route.delete('license-keys/{id}', 'LicenseKeyDestroyOrmAction')
 
+route.get('waitlist-restaurants', 'WaitlistRestaurantIndexOrmAction')
+
+route.post('waitlist-restaurants', 'WaitlistRestaurantStoreOrmAction')
+
+route.get('waitlist-restaurants/{id}', 'WaitlistRestaurantShowOrmAction')
+
+route.patch('waitlist-restaurants/{id}', 'WaitlistRestaurantUpdateOrmAction')
+
+route.delete('waitlist-restaurants/{id}', 'WaitlistRestaurantDestroyOrmAction')
+
 route.get('product-reviews', 'ReviewIndexOrmAction')
 
 route.post('product-reviews', 'ReviewStoreOrmAction')

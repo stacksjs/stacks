@@ -7,9 +7,9 @@ export {
 export {
   fetchAll,
   fetchById,
-  fetchPurchasedBetweenDates,
   fetchCancelledBetweenDates,
   fetchNotifiedBetweenDates,
+  fetchPurchasedBetweenDates,
 } from './fetch'
 
 export {

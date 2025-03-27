@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../zones/destroy'
-import { fetchById } from '../zones/fetch'
+import { fetchById, formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../zones/fetch'
 import { bulkStore, store } from '../zones/store'
-import { formatZoneOptions, getActiveShippingZones, getZonesByCountry } from '../zones/fetch'
 import { update, updateCountries, updateRegionsAndPostalCodes, updateStatus } from '../zones/update'
 
 // Create a request-like object for testing

@@ -40,6 +40,7 @@ import type { TeamsTable } from '../src/models/Team'
 import type { TransactionsTable } from '../src/models/Transaction'
 import type { UsersTable } from '../src/models/User'
 import type { WaitListProductsTable } from '../src/models/WaitlistProduct'
+import type { WaitListRestaurantsTable } from '../src/models/WaitlistRestaurant'
 
 export interface TeamUsersTable {
   id?: number
@@ -95,6 +96,7 @@ export interface Database {
   products: ProductsTable
   product_variants: ProductVariantsTable
   license_keys: LicenseKeysTable
+  wait_list_restaurants: WaitListRestaurantsTable
   reviews: ReviewsTable
   product_units: ProductUnitsTable
   gift_cards: GiftCardsTable

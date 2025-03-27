@@ -81,3 +81,5 @@ export { type NewTransaction, default as Transaction, type TransactionJsonRespon
 export { type NewUser, default as User, type UserJsonResponse, type UserUpdate } from './models/User'
 
 export { type NewWaitlistProduct, default as WaitlistProduct, type WaitlistProductJsonResponse, type WaitlistProductUpdate } from './models/WaitlistProduct'
+
+export { type NewWaitlistRestaurant, default as WaitlistRestaurant, type WaitlistRestaurantJsonResponse, type WaitlistRestaurantUpdate } from './models/WaitlistRestaurant'

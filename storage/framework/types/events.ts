@@ -23,6 +23,7 @@ import type { TaxRateModel } from '../orm/src/models/TaxRate'
 import type { TransactionModel } from '../orm/src/models/Transaction'
 import type { UserModel } from '../orm/src/models/User'
 import type { WaitlistProductModel } from '../orm/src/models/WaitlistProduct'
+import type { WaitlistRestaurantModel } from '../orm/src/models/WaitlistRestaurant'
 
 export interface ModelEvents {
 
@@ -62,6 +63,9 @@ export interface ModelEvents {
   'license-key:created': LicenseKeyModel
   'license-key:updated': LicenseKeyModel
   'license-key:deleted': LicenseKeyModel
+  'waitlist-restaurant:created': WaitlistRestaurantModel
+  'waitlist-restaurant:updated': WaitlistRestaurantModel
+  'waitlist-restaurant:deleted': WaitlistRestaurantModel
   'review:created': ReviewModel
   'review:updated': ReviewModel
   'review:deleted': ReviewModel

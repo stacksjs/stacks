@@ -153,6 +153,7 @@
     "NewTransaction": true,
     "NewUser": true,
     "NewWaitlistProduct": true,
+    "NewWaitlistRestaurant": true,
     "Order": true,
     "OrderItem": true,
     "OrderItemJsonResponse": true,
@@ -330,12 +331,19 @@
     "UserUpdate": true,
     "UsersTable": true,
     "WaitListProductsTable": true,
+    "WaitListRestaurantsTable": true,
     "WaitlistProduct": true,
     "WaitlistProductJsonResponse": true,
     "WaitlistProductModel": true,
     "WaitlistProductRequest": true,
     "WaitlistProductResponse": true,
     "WaitlistProductUpdate": true,
+    "WaitlistRestaurant": true,
+    "WaitlistRestaurantJsonResponse": true,
+    "WaitlistRestaurantModel": true,
+    "WaitlistRestaurantRequest": true,
+    "WaitlistRestaurantResponse": true,
+    "WaitlistRestaurantUpdate": true,
     "accessTokenRequest": true,
     "categoryRequest": true,
     "couponRequest": true,
@@ -377,6 +385,7 @@
     "teamRequest": true,
     "transactionRequest": true,
     "userRequest": true,
-    "waitlistProductRequest": true
+    "waitlistProductRequest": true,
+    "waitlistRestaurantRequest": true
   }
 }

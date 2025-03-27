@@ -1,6 +1,5 @@
-import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import { createSpreadsheet } from 'ts-spreadsheets'
 import { fetchAll } from './fetch'
 

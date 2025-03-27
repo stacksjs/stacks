@@ -79,6 +79,11 @@ export interface Attributes {
   key: string
   template: string | string[]
   expiry_date: Date | string
+  check_in_time: string
+  table_preference: string | string[]
+  quoted_wait_time: number
+  actual_wait_time: number
+  queue_position: number
   rating: number
   content: string
   is_verified_purchase: boolean
