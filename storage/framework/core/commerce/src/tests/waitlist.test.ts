@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../waitlist/destroy'
-import { fetchAll, fetchById, fetchCountBySource } from '../waitlist/fetch'
+import { fetchAll, fetchById, fetchCountBySource, fetchCountByDate, fetchCountByQuantity, fetchCountByAllQuantities } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
 
@@ -375,6 +375,152 @@ describe('Waitlist Product Module', () => {
       const sourceCounts = await fetchCountBySource()
       expect(sourceCounts).toBeDefined()
       expect(Object.keys(sourceCounts).length).toBe(0)
+    })
+
+    it('should fetch count of waitlist products for a specific date', async () => {
+      // Create test waitlist products
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch today's count
+      const todayCount = await fetchCountByDate()
+      expect(todayCount).toBe(2)
+
+      // Fetch count for a future date (should be 0)
+      const futureDate = new Date()
+      futureDate.setDate(futureDate.getDate() + 1)
+      const futureCount = await fetchCountByDate(futureDate)
+      expect(futureCount).toBe(0)
+    })
+
+    it('should fetch count of waitlist products with specific quantity', async () => {
+      // Create test waitlist products with different quantities
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 4,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 2,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Test fetching count for party_size = 4
+      const countOfFour = await fetchCountByQuantity(4)
+      expect(countOfFour).toBe(2)
+
+      // Test fetching count for party_size = 2
+      const countOfTwo = await fetchCountByQuantity(2)
+      expect(countOfTwo).toBe(1)
+
+      // Test fetching count for non-existent party_size
+      const countOfFive = await fetchCountByQuantity(5)
+      expect(countOfFive).toBe(0)
+    })
+
+    it('should fetch count of waitlist products grouped by quantity', async () => {
+      // Create test waitlist products with different quantities
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 4,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'waiting',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 2,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'waiting',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch counts by quantity
+      const quantityCounts = await fetchCountByAllQuantities()
+
+      // Verify the counts
+      expect(quantityCounts).toBeDefined()
+      expect(Object.keys(quantityCounts).length).toBe(2) // 2 different quantities
+
+      // Verify each quantity count
+      expect(quantityCounts[4]).toBe(2)
+      expect(quantityCounts[2]).toBe(1)
+    })
+
+    it('should return empty object when no waitlist products exist for quantity grouping', async () => {
+      const quantityCounts = await fetchCountByAllQuantities()
+      expect(quantityCounts).toBeDefined()
+      expect(Object.keys(quantityCounts).length).toBe(0)
     })
   })
 })
