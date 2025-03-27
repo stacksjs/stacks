@@ -1,5 +1,5 @@
 // Import dependencies
-import type { DigitalDeliveryJsonResponse, DigitalDeliveryRequestType } from '@stacksjs/orm'
+import { formatDate, type DigitalDeliveryJsonResponse, type DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -30,12 +30,10 @@ export async function update(id: number, request: DigitalDeliveryRequestType): P
     requires_login: request.get<boolean>('requires_login'),
     automatic_delivery: request.get<boolean>('automatic_delivery'),
     status: request.get('status'),
+    updated_at: formatDate(new Date()),
   }
 
-  // If no fields to update, just return the existing digital delivery
-  if (Object.keys(updateData).length === 0) {
-    return existingDelivery
-  }
+
 
   try {
     // Update the digital delivery
@@ -81,7 +79,7 @@ export async function updateStatus(
       .updateTable('digital_deliveries')
       .set({
         status,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -124,7 +122,7 @@ export async function updateDeliverySettings(
 
   // Create update data with only provided fields
   const updateData: Record<string, any> = {
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
 
   if (download_limit !== undefined) {

@@ -1,4 +1,4 @@
-import type { CategoryJsonResponse, CategoryRequestType } from '@stacksjs/orm'
+import { formatDate, type CategoryJsonResponse, type CategoryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -27,15 +27,8 @@ export async function update(id: number, request: CategoryRequestType): Promise<
     is_active: request.get<boolean>('is_active'),
     parent_category_id: request.get('parent_category_id'),
     display_order: request.get<number>('display_order'),
-    updated_at: new Date().toISOString(),
+    updated_at: formatDate(new Date()),
   }
-
-  // Remove undefined fields to avoid overwriting with null values
-  Object.keys(updateData).forEach((key) => {
-    if (updateData[key] === undefined) {
-      delete updateData[key]
-    }
-  })
 
   // If no fields to update, just return the existing category
   if (Object.keys(updateData).length === 0) {
@@ -88,7 +81,7 @@ export async function updateDisplayOrder(id: number, newOrder: number): Promise<
       .updateTable('categories')
       .set({
         display_order: newOrder,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -126,7 +119,7 @@ export async function updateActiveStatus(id: number, isActive: boolean): Promise
       .updateTable('categories')
       .set({
         is_active: isActive,
-        updated_at: new Date().toISOString(),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()
@@ -181,7 +174,7 @@ export async function updateParent(id: number, newParentId: string | null): Prom
   try {
     // Update the category's parent
     const updateObject = {
-      updated_at: new Date().toISOString(),
+      updated_at: formatDate(new Date()),
     } as Record<string, any>
 
     // Set parent_category_id explicitly based on whether newParentId is null

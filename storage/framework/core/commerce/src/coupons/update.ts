@@ -1,4 +1,4 @@
-import type { CouponJsonResponse, CouponRequestType } from '@stacksjs/orm'
+import { formatDate, type CouponJsonResponse, type CouponRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
 
@@ -33,7 +33,7 @@ export async function update(id: number, request: CouponRequestType): Promise<Co
     usage_limit: request.get<number>('usage_limit'),
     start_date: request.get('start_date'),
     end_date: request.get('end_date'),
-    updated_at: new Date(),
+    updated_at: formatDate(new Date()),
   }
 
   // Process arrays to JSON strings if provided
@@ -44,14 +44,7 @@ export async function update(id: number, request: CouponRequestType): Promise<Co
   if (request.has('applicable_categories')) {
     updateData.applicable_categories = JSON.stringify(request.get<string[]>('applicable_categories'))
   }
-
-  // Remove undefined fields to avoid overwriting with null values
-  Object.keys(updateData).forEach((key) => {
-    if (updateData[key] === undefined) {
-      delete updateData[key]
-    }
-  })
-
+  
   // If no fields to update, just return the existing coupon
   if (Object.keys(updateData).length === 0) {
     return existingCoupon

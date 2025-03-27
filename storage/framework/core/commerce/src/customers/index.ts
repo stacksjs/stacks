@@ -5,8 +5,6 @@ export {
 
 export {
   fetchById,
-  type FetchCustomersOptions,
-  type PaginatedCustomers,
 } from './fetch'
 
 export {

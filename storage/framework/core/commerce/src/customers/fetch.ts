@@ -1,26 +1,5 @@
-import type { CustomerJsonResponse, CustomersTable } from '../types'
+import type { CustomerJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-
-export interface FetchCustomersOptions {
-  page?: number
-  limit?: number
-  search?: string
-  status?: string
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-}
-
-export interface PaginatedCustomers {
-  customers: CustomersTable[]
-  pagination: {
-    total: number
-    currentPage: number
-    totalPages: number
-    limit: number
-    hasNextPage: boolean
-    hasPrevPage: boolean
-  }
-}
 
 /**
  * Fetch a customer by ID
@@ -31,4 +10,11 @@ export async function fetchById(id: number): Promise<CustomerJsonResponse | unde
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
+}
+
+/**
+ * Fetch all customers
+ */
+export async function fetchAll(): Promise<CustomerJsonResponse[]> {
+  return await db.selectFrom('customers').selectAll().execute()
 }

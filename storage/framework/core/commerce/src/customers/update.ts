@@ -1,4 +1,4 @@
-import type { CustomerJsonResponse, CustomerRequestType, CustomerUpdate } from '@stacksjs/orm'
+import { formatDate, type CustomerJsonResponse, type CustomerRequestType, type CustomerUpdate } from '@stacksjs/orm'
 
 import { db } from '@stacksjs/database'
 
@@ -22,6 +22,7 @@ export async function update(id: number, request: CustomerRequestType): Promise<
       status: request.get('status'),
       avatar: request.get('avatar'),
       user_id: request.get<number>('user_id'),
+      updated_at: formatDate(new Date()),
     }
 
     if (Object.keys(updateData).length === 0) {
