@@ -173,7 +173,7 @@ jobs:
       - name: Push to Homebrew Tap Repository
         run: |
           # Clone the tap repo using GitHub token
-          git clone https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/stacksjs/homebrew-tap.git
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/stacksjs/homebrew-tap.git
 
           # Set up Git config
           cd homebrew-tap
