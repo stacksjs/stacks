@@ -333,6 +333,8 @@ interface RequestDataWaitlistProduct {
   notes: string
   status: string[]
   notified_at: string
+  purchased_at: string
+  cancelled_at: string
   customer_id: number
   product_id: number
   created_at?: Date
@@ -352,6 +354,8 @@ export interface WaitlistProductRequestType extends Request {
   notes: string
   status: string[]
   notified_at: string
+  purchased_at: string
+  cancelled_at: string
   customer_id: number
   product_id: number
   created_at?: Date

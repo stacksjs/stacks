@@ -239,9 +239,6 @@ describe('Coupon Module', () => {
       const futureDate = new Date(today)
       futureDate.setMonth(today.getMonth() + 1)
 
-      const todayStr = today.toISOString().split('T')[0]
-      const futureDateStr = futureDate.toISOString().split('T')[0]
-
       const activeCode = `COUPON-ACTIVE-${Date.now()}`
       const activeData = {
         code: activeCode,
@@ -478,7 +475,7 @@ describe('Coupon Module', () => {
       // Create expired coupons (end_date in the past)
       const pastDate = new Date()
       pastDate.setMonth(pastDate.getMonth() - 1)
-      const pastDateStr = pastDate.toISOString().split('T')[0]
+      const pastDateStr = formatDate(pastDate)
 
       const expiredCoupons = []
       const expiredCouponIds = []

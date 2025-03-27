@@ -23,6 +23,8 @@ export interface WaitListProductsTable {
   notes?: string
   status: string | string[]
   notified_at?: string
+  purchased_at?: string
+  cancelled_at?: string
   uuid?: string
 
   created_at?: string
@@ -50,7 +52,7 @@ export type WaitlistProductUpdate = Updateable<WaitListProductsTable>
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitListProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'uuid', 'customer_id', 'product_id']
+  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []
   protected attributes = {} as WaitlistProductJsonResponse
   protected originalAttributes = {} as WaitlistProductJsonResponse
@@ -236,6 +238,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return this.attributes.notified_at
   }
 
+  get purchased_at(): string | undefined {
+    return this.attributes.purchased_at
+  }
+
+  get cancelled_at(): string | undefined {
+    return this.attributes.cancelled_at
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -282,6 +292,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 
   set notified_at(value: string) {
     this.attributes.notified_at = value
+  }
+
+  set purchased_at(value: string) {
+    this.attributes.purchased_at = value
+  }
+
+  set cancelled_at(value: string) {
+    this.attributes.cancelled_at = value
   }
 
   set updated_at(value: string) {
@@ -918,6 +936,22 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance
   }
 
+  static wherePurchasedAt(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('purchased_at', '=', value)
+
+    return instance
+  }
+
+  static whereCancelledAt(value: string): WaitlistProductModel {
+    const instance = new WaitlistProductModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('cancelled_at', '=', value)
+
+    return instance
+  }
+
   static whereIn<V = number>(column: keyof WaitListProductsTable, values: V[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
@@ -993,6 +1027,8 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
       notes: this.notes,
       status: this.status,
       notified_at: this.notified_at,
+      purchased_at: this.purchased_at,
+      cancelled_at: this.cancelled_at,
 
       created_at: this.created_at,
 
@@ -1126,6 +1162,20 @@ export async function whereStatus(value: string | string[]): Promise<WaitlistPro
 
 export async function whereNotifiedAt(value: string): Promise<WaitlistProductModel[]> {
   const query = DB.instance.selectFrom('wait_list_products').where('notified_at', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
+
+export async function wherePurchasedAt(value: string): Promise<WaitlistProductModel[]> {
+  const query = DB.instance.selectFrom('wait_list_products').where('purchased_at', '=', value)
+  const results: WaitlistProductJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
+}
+
+export async function whereCancelledAt(value: string): Promise<WaitlistProductModel[]> {
+  const query = DB.instance.selectFrom('wait_list_products').where('cancelled_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))

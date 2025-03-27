@@ -22,6 +22,8 @@ interface RequestDataWaitlistProduct {
   notes: string
   status: string[]
   notified_at: string
+  purchased_at: string
+  cancelled_at: string
   customer_id: number
   product_id: number
   created_at?: Date
@@ -38,6 +40,8 @@ export class WaitlistProductRequest extends Request<RequestDataWaitlistProduct> 
   public notes = ''
   public status = []
   public notified_at = ''
+  public purchased_at = ''
+  public cancelled_at = ''
   public customer_id = 0
   public product_id = 0
   public created_at = new Date()

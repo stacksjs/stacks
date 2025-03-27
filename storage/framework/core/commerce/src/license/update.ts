@@ -103,7 +103,7 @@ export async function updateStatus(
  * Update expiration information for a license key
  *
  * @param id The ID of the license key
- * @param expiry_date The updated expiry date
+ * @param expiryDate The updated expiry date
  * @returns The updated license key
  */
 export async function updateExpiration(

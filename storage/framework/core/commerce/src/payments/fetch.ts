@@ -35,21 +35,17 @@ export interface PaymentStats {
  */
 export async function fetchPaymentStats(daysRange: number = 30): Promise<PaymentStats> {
   const today = new Date()
-  const todayStr = today.toISOString()
 
   // Current period (last N days)
   const currentPeriodStart = new Date(today)
   currentPeriodStart.setDate(today.getDate() - daysRange)
-  const currentPeriodStartStr = currentPeriodStart.toISOString()
 
   // Previous period (N days before the current period)
   const previousPeriodEnd = new Date(currentPeriodStart)
   previousPeriodEnd.setDate(previousPeriodEnd.getDate() - 1)
-  const previousPeriodEndStr = previousPeriodEnd.toISOString()
 
   const previousPeriodStart = new Date(previousPeriodEnd)
   previousPeriodStart.setDate(previousPeriodEnd.getDate() - daysRange)
-  const previousPeriodStartStr = previousPeriodStart.toISOString()
 
   // Get current period stats for completed payments
   const currentStats = await db
@@ -153,11 +149,9 @@ export async function fetchPaymentStatsByMethod(daysRange: number = 30): Promise
   percentage_of_total: number
 }>> {
   const today = new Date()
-  const todayStr = today.toISOString()
 
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - daysRange)
-  const startDateStr = startDate.toISOString()
 
   // Get total stats for the period
   const totalStats = await db

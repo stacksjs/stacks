@@ -128,7 +128,25 @@ export default {
 
     notified_at: {
       required: false,
-      order: 6,
+      order: 9,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+    },
+    purchased_at: {
+      required: false,
+      order: 10,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+    },
+    cancelled_at: {
+      required: false,
+      order: 11,
       fillable: true,
       validation: {
         rule: schema.string(),
