@@ -1,5 +1,6 @@
-import { formatDate, type ShippingRateJsonResponse, type ShippingRateRequestType } from '@stacksjs/orm'
+import type { ShippingRateJsonResponse, ShippingRateRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update an existing shipping rate

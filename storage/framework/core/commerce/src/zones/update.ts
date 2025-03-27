@@ -1,7 +1,8 @@
-// Import dependencies
-import { formatDate, type ShippingZoneRequestType } from '@stacksjs/orm'
+import type { ShippingZoneRequestType } from '@stacksjs/orm'
 import type { ShippingZoneJsonResponse } from '../../../../orm/src/models/ShippingZone'
 import { db } from '@stacksjs/database'
+// Import dependencies
+import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
@@ -82,7 +83,7 @@ export async function updateStatus(
       .updateTable('shipping_zones')
       .set({
         status,
-          updated_at: formatDate(new Date()),
+        updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
       .execute()

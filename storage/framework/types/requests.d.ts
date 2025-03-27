@@ -332,6 +332,7 @@ interface RequestDataWaitlistProduct {
   source: string
   notes: string
   status: string[]
+  notified_at: string
   customer_id: number
   product_id: number
   created_at?: Date
@@ -350,6 +351,7 @@ export interface WaitlistProductRequestType extends Request {
   source: string
   notes: string
   status: string[]
+  notified_at: string
   customer_id: number
   product_id: number
   created_at?: Date

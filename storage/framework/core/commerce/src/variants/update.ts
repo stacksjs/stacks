@@ -1,7 +1,8 @@
-// Import dependencies
-import { formatDate, type ProductVariantRequestType } from '@stacksjs/orm'
+import type { ProductVariantRequestType } from '@stacksjs/orm'
 import type { ProductVariantJsonResponse } from '../../../../orm/src/models/ProductVariant'
 import { db } from '@stacksjs/database'
+// Import dependencies
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update an existing product variant

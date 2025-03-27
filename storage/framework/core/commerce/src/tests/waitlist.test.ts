@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../waitlist/destroy'
-import { fetchAll, fetchById, fetchCountBySource, fetchCountByDate, fetchCountByQuantity, fetchCountByAllQuantities } from '../waitlist/fetch'
+import { fetchAll, fetchById, fetchCountByAllQuantities, fetchCountByDate, fetchCountByQuantity, fetchCountBySource } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
-import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -416,7 +416,7 @@ describe('Waitlist Product Module', () => {
     it('should fetch count of waitlist products for a specific date', async () => {
       // Create a specific date for testing that matches our test data
       const testDate = new Date('2025-03-27T12:00:00Z')
-      
+
       // Create test waitlist products with explicit dates
       const requests = [
         new TestRequest({

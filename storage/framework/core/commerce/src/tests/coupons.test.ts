@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { deleteCoupon, deleteCoupons, deleteExpiredCoupons } from '../coupons/destroy'
 import { fetchActive, fetchAll, fetchByCode, fetchById } from '../coupons/fetch'
 import { store } from '../coupons/store'
 import { update } from '../coupons/update'
-import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {

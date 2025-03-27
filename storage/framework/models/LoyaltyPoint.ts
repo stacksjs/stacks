@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -38,7 +37,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.string.uuid(),
+      factory: faker => faker.string.uuid(),
     },
 
     points: {
@@ -48,7 +47,7 @@ export default {
       validation: {
         rule: schema.number().min(1),
       },
-      factory: (faker: Faker) => faker.number.int({ min: 1, max: 500 }),
+      factory: faker => faker.number.int({ min: 1, max: 500 }),
     },
 
     source: {
@@ -58,7 +57,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement(['ORDER', 'PROMOTION', 'REFERRAL', 'MANUAL']),
+      factory: faker => faker.helpers.arrayElement(['ORDER', 'PROMOTION', 'REFERRAL', 'MANUAL']),
     },
 
     source_reference_id: {
@@ -68,7 +67,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.string.uuid(),
+      factory: faker => faker.string.uuid(),
     },
 
     description: {
@@ -78,7 +77,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement([
+      factory: faker => faker.helpers.arrayElement([
         `Points earned from order #${faker.string.alphanumeric(8).toUpperCase()}`,
         `Bonus points from promotion`,
         `Referral bonus for inviting a friend`,
@@ -93,7 +92,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
     },
 
     is_used: {
@@ -103,7 +102,7 @@ export default {
       validation: {
         rule: schema.boolean(),
       },
-      factory: (faker: Faker) => faker.datatype.boolean({ probability: 0.3 }), // 30% chance of being used
+      factory: faker => faker.datatype.boolean({ probability: 0.3 }), // 30% chance of being used
     },
   },
 

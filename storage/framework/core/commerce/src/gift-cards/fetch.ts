@@ -1,6 +1,7 @@
-import { formatDate, type GiftCardJsonResponse } from '@stacksjs/orm'
+import type { GiftCardJsonResponse } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Fetch all gift cards from the database

@@ -1,5 +1,6 @@
-import { formatDate, type WaitlistProductJsonResponse } from '@stacksjs/orm'
+import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Fetch a waitlist product by ID
@@ -28,7 +29,7 @@ export async function fetchCountBySource(): Promise<Record<string, number>> {
     .selectFrom('wait_list_products')
     .select([
       'source',
-      (eb) => eb.fn.count<number>('id').as('count'),
+      eb => eb.fn.count<number>('id').as('count'),
     ])
     .groupBy('source')
     .execute()
@@ -48,7 +49,7 @@ export async function fetchCountBySource(): Promise<Record<string, number>> {
 export async function fetchCountByDate(date: Date = new Date()): Promise<number> {
   const startOfDay = new Date(date)
   startOfDay.setHours(0, 0, 0, 0)
-  
+
   const endOfDay = new Date(date)
   endOfDay.setHours(23, 59, 59, 999)
 
@@ -57,7 +58,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 
   const result = await db
     .selectFrom('wait_list_products')
-    .select((eb) => eb.fn.count<number>('id').as('count'))
+    .select(eb => eb.fn.count<number>('id').as('count'))
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
     .executeTakeFirst()
@@ -73,7 +74,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
 export async function fetchCountByQuantity(quantity: number): Promise<number> {
   const result = await db
     .selectFrom('wait_list_products')
-    .select((eb) => eb.fn.count<number>('id').as('count'))
+    .select(eb => eb.fn.count<number>('id').as('count'))
     .where('party_size', '=', quantity)
     .executeTakeFirst()
 
@@ -89,7 +90,7 @@ export async function fetchCountByAllQuantities(): Promise<Record<number, number
     .selectFrom('wait_list_products')
     .select([
       'party_size',
-      (eb) => eb.fn.count<number>('id').as('count'),
+      eb => eb.fn.count<number>('id').as('count'),
     ])
     .groupBy('party_size')
     .execute()
@@ -99,4 +100,47 @@ export async function fetchCountByAllQuantities(): Promise<Record<number, number
     acc[party_size] = count
     return acc
   }, {} as Record<number, number>)
+}
+
+/**
+ * Fetch waitlist products between two dates
+ * @param startDate The start date of the range
+ * @param endDate The end date of the range
+ * @returns Array of waitlist products within the date range
+ */
+export async function fetchBetweenDates(
+  startDate: Date,
+  endDate: Date,
+): Promise<WaitlistProductJsonResponse[]> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
+  return await db
+    .selectFrom('wait_list_products')
+    .selectAll()
+    .where('created_at', '>=', startDateStr)
+    .where('created_at', '<=', endDateStr)
+    .execute()
+}
+
+/**
+ * Fetch waitlist products that were notified between two dates
+ * @param startDate The start date of the range
+ * @param endDate The end date of the range
+ * @returns Array of waitlist products that were notified within the date range
+ */
+export async function fetchNotifiedBetweenDates(
+  startDate: Date,
+  endDate: Date,
+): Promise<WaitlistProductJsonResponse[]> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
+  return await db
+    .selectFrom('wait_list_products')
+    .selectAll()
+    .where('notified_at', '>=', startDateStr)
+    .where('notified_at', '<=', endDateStr)
+    .where('notified_at', 'is not', null)
+    .execute()
 }

@@ -1,4 +1,3 @@
-import type { Faker } from '@stacksjs/faker'
 import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
@@ -40,7 +39,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement([
+      factory: faker => faker.helpers.arrayElement([
         `10% discount on your order`,
         `20% discount on your order`,
         `Free product with purchase`,
@@ -55,7 +54,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.lorem.paragraph(),
+      factory: faker => faker.lorem.paragraph(),
     },
 
     points_required: {
@@ -65,7 +64,7 @@ export default {
       validation: {
         rule: schema.number().min(1),
       },
-      factory: (faker: Faker) => faker.number.int({ min: 100, max: 5000 }),
+      factory: faker => faker.number.int({ min: 100, max: 5000 }),
     },
 
     reward_type: {
@@ -75,7 +74,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement(['DISCOUNT', 'FREE_ITEM', 'PRIORITY_SERVICE']),
+      factory: faker => faker.helpers.arrayElement(['DISCOUNT', 'FREE_ITEM', 'PRIORITY_SERVICE']),
     },
 
     discount_percentage: {
@@ -85,7 +84,7 @@ export default {
       validation: {
         rule: schema.number().min(0).max(100),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => faker.number.int({ min: 5, max: 50 }), { probability: 0.6 }),
+      factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 5, max: 50 }), { probability: 0.6 }),
     },
 
     free_product_id: {
@@ -95,7 +94,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.4 }),
+      factory: faker => faker.helpers.maybe(() => faker.string.uuid(), { probability: 0.4 }),
     },
 
     is_active: {
@@ -105,7 +104,7 @@ export default {
       validation: {
         rule: schema.boolean(),
       },
-      factory: (faker: Faker) => faker.datatype.boolean({ probability: 0.9 }), // 90% active
+      factory: faker => faker.datatype.boolean({ probability: 0.9 }), // 90% active
     },
 
     expiry_days: {
@@ -115,7 +114,7 @@ export default {
       validation: {
         rule: schema.number().min(0),
       },
-      factory: (faker: Faker) => faker.helpers.arrayElement([7, 14, 30, 60, 90]),
+      factory: faker => faker.helpers.arrayElement([7, 14, 30, 60, 90]),
     },
 
     image_url: {
@@ -125,7 +124,7 @@ export default {
       validation: {
         rule: schema.string(),
       },
-      factory: (faker: Faker) => faker.image.url(),
+      factory: faker => faker.image.url(),
     },
   },
 

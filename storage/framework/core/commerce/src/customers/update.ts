@@ -1,6 +1,7 @@
-import { formatDate, type CustomerJsonResponse, type CustomerRequestType, type CustomerUpdate } from '@stacksjs/orm'
+import type { CustomerJsonResponse, CustomerRequestType, CustomerUpdate } from '@stacksjs/orm'
 
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update a customer by ID

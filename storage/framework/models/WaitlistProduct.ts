@@ -125,6 +125,16 @@ export default {
       },
       factory: faker => faker.helpers.arrayElement(['waiting', 'purchased', 'notified', 'cancelled']),
     },
+
+    notified_at: {
+      required: false,
+      order: 6,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+    },
   },
 
   dashboard: {

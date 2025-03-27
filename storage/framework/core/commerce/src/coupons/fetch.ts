@@ -1,6 +1,7 @@
-import { formatDate, type CouponJsonResponse } from '@stacksjs/orm'
+import type { CouponJsonResponse } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Process coupon data from the database

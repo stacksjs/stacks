@@ -49,6 +49,7 @@ export interface Attributes {
   party_size: number
   notification_preference: string | string[]
   source: string
+  notified_at: string
   download_limit: number
   expiry_days: number
   requires_login: boolean

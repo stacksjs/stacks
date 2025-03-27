@@ -1,7 +1,8 @@
-// Import dependencies
-import { formatDate, type ProductUnitRequestType } from '@stacksjs/orm'
+import type { ProductUnitRequestType } from '@stacksjs/orm'
 import type { ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
 import { db } from '@stacksjs/database'
+// Import dependencies
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Update an existing product unit

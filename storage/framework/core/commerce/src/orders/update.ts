@@ -1,6 +1,7 @@
-// Import dependencies
-import { formatDate, type OrderJsonResponse, type OrderRequestType } from '@stacksjs/orm'
+import type { OrderJsonResponse, OrderRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+// Import dependencies
+import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**

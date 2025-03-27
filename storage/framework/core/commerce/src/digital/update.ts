@@ -1,6 +1,7 @@
-// Import dependencies
-import { formatDate, type DigitalDeliveryJsonResponse, type DigitalDeliveryRequestType } from '@stacksjs/orm'
+import type { DigitalDeliveryJsonResponse, DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+// Import dependencies
+import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
@@ -32,8 +33,6 @@ export async function update(id: number, request: DigitalDeliveryRequestType): P
     status: request.get('status'),
     updated_at: formatDate(new Date()),
   }
-
-
 
   try {
     // Update the digital delivery

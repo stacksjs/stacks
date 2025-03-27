@@ -12,6 +12,7 @@ export async function up(db: Database<any>) {
     .addColumn('party_size', 'numeric', col => col.notNull())
     .addColumn('notification_preference', 'text', col => col.notNull())
     .addColumn('source', 'text', col => col.notNull())
+    .addColumn('notified_at', 'text')
     .addColumn('notes', 'text')
     .addColumn('status', 'text', col => col.notNull().defaultTo('waiting'))
     .addColumn('customer_id', 'integer', col =>

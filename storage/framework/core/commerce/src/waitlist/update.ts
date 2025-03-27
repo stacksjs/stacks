@@ -1,5 +1,6 @@
-import { formatDate, type WaitlistProductJsonResponse, type WaitlistProductRequestType } from '@stacksjs/orm'
+import type { WaitlistProductJsonResponse, WaitlistProductRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
