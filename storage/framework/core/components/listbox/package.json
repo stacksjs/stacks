@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/listbox",
   "type": "module",
-  "version": "0.70.18",
+  "version": "0.70.19",
   "description": "A modern listbox component.",
   "author": "Chris Breuer",
   "contributors": [

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/vite-config",
   "type": "module",
-  "version": "0.70.18",
+  "version": "0.70.19",
   "description": "The Stacks Vite configurations.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
