@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/dropdown",
   "type": "module",
-  "version": "0.70.11",
+  "version": "0.70.12",
   "description": "A modern dropdown component.",
   "author": "Chris Breuer",
   "contributors": [
