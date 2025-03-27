@@ -18,6 +18,7 @@ import {
 } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
+import { fetchConversionRates } from '../waitlist/fetch'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -841,6 +842,59 @@ describe('Waitlist Product Module', () => {
       expect(waitingWaitlists.length).toBe(2)
       expect(waitingWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('John Doe')
       expect(waitingWaitlists.map((w: WaitlistProductJsonResponse) => w.name)).toContain('Jane Smith')
+    })
+
+    it('should fetch conversion rates for waitlist products', async () => {
+      // Create test waitlist products with different statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          notification_preference: 'email',
+          source: 'website',
+          status: 'waiting',
+          product_id: 1,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          notification_preference: 'sms',
+          source: 'website',
+          status: 'purchased',
+          product_id: 2,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          notification_preference: 'both',
+          source: 'app',
+          status: 'cancelled',
+          product_id: 3,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist products
+      await bulkStore(requests as any)
+
+      // Fetch conversion rates
+      const rates = await fetchConversionRates()
+      
+      // Verify the results
+      expect(rates).toBeDefined()
+      expect(rates.totalConversionRate).toBeCloseTo(33.33, 2) // 1 purchased out of 3 total
+      expect(rates.statusBreakdown).toBeDefined()
+      expect(Object.keys(rates.statusBreakdown).length).toBe(3) // waiting, purchased, cancelled
+      
+      // Verify each status breakdown
+      expect(rates.statusBreakdown.waiting).toEqual({ count: 1, percentage: expect.closeTo(33.33, 2) })
+      expect(rates.statusBreakdown.purchased).toEqual({ count: 1, percentage: expect.closeTo(33.33, 2) })
+      expect(rates.statusBreakdown.cancelled).toEqual({ count: 1, percentage: expect.closeTo(33.33, 2) })
     })
   })
 })

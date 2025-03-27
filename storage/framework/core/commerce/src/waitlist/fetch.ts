@@ -200,3 +200,42 @@ export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
     .where('status', '=', 'waiting')
     .execute()
 }
+
+/**
+ * Fetch conversion rates for waitlist products
+ * @returns Object containing total conversion rate and breakdown by status
+ */
+export async function fetchConversionRates(): Promise<{
+  totalConversionRate: number
+  statusBreakdown: Record<string, { count: number; percentage: number }>
+}> {
+  const results = await db
+    .selectFrom('wait_list_products')
+    .select([
+      'status',
+      eb => eb.fn.count<number>('id').as('count'),
+    ])
+    .groupBy('status')
+    .execute()
+
+  // Calculate total count and purchased count
+  const totalCount = results.reduce((sum, { count }) => sum + count, 0)
+  const purchasedCount = results.find(r => r.status === 'purchased')?.count ?? 0
+
+  // Calculate conversion rate
+  const totalConversionRate = totalCount > 0 ? (purchasedCount / totalCount) * 100 : 0
+
+  // Create status breakdown with percentages
+  const statusBreakdown = results.reduce((acc, { status, count }) => {
+    acc[status as string] = {
+      count,
+      percentage: totalCount > 0 ? (count / totalCount) * 100 : 0,
+    }
+    return acc
+  }, {} as Record<string, { count: number; percentage: number }>)
+
+  return {
+    totalConversionRate,
+    statusBreakdown,
+  }
+}
