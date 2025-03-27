@@ -155,7 +155,6 @@ describe('Tax Rate Module', () => {
         throw new Error('Failed to create test tax rate')
       }
 
-      // Update the tax rate with new data
       const updateData = {
         name: 'Reduced VAT',
         rate: 5,

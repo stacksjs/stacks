@@ -4,6 +4,7 @@ import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../payments/destroy'
 import { fetchMonthlyPaymentTrends, fetchPaymentStats, fetchPaymentStatsByMethod } from '../payments/fetch'
 import { store } from '../payments/store'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -302,7 +303,7 @@ describe('Payment Module', () => {
   describe('fetchPaymentStats', () => {
     it('should return payment statistics for a specific time period', async () => {
       // Create some test payments for statistics
-      const today = new Date().toISOString()
+      const today = formatDate(new Date())
 
       // Payment within current period
       const recentPaymentData = {
@@ -337,7 +338,7 @@ describe('Payment Module', () => {
   describe('fetchPaymentStatsByMethod', () => {
     it('should return payment statistics grouped by payment method', async () => {
       // Create some test payments with different methods
-      const today = new Date().toISOString()
+      const today = formatDate(new Date())
 
       // Credit card payment
       const ccPaymentData = {
@@ -390,12 +391,12 @@ describe('Payment Module', () => {
   describe('fetchMonthlyPaymentTrends', () => {
     it('should return monthly payment trends data', async () => {
       // Create some test payments for different months
-      const today = new Date().toISOString()
+      const today = formatDate(new Date())
 
       // Previous month date as ISO string
       const previousMonth = new Date()
       previousMonth.setMonth(previousMonth.getMonth() - 1)
-      const previousMonthStr = previousMonth.toISOString()
+      const previousMonthStr = formatDate(previousMonth)
 
       // Current month payment
       const currentMonthPayment = {

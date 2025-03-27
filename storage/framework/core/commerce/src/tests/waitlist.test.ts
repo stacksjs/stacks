@@ -4,6 +4,7 @@ import { bulkDestroy, destroy } from '../waitlist/destroy'
 import { fetchAll, fetchById, fetchCountBySource, fetchCountByDate, fetchCountByQuantity, fetchCountByAllQuantities } from '../waitlist/fetch'
 import { bulkStore, store } from '../waitlist/store'
 import { update, updatePartySize, updateStatus } from '../waitlist/update'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -427,7 +428,7 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          created_at: testDate.toISOString().replace('T', ' ').split('.')[0],
+          created_at: formatDate(testDate),
         }),
         new TestRequest({
           name: 'Jane Smith',
@@ -438,7 +439,7 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          created_at: testDate.toISOString().replace('T', ' ').split('.')[0],
+          created_at: formatDate(testDate),
         }),
       ]
 

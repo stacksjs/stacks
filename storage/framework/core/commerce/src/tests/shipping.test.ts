@@ -149,7 +149,6 @@ describe('Shipping Methods Module', () => {
         throw new Error('Failed to create test shipping method')
       }
 
-      // Update the shipping method with new data
       const updateData = {
         name: 'Updated Shipping',
         description: 'Updated description',

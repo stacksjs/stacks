@@ -43,8 +43,6 @@ export async function store(request: WaitlistProductRequestType): Promise<Waitli
       .selectAll()
       .executeTakeFirst()
 
-    console.log(waitlistProduct)
-
     return waitlistProduct
   }
   catch (error) {

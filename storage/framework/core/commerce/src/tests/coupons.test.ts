@@ -4,6 +4,7 @@ import { deleteCoupon, deleteCoupons, deleteExpiredCoupons } from '../coupons/de
 import { fetchActive, fetchAll, fetchByCode, fetchById } from '../coupons/fetch'
 import { store } from '../coupons/store'
 import { update } from '../coupons/update'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -78,8 +79,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       const firstRequest = new TestRequest(firstCouponData)
@@ -93,8 +94,8 @@ describe('Coupon Module', () => {
         discount_type: 'fixed',
         discount_value: 5,
         product_id: 2,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       const secondRequest = new TestRequest(secondCouponData)
@@ -120,8 +121,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 15,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
         // Other fields are omitted to test defaults
       }
 
@@ -147,8 +148,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       const request = new TestRequest(requestData)
@@ -183,8 +184,8 @@ describe('Coupon Module', () => {
         discount_type: 'fixed',
         discount_value: 5,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       const request = new TestRequest(requestData)
@@ -212,8 +213,8 @@ describe('Coupon Module', () => {
           discount_type: 'percentage',
           discount_value: 10 + i,
           product_id: 1,
-          start_date: '2023-01-01',
-          end_date: '2023-12-31',
+          start_date: formatDate(new Date('2023-01-01')),
+          end_date: formatDate(new Date('2023-12-31')),
         }
 
         await store(new TestRequest(requestData) as any)
@@ -247,8 +248,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 20,
         product_id: 1,
-        start_date: todayStr,
-        end_date: futureDateStr,
+        start_date: formatDate(today),
+        end_date: formatDate(futureDate),
         is_active: true,
       }
 
@@ -261,8 +262,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 20,
         product_id: 1,
-        start_date: todayStr,
-        end_date: futureDateStr,
+        start_date: formatDate(today),
+        end_date: formatDate(futureDate),
         is_active: false,
       }
 
@@ -272,11 +273,11 @@ describe('Coupon Module', () => {
       const activeCoupons = await fetchActive()
 
       // Check that active coupon is included
-      const hasActiveCoupon = activeCoupons.data.some(coupon => coupon.code === activeCode)
+      const hasActiveCoupon = activeCoupons.some(coupon => coupon.code === activeCode)
       expect(hasActiveCoupon).toBe(true)
 
       // Check that inactive coupon is not included
-      const hasInactiveCoupon = activeCoupons.data.some(coupon => coupon.code === inactiveCode)
+      const hasInactiveCoupon = activeCoupons.some(coupon => coupon.code === inactiveCode)
       expect(hasInactiveCoupon).toBe(false)
     })
   })
@@ -291,8 +292,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       // Create the coupon
@@ -345,7 +346,7 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2023-01-01',
+        start_date: formatDate(new Date('2023-01-01')),
         end_date: '2023-12-31',
       }
 
@@ -401,8 +402,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2023-01-01',
-        end_date: '2023-12-31',
+        start_date: formatDate(new Date('2023-01-01')),
+        end_date: formatDate(new Date('2023-12-31')),
       }
 
       // Create the coupon
@@ -442,8 +443,8 @@ describe('Coupon Module', () => {
           discount_type: 'percentage',
           discount_value: 10 + i,
           product_id: 1,
-          start_date: '2023-01-01',
-          end_date: '2023-12-31',
+          start_date: formatDate(new Date('2023-01-01')),
+          end_date: formatDate(new Date('2023-12-31')),
         }
 
         const request = new TestRequest(requestData)
@@ -490,8 +491,8 @@ describe('Coupon Module', () => {
           discount_type: 'percentage',
           discount_value: 10,
           product_id: 1,
-          start_date: '2022-01-01',
-          end_date: pastDateStr, // End date in the past
+          start_date: formatDate(new Date('2022-01-01')),
+          end_date: pastDateStr,
         }
 
         const request = new TestRequest(requestData)
@@ -508,7 +509,7 @@ describe('Coupon Module', () => {
       // Create a non-expired coupon
       const futureDate = new Date()
       futureDate.setMonth(futureDate.getMonth() + 1)
-      const futureDateStr = futureDate.toISOString().split('T')[0]
+      const futureDateStr = formatDate(futureDate)
 
       const validCode = `COUPON-VALID-${Date.now()}`
       const validData = {
@@ -516,8 +517,8 @@ describe('Coupon Module', () => {
         discount_type: 'percentage',
         discount_value: 10,
         product_id: 1,
-        start_date: '2022-01-01',
-        end_date: futureDateStr, // End date in the future
+        start_date: formatDate(new Date('2022-01-01')),
+        end_date: futureDateStr,
       }
 
       const validRequest = new TestRequest(validData)

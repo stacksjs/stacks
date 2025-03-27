@@ -203,7 +203,6 @@ describe('Shipping Zone Module', () => {
         throw new Error('Failed to create test shipping zone')
       }
 
-      // Update the zone with new data
       const updateData = {
         name: 'Updated Zone',
         countries: JSON.stringify(['US', 'CA']),

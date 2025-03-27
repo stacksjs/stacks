@@ -4,6 +4,7 @@ import { bulkDestroy, destroy } from '../reviews/destroy'
 import { fetchApprovedByProductId, fetchById, fetchByProductId, fetchByUserId, fetchMostHelpfulByProductId, fetchReviewStats } from '../reviews/fetch'
 import { store } from '../reviews/store'
 import { update, updateVotes } from '../reviews/update'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -40,7 +41,7 @@ describe('Product Review Module', () => {
         is_featured: true,
         helpful_votes: 0,
         unhelpful_votes: 0,
-        purchase_date: new Date().toISOString(),
+        purchase_date: formatDate(new Date()),
         images: null,
       }
 

@@ -4,6 +4,7 @@ import { bulkDestroy, bulkSoftDelete, destroy } from '../routes/destroy'
 import { fetchByDriver, fetchById } from '../routes/fetch'
 import { store } from '../routes/store'
 import { update, updateMetrics, updateStops } from '../routes/update'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -39,7 +40,7 @@ describe('Delivery Route Module', () => {
         stops: 5,
         delivery_time: 120,
         total_distance: 50,
-        last_active: new Date().toISOString(),
+        last_active: formatDate(new Date()),
       }
 
       const request = new TestRequest(requestData)

@@ -4,6 +4,7 @@ import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../license/des
 import { fetchAll, fetchById } from '../license/fetch'
 import { bulkStore, store } from '../license/store'
 import { update, updateExpiration, updateStatus } from '../license/update'
+import { formatDate } from '@stacksjs/orm'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -32,7 +33,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Premium License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'active',
         customer_id: 1,
         product_id: 1,
@@ -67,7 +68,7 @@ describe('License Key Module', () => {
       const minimalRequestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
       }
 
@@ -87,19 +88,19 @@ describe('License Key Module', () => {
         new TestRequest({
           key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
           template: 'Standard License',
-          expiry_date: new Date('2025-12-31').toISOString(),
+          expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
         }),
         new TestRequest({
           key: 'YYYY-YYYY-YYYY-YYYY-YYYY',
           template: 'Premium License',
-          expiry_date: new Date('2026-12-31').toISOString(),
+          expiry_date: formatDate(new Date('2026-12-31')),
           status: 'unassigned',
         }),
         new TestRequest({
           key: 'ZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZ',
           template: 'Enterprise License',
-          expiry_date: new Date('2027-12-31').toISOString(),
+          expiry_date: formatDate(new Date('2027-12-31')),
           status: 'unassigned',
         }),
       ]
@@ -124,7 +125,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
       }
 
@@ -143,7 +144,7 @@ describe('License Key Module', () => {
       const updateData = {
         key: 'YYYY-YYYY-YYYY-YYYY-YYYY',
         template: 'Premium License',
-        expiry_date: new Date('2026-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2026-12-31')),
         status: 'active',
         customer_id: 1,
         product_id: 1,
@@ -170,7 +171,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
       }
 
@@ -200,7 +201,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2026-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2026-12-31')),
         status: 'unassigned',
       }
 
@@ -214,7 +215,7 @@ describe('License Key Module', () => {
       }
 
       // Update expiry date
-      const newExpiryDate = new Date('2026-12-31').toISOString()
+      const newExpiryDate = formatDate(new Date('2026-12-31'))
       const updatedLicense = await updateExpiration(licenseId, newExpiryDate)
 
       expect(updatedLicense).toBeDefined()
@@ -229,7 +230,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
       }
 
@@ -262,7 +263,7 @@ describe('License Key Module', () => {
       const requestData = {
         key: 'XXXX-XXXX-XXXX-XXXX-XXXX',
         template: 'Standard License',
-        expiry_date: new Date('2025-12-31').toISOString(),
+        expiry_date: formatDate(new Date('2025-12-31')),
         status: 'unassigned',
       }
 
@@ -295,7 +296,7 @@ describe('License Key Module', () => {
         const requestData = {
           key: `XXXX-XXXX-XXXX-XXXX-${i.toString().padStart(4, '0')}`,
           template: 'Standard License',
-          expiry_date: new Date('2025-12-31').toISOString(),
+          expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
         }
 
@@ -333,7 +334,7 @@ describe('License Key Module', () => {
         const requestData = {
           key: `XXXX-XXXX-XXXX-XXXX-${i.toString().padStart(4, '0')}`,
           template: 'Standard License',
-          expiry_date: new Date('2025-12-31').toISOString(),
+          expiry_date: formatDate(new Date('2025-12-31')),
           status: 'unassigned',
         }
 
