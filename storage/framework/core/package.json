@@ -41,302 +41,242 @@
   ],
   "exports": {
     ".": {
-      "bun": "./index.ts",
       "types": "./buddy/dist/index.d.ts",
       "import": "./buddy/dist/index.js"
     },
     "./actions": {
-      "bun": "./actions/src/index.ts",
       "types": "./actions/dist/index.d.ts",
       "import": "./actions/dist/index.js"
     },
     "./ai": {
-      "bun": "./ai/src/index.ts",
       "types": "./ai/dist/index.d.ts",
       "import": "./ai/dist/index.js"
     },
     "./api": {
-      "bun": "./api/src/index.ts",
       "types": "./api/dist/index.d.ts",
       "import": "./api/dist/index.js"
     },
     "./alias": {
-      "bun": "./alias/src/index.ts",
       "types": "./alias/dist/index.d.ts",
       "import": "./alias/dist/index.js"
     },
     "./analytics": {
-      "bun": "./analytics/src/index.ts",
       "types": "./analytics/dist/index.d.ts",
       "import": "./analytics/dist/index.js"
     },
     "./arrays": {
-      "bun": "./arrays/src/index.ts",
       "types": "./arrays/dist/index.d.ts",
       "import": "./arrays/dist/index.js"
     },
     "./auth": {
-      "bun": "./auth/src/index.ts",
       "types": "./auth/dist/index.d.ts",
       "import": "./auth/dist/index.js"
     },
     "./buddy": {
-      "bun": "./buddy/src/index.ts",
       "types": "./buddy/dist/index.d.ts",
       "import": "./buddy/dist/index.js"
     },
     "./build": {
-      "bun": "./build/src/index.ts",
       "types": "./build/dist/index.d.ts",
       "import": "./build/dist/index.js"
     },
     "./cache": {
-      "bun": "./cache/src/index.ts",
       "types": "./cache/dist/index.d.ts",
       "import": "./cache/dist/index.js"
     },
     "./chat": {
-      "bun": "./chat/src/index.ts",
       "types": "./chat/dist/index.d.ts",
       "import": "./chat/dist/index.js"
     },
     "./cli": {
-      "bun": "./cli/src/index.ts",
       "types": "./cli/dist/index.d.ts",
       "import": "./cli/dist/index.js"
     },
     "./cloud": {
-      "bun": "./cloud/src/index.ts",
       "types": "./cloud/dist/index.d.ts",
       "import": "./cloud/dist/index.js"
     },
     "./collections": {
-      "bun": "./collections/src/index.ts",
       "types": "./collections/dist/index.d.ts",
       "import": "./collections/dist/index.js"
     },
     "./config": {
-      "bun": "./config/src/index.ts",
       "types": "./config/dist/index.d.ts",
       "import": "./config/dist/index.js"
     },
     "./database": {
-      "bun": "./database/src/index.ts",
       "types": "./database/dist/index.d.ts",
       "import": "./database/dist/index.js"
     },
     "./datetime": {
-      "bun": "./datetime/src/index.ts",
       "types": "./datetime/dist/index.d.ts",
       "import": "./datetime/dist/index.js"
     },
     "./desktop": {
-      "bun": "./desktop/src/index.ts",
       "types": "./desktop/dist/index.d.ts",
       "import": "./desktop/dist/index.js"
     },
     "./development": {
-      "bun": "./development/src/index.ts",
       "types": "./development/dist/index.d.ts",
       "import": "./development/dist/index.js"
     },
     "./dns": {
-      "bun": "./dns/src/index.ts",
       "types": "./dns/dist/index.d.ts",
       "import": "./dns/dist/index.js"
     },
     "./docs": {
-      "bun": "./docs/src/index.ts",
       "types": "./docs/dist/index.d.ts",
       "import": "./docs/dist/index.js"
     },
     "./email": {
-      "bun": "./email/src/index.ts",
       "types": "./email/dist/index.d.ts",
       "import": "./email/dist/index.js"
     },
     "./enums": {
-      "bun": "./enums/src/index.ts",
       "types": "./enums/dist/index.d.ts",
       "import": "./enums/dist/index.js"
     },
     "./error-handling": {
-      "bun": "./error-handling/src/index.ts",
       "types": "./error-handling/dist/index.d.ts",
       "import": "./error-handling/dist/index.js"
     },
     "./events": {
-      "bun": "./events/src/index.ts",
       "types": "./events/dist/index.d.ts",
       "import": "./events/dist/index.js"
     },
     "./faker": {
-      "bun": "./faker/src/index.ts",
       "types": "./faker/dist/index.d.ts",
       "import": "./faker/dist/index.js"
     },
     "./git": {
-      "bun": "./git/src/index.ts",
       "types": "./git/dist/index.d.ts",
       "import": "./git/dist/index.js"
     },
     "./health": {
-      "bun": "./health/src/index.ts",
       "types": "./health/dist/index.d.ts",
       "import": "./health/dist/index.js"
     },
     "./lint": {
-      "bun": "./lint/src/index.ts",
       "types": "./lint/dist/index.d.ts",
       "import": "./lint/dist/index.js"
     },
     "./logging": {
-      "bun": "./logging/src/index.ts",
       "types": "./logging/dist/index.d.ts",
       "import": "./logging/dist/index.js"
     },
     "./notifications": {
-      "bun": "./notifications/src/index.ts",
       "types": "./notifications/dist/index.d.ts",
       "import": "./notifications/dist/index.js"
     },
     "./objects": {
-      "bun": "./objects/src/index.ts",
       "types": "./objects/dist/index.d.ts",
       "import": "./objects/dist/index.js"
     },
     "./orm": {
-      "bun": "./orm/src/index.ts",
       "types": "./orm/dist/index.d.ts",
       "import": "./orm/dist/index.js"
     },
     "./path": {
-      "bun": "./path/src/index.ts",
       "types": "./path/dist/index.d.ts",
       "import": "./path/dist/index.js"
     },
     "./payments": {
-      "bun": "./payments/src/index.ts",
       "types": "./payments/dist/index.d.ts",
       "import": "./payments/dist/index.js"
     },
     "./push": {
-      "bun": "./push/src/index.ts",
       "types": "./push/dist/index.d.ts",
       "import": "./push/dist/index.js"
     },
     "./query-builder": {
-      "bun": "./query-builder/src/index.ts",
       "types": "./query-builder/dist/index.d.ts",
       "import": "./query-builder/dist/index.js"
     },
     "./queue": {
-      "bun": "./queue/src/index.ts",
       "types": "./queue/dist/index.d.ts",
       "import": "./queue/dist/index.js"
     },
     "./realtime": {
-      "bun": "./realtime/src/index.ts",
       "types": "./realtime/dist/index.d.ts",
       "import": "./realtime/dist/index.js"
     },
     "./repl": {
-      "bun": "./repl/src/index.ts",
       "types": "./repl/dist/index.d.ts",
       "import": "./repl/dist/index.js"
     },
     "./router": {
-      "bun": "./router/src/index.ts",
       "types": "./router/dist/index.d.ts",
       "import": "./router/dist/index.js"
     },
     "./scheduler": {
-      "bun": "./scheduler/src/index.ts",
       "types": "./scheduler/dist/index.d.ts",
       "import": "./scheduler/dist/index.js"
     },
     "./search-engine": {
-      "bun": "./search-engine/src/index.ts",
       "types": "./search-engine/dist/index.d.ts",
       "import": "./search-engine/dist/index.js"
     },
     "./security": {
-      "bun": "./security/src/index.ts",
       "types": "./security/dist/index.d.ts",
       "import": "./security/dist/index.js"
     },
     "./server": {
-      "bun": "./server/src/index.ts",
       "types": "./server/dist/index.d.ts",
       "import": "./server/dist/index.js"
     },
     "./signals": {
-      "bun": "./signals/src/index.ts",
       "types": "./signals/dist/index.d.ts",
       "import": "./signals/dist/index.js"
     },
     "./slug": {
-      "bun": "./slug/src/index.ts",
       "types": "./slug/dist/index.d.ts",
       "import": "./slug/dist/index.js"
     },
     "./sms": {
-      "bun": "./sms/src/index.ts",
       "types": "./sms/dist/index.d.ts",
       "import": "./sms/dist/index.js"
     },
     "./stepper": {
-      "bun": "./components/stepper/src/index.ts",
       "types": "./components/stepper/dist/index.d.ts",
       "import": "./components/stepper/dist/index.js"
     },
     "./modal": {
-      "bun": "./components/modal/src/index.ts",
       "types": "./components/modal/dist/index.d.ts",
       "import": "./components/modal/dist/index.js"
     },
     "./storage": {
-      "bun": "./storage/src/index.ts",
       "types": "./storage/dist/index.d.ts",
       "import": "./storage/dist/index.js"
     },
     "./strings": {
-      "bun": "./strings/src/index.ts",
       "types": "./strings/dist/index.d.ts",
       "import": "./strings/dist/index.js"
     },
     "./testing": {
-      "bun": "./testing/src/index.ts",
       "types": "./testing/dist/index.d.ts",
       "import": "./testing/dist/index.js"
     },
     "./tinker": {
-      "bun": "./tinker/src/index.ts",
       "types": "./tinker/dist/index.d.ts",
       "import": "./tinker/dist/index.js"
     },
     "./tunnel": {
-      "bun": "./tunnel/src/index.ts",
       "types": "./tunnel/dist/index.d.ts",
       "import": "./tunnel/dist/index.js"
     },
     "./types": {
-      "bun": "./types/src/index.ts",
       "types": "./types/dist/index.d.ts",
       "import": "./types/dist/index.js"
     },
     "./ui": {
-      "bun": "./ui/src/index.ts",
       "types": "./ui/dist/index.d.ts",
       "import": "./ui/dist/index.js"
     },
     "./utils": {
-      "bun": "./utils/src/index.ts",
       "types": "./utils/dist/index.d.ts",
       "import": "./utils/dist/index.js"
     },
     "./validation": {
-      "bun": "./validation/src/index.ts",
       "types": "./validation/dist/index.d.ts",
       "import": "./validation/dist/index.js"
     }
