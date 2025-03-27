@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/audio",
   "type": "module",
-  "version": "0.70.16",
+  "version": "0.70.17",
   "description": "Opinionated audio components for Stacks.",
   "author": "Chris Breuer",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
