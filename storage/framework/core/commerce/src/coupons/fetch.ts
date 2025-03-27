@@ -79,7 +79,7 @@ export async function fetchByCode(code: string): Promise<CouponJsonResponse | un
  * Fetch active coupons (is_active = true and within date range)
  */
 export async function fetchActive(): Promise<CouponJsonResponse[]> {
-  const currentDate = new Date().toISOString().split('T')[0]
+  const currentDate = formatDate(new Date())
 
   const coupons = await db
     .selectFrom('coupons')

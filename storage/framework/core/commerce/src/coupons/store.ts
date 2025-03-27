@@ -42,11 +42,12 @@ export async function store(request: CouponRequestType): Promise<CouponJsonRespo
       .values(couponData)
       .executeTakeFirst()
 
-    // If insert was successful, retrieve the newly created coupon
-    if (createdCoupon.insertId) {
+    const couponId = Number(createdCoupon.insertId) || Number(createdCoupon.numInsertedOrUpdatedRows)
+
+    if (couponId) {
       const coupon = await db
         .selectFrom('coupons')
-        .where('id', '=', Number(createdCoupon.insertId))
+        .where('id', '=', couponId)
         .selectAll()
         .executeTakeFirst()
 

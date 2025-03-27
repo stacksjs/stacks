@@ -27,6 +27,7 @@ interface RequestDataCoupon {
   end_date: date
   applicable_products: string
   applicable_categories: string
+  product_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -46,6 +47,7 @@ export class CouponRequest extends Request<RequestDataCoupon> implements CouponR
   public end_date = ''
   public applicable_products = ''
   public applicable_categories = ''
+  public product_id = 0
   public created_at = new Date()
   public updated_at = new Date()
   public uuid = ''

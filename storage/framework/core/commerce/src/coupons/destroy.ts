@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Delete a coupon by ID
@@ -37,12 +38,12 @@ export async function deleteCoupons(ids: number[]): Promise<number> {
  * @returns The number of deleted coupons
  */
 export async function deleteExpiredCoupons(): Promise<number> {
-  const currentDate = new Date().toISOString().split('T')[0]
+  const currentDate = formatDate(new Date())
 
   const result = await db
     .deleteFrom('coupons')
     .where('end_date', '<', currentDate)
-    .execute()
+    .executeTakeFirst()
 
-  return result.length || 0
+  return Number(result?.numDeletedRows) || 0
 }

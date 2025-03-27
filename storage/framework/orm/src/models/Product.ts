@@ -1,12 +1,14 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
 import type { CategoryModel } from './Category'
+import type { CouponModel } from './Coupon'
 import type { LicenseKeyModel } from './LicenseKey'
 import type { ManufacturerModel } from './Manufacturer'
 import type { ProductUnitModel } from './ProductUnit'
 import type { ProductVariantModel } from './ProductVariant'
 import type { ReviewModel } from './Review'
 import type { WaitlistProductModel } from './WaitlistProduct'
+
 import { randomUUIDv7 } from 'bun'
 
 import { sql } from '@stacksjs/database'
@@ -203,6 +205,10 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
 
   get wait_list_products(): WaitlistProductModel[] | [] {
     return this.attributes.wait_list_products
+  }
+
+  get coupons(): CouponModel[] | [] {
+    return this.attributes.coupons
   }
 
   get category_id(): number {
@@ -1030,6 +1036,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       product_variants: this.product_variants,
       license_keys: this.license_keys,
       wait_list_products: this.wait_list_products,
+      coupons: this.coupons,
       category_id: this.category_id,
       category: this.category,
       manufacturer_id: this.manufacturer_id,
