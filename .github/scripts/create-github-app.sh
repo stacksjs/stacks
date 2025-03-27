@@ -112,7 +112,7 @@ PEM_KEY=$(cat "$PEM_PATH")
 echo "6. Successfully registered GitHub App with ID: $APP_ID"
 
 # Create GitHub repository secrets
-echo "7. Creating GitHub repository secrets..."
+echo "7. Creating GitHub repository and organization secrets..."
 
 # Create secrets in the repository
 echo "Creating GH_APP_ID secret..."
@@ -121,8 +121,8 @@ gh secret set GH_APP_ID -b"$APP_ID" -R stacksjs/stacks
 echo "Creating GH_APP_PRIVATE_KEY secret..."
 gh secret set GH_APP_PRIVATE_KEY -b"$PEM_KEY" -R stacksjs/stacks
 
-echo "Creating GH_PAT secret (for repository creation)..."
-gh secret set GH_PAT -b"$GITHUB_TOKEN" -R stacksjs/stacks
+echo "Creating GH_PAT as an ORGANIZATION secret (available to all stacksjs repos)..."
+gh secret set GH_PAT -b"$GITHUB_TOKEN" -o stacksjs --visibility all
 
 echo
 echo "8. Installation:"
@@ -136,5 +136,5 @@ echo
 
 echo "Setup completed successfully!"
 echo "The GitHub App ID is: $APP_ID"
-echo "These values have been set as repository secrets."
+echo "These values have been set as repository and organization secrets."
 echo "================================================================"
