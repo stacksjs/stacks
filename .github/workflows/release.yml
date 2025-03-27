@@ -88,10 +88,19 @@ jobs:
           echo "Tag: ${GITHUB_REF#refs/tags/}"
           echo "Version from previous job: ${{ needs.release.outputs.version }}"
 
-      - name: Authenticate GitHub CLI
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.GH_APP_ID }}
+          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
 
-      - name: Create Homebrew Tap Repository If Needed
+      - name: Authenticate GitHub CLI
+        run: echo "${{ steps.generate-token.outputs.token }}" | gh auth login --with-token
+
+      - name: Create Homebrew Tap Repository
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
           if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
             echo "Creating homebrew-tap repository..."
@@ -172,8 +181,8 @@ jobs:
 
       - name: Push to Homebrew Tap Repository
         run: |
-          # Clone the tap repo using GitHub token
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/stacksjs/homebrew-tap.git
+          # Clone the tap repo using GitHub App token
+          git clone https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/stacksjs/homebrew-tap.git
 
           # Set up Git config
           cd homebrew-tap

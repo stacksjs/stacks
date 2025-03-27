@@ -357,6 +357,7 @@ unplugin
 Unprefix
 Unprefixed
 unstorage
+untap
 Untimed
 Updateable
 upstash
