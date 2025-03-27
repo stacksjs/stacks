@@ -382,7 +382,7 @@ We would like to extend our thanks to the following sponsors for funding Stacks 
 
 ## Credits
 
-- [Laravel](https://laravel.com) _many thanks to their community_ 
+- [Laravel](https://laravel.com) _many thanks to their community_
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

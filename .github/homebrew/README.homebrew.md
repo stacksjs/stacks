@@ -7,7 +7,7 @@ Stacks is available via Homebrew for macOS and Linux users, making installation 
 The fastest way to install Stacks is with our one-line installation script:
 
 ```bash
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/stacksjs/stacks/main/.github/homebrew/install.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/stacksjs/stacks/main/.github/scripts/install.sh)"
 ```
 
 This script:
