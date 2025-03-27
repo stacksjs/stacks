@@ -201,7 +201,7 @@ jobs:
           if git status --porcelain | grep -q .; then
             # Push the changes to the tap repo
             git add Formula/stacks.rb
-            git commit -m "Update stacks formula to ${GITHUB_REF#refs/tags/}"
+            git commit -m "chore: update stacks formula to ${GITHUB_REF#refs/tags/}"
             git push
             echo "Successfully updated homebrew formula!"
           else
