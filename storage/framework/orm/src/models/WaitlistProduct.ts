@@ -10,7 +10,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface WaitListProductsTable {
+export interface WaitlistProductsTable {
   id: Generated<number>
   product_id: number
   customer_id: number
@@ -43,14 +43,14 @@ export interface WaitlistProductResponse {
   next_cursor: number | null
 }
 
-export interface WaitlistProductJsonResponse extends Omit<Selectable<WaitListProductsTable>, 'password'> {
+export interface WaitlistProductJsonResponse extends Omit<Selectable<WaitlistProductsTable>, 'password'> {
   [key: string]: any
 }
 
-export type NewWaitlistProduct = Insertable<WaitListProductsTable>
-export type WaitlistProductUpdate = Updateable<WaitListProductsTable>
+export type NewWaitlistProduct = Insertable<WaitlistProductsTable>
+export type WaitlistProductUpdate = Updateable<WaitlistProductsTable>
 
-export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitListProductsTable, WaitlistProductJsonResponse> {
+export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
   private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []
@@ -72,7 +72,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
    */
 
   constructor(waitlistProduct: WaitlistProductJsonResponse | undefined) {
-    super('wait_list_products')
+    super('waitlist_products')
     if (waitlistProduct) {
       this.attributes = { ...waitlistProduct }
       this.originalAttributes = { ...waitlistProduct }
@@ -85,9 +85,9 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('wait_list_products')
-    this.updateFromQuery = DB.instance.updateTable('wait_list_products')
-    this.deleteFromQuery = DB.instance.deleteFrom('wait_list_products')
+    this.selectFromQuery = DB.instance.selectFrom('waitlist_products')
+    this.updateFromQuery = DB.instance.updateTable('waitlist_products')
+    this.deleteFromQuery = DB.instance.deleteFrom('waitlist_products')
     this.hasSelect = false
     this.hasSaved = false
   }
@@ -314,7 +314,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 
   // Method to find a WaitlistProduct by ID
   static async find(id: number): Promise<WaitlistProductModel | undefined> {
-    const query = DB.instance.selectFrom('wait_list_products').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -355,7 +355,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
   static async all(): Promise<WaitlistProductModel[]> {
     const instance = new WaitlistProductModel(undefined)
 
-    const models = await DB.instance.selectFrom('wait_list_products').selectAll().execute()
+    const models = await DB.instance.selectFrom('waitlist_products').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -380,7 +380,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return models.map((modelItem: WaitlistProductJsonResponse) => instance.parseResult(new WaitlistProductModel(modelItem)))
   }
 
-  static async latest(column: keyof WaitListProductsTable = 'created_at'): Promise<WaitlistProductModel | undefined> {
+  static async latest(column: keyof WaitlistProductsTable = 'created_at'): Promise<WaitlistProductModel | undefined> {
     const instance = new WaitlistProductModel(undefined)
 
     const model = await instance.selectFromQuery
@@ -395,7 +395,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return new WaitlistProductModel(model)
   }
 
-  static async oldest(column: keyof WaitListProductsTable = 'created_at'): Promise<WaitlistProductModel | undefined> {
+  static async oldest(column: keyof WaitlistProductsTable = 'created_at'): Promise<WaitlistProductModel | undefined> {
     const instance = new WaitlistProductModel(undefined)
 
     const model = await instance.selectFromQuery
@@ -422,7 +422,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof WaitListProductsTable, ...args: [V] | [Operator, V]): WaitlistProductModel {
+  static where<V = string>(column: keyof WaitlistProductsTable, ...args: [V] | [Operator, V]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
@@ -434,19 +434,19 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof WaitListProductsTable, values: V[]): WaitlistProductModel {
+  static whereNotIn<V = number>(column: keyof WaitlistProductsTable, values: V[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof WaitListProductsTable, range: [V, V]): WaitlistProductModel {
+  static whereBetween<V = number>(column: keyof WaitlistProductsTable, range: [V, V]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof WaitListProductsTable, ...args: string[]): WaitlistProductModel {
+  static whereRef(column: keyof WaitlistProductsTable, ...args: string[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
@@ -458,49 +458,49 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof WaitListProductsTable): WaitlistProductModel {
+  static whereNull(column: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof WaitListProductsTable): WaitlistProductModel {
+  static whereNotNull(column: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof WaitListProductsTable, value: string): WaitlistProductModel {
+  static whereLike(column: keyof WaitlistProductsTable, value: string): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof WaitListProductsTable, order: 'asc' | 'desc'): WaitlistProductModel {
+  static orderBy(column: keyof WaitlistProductsTable, order: 'asc' | 'desc'): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof WaitListProductsTable): WaitlistProductModel {
+  static orderByAsc(column: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof WaitListProductsTable): WaitlistProductModel {
+  static orderByDesc(column: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof WaitListProductsTable): WaitlistProductModel {
+  static groupBy(column: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof WaitListProductsTable, operator: Operator, value: V): WaitlistProductModel {
+  static having<V = string>(column: keyof WaitlistProductsTable, operator: Operator, value: V): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
@@ -512,31 +512,31 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof WaitListProductsTable, operator: Operator, second: keyof WaitListProductsTable): WaitlistProductModel {
+  static whereColumn(first: keyof WaitlistProductsTable, operator: Operator, second: keyof WaitlistProductsTable): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
-  static async max(field: keyof WaitListProductsTable): Promise<number> {
+  static async max(field: keyof WaitlistProductsTable): Promise<number> {
     const instance = new WaitlistProductModel(undefined)
 
     return await instance.applyMax(field)
   }
 
-  static async min(field: keyof WaitListProductsTable): Promise<number> {
+  static async min(field: keyof WaitlistProductsTable): Promise<number> {
     const instance = new WaitlistProductModel(undefined)
 
     return await instance.applyMin(field)
   }
 
-  static async avg(field: keyof WaitListProductsTable): Promise<number> {
+  static async avg(field: keyof WaitlistProductsTable): Promise<number> {
     const instance = new WaitlistProductModel(undefined)
 
     return await instance.applyAvg(field)
   }
 
-  static async sum(field: keyof WaitListProductsTable): Promise<number> {
+  static async sum(field: keyof WaitlistProductsTable): Promise<number> {
     const instance = new WaitlistProductModel(undefined)
 
     return await instance.applySum(field)
@@ -607,11 +607,11 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('wait_list_products')
+    const result = await DB.instance.insertInto('waitlist_products')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('wait_list_products')
+    const model = await DB.instance.selectFrom('waitlist_products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -634,7 +634,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return await instance.applyCreate(newWaitlistProduct)
   }
 
-  static async firstOrCreate(search: Partial<WaitListProductsTable>, values: NewWaitlistProduct = {} as NewWaitlistProduct): Promise<WaitlistProductModel> {
+  static async firstOrCreate(search: Partial<WaitlistProductsTable>, values: NewWaitlistProduct = {} as NewWaitlistProduct): Promise<WaitlistProductModel> {
     // First try to find a record matching the search criteria
     const instance = new WaitlistProductModel(undefined)
 
@@ -655,7 +655,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return await WaitlistProductModel.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<WaitListProductsTable>, values: NewWaitlistProduct = {} as NewWaitlistProduct): Promise<WaitlistProductModel> {
+  static async updateOrCreate(search: Partial<WaitlistProductsTable>, values: NewWaitlistProduct = {} as NewWaitlistProduct): Promise<WaitlistProductModel> {
     // First try to find a record matching the search criteria
     const instance = new WaitlistProductModel(undefined)
 
@@ -698,14 +698,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('wait_list_products')
+    await DB.instance.updateTable('waitlist_products')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_products')
+      const model = await DB.instance.selectFrom('waitlist_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -725,14 +725,14 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
   }
 
   async forceUpdate(newWaitlistProduct: WaitlistProductUpdate): Promise<WaitlistProductModel | undefined> {
-    await DB.instance.updateTable('wait_list_products')
+    await DB.instance.updateTable('waitlist_products')
       .set(newWaitlistProduct)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_products')
+      const model = await DB.instance.selectFrom('waitlist_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -753,13 +753,13 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('wait_list_products')
+      await DB.instance.updateTable('waitlist_products')
         .set(this.attributes as WaitlistProductUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_products')
+      const model = await DB.instance.selectFrom('waitlist_products')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -774,12 +774,12 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     }
     else {
       // Create new record
-      const result = await DB.instance.insertInto('wait_list_products')
+      const result = await DB.instance.insertInto('waitlist_products')
         .values(this.attributes as NewWaitlistProduct)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('wait_list_products')
+      const model = await DB.instance.selectFrom('waitlist_products')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -809,18 +809,18 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
       return filteredValues
     })
 
-    await DB.instance.insertInto('wait_list_products')
+    await DB.instance.insertInto('waitlist_products')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newWaitlistProduct: NewWaitlistProduct): Promise<WaitlistProductModel> {
-    const result = await DB.instance.insertInto('wait_list_products')
+    const result = await DB.instance.insertInto('waitlist_products')
       .values(newWaitlistProduct)
       .executeTakeFirst()
 
     const instance = new WaitlistProductModel(undefined)
-    const model = await DB.instance.selectFrom('wait_list_products')
+    const model = await DB.instance.selectFrom('waitlist_products')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -844,7 +844,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     if (model)
       dispatch('waitlistProduct:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('wait_list_products')
+    const deleted = await DB.instance.deleteFrom('waitlist_products')
       .where('id', '=', this.id)
       .execute()
 
@@ -859,7 +859,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     if (model)
       dispatch('waitlistProduct:deleted', model)
 
-    return await DB.instance.deleteFrom('wait_list_products')
+    return await DB.instance.deleteFrom('waitlist_products')
       .where('id', '=', id)
       .execute()
   }
@@ -952,7 +952,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
     return instance
   }
 
-  static whereIn<V = number>(column: keyof WaitListProductsTable, values: V[]): WaitlistProductModel {
+  static whereIn<V = number>(column: keyof WaitlistProductsTable, values: V[]): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
@@ -1072,7 +1072,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitList
 }
 
 export async function find(id: number): Promise<WaitlistProductModel | undefined> {
-  const query = DB.instance.selectFrom('wait_list_products').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('waitlist_products').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1099,83 +1099,83 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('wait_list_products')
+  await DB.instance.deleteFrom('waitlist_products')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('name', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('name', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('email', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('email', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function wherePhone(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('phone', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('phone', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function wherePartySize(value: number): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('party_size', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('party_size', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereNotificationPreference(value: string | string[]): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('notification_preference', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('notification_preference', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereSource(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('source', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('source', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereNotes(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('notes', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('notes', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereStatus(value: string | string[]): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('status', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('status', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereNotifiedAt(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('notified_at', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('notified_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function wherePurchasedAt(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('purchased_at', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('purchased_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
 export async function whereCancelledAt(value: string): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('wait_list_products').where('cancelled_at', '=', value)
+  const query = DB.instance.selectFrom('waitlist_products').where('cancelled_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))

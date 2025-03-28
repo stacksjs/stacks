@@ -210,8 +210,8 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     return this.attributes.license_keys
   }
 
-  get wait_list_products(): WaitlistProductModel[] | [] {
-    return this.attributes.wait_list_products
+  get waitlist_products(): WaitlistProductModel[] | [] {
+    return this.attributes.waitlist_products
   }
 
   get user_id(): number {
@@ -981,7 +981,7 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
       reviews: this.reviews,
       payments: this.payments,
       license_keys: this.license_keys,
-      wait_list_products: this.wait_list_products,
+      waitlist_products: this.waitlist_products,
       user_id: this.user_id,
       user: this.user,
       ...this.customColumns,

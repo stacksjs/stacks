@@ -203,8 +203,8 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     return this.attributes.license_keys
   }
 
-  get wait_list_products(): WaitlistProductModel[] | [] {
-    return this.attributes.wait_list_products
+  get waitlist_products(): WaitlistProductModel[] | [] {
+    return this.attributes.waitlist_products
   }
 
   get coupons(): CouponModel[] | [] {
@@ -1035,7 +1035,7 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
       product_units: this.product_units,
       product_variants: this.product_variants,
       license_keys: this.license_keys,
-      wait_list_products: this.wait_list_products,
+      waitlist_products: this.waitlist_products,
       coupons: this.coupons,
       category_id: this.category_id,
       category: this.category,

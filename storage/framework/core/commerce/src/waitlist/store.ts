@@ -33,7 +33,7 @@ export async function store(request: WaitlistProductRequestType): Promise<Waitli
 
     // Insert the waitlist product
     const result = await db
-      .insertInto('wait_list_products')
+      .insertInto('waitlist_products')
       .values(waitlistData)
       .executeTakeFirst()
 
@@ -41,7 +41,7 @@ export async function store(request: WaitlistProductRequestType): Promise<Waitli
 
     // Retrieve the newly created waitlist product
     const waitlistProduct = await db
-      .selectFrom('wait_list_products')
+      .selectFrom('waitlist_products')
       .where('id', '=', waitlistId)
       .selectAll()
       .executeTakeFirst()
@@ -96,7 +96,7 @@ export async function bulkStore(requests: WaitlistProductRequestType[]): Promise
 
         // Insert the waitlist product
         await trx
-          .insertInto('wait_list_products')
+          .insertInto('waitlist_products')
           .values(waitlistData)
           .execute()
 

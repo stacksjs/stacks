@@ -7,16 +7,16 @@ export {
 // Functions from fetch.ts
 export {
   fetchAll,
-  fetchById,
+  fetchAverageWaitTimes,
   fetchBetweenDates,
+  fetchById,
+  fetchConversionRates,
   fetchCountByAllPartySizes,
   fetchCountByDate,
   fetchCountByPartySize,
   fetchCountByTablePreference,
-  fetchConversionRates,
   fetchSeatedBetweenDates,
   fetchWaiting,
-  fetchAverageWaitTimes,
 } from './fetch'
 
 // Functions from store.ts
@@ -29,7 +29,7 @@ export {
 export {
   update,
   updatePartySize,
+  updateQueuePosition,
   updateStatus,
   updateWaitTimes,
-  updateQueuePosition,
 } from './update'

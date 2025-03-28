@@ -3,7 +3,7 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('wait_list_products')
+    .createTable('waitlist_products')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
     .addColumn('name', 'text', col => col.notNull())

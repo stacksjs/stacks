@@ -3,7 +3,7 @@ import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'WaitlistProduct',
-  table: 'wait_list_products',
+  table: 'waitlist_products',
   primaryKey: 'id',
   autoIncrement: true,
   belongsTo: ['Product', 'Customer'],

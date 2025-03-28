@@ -7,7 +7,7 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function fetchById(id: number): Promise<WaitlistProductJsonResponse | undefined> {
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -17,7 +17,7 @@ export async function fetchById(id: number): Promise<WaitlistProductJsonResponse
  * Fetch all waitlist products
  */
 export async function fetchAll(): Promise<WaitlistProductJsonResponse[]> {
-  return await db.selectFrom('wait_list_products').selectAll().execute()
+  return await db.selectFrom('waitlist_products').selectAll().execute()
 }
 
 /**
@@ -26,7 +26,7 @@ export async function fetchAll(): Promise<WaitlistProductJsonResponse[]> {
  */
 export async function fetchCountBySource(): Promise<Record<string, number>> {
   const results = await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .select([
       'source',
       eb => eb.fn.count<number>('id').as('count'),
@@ -57,7 +57,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
   const endDateStr = formatDate(endOfDay)
 
   const result = await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .select(eb => eb.fn.count<number>('id').as('count'))
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
@@ -73,7 +73,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
  */
 export async function fetchCountByQuantity(quantity: number): Promise<number> {
   const result = await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .select(eb => eb.fn.count<number>('id').as('count'))
     .where('party_size', '=', quantity)
     .executeTakeFirst()
@@ -87,7 +87,7 @@ export async function fetchCountByQuantity(quantity: number): Promise<number> {
  */
 export async function fetchCountByAllQuantities(): Promise<Record<number, number>> {
   const results = await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .select([
       'party_size',
       eb => eb.fn.count<number>('id').as('count'),
@@ -116,7 +116,7 @@ export async function fetchBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .selectAll()
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
@@ -137,7 +137,7 @@ export async function fetchNotifiedBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .selectAll()
     .where('notified_at', '>=', startDateStr)
     .where('notified_at', '<=', endDateStr)
@@ -159,7 +159,7 @@ export async function fetchPurchasedBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .selectAll()
     .where('purchased_at', '>=', startDateStr)
     .where('purchased_at', '<=', endDateStr)
@@ -181,7 +181,7 @@ export async function fetchCancelledBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .selectAll()
     .where('cancelled_at', '>=', startDateStr)
     .where('cancelled_at', '<=', endDateStr)
@@ -195,7 +195,7 @@ export async function fetchCancelledBetweenDates(
  */
 export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
   return await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .selectAll()
     .where('status', '=', 'waiting')
     .execute()
@@ -210,7 +210,7 @@ export async function fetchConversionRates(): Promise<{
   statusBreakdown: Record<string, { count: number, percentage: number }>
 }> {
   const results = await db
-    .selectFrom('wait_list_products')
+    .selectFrom('waitlist_products')
     .select([
       'status',
       eb => eb.fn.count<number>('id').as('count'),

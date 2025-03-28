@@ -44,7 +44,7 @@ export async function update(id: number, request: WaitlistProductRequestType): P
   try {
     // Update the waitlist product
     await db
-      .updateTable('wait_list_products')
+      .updateTable('waitlist_products')
       .set(updateData)
       .where('id', '=', id)
       .execute()
@@ -82,7 +82,7 @@ export async function updateStatus(
   try {
     // Update the waitlist product status
     await db
-      .updateTable('wait_list_products')
+      .updateTable('waitlist_products')
       .set({
         status,
         updated_at: formatDate(new Date()),
@@ -123,7 +123,7 @@ export async function updatePartySize(
   try {
     // Update the waitlist product party size
     await db
-      .updateTable('wait_list_products')
+      .updateTable('waitlist_products')
       .set({
         party_size: partySize,
         updated_at: formatDate(new Date()),
