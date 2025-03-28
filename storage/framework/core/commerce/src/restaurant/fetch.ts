@@ -137,8 +137,8 @@ export async function fetchSeatedBetweenDates(
   return await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
-    .where('updated_at', '>=', startDateStr)
-    .where('updated_at', '<=', endDateStr)
+    .where('check_in_time', '>=', startDateStr)
+    .where('check_in_time', '<=', endDateStr)
     .where('status', '=', 'seated')
     .execute()
 }
@@ -210,5 +210,63 @@ export async function fetchAverageWaitTimes(): Promise<{
   return {
     averageQuotedWaitTime: result?.avg_quoted_wait_time ?? 0,
     averageActualWaitTime: result?.avg_actual_wait_time ?? 0,
+  }
+}
+
+/**
+ * Fetch all waiting entries with their quoted wait times
+ * @returns Array of waiting entries with their quoted wait times
+ */
+export async function fetchWaitingWithQuotedTimes(): Promise<{
+  entries: WaitlistRestaurantJsonResponse[]
+  totalQuotedWaitTime: number
+  averageQuotedWaitTime: number
+}> {
+  const waitingEntries = await db
+    .selectFrom('waitlist_restaurants')
+    .selectAll()
+    .where('status', '=', 'waiting')
+    .execute()
+
+  const totalQuotedWaitTime = waitingEntries.reduce((sum, entry) => sum + (entry.quoted_wait_time ?? 0), 0)
+  const averageQuotedWaitTime = waitingEntries.length > 0 ? totalQuotedWaitTime / waitingEntries.length : 0
+
+  return {
+    entries: waitingEntries,
+    totalQuotedWaitTime,
+    averageQuotedWaitTime,
+  }
+}
+
+/**
+ * Fetch all waiting entries with party size calculations
+ * @returns Object containing waiting entries and party size statistics
+ */
+export async function fetchWaitingWithPartySizes(): Promise<{
+  entries: WaitlistRestaurantJsonResponse[]
+  totalPartySize: number
+  averagePartySize: number
+  partySizeBreakdown: Record<number, number>
+}> {
+  const waitingEntries = await db
+    .selectFrom('waitlist_restaurants')
+    .selectAll()
+    .where('status', '=', 'waiting')
+    .execute()
+
+  const totalPartySize = waitingEntries.reduce((sum, entry) => sum + entry.party_size, 0)
+  const averagePartySize = waitingEntries.length > 0 ? totalPartySize / waitingEntries.length : 0
+
+  // Calculate breakdown of party sizes
+  const partySizeBreakdown = waitingEntries.reduce((acc, entry) => {
+    acc[entry.party_size] = (acc[entry.party_size] || 0) + 1
+    return acc
+  }, {} as Record<number, number>)
+
+  return {
+    entries: waitingEntries,
+    totalPartySize,
+    averagePartySize,
+    partySizeBreakdown,
   }
 }

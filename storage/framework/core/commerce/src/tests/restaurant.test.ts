@@ -15,6 +15,8 @@ import {
   fetchCountByTablePreference,
   fetchSeatedBetweenDates,
   fetchWaiting,
+  fetchWaitingWithPartySizes,
+  fetchWaitingWithQuotedTimes,
 } from '../restaurant/fetch'
 import { bulkStore, store } from '../restaurant/store'
 import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../restaurant/update'
@@ -828,6 +830,210 @@ describe('Restaurant Waitlist Module', () => {
       expect(waitTimes).toBeDefined()
       expect(waitTimes.averageQuotedWaitTime).toBe(30) // (30 + 15 + 45) / 3
       expect(waitTimes.averageActualWaitTime).toBe(27.5) // (35 + 20) / 2
+    })
+
+    it('should fetch waiting entries with quoted wait times', async () => {
+      // Create test waitlist entries with different wait times and statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'waiting',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'waiting',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'booth',
+          status: 'seated',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch waiting entries with quoted times
+      const result = await fetchWaitingWithQuotedTimes()
+
+      // Verify the results
+      expect(result).toBeDefined()
+      expect(result.entries).toBeDefined()
+      expect(result.entries.length).toBe(2) // Only waiting entries
+      expect(result.totalQuotedWaitTime).toBe(45) // 30 + 15
+      expect(result.averageQuotedWaitTime).toBe(22.5) // (30 + 15) / 2
+
+      // Verify individual entries
+      expect(result.entries.map(e => e.name)).toContain('John Doe')
+      expect(result.entries.map(e => e.name)).toContain('Jane Smith')
+      expect(result.entries.map(e => e.quoted_wait_time)).toContain(30)
+      expect(result.entries.map(e => e.quoted_wait_time)).toContain(15)
+    })
+
+    it('should handle empty waiting list for quoted times', async () => {
+      // Create only seated entries
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'seated',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch waiting entries with quoted times
+      const result = await fetchWaitingWithQuotedTimes()
+
+      // Verify the results
+      expect(result).toBeDefined()
+      expect(result.entries).toBeDefined()
+      expect(result.entries.length).toBe(0)
+      expect(result.totalQuotedWaitTime).toBe(0)
+      expect(result.averageQuotedWaitTime).toBe(0)
+    })
+
+    it('should fetch waiting entries with party size calculations', async () => {
+      // Create test waitlist entries with different party sizes and statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'waiting',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'waiting',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 2,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'booth',
+          status: 'waiting',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 6,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 60,
+          customer_id: 4,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch waiting entries with party sizes
+      const result = await fetchWaitingWithPartySizes()
+
+      // Verify the results
+      expect(result).toBeDefined()
+      expect(result.entries).toBeDefined()
+      expect(result.entries.length).toBe(3) // Only waiting entries
+      expect(result.totalPartySize).toBe(10) // 4 + 4 + 2
+      expect(result.averagePartySize).toBeCloseTo(3.33, 2) // 10 / 3
+
+      // Verify party size breakdown
+      expect(result.partySizeBreakdown).toBeDefined()
+      expect(Object.keys(result.partySizeBreakdown).length).toBe(2) // 2 different party sizes
+      expect(result.partySizeBreakdown[4]).toBe(2) // Two parties of 4
+      expect(result.partySizeBreakdown[2]).toBe(1) // One party of 2
+
+      // Verify individual entries
+      expect(result.entries.map(e => e.name)).toContain('John Doe')
+      expect(result.entries.map(e => e.name)).toContain('Jane Smith')
+      expect(result.entries.map(e => e.name)).toContain('Bob Wilson')
+    })
+
+    it('should handle empty waiting list for party sizes', async () => {
+      // Create only seated entries
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'seated',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch waiting entries with party sizes
+      const result = await fetchWaitingWithPartySizes()
+
+      // Verify the results
+      expect(result).toBeDefined()
+      expect(result.entries).toBeDefined()
+      expect(result.entries.length).toBe(0)
+      expect(result.totalPartySize).toBe(0)
+      expect(result.averagePartySize).toBe(0)
+      expect(result.partySizeBreakdown).toEqual({})
     })
   })
 })

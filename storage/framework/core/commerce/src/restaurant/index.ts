@@ -17,6 +17,8 @@ export {
   fetchCountByTablePreference,
   fetchSeatedBetweenDates,
   fetchWaiting,
+  fetchWaitingWithPartySizes,
+  fetchWaitingWithQuotedTimes,
 } from './fetch'
 
 // Functions from store.ts
