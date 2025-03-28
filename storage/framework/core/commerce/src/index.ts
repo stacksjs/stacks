@@ -9,6 +9,7 @@ import * as manufacturer from './manufacturer'
 import * as orders from './orders'
 import * as payments from './payments'
 import * as rates from './rates'
+import * as restaurant from './restaurant'
 import * as reviews from './reviews'
 import * as shipping from './shipping'
 import * as tax from './tax'
@@ -24,6 +25,7 @@ type ManufacturerModule = typeof manufacturer
 type OrdersModule = typeof orders
 type PaymentsModule = typeof payments
 type ReviewsModule = typeof reviews
+type RestaurantModule = typeof restaurant
 type UnitModule = typeof unit
 type ShippingModule = typeof shipping
 type RatesModule = typeof rates
@@ -43,6 +45,7 @@ export interface EcommerceNamespace {
   drivers: DriversModule
   payments: PaymentsModule
   reviews: ReviewsModule
+  restaurant: RestaurantModule
   shipping: ShippingModule
   rates: RatesModule
   zones: ZonesModule
@@ -63,6 +66,7 @@ export const ecommerce: EcommerceNamespace = {
   orders,
   payments,
   reviews,
+  restaurant,
   shipping,
   rates,
   zones,
@@ -88,6 +92,7 @@ export {
   payments,
   rates,
   reviews,
+  restaurant,
   shipping,
   tax,
   unit,
