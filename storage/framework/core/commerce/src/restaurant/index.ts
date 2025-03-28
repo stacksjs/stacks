@@ -15,6 +15,7 @@ export {
   fetchCountByDate,
   fetchCountByPartySize,
   fetchCountByTablePreference,
+  fetchNoShowStats,
   fetchSeatedBetweenDates,
   fetchSeatingRate,
   fetchTablesTurnedToday,

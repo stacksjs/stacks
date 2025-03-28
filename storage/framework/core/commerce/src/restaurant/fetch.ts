@@ -332,20 +332,30 @@ export async function fetchTablesTurnedToday(): Promise<{
 
 /**
  * Fetch seating rate statistics
+ * @param startDate Start date for filtering entries
+ * @param endDate End date for filtering entries
  * @returns Object containing seating rate and status breakdown
  */
-export async function fetchSeatingRate(): Promise<{
-  totalEntries: number
-  seatedEntries: number
-  seatingRate: number
-  statusBreakdown: Record<string, { count: number, percentage: number }>
-}> {
+export async function fetchSeatingRate(
+  startDate: Date,
+  endDate: Date,
+): Promise<{
+    totalEntries: number
+    seatedEntries: number
+    seatingRate: number
+    statusBreakdown: Record<string, { count: number, percentage: number }>
+  }> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
   const results = await db
     .selectFrom('waitlist_restaurants')
     .select([
       'status',
       eb => eb.fn.count<number>('id').as('count'),
     ])
+    .where('check_in_time', '>=', startDateStr)
+    .where('check_in_time', '<=', endDateStr)
     .groupBy('status')
     .execute()
 
@@ -367,5 +377,80 @@ export async function fetchSeatingRate(): Promise<{
     seatedEntries: seatedCount,
     seatingRate,
     statusBreakdown,
+  }
+}
+
+/**
+ * Fetch no-show statistics
+ * @param startDate Start date for filtering entries
+ * @param endDate End date for filtering entries
+ * @returns Object containing no-show statistics and related information
+ */
+export async function fetchNoShowStats(
+  startDate: Date,
+  endDate: Date,
+): Promise<{
+    totalNoShows: number
+    noShowRate: number
+    averageQuotedWaitTime: number
+    averagePartySize: number
+    breakdownByTablePreference: Record<string, number>
+    breakdownByPartySize: Record<number, number>
+  }> {
+  const startDateStr = formatDate(startDate)
+  const endDateStr = formatDate(endDate)
+
+  // Build base query for no-show entries
+  const noShowQuery = db
+    .selectFrom('waitlist_restaurants')
+    .selectAll()
+    .where('status', '=', 'no_show')
+    .where('check_in_time', '>=', startDateStr)
+    .where('check_in_time', '<=', endDateStr)
+
+  // Build base query for total entries
+  const totalQuery = db
+    .selectFrom('waitlist_restaurants')
+    .select(eb => eb.fn.count<number>('id').as('count'))
+    .where('check_in_time', '>=', startDateStr)
+    .where('check_in_time', '<=', endDateStr)
+
+  // Execute queries
+  const noShowEntries = await noShowQuery.execute()
+  const totalEntries = await totalQuery.executeTakeFirst()
+
+  const totalNoShows = noShowEntries.length
+
+  const noShowRate = totalEntries?.count && totalEntries.count > 0
+    ? (totalNoShows / totalEntries.count) * 100
+    : 0
+
+  // Calculate average quoted wait time for no-shows
+  const totalQuotedWaitTime = noShowEntries.reduce((sum, entry) => sum + (entry.quoted_wait_time ?? 0), 0)
+  const averageQuotedWaitTime = totalNoShows > 0 ? totalQuotedWaitTime / totalNoShows : 0
+
+  // Calculate average party size for no-shows
+  const totalPartySize = noShowEntries.reduce((sum, entry) => sum + entry.party_size, 0)
+  const averagePartySize = totalNoShows > 0 ? totalPartySize / totalNoShows : 0
+
+  // Calculate breakdown by table preference
+  const breakdownByTablePreference = noShowEntries.reduce((acc, entry) => {
+    acc[entry.table_preference as string] = (acc[entry.table_preference as string] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  // Calculate breakdown by party size
+  const breakdownByPartySize = noShowEntries.reduce((acc, entry) => {
+    acc[entry.party_size] = (acc[entry.party_size] || 0) + 1
+    return acc
+  }, {} as Record<number, number>)
+
+  return {
+    totalNoShows,
+    noShowRate,
+    averageQuotedWaitTime,
+    averagePartySize,
+    breakdownByTablePreference,
+    breakdownByPartySize,
   }
 }

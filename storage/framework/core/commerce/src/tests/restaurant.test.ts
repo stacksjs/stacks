@@ -13,7 +13,9 @@ import {
   fetchCountByDate,
   fetchCountByPartySize,
   fetchCountByTablePreference,
+  fetchNoShowStats,
   fetchSeatedBetweenDates,
+  fetchSeatingRate,
   fetchTablesTurnedToday,
   fetchWaiting,
   fetchWaitingWithPartySizes,
@@ -21,7 +23,6 @@ import {
 } from '../restaurant/fetch'
 import { bulkStore, store } from '../restaurant/store'
 import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../restaurant/update'
-import { fetchSeatingRate } from '../restaurant/fetch'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -1172,13 +1173,20 @@ describe('Restaurant Waitlist Module', () => {
     })
 
     it('should fetch seating rate statistics', async () => {
+      // Create test dates
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(today)
+      endDate.setHours(23, 59, 59, 999)
+
       // Create test waitlist entries with different statuses
       const requests = [
         new TestRequest({
           name: 'John Doe',
           email: 'john@example.com',
           party_size: 4,
-          check_in_time: formatDate(new Date()),
+          check_in_time: formatDate(today),
           table_preference: 'indoor',
           status: 'seated',
           quoted_wait_time: 30,
@@ -1188,7 +1196,7 @@ describe('Restaurant Waitlist Module', () => {
           name: 'Jane Smith',
           email: 'jane@example.com',
           party_size: 2,
-          check_in_time: formatDate(new Date()),
+          check_in_time: formatDate(today),
           table_preference: 'bar',
           status: 'seated',
           quoted_wait_time: 15,
@@ -1198,7 +1206,7 @@ describe('Restaurant Waitlist Module', () => {
           name: 'Bob Wilson',
           email: 'bob@example.com',
           party_size: 6,
-          check_in_time: formatDate(new Date()),
+          check_in_time: formatDate(today),
           table_preference: 'booth',
           status: 'waiting',
           quoted_wait_time: 45,
@@ -1208,7 +1216,7 @@ describe('Restaurant Waitlist Module', () => {
           name: 'Alice Brown',
           email: 'alice@example.com',
           party_size: 3,
-          check_in_time: formatDate(new Date()),
+          check_in_time: formatDate(today),
           table_preference: 'indoor',
           status: 'waiting',
           quoted_wait_time: 20,
@@ -1218,7 +1226,7 @@ describe('Restaurant Waitlist Module', () => {
           name: 'Charlie Davis',
           email: 'charlie@example.com',
           party_size: 5,
-          check_in_time: formatDate(new Date()),
+          check_in_time: formatDate(today),
           table_preference: 'bar',
           status: 'cancelled',
           quoted_wait_time: 30,
@@ -1230,7 +1238,7 @@ describe('Restaurant Waitlist Module', () => {
       await bulkStore(requests as any)
 
       // Fetch seating rate statistics
-      const stats = await fetchSeatingRate()
+      const stats = await fetchSeatingRate(startDate, endDate)
 
       // Verify the results
       expect(stats).toBeDefined()
@@ -1249,8 +1257,15 @@ describe('Restaurant Waitlist Module', () => {
     })
 
     it('should handle empty waitlist for seating rate', async () => {
+      // Create test dates
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(today)
+      endDate.setHours(23, 59, 59, 999)
+
       // Fetch seating rate statistics with no entries
-      const stats = await fetchSeatingRate()
+      const stats = await fetchSeatingRate(startDate, endDate)
 
       // Verify the results
       expect(stats).toBeDefined()
@@ -1258,6 +1273,132 @@ describe('Restaurant Waitlist Module', () => {
       expect(stats.seatedEntries).toBe(0)
       expect(stats.seatingRate).toBe(0)
       expect(stats.statusBreakdown).toEqual({})
+    })
+
+    it('should fetch no-show statistics', async () => {
+      // Create test dates
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(today)
+      endDate.setHours(23, 59, 59, 999)
+
+      // Create test waitlist entries with different statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(today),
+          table_preference: 'indoor',
+          status: 'no_show',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(today),
+          table_preference: 'bar',
+          status: 'no_show',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          check_in_time: formatDate(today),
+          table_preference: 'booth',
+          status: 'waiting',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 3,
+          check_in_time: formatDate(today),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 20,
+          customer_id: 4,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch no-show statistics
+      const stats = await fetchNoShowStats(startDate, endDate)
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalNoShows).toBe(2)
+      expect(stats.noShowRate).toBe(50) // 2 no-shows out of 4 total = 50%
+      expect(stats.averageQuotedWaitTime).toBe(22.5) // (30 + 15) / 2
+      expect(stats.averagePartySize).toBe(3) // (4 + 2) / 2
+
+      // Verify table preference breakdown
+      expect(stats.breakdownByTablePreference).toBeDefined()
+      expect(Object.keys(stats.breakdownByTablePreference).length).toBe(2) // indoor, bar
+      expect(stats.breakdownByTablePreference.indoor).toBe(1)
+      expect(stats.breakdownByTablePreference.bar).toBe(1)
+
+      // Verify party size breakdown
+      expect(stats.breakdownByPartySize).toBeDefined()
+      expect(Object.keys(stats.breakdownByPartySize).length).toBe(2) // 2, 4
+      expect(stats.breakdownByPartySize[2]).toBe(1)
+      expect(stats.breakdownByPartySize[4]).toBe(1)
+    })
+
+    it('should handle empty no-show list', async () => {
+      // Create test dates
+      const today = new Date()
+      const startDate = new Date(today)
+      startDate.setHours(0, 0, 0, 0)
+      const endDate = new Date(today)
+      endDate.setHours(23, 59, 59, 999)
+
+      // Create test entries with no no-shows
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(today),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(today),
+          table_preference: 'bar',
+          status: 'waiting',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch no-show statistics
+      const stats = await fetchNoShowStats(startDate, endDate)
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalNoShows).toBe(0)
+      expect(stats.noShowRate).toBe(0)
+      expect(stats.averageQuotedWaitTime).toBe(0)
+      expect(stats.averagePartySize).toBe(0)
+      expect(stats.breakdownByTablePreference).toEqual({})
+      expect(stats.breakdownByPartySize).toEqual({})
     })
   })
 })

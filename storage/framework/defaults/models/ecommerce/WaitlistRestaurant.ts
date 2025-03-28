@@ -108,9 +108,9 @@ export default {
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.enum(['waiting', 'seated'] as const),
+        rule: schema.enum(['waiting', 'seated', 'cancelled', 'no_show'] as const),
       },
-      factory: faker => faker.helpers.arrayElement(['waiting', 'seated']),
+      factory: faker => faker.helpers.arrayElement(['waiting', 'seated', 'cancelled', 'no_show']),
     },
 
     quoted_wait_time: {
@@ -150,6 +150,33 @@ export default {
         },
       },
       factory: faker => faker.helpers.maybe(() => faker.number.int({ min: 1, max: 50 }), { probability: 0.7 }),
+    },
+    seated_at: {
+      required: false,
+      order: 11,
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
+    },
+    no_show_at: {
+      required: false,
+      order: 12,
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
+    },
+    cancelled_at: {
+      required: false,
+      order: 13,
+      fillable: true,
+      validation: {
+        rule: schema.date(),
+      },
+      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
     },
   },
 
