@@ -21,6 +21,7 @@ import {
 } from '../restaurant/fetch'
 import { bulkStore, store } from '../restaurant/store'
 import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../restaurant/update'
+import { fetchSeatingRate } from '../restaurant/fetch'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -1168,6 +1169,95 @@ describe('Restaurant Waitlist Module', () => {
       expect(stats.averagePartySize).toBe(0)
       expect(stats.breakdownByTablePreference).toEqual({})
       expect(stats.breakdownByPartySize).toEqual({})
+    })
+
+    it('should fetch seating rate statistics', async () => {
+      // Create test waitlist entries with different statuses
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'seated',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'booth',
+          status: 'waiting',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 3,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'waiting',
+          quoted_wait_time: 20,
+          customer_id: 4,
+        }),
+        new TestRequest({
+          name: 'Charlie Davis',
+          email: 'charlie@example.com',
+          party_size: 5,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'bar',
+          status: 'cancelled',
+          quoted_wait_time: 30,
+          customer_id: 5,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch seating rate statistics
+      const stats = await fetchSeatingRate()
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalEntries).toBe(5)
+      expect(stats.seatedEntries).toBe(2)
+      expect(stats.seatingRate).toBe(40) // 2 seated out of 5 total = 40%
+
+      // Verify status breakdown
+      expect(stats.statusBreakdown).toBeDefined()
+      expect(Object.keys(stats.statusBreakdown).length).toBe(3) // seated, waiting, cancelled
+
+      // Verify each status breakdown
+      expect(stats.statusBreakdown.seated).toEqual({ count: 2, percentage: 40 })
+      expect(stats.statusBreakdown.waiting).toEqual({ count: 2, percentage: 40 })
+      expect(stats.statusBreakdown.cancelled).toEqual({ count: 1, percentage: 20 })
+    })
+
+    it('should handle empty waitlist for seating rate', async () => {
+      // Fetch seating rate statistics with no entries
+      const stats = await fetchSeatingRate()
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalEntries).toBe(0)
+      expect(stats.seatedEntries).toBe(0)
+      expect(stats.seatingRate).toBe(0)
+      expect(stats.statusBreakdown).toEqual({})
     })
   })
 })

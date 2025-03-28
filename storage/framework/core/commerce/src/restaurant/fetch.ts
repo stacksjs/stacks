@@ -329,3 +329,43 @@ export async function fetchTablesTurnedToday(): Promise<{
     breakdownByPartySize,
   }
 }
+
+/**
+ * Fetch seating rate statistics
+ * @returns Object containing seating rate and status breakdown
+ */
+export async function fetchSeatingRate(): Promise<{
+  totalEntries: number
+  seatedEntries: number
+  seatingRate: number
+  statusBreakdown: Record<string, { count: number, percentage: number }>
+}> {
+  const results = await db
+    .selectFrom('waitlist_restaurants')
+    .select([
+      'status',
+      eb => eb.fn.count<number>('id').as('count'),
+    ])
+    .groupBy('status')
+    .execute()
+
+  const totalEntries = results.reduce((sum, { count }) => sum + count, 0)
+  const seatedCount = results.find(r => r.status === 'seated')?.count ?? 0
+
+  const seatingRate = totalEntries > 0 ? (seatedCount / totalEntries) * 100 : 0
+
+  const statusBreakdown = results.reduce((acc, { status, count }) => {
+    acc[status as string] = {
+      count,
+      percentage: totalEntries > 0 ? (count / totalEntries) * 100 : 0,
+    }
+    return acc
+  }, {} as Record<string, { count: number, percentage: number }>)
+
+  return {
+    totalEntries,
+    seatedEntries: seatedCount,
+    seatingRate,
+    statusBreakdown,
+  }
+}
