@@ -14,9 +14,9 @@ dependencies:
   gh: ^2.69.0
   zip: ^3.0
   unzip: ^6.0
-  # mailpit: ^1.21.8
-  # redis: ^7.4.1
   sqlite3: ^3.47.2
   node: ^22.12.0 # only temporarily needed until bun & vue-tsc issue is resolved
-  # openjdk.org: ^21.0.3.6
+  # mailpit: ^1.21.8
+  # redis: ^7.4.1
   # rust: ^1.74.1
+  # openjdk.org: ^21.0.3.6
