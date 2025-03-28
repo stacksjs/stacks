@@ -14,6 +14,7 @@ import {
   fetchCountByPartySize,
   fetchCountByTablePreference,
   fetchSeatedBetweenDates,
+  fetchTablesTurnedToday,
   fetchWaiting,
   fetchWaitingWithPartySizes,
   fetchWaitingWithQuotedTimes,
@@ -1034,6 +1035,139 @@ describe('Restaurant Waitlist Module', () => {
       expect(result.totalPartySize).toBe(0)
       expect(result.averagePartySize).toBe(0)
       expect(result.partySizeBreakdown).toEqual({})
+    })
+
+    it('should fetch tables turned statistics for today', async () => {
+      // Create test dates using today
+      const today = new Date()
+      const startOfDay = new Date(today)
+      startOfDay.setHours(0, 0, 0, 0)
+      const endOfDay = new Date(today)
+      endOfDay.setHours(23, 59, 59, 999)
+
+      // Create test waitlist entries with different statuses and table preferences
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(startOfDay),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(endOfDay),
+          table_preference: 'bar',
+          status: 'seated',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'booth',
+          status: 'seated',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+        new TestRequest({
+          name: 'Alice Brown',
+          email: 'alice@example.com',
+          party_size: 3,
+          check_in_time: formatDate(new Date()),
+          table_preference: 'indoor',
+          status: 'waiting',
+          quoted_wait_time: 20,
+          customer_id: 4,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch tables turned statistics
+      const stats = await fetchTablesTurnedToday()
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalTablesTurned).toBe(3) // 3 seated entries
+      expect(stats.totalCustomersSeated).toBe(12) // 4 + 2 + 6
+      expect(stats.averagePartySize).toBe(4) // 12 / 3
+
+      // Verify table preference breakdown
+      expect(stats.breakdownByTablePreference).toBeDefined()
+      expect(Object.keys(stats.breakdownByTablePreference).length).toBe(3) // indoor, bar, booth
+      expect(stats.breakdownByTablePreference.indoor).toBe(1)
+      expect(stats.breakdownByTablePreference.bar).toBe(1)
+      expect(stats.breakdownByTablePreference.booth).toBe(1)
+
+      // Verify party size breakdown
+      expect(stats.breakdownByPartySize).toBeDefined()
+      expect(Object.keys(stats.breakdownByPartySize).length).toBe(3) // 2, 3, 4, 6
+      expect(stats.breakdownByPartySize[2]).toBe(1)
+      expect(stats.breakdownByPartySize[4]).toBe(1)
+      expect(stats.breakdownByPartySize[6]).toBe(1)
+    })
+
+    it('should handle no tables turned today', async () => {
+      // Create test entries with different dates
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+
+      const requests = [
+        new TestRequest({
+          name: 'John Doe',
+          email: 'john@example.com',
+          party_size: 4,
+          check_in_time: formatDate(yesterday),
+          table_preference: 'indoor',
+          status: 'seated',
+          quoted_wait_time: 30,
+          customer_id: 1,
+        }),
+        new TestRequest({
+          name: 'Jane Smith',
+          email: 'jane@example.com',
+          party_size: 2,
+          check_in_time: formatDate(yesterday),
+          table_preference: 'bar',
+          status: 'seated',
+          quoted_wait_time: 15,
+          customer_id: 2,
+        }),
+        new TestRequest({
+          name: 'Bob Wilson',
+          email: 'bob@example.com',
+          party_size: 6,
+          check_in_time: formatDate(today),
+          table_preference: 'booth',
+          status: 'waiting',
+          quoted_wait_time: 45,
+          customer_id: 3,
+        }),
+      ]
+
+      // Create the waitlist entries
+      await bulkStore(requests as any)
+
+      // Fetch tables turned statistics
+      const stats = await fetchTablesTurnedToday()
+
+      // Verify the results
+      expect(stats).toBeDefined()
+      expect(stats.totalTablesTurned).toBe(0)
+      expect(stats.totalCustomersSeated).toBe(0)
+      expect(stats.averagePartySize).toBe(0)
+      expect(stats.breakdownByTablePreference).toEqual({})
+      expect(stats.breakdownByPartySize).toEqual({})
     })
   })
 })

@@ -270,3 +270,62 @@ export async function fetchWaitingWithPartySizes(): Promise<{
     partySizeBreakdown,
   }
 }
+
+/**
+ * Fetch tables turned statistics for today
+ * @returns Object containing tables turned statistics
+ */
+export async function fetchTablesTurnedToday(): Promise<{
+  totalTablesTurned: number
+  averagePartySize: number
+  totalCustomersSeated: number
+  breakdownByTablePreference: Record<string, number>
+  breakdownByPartySize: Record<number, number>
+}> {
+  const today = new Date()
+  const startOfDay = new Date(today)
+  startOfDay.setHours(0, 0, 0, 0)
+  const endOfDay = new Date(today)
+  endOfDay.setHours(23, 59, 59, 999)
+
+  const startDateStr = formatDate(startOfDay)
+  const endDateStr = formatDate(endOfDay)
+
+  // Fetch all seated entries for today
+  const seatedEntries = await db
+    .selectFrom('waitlist_restaurants')
+    .selectAll()
+    .where('status', '=', 'seated')
+    .where('check_in_time', '>=', startDateStr)
+    .where('check_in_time', '<=', endDateStr)
+    .execute()
+
+  // Calculate total tables turned
+  const totalTablesTurned = seatedEntries.length
+
+  // Calculate total customers seated
+  const totalCustomersSeated = seatedEntries.reduce((sum, entry) => sum + entry.party_size, 0)
+
+  // Calculate average party size
+  const averagePartySize = totalTablesTurned > 0 ? totalCustomersSeated / totalTablesTurned : 0
+
+  // Calculate breakdown by table preference
+  const breakdownByTablePreference = seatedEntries.reduce((acc, entry) => {
+    acc[entry.table_preference as string] = (acc[entry.table_preference as string] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  // Calculate breakdown by party size
+  const breakdownByPartySize = seatedEntries.reduce((acc, entry) => {
+    acc[entry.party_size] = (acc[entry.party_size] || 0) + 1
+    return acc
+  }, {} as Record<number, number>)
+
+  return {
+    totalTablesTurned,
+    averagePartySize,
+    totalCustomersSeated,
+    breakdownByTablePreference,
+    breakdownByPartySize,
+  }
+}

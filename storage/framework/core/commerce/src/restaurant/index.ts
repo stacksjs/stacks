@@ -16,6 +16,7 @@ export {
   fetchCountByPartySize,
   fetchCountByTablePreference,
   fetchSeatedBetweenDates,
+  fetchTablesTurnedToday,
   fetchWaiting,
   fetchWaitingWithPartySizes,
   fetchWaitingWithQuotedTimes,
