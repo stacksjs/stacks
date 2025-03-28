@@ -45,7 +45,7 @@ export async function update(id: number, request: WaitlistRestaurantRequestType)
   try {
     // Update the restaurant waitlist entry
     await db
-      .updateTable('wait_list_restaurants')
+      .updateTable('waitlist_restaurants')
       .set(updateData)
       .where('id', '=', id)
       .execute()
@@ -83,7 +83,7 @@ export async function updateStatus(
   try {
     // Update the restaurant waitlist entry status
     await db
-      .updateTable('wait_list_restaurants')
+      .updateTable('waitlist_restaurants')
       .set({
         status,
         updated_at: formatDate(new Date()),
@@ -124,7 +124,7 @@ export async function updatePartySize(
   try {
     // Update the restaurant waitlist entry party size
     await db
-      .updateTable('wait_list_restaurants')
+      .updateTable('waitlist_restaurants')
       .set({
         party_size: partySize,
         updated_at: formatDate(new Date()),
@@ -167,7 +167,7 @@ export async function updateWaitTimes(
   try {
     // Update the restaurant waitlist entry wait times
     await db
-      .updateTable('wait_list_restaurants')
+      .updateTable('waitlist_restaurants')
       .set({
         quoted_wait_time: quotedWaitTime,
         actual_wait_time: actualWaitTime ?? undefined,
@@ -209,7 +209,7 @@ export async function updateQueuePosition(
   try {
     // Update the restaurant waitlist entry queue position
     await db
-      .updateTable('wait_list_restaurants')
+      .updateTable('waitlist_restaurants')
       .set({
         queue_position: queuePosition,
         updated_at: formatDate(new Date()),

@@ -11,7 +11,7 @@ export async function destroy(id: number): Promise<WaitlistRestaurantJsonRespons
   try {
     // First get the restaurant waitlist entry to return it after deletion
     const waitlistEntry = await db
-      .selectFrom('wait_list_restaurants')
+      .selectFrom('waitlist_restaurants')
       .where('id', '=', id)
       .selectAll()
       .executeTakeFirst()
@@ -21,7 +21,7 @@ export async function destroy(id: number): Promise<WaitlistRestaurantJsonRespons
 
     // Delete the restaurant waitlist entry
     await db
-      .deleteFrom('wait_list_restaurants')
+      .deleteFrom('waitlist_restaurants')
       .where('id', '=', id)
       .execute()
 
@@ -49,7 +49,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   try {
     // Delete all restaurant waitlist entries with the given IDs
     const result = await db
-      .deleteFrom('wait_list_restaurants')
+      .deleteFrom('waitlist_restaurants')
       .where('id', 'in', ids)
       .execute()
 

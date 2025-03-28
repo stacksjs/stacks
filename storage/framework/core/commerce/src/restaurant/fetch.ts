@@ -7,7 +7,7 @@ import { formatDate } from '@stacksjs/orm'
  */
 export async function fetchById(id: number): Promise<WaitlistRestaurantJsonResponse | undefined> {
   return await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -17,7 +17,7 @@ export async function fetchById(id: number): Promise<WaitlistRestaurantJsonRespo
  * Fetch all restaurant waitlist entries
  */
 export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
-  return await db.selectFrom('wait_list_restaurants').selectAll().execute()
+  return await db.selectFrom('waitlist_restaurants').selectAll().execute()
 }
 
 /**
@@ -26,7 +26,7 @@ export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
  */
 export async function fetchCountByTablePreference(): Promise<Record<string, number>> {
   const results = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select([
       'table_preference',
       eb => eb.fn.count<number>('id').as('count'),
@@ -56,7 +56,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
   const endDateStr = formatDate(endOfDay)
 
   const result = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select(eb => eb.fn.count<number>('id').as('count'))
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
@@ -72,7 +72,7 @@ export async function fetchCountByDate(date: Date = new Date()): Promise<number>
  */
 export async function fetchCountByPartySize(partySize: number): Promise<number> {
   const result = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select(eb => eb.fn.count<number>('id').as('count'))
     .where('party_size', '=', partySize)
     .executeTakeFirst()
@@ -86,7 +86,7 @@ export async function fetchCountByPartySize(partySize: number): Promise<number> 
  */
 export async function fetchCountByAllPartySizes(): Promise<Record<number, number>> {
   const results = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select([
       'party_size',
       eb => eb.fn.count<number>('id').as('count'),
@@ -114,7 +114,7 @@ export async function fetchBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
@@ -135,7 +135,7 @@ export async function fetchSeatedBetweenDates(
   const endDateStr = formatDate(endDate)
 
   return await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('updated_at', '>=', startDateStr)
     .where('updated_at', '<=', endDateStr)
@@ -149,7 +149,7 @@ export async function fetchSeatedBetweenDates(
  */
 export async function fetchWaiting(): Promise<WaitlistRestaurantJsonResponse[]> {
   return await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
     .execute()
@@ -164,7 +164,7 @@ export async function fetchConversionRates(): Promise<{
   statusBreakdown: Record<string, { count: number, percentage: number }>
 }> {
   const results = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select([
       'status',
       eb => eb.fn.count<number>('id').as('count'),
@@ -200,7 +200,7 @@ export async function fetchAverageWaitTimes(): Promise<{
   averageActualWaitTime: number
 }> {
   const result = await db
-    .selectFrom('wait_list_restaurants')
+    .selectFrom('waitlist_restaurants')
     .select([
       eb => eb.fn.avg<number>('quoted_wait_time').as('avg_quoted_wait_time'),
       eb => eb.fn.avg<number>('actual_wait_time').as('avg_actual_wait_time'),

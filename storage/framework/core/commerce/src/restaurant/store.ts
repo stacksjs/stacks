@@ -31,7 +31,7 @@ export async function store(request: WaitlistRestaurantRequestType): Promise<Wai
 
     // Insert the restaurant waitlist entry
     const result = await db
-      .insertInto('wait_list_restaurants')
+      .insertInto('waitlist_restaurants')
       .values(waitlistData)
       .executeTakeFirst()
 
@@ -39,7 +39,7 @@ export async function store(request: WaitlistRestaurantRequestType): Promise<Wai
 
     // Retrieve the newly created restaurant waitlist entry
     const waitlistEntry = await db
-      .selectFrom('wait_list_restaurants')
+      .selectFrom('waitlist_restaurants')
       .where('id', '=', waitlistId)
       .selectAll()
       .executeTakeFirst()
@@ -92,7 +92,7 @@ export async function bulkStore(requests: WaitlistRestaurantRequestType[]): Prom
 
         // Insert the restaurant waitlist entry
         await trx
-          .insertInto('wait_list_restaurants')
+          .insertInto('waitlist_restaurants')
           .values(waitlistData)
           .execute()
 
