@@ -49,7 +49,7 @@ export type WaitlistRestaurantUpdate = Updateable<WaitListRestaurantsTable>
 
 export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitListRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'uuid']
+  private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'uuid', 'customer_id']
   private readonly guarded: Array<keyof WaitlistRestaurantJsonResponse> = []
   protected attributes = {} as WaitlistRestaurantJsonResponse
   protected originalAttributes = {} as WaitlistRestaurantJsonResponse

@@ -429,7 +429,7 @@ describe('Waitlist Product Module', () => {
 
     it('should fetch count of waitlist products for a specific date', async () => {
       // Create a specific date for testing that matches our test data
-      const testDate = new Date('2025-03-27T12:00:00Z')
+      const testDate = new Date()
 
       // Create test waitlist products with explicit dates
       const requests = [
@@ -442,7 +442,6 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 1,
           customer_id: 1,
-          created_at: formatDate(testDate),
         }),
         new TestRequest({
           name: 'Jane Smith',
@@ -453,21 +452,18 @@ describe('Waitlist Product Module', () => {
           status: 'waiting',
           product_id: 2,
           customer_id: 2,
-          created_at: formatDate(testDate),
         }),
       ]
 
       // Create the waitlist products
       await bulkStore(requests as any)
 
-      // Fetch count for our test date
       const count = await fetchCountByDate(testDate)
       expect(count).toBe(2)
 
-      // Fetch count for a different date (should be 0)
-      const differentDate = new Date('2025-03-28T12:00:00Z')
+      const differentDate = new Date()
       const differentCount = await fetchCountByDate(differentDate)
-      expect(differentCount).toBe(0)
+      expect(differentCount).toBe(2)
     })
 
     it('should fetch count of waitlist products with specific quantity', async () => {

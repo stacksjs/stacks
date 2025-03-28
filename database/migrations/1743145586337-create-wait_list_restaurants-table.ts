@@ -16,6 +16,8 @@ export async function up(db: Database<any>) {
     .addColumn('quoted_wait_time', 'numeric', col => col.notNull())
     .addColumn('actual_wait_time', 'numeric')
     .addColumn('queue_position', 'numeric')
+    .addColumn('customer_id', 'integer', col =>
+      col.references('customers.id').onDelete('cascade'))
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

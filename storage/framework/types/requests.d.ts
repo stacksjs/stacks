@@ -592,6 +592,7 @@ interface RequestDataWaitlistRestaurant {
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
+  customer_id: number
   created_at?: Date
   updated_at?: Date
 }
@@ -610,6 +611,7 @@ export interface WaitlistRestaurantRequestType extends Request {
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
+  customer_id: number
   created_at?: Date
   updated_at?: Date
 }

@@ -29,7 +29,7 @@ export default {
     observe: true,
   },
 
-  hasMany: ['Order', 'GiftCard', 'Review', 'Payment', 'LicenseKey', 'WaitlistProduct'],
+  hasMany: ['Order', 'GiftCard', 'Review', 'Payment', 'LicenseKey', 'WaitlistProduct', 'WaitlistRestaurant'],
   belongsTo: ['User'],
 
   attributes: {
