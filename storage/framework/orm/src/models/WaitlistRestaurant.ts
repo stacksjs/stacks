@@ -9,7 +9,7 @@ import { DB } from '@stacksjs/orm'
 
 import { BaseOrm } from '../utils/base'
 
-export interface WaitListRestaurantsTable {
+export interface WaitlistRestaurantsTable {
   id: Generated<number>
   customer_id: number
   name: string
@@ -40,14 +40,14 @@ export interface WaitlistRestaurantResponse {
   next_cursor: number | null
 }
 
-export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<WaitListRestaurantsTable>, 'password'> {
+export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<WaitlistRestaurantsTable>, 'password'> {
   [key: string]: any
 }
 
-export type NewWaitlistRestaurant = Insertable<WaitListRestaurantsTable>
-export type WaitlistRestaurantUpdate = Updateable<WaitListRestaurantsTable>
+export type NewWaitlistRestaurant = Insertable<WaitlistRestaurantsTable>
+export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantsTable>
 
-export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitListRestaurantsTable, WaitlistRestaurantJsonResponse> {
+export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []
   private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'uuid', 'customer_id']
   private readonly guarded: Array<keyof WaitlistRestaurantJsonResponse> = []
@@ -69,7 +69,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
    */
 
   constructor(waitlistRestaurant: WaitlistRestaurantJsonResponse | undefined) {
-    super('wait_list_restaurants')
+    super('waitlist_restaurants')
     if (waitlistRestaurant) {
       this.attributes = { ...waitlistRestaurant }
       this.originalAttributes = { ...waitlistRestaurant }
@@ -82,9 +82,9 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     }
 
     this.withRelations = []
-    this.selectFromQuery = DB.instance.selectFrom('wait_list_restaurants')
-    this.updateFromQuery = DB.instance.updateTable('wait_list_restaurants')
-    this.deleteFromQuery = DB.instance.deleteFrom('wait_list_restaurants')
+    this.selectFromQuery = DB.instance.selectFrom('waitlist_restaurants')
+    this.updateFromQuery = DB.instance.updateTable('waitlist_restaurants')
+    this.deleteFromQuery = DB.instance.deleteFrom('waitlist_restaurants')
     this.hasSelect = false
     this.hasSaved = false
   }
@@ -295,7 +295,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
 
   // Method to find a WaitlistRestaurant by ID
   static async find(id: number): Promise<WaitlistRestaurantModel | undefined> {
-    const query = DB.instance.selectFrom('wait_list_restaurants').where('id', '=', id).selectAll()
+    const query = DB.instance.selectFrom('waitlist_restaurants').where('id', '=', id).selectAll()
 
     const model = await query.executeTakeFirst()
 
@@ -336,7 +336,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
   static async all(): Promise<WaitlistRestaurantModel[]> {
     const instance = new WaitlistRestaurantModel(undefined)
 
-    const models = await DB.instance.selectFrom('wait_list_restaurants').selectAll().execute()
+    const models = await DB.instance.selectFrom('waitlist_restaurants').selectAll().execute()
 
     instance.mapCustomGetters(models)
 
@@ -361,7 +361,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return models.map((modelItem: WaitlistRestaurantJsonResponse) => instance.parseResult(new WaitlistRestaurantModel(modelItem)))
   }
 
-  static async latest(column: keyof WaitListRestaurantsTable = 'created_at'): Promise<WaitlistRestaurantModel | undefined> {
+  static async latest(column: keyof WaitlistRestaurantsTable = 'created_at'): Promise<WaitlistRestaurantModel | undefined> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     const model = await instance.selectFromQuery
@@ -376,7 +376,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return new WaitlistRestaurantModel(model)
   }
 
-  static async oldest(column: keyof WaitListRestaurantsTable = 'created_at'): Promise<WaitlistRestaurantModel | undefined> {
+  static async oldest(column: keyof WaitlistRestaurantsTable = 'created_at'): Promise<WaitlistRestaurantModel | undefined> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     const model = await instance.selectFromQuery
@@ -403,7 +403,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance.applyTake(count)
   }
 
-  static where<V = string>(column: keyof WaitListRestaurantsTable, ...args: [V] | [Operator, V]): WaitlistRestaurantModel {
+  static where<V = string>(column: keyof WaitlistRestaurantsTable, ...args: [V] | [Operator, V]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhere<V>(column, ...args)
@@ -415,19 +415,19 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance.applyOrWhere(...conditions)
   }
 
-  static whereNotIn<V = number>(column: keyof WaitListRestaurantsTable, values: V[]): WaitlistRestaurantModel {
+  static whereNotIn<V = number>(column: keyof WaitlistRestaurantsTable, values: V[]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereNotIn<V>(column, values)
   }
 
-  static whereBetween<V = number>(column: keyof WaitListRestaurantsTable, range: [V, V]): WaitlistRestaurantModel {
+  static whereBetween<V = number>(column: keyof WaitlistRestaurantsTable, range: [V, V]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereBetween<V>(column, range)
   }
 
-  static whereRef(column: keyof WaitListRestaurantsTable, ...args: string[]): WaitlistRestaurantModel {
+  static whereRef(column: keyof WaitlistRestaurantsTable, ...args: string[]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereRef(column, ...args)
@@ -439,49 +439,49 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance.applyWhen(condition, callback as any)
   }
 
-  static whereNull(column: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static whereNull(column: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereNull(column)
   }
 
-  static whereNotNull(column: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static whereNotNull(column: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereNotNull(column)
   }
 
-  static whereLike(column: keyof WaitListRestaurantsTable, value: string): WaitlistRestaurantModel {
+  static whereLike(column: keyof WaitlistRestaurantsTable, value: string): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereLike(column, value)
   }
 
-  static orderBy(column: keyof WaitListRestaurantsTable, order: 'asc' | 'desc'): WaitlistRestaurantModel {
+  static orderBy(column: keyof WaitlistRestaurantsTable, order: 'asc' | 'desc'): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyOrderBy(column, order)
   }
 
-  static orderByAsc(column: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static orderByAsc(column: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyOrderByAsc(column)
   }
 
-  static orderByDesc(column: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static orderByDesc(column: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyOrderByDesc(column)
   }
 
-  static groupBy(column: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static groupBy(column: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyGroupBy(column)
   }
 
-  static having<V = string>(column: keyof WaitListRestaurantsTable, operator: Operator, value: V): WaitlistRestaurantModel {
+  static having<V = string>(column: keyof WaitlistRestaurantsTable, operator: Operator, value: V): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyHaving<V>(column, operator, value)
@@ -493,31 +493,31 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance.applyInRandomOrder()
   }
 
-  static whereColumn(first: keyof WaitListRestaurantsTable, operator: Operator, second: keyof WaitListRestaurantsTable): WaitlistRestaurantModel {
+  static whereColumn(first: keyof WaitlistRestaurantsTable, operator: Operator, second: keyof WaitlistRestaurantsTable): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereColumn(first, operator, second)
   }
 
-  static async max(field: keyof WaitListRestaurantsTable): Promise<number> {
+  static async max(field: keyof WaitlistRestaurantsTable): Promise<number> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return await instance.applyMax(field)
   }
 
-  static async min(field: keyof WaitListRestaurantsTable): Promise<number> {
+  static async min(field: keyof WaitlistRestaurantsTable): Promise<number> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return await instance.applyMin(field)
   }
 
-  static async avg(field: keyof WaitListRestaurantsTable): Promise<number> {
+  static async avg(field: keyof WaitlistRestaurantsTable): Promise<number> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return await instance.applyAvg(field)
   }
 
-  static async sum(field: keyof WaitListRestaurantsTable): Promise<number> {
+  static async sum(field: keyof WaitlistRestaurantsTable): Promise<number> {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return await instance.applySum(field)
@@ -588,11 +588,11 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
 
     filteredValues.uuid = randomUUIDv7()
 
-    const result = await DB.instance.insertInto('wait_list_restaurants')
+    const result = await DB.instance.insertInto('waitlist_restaurants')
       .values(filteredValues)
       .executeTakeFirst()
 
-    const model = await DB.instance.selectFrom('wait_list_restaurants')
+    const model = await DB.instance.selectFrom('waitlist_restaurants')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -615,7 +615,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return await instance.applyCreate(newWaitlistRestaurant)
   }
 
-  static async firstOrCreate(search: Partial<WaitListRestaurantsTable>, values: NewWaitlistRestaurant = {} as NewWaitlistRestaurant): Promise<WaitlistRestaurantModel> {
+  static async firstOrCreate(search: Partial<WaitlistRestaurantsTable>, values: NewWaitlistRestaurant = {} as NewWaitlistRestaurant): Promise<WaitlistRestaurantModel> {
     // First try to find a record matching the search criteria
     const instance = new WaitlistRestaurantModel(undefined)
 
@@ -636,7 +636,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return await WaitlistRestaurantModel.create(createData)
   }
 
-  static async updateOrCreate(search: Partial<WaitListRestaurantsTable>, values: NewWaitlistRestaurant = {} as NewWaitlistRestaurant): Promise<WaitlistRestaurantModel> {
+  static async updateOrCreate(search: Partial<WaitlistRestaurantsTable>, values: NewWaitlistRestaurant = {} as NewWaitlistRestaurant): Promise<WaitlistRestaurantModel> {
     // First try to find a record matching the search criteria
     const instance = new WaitlistRestaurantModel(undefined)
 
@@ -679,14 +679,14 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
 
     filteredValues.updated_at = new Date().toISOString()
 
-    await DB.instance.updateTable('wait_list_restaurants')
+    await DB.instance.updateTable('waitlist_restaurants')
       .set(filteredValues)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_restaurants')
+      const model = await DB.instance.selectFrom('waitlist_restaurants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -706,14 +706,14 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
   }
 
   async forceUpdate(newWaitlistRestaurant: WaitlistRestaurantUpdate): Promise<WaitlistRestaurantModel | undefined> {
-    await DB.instance.updateTable('wait_list_restaurants')
+    await DB.instance.updateTable('waitlist_restaurants')
       .set(newWaitlistRestaurant)
       .where('id', '=', this.id)
       .executeTakeFirst()
 
     if (this.id) {
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_restaurants')
+      const model = await DB.instance.selectFrom('waitlist_restaurants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -734,13 +734,13 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     // If the model has an ID, update it; otherwise, create a new record
     if (this.id) {
       // Update existing record
-      await DB.instance.updateTable('wait_list_restaurants')
+      await DB.instance.updateTable('waitlist_restaurants')
         .set(this.attributes as WaitlistRestaurantUpdate)
         .where('id', '=', this.id)
         .executeTakeFirst()
 
       // Get the updated data
-      const model = await DB.instance.selectFrom('wait_list_restaurants')
+      const model = await DB.instance.selectFrom('waitlist_restaurants')
         .where('id', '=', this.id)
         .selectAll()
         .executeTakeFirst()
@@ -755,12 +755,12 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     }
     else {
       // Create new record
-      const result = await DB.instance.insertInto('wait_list_restaurants')
+      const result = await DB.instance.insertInto('waitlist_restaurants')
         .values(this.attributes as NewWaitlistRestaurant)
         .executeTakeFirst()
 
       // Get the created data
-      const model = await DB.instance.selectFrom('wait_list_restaurants')
+      const model = await DB.instance.selectFrom('waitlist_restaurants')
         .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
         .selectAll()
         .executeTakeFirst()
@@ -790,18 +790,18 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
       return filteredValues
     })
 
-    await DB.instance.insertInto('wait_list_restaurants')
+    await DB.instance.insertInto('waitlist_restaurants')
       .values(valuesFiltered)
       .executeTakeFirst()
   }
 
   static async forceCreate(newWaitlistRestaurant: NewWaitlistRestaurant): Promise<WaitlistRestaurantModel> {
-    const result = await DB.instance.insertInto('wait_list_restaurants')
+    const result = await DB.instance.insertInto('waitlist_restaurants')
       .values(newWaitlistRestaurant)
       .executeTakeFirst()
 
     const instance = new WaitlistRestaurantModel(undefined)
-    const model = await DB.instance.selectFrom('wait_list_restaurants')
+    const model = await DB.instance.selectFrom('waitlist_restaurants')
       .where('id', '=', Number(result.insertId || result.numInsertedOrUpdatedRows))
       .selectAll()
       .executeTakeFirst()
@@ -825,7 +825,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     if (model)
       dispatch('waitlistRestaurant:deleted', model)
 
-    const deleted = await DB.instance.deleteFrom('wait_list_restaurants')
+    const deleted = await DB.instance.deleteFrom('waitlist_restaurants')
       .where('id', '=', this.id)
       .execute()
 
@@ -840,7 +840,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     if (model)
       dispatch('waitlistRestaurant:deleted', model)
 
-    return await DB.instance.deleteFrom('wait_list_restaurants')
+    return await DB.instance.deleteFrom('waitlist_restaurants')
       .where('id', '=', id)
       .execute()
   }
@@ -925,7 +925,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance
   }
 
-  static whereIn<V = number>(column: keyof WaitListRestaurantsTable, values: V[]): WaitlistRestaurantModel {
+  static whereIn<V = number>(column: keyof WaitlistRestaurantsTable, values: V[]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
     return instance.applyWhereIn<V>(column, values)
@@ -1030,7 +1030,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
 }
 
 export async function find(id: number): Promise<WaitlistRestaurantModel | undefined> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('id', '=', id).selectAll()
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('id', '=', id).selectAll()
 
   const model = await query.executeTakeFirst()
 
@@ -1057,76 +1057,76 @@ export async function rawQuery(rawQuery: string): Promise<any> {
 }
 
 export async function remove(id: number): Promise<void> {
-  await DB.instance.deleteFrom('wait_list_restaurants')
+  await DB.instance.deleteFrom('waitlist_restaurants')
     .where('id', '=', id)
     .execute()
 }
 
 export async function whereName(value: string): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('name', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('name', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereEmail(value: string): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('email', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('email', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function wherePhone(value: string): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('phone', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('phone', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function wherePartySize(value: number): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('party_size', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('party_size', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereCheckInTime(value: string): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('check_in_time', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('check_in_time', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereTablePreference(value: string | string[]): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('table_preference', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('table_preference', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereStatus(value: string | string[]): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('status', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('status', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereQuotedWaitTime(value: number): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('quoted_wait_time', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('quoted_wait_time', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereActualWaitTime(value: number): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('actual_wait_time', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('actual_wait_time', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
 export async function whereQueuePosition(value: number): Promise<WaitlistRestaurantModel[]> {
-  const query = DB.instance.selectFrom('wait_list_restaurants').where('queue_position', '=', value)
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('queue_position', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))

@@ -3,7 +3,7 @@ import { schema } from '@stacksjs/validation'
 
 export default {
   name: 'WaitlistRestaurant',
-  table: 'wait_list_restaurants',
+  table: 'waitlist_restaurants',
   primaryKey: 'id',
   autoIncrement: true,
   belongsTo: ['Customer'],
