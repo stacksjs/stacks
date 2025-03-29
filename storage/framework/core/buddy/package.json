@@ -68,7 +68,13 @@
     "compile:darwin-x64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-x64 --outfile bin/buddy-darwin-x64",
     "compile:darwin-arm64": "bun build ./bin/cli.ts --compile --minify --target=bun-darwin-arm64 --outfile bin/buddy-darwin-arm64",
     "typecheck": "bun tsc --noEmit",
-    "prepublishOnly": "bun run build && bun run compile:all"
+    "zip:all": "bun run zip:linux-x64 && bun run zip:linux-arm64 && bun run zip:windows-x64 && bun run zip:darwin-x64 && bun run zip:darwin-arm64",
+    "zip:linux-x64": "zip -r bin/buddy-linux-x64.zip bin/buddy-linux-x64",
+    "zip:linux-arm64": "zip -r bin/buddy-linux-arm64.zip bin/buddy-linux-arm64",
+    "zip:windows-x64": "zip -r bin/buddy-windows-x64.zip bin/buddy-windows-x64.exe",
+    "zip:darwin-x64": "zip -r bin/buddy-darwin-x64.zip bin/buddy-darwin-x64",
+    "zip:darwin-arm64": "zip -r bin/buddy-darwin-arm64.zip bin/buddy-darwin-arm64",
+    "prepublishOnly": "bun run build && bun run compile:all && bun run zip:all"
   },
   "dependencies": {
     "@stacksjs/actions": "workspace:*",

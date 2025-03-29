@@ -63,11 +63,11 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            storage/framework/core/buddy/bin/buddy-linux-x64
-            storage/framework/core/buddy/bin/buddy-linux-arm64
-            storage/framework/core/buddy/bin/buddy-windows-x64.exe
-            storage/framework/core/buddy/bin/buddy-darwin-x64
-            storage/framework/core/buddy/bin/buddy-darwin-arm64
+            storage/framework/core/buddy/bin/buddy-linux-x64.zip
+            storage/framework/core/buddy/bin/buddy-linux-arm64.zip
+            storage/framework/core/buddy/bin/buddy-windows-x64.zip
+            storage/framework/core/buddy/bin/buddy-darwin-x64.zip
+            storage/framework/core/buddy/bin/buddy-darwin-arm64.zip
           name: ${{ env.VERSION }}
           tag_name: ${{ env.VERSION }}
           generate_release_notes: true
