@@ -255,7 +255,7 @@ const sectionContent: Record<string, SectionContent> = {
         text: 'Printers',
         children: [
           { to: '/commerce/printers/devices', icon: 'i-hugeicons-printer', text: 'Devices' },
-          { to: '/commerce/printers/prints', icon: 'i-hugeicons-file-02', text: 'Prints' }
+          { to: '/commerce/printers/receipts', icon: 'i-hugeicons-file-02', text: 'Receipts' }
         ]
       }
     ]
