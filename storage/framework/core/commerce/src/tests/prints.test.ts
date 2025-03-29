@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../prints/destroy'
-import { fetchAll, fetchById, fetchPrintJobStats } from '../prints/fetch'
+import { fetchAll, fetchById, fetchPrintJobStats, fetchSuccessRate } from '../prints/fetch'
 import { bulkStore, store } from '../prints/store'
 import { update, updatePrintJob, updateStatus } from '../prints/update'
 
@@ -498,6 +498,177 @@ describe('Print Log Module', () => {
       expect(stats.averageSize).toBe(1024)
       expect(stats.averagePages).toBe(5)
       expect(stats.averageDuration).toBe(30)
+    })
+
+    it('should calculate success rate for print jobs within a date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test print logs with different statuses
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate,
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+        new TestRequest({
+          printer: 'Brother Printer',
+          document: 'error.pdf',
+          timestamp: startDate,
+          status: 'failed',
+          size: 256,
+          pages: 1,
+          duration: 5,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      // Fetch success rate
+      const stats = await fetchSuccessRate(startDate, endDate)
+
+      // Verify the statistics
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(4)
+      expect(stats.success).toBe(2)
+      expect(stats.warning).toBe(1)
+      expect(stats.failed).toBe(1)
+      expect(stats.successRate).toBe(50) // 2 out of 4 jobs were successful
+    })
+
+    it('should return 0% success rate when no print jobs exist in date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      const stats = await fetchSuccessRate(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(0)
+      expect(stats.success).toBe(0)
+      expect(stats.warning).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(stats.successRate).toBe(0)
+    })
+
+    it('should calculate 100% success rate when all jobs are successful', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test print logs with all successful status
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchSuccessRate(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(3)
+      expect(stats.success).toBe(3)
+      expect(stats.warning).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(stats.successRate).toBe(100) // All jobs were successful
+    })
+
+    it('should only count print jobs within the specified date range for success rate', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create print logs with different dates
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate - 86400000, // Yesterday
+          status: 'failed',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: endDate + 1, // Tomorrow
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchSuccessRate(startDate, endDate)
+
+      // Verify only today's print log is counted
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(1)
+      expect(stats.success).toBe(1)
+      expect(stats.warning).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(stats.successRate).toBe(100) // Only today's job was successful
     })
   })
 })

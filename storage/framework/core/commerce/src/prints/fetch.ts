@@ -63,3 +63,49 @@ export async function fetchPrintJobStats(
     averageDuration: Math.round(stats?.averageDuration || 0),
   }
 }
+
+/**
+ * Calculate the success rate percentage for print jobs within a date range
+ * 
+ * @param startDate Start date for the range
+ * @param endDate End date for the range
+ * @returns Object containing success rate percentage and detailed counts
+ */
+export async function fetchSuccessRate(
+  startDate: number,
+  endDate: number,
+): Promise<{
+    successRate: number
+    total: number
+    success: number
+    failed: number
+    warning: number
+  }> {
+  const stats = await db
+    .selectFrom('print_logs')
+    .where('timestamp', '>=', startDate)
+    .where('timestamp', '<=', endDate)
+    .select([
+      db.fn.count<number>('id').as('total'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'success').as('success'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'failed').as('failed'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'warning').as('warning'),
+    ])
+    .executeTakeFirst()
+
+  const total = stats?.total || 0
+  const success = stats?.success || 0
+  const failed = stats?.failed || 0
+  const warning = stats?.warning || 0
+
+  // Calculate success rate as percentage of successful jobs vs total jobs
+  const successRate = total > 0 ? Math.round((success / total) * 100) : 0
+
+  return {
+    successRate,
+    total,
+    success,
+    failed,
+    warning,
+  }
+}
