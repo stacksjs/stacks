@@ -79,9 +79,9 @@ describe('Print Log Module', () => {
       expect(printLog?.printer).toBe('Epson Printer')
       expect(printLog?.document).toBe('report.pdf')
       expect(printLog?.status).toBe('success')
-      expect(printLog?.size).toBeUndefined()
-      expect(printLog?.pages).toBeUndefined()
-      expect(printLog?.duration).toBeUndefined()
+      expect(printLog?.size).toBeNull()
+      expect(printLog?.pages).toBeNull()
+      expect(printLog?.duration).toBeNull()
       expect(printLog?.uuid).toBeDefined()
     })
 
