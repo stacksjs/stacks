@@ -19,6 +19,6 @@ export {
 // Functions from update.ts
 export {
   update,
-  updateStatus,
   updatePrintJob,
+  updateStatus,
 } from './update'
