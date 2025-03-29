@@ -96,7 +96,7 @@
     "vite-plugin-local": "^0.5.0",
     "vite-plugin-pages": "^0.32.5",
     "vite-plugin-pwa": "^0.21.2",
-    "vite-ssg": "^26.0.0",
+    "vite-ssg": "^26.1.0",
     "vite-ssg-sitemap": "^0.8.1 "
   }
 }
