@@ -61,7 +61,7 @@ export default {
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
         message: {
           invalid: 'Invalid date format',
         },

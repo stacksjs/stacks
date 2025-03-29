@@ -132,7 +132,7 @@ export interface Attributes {
   region: string | string[]
   printer: string
   document: string
-  timestamp: Date | string
+  timestamp: number
   size: number
   pages: number
   duration: number

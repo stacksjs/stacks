@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../prints/destroy'
-import { fetchAll, fetchById } from '../prints/fetch'
+import { fetchAll, fetchById, fetchPrintJobStats } from '../prints/fetch'
 import { bulkStore, store } from '../prints/store'
 import { update, updatePrintJob, updateStatus } from '../prints/update'
 
@@ -34,7 +34,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -68,7 +68,7 @@ describe('Print Log Module', () => {
       const minimalRequestData = {
         printer: 'Epson Printer',
         document: 'report.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
       }
 
@@ -90,7 +90,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'success',
           size: 1024,
           pages: 5,
@@ -99,7 +99,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'Epson Printer',
           document: 'report.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'warning',
           size: 2048,
           pages: 10,
@@ -108,7 +108,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'Canon Printer',
           document: 'document.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'failed',
           size: 512,
           pages: 2,
@@ -136,7 +136,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -158,7 +158,7 @@ describe('Print Log Module', () => {
       const updateData = {
         printer: 'HP LaserJet Pro',
         document: 'updated_invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'warning',
         size: 2048,
         pages: 10,
@@ -184,7 +184,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -217,7 +217,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -249,7 +249,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -294,7 +294,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'HP LaserJet',
           document: 'invoice.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'success',
           size: 1024,
           pages: 5,
@@ -303,7 +303,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'Epson Printer',
           document: 'report.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'warning',
           size: 2048,
           pages: 10,
@@ -312,7 +312,7 @@ describe('Print Log Module', () => {
         new TestRequest({
           printer: 'Canon Printer',
           document: 'document.pdf',
-          timestamp: formatDate(new Date()),
+          timestamp: Date.now(),
           status: 'failed',
           size: 512,
           pages: 2,
@@ -337,7 +337,7 @@ describe('Print Log Module', () => {
       const requestData = {
         printer: 'HP LaserJet',
         document: 'invoice.pdf',
-        timestamp: formatDate(new Date()),
+        timestamp: Date.now(),
         status: 'success',
         size: 1024,
         pages: 5,
@@ -363,6 +363,141 @@ describe('Print Log Module', () => {
       expect(fetchedPrint?.size).toBe(1024)
       expect(fetchedPrint?.pages).toBe(5)
       expect(fetchedPrint?.duration).toBe(30)
+    })
+
+    it('should fetch print job statistics within a date range', async () => {
+      // Create test dates using today
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test print logs with different statuses and metrics
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate,
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+        new TestRequest({
+          printer: 'Brother Printer',
+          document: 'error.pdf',
+          timestamp: startDate,
+          status: 'failed',
+          size: 256,
+          pages: 1,
+          duration: 5,
+        }),
+      ]
+
+      // Create the print logs
+      await bulkStore(requests as any)
+
+      // Fetch statistics
+      const stats = await fetchPrintJobStats(startDate, endDate)
+
+      // Verify the statistics
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(4)
+      expect(stats.success).toBe(2)
+      expect(stats.warning).toBe(1)
+      expect(stats.failed).toBe(1)
+
+      // Verify averages (rounded)
+      expect(stats.averageSize).toBe(960) // (1024 + 2048 + 512 + 256) / 4
+      expect(stats.averagePages).toBe(5) // (5 + 10 + 2 + 1) / 4
+      expect(stats.averageDuration).toBe(24) // (30 + 45 + 15 + 5) / 4
+    })
+
+    it('should return zero statistics when no print logs exist in date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      const stats = await fetchPrintJobStats(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(0)
+      expect(stats.success).toBe(0)
+      expect(stats.warning).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(stats.averageSize).toBe(0)
+      expect(stats.averagePages).toBe(0)
+      expect(stats.averageDuration).toBe(0)
+    })
+
+    it('should only count print logs within the specified date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create print logs with different dates
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate - 86400000, // Yesterday
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: endDate + 1, // Tomorrow
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      // Create the print logs
+      await bulkStore(requests as any)
+
+      // Fetch statistics
+      const stats = await fetchPrintJobStats(startDate, endDate)
+
+      // Verify only today's print log is counted
+      expect(stats).toBeDefined()
+      expect(stats.total).toBe(1)
+      expect(stats.success).toBe(1)
+      expect(stats.warning).toBe(0)
+      expect(stats.failed).toBe(0)
+      expect(stats.averageSize).toBe(1024)
+      expect(stats.averagePages).toBe(5)
+      expect(stats.averageDuration).toBe(30)
     })
   })
 })

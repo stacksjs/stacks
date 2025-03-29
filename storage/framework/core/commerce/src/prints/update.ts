@@ -25,11 +25,11 @@ export async function update(id: number, request: PrintLogRequestType): Promise<
   const updateData = {
     printer: request.get('printer'),
     document: request.get('document'),
-    timestamp: request.get('timestamp'),
+    timestamp: request.get<number>('timestamp'),
     status: request.get('status'),
-    size: request.get('size'),
-    pages: request.get('pages'),
-    duration: request.get('duration'),
+    size: request.get<number>('size'),
+    pages: request.get<number>('pages'),
+    duration: request.get<number>('duration'),
     updated_at: formatDate(new Date()),
   }
 

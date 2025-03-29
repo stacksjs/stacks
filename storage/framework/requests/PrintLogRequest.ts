@@ -15,7 +15,7 @@ interface RequestDataPrintLog {
   id: number
   printer: string
   document: string
-  timestamp: date
+  timestamp: number
   status: string[]
   size: number
   pages: number
@@ -27,7 +27,7 @@ export class PrintLogRequest extends Request<RequestDataPrintLog> implements Pri
   public id = 1
   public printer = ''
   public document = ''
-  public timestamp = ''
+  public timestamp = 0
   public status = []
   public size = 0
   public pages = 0

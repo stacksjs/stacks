@@ -18,3 +18,48 @@ export async function fetchById(id: number): Promise<PrintLogJsonResponse | unde
 export async function fetchAll(): Promise<PrintLogJsonResponse[]> {
   return await db.selectFrom('print_logs').selectAll().execute()
 }
+
+/**
+ * Fetch print job statistics by status within a date range
+ *
+ * @param startDate Start date for the range
+ * @param endDate End date for the range
+ * @returns Object containing counts for each status and total
+ */
+export async function fetchPrintJobStats(
+  startDate: number,
+  endDate: number,
+): Promise<{
+    total: number
+    success: number
+    failed: number
+    warning: number
+    averageSize: number
+    averagePages: number
+    averageDuration: number
+  }> {
+  const stats = await db
+    .selectFrom('print_logs')
+    .where('timestamp', '>=', startDate)
+    .where('timestamp', '<=', endDate)
+    .select([
+      db.fn.count<number>('id').as('total'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'success').as('success'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'failed').as('failed'),
+      db.fn.count<number>('id').filterWhere('status', '=', 'warning').as('warning'),
+      db.fn.avg<number>('size').as('averageSize'),
+      db.fn.avg<number>('pages').as('averagePages'),
+      db.fn.avg<number>('duration').as('averageDuration'),
+    ])
+    .executeTakeFirst()
+
+  return {
+    total: stats?.total || 0,
+    success: stats?.success || 0,
+    failed: stats?.failed || 0,
+    warning: stats?.warning || 0,
+    averageSize: Math.round(stats?.averageSize || 0),
+    averagePages: Math.round(stats?.averagePages || 0),
+    averageDuration: Math.round(stats?.averageDuration || 0),
+  }
+}

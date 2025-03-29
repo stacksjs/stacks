@@ -11,7 +11,7 @@ export interface PrintLogsTable {
   id: Generated<number>
   printer: string
   document: string
-  timestamp: Date | string
+  timestamp: number
   status: string | string[]
   size?: number
   pages?: number
@@ -185,7 +185,7 @@ export class PrintLogModel extends BaseOrm<PrintLogModel, PrintLogsTable, PrintL
     return this.attributes.document
   }
 
-  get timestamp(): Date | string {
+  get timestamp(): number {
     return this.attributes.timestamp
   }
 
@@ -225,7 +225,7 @@ export class PrintLogModel extends BaseOrm<PrintLogModel, PrintLogsTable, PrintL
     this.attributes.document = value
   }
 
-  set timestamp(value: Date | string) {
+  set timestamp(value: number) {
     this.attributes.timestamp = value
   }
 
@@ -992,7 +992,7 @@ export async function whereDocument(value: string): Promise<PrintLogModel[]> {
   return results.map((modelItem: PrintLogJsonResponse) => new PrintLogModel(modelItem))
 }
 
-export async function whereTimestamp(value: Date | string): Promise<PrintLogModel[]> {
+export async function whereTimestamp(value: number): Promise<PrintLogModel[]> {
   const query = DB.instance.selectFrom('print_logs').where('timestamp', '=', value)
   const results: PrintLogJsonResponse = await query.execute()
 

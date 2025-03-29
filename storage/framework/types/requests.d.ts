@@ -850,7 +850,7 @@ interface RequestDataPrintLog {
   id: number
   printer: string
   document: string
-  timestamp: date
+  timestamp: number
   status: string[]
   size: number
   pages: number
@@ -865,7 +865,7 @@ export interface PrintLogRequestType extends Request {
   id: number
   printer: string
   document: string
-  timestamp: date
+  timestamp: number
   status: string[]
   size: number
   pages: number
