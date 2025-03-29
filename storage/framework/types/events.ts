@@ -11,6 +11,7 @@ import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
 import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { PaymentModel } from '../orm/src/models/Payment'
+import type { PrintLogModel } from '../orm/src/models/PrintLog'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
@@ -84,6 +85,9 @@ export interface ModelEvents {
   'tax-rate:created': TaxRateModel
   'tax-rate:updated': TaxRateModel
   'tax-rate:deleted': TaxRateModel
+  'print-log:created': PrintLogModel
+  'print-log:updated': PrintLogModel
+  'print-log:deleted': PrintLogModel
   'transaction:created': TransactionModel
   'transaction:updated': TransactionModel
   'transaction:deleted': TransactionModel

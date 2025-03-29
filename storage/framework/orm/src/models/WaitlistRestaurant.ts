@@ -22,6 +22,9 @@ export interface WaitlistRestaurantsTable {
   quoted_wait_time: number
   actual_wait_time?: number
   queue_position?: number
+  seated_at?: Date | string
+  no_show_at?: Date | string
+  cancelled_at?: Date | string
   uuid?: string
 
   created_at?: string
@@ -49,7 +52,7 @@ export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantsTable>
 
 export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'uuid', 'customer_id']
+  private readonly fillable: Array<keyof WaitlistRestaurantJsonResponse> = ['name', 'email', 'phone', 'party_size', 'check_in_time', 'table_preference', 'status', 'quoted_wait_time', 'actual_wait_time', 'queue_position', 'seated_at', 'no_show_at', 'cancelled_at', 'uuid', 'customer_id']
   private readonly guarded: Array<keyof WaitlistRestaurantJsonResponse> = []
   protected attributes = {} as WaitlistRestaurantJsonResponse
   protected originalAttributes = {} as WaitlistRestaurantJsonResponse
@@ -231,6 +234,18 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return this.attributes.queue_position
   }
 
+  get seated_at(): Date | string | undefined {
+    return this.attributes.seated_at
+  }
+
+  get no_show_at(): Date | string | undefined {
+    return this.attributes.no_show_at
+  }
+
+  get cancelled_at(): Date | string | undefined {
+    return this.attributes.cancelled_at
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -281,6 +296,18 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
 
   set queue_position(value: number) {
     this.attributes.queue_position = value
+  }
+
+  set seated_at(value: Date | string) {
+    this.attributes.seated_at = value
+  }
+
+  set no_show_at(value: Date | string) {
+    this.attributes.no_show_at = value
+  }
+
+  set cancelled_at(value: Date | string) {
+    this.attributes.cancelled_at = value
   }
 
   set updated_at(value: string) {
@@ -925,6 +952,30 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return instance
   }
 
+  static whereSeatedAt(value: string): WaitlistRestaurantModel {
+    const instance = new WaitlistRestaurantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('seated_at', '=', value)
+
+    return instance
+  }
+
+  static whereNoShowAt(value: string): WaitlistRestaurantModel {
+    const instance = new WaitlistRestaurantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('no_show_at', '=', value)
+
+    return instance
+  }
+
+  static whereCancelledAt(value: string): WaitlistRestaurantModel {
+    const instance = new WaitlistRestaurantModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('cancelled_at', '=', value)
+
+    return instance
+  }
+
   static whereIn<V = number>(column: keyof WaitlistRestaurantsTable, values: V[]): WaitlistRestaurantModel {
     const instance = new WaitlistRestaurantModel(undefined)
 
@@ -989,6 +1040,9 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
       quoted_wait_time: this.quoted_wait_time,
       actual_wait_time: this.actual_wait_time,
       queue_position: this.queue_position,
+      seated_at: this.seated_at,
+      no_show_at: this.no_show_at,
+      cancelled_at: this.cancelled_at,
 
       created_at: this.created_at,
 
@@ -1127,6 +1181,27 @@ export async function whereActualWaitTime(value: number): Promise<WaitlistRestau
 
 export async function whereQueuePosition(value: number): Promise<WaitlistRestaurantModel[]> {
   const query = DB.instance.selectFrom('waitlist_restaurants').where('queue_position', '=', value)
+  const results: WaitlistRestaurantJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
+}
+
+export async function whereSeatedAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('seated_at', '=', value)
+  const results: WaitlistRestaurantJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
+}
+
+export async function whereNoShowAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('no_show_at', '=', value)
+  const results: WaitlistRestaurantJsonResponse = await query.execute()
+
+  return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
+}
+
+export async function whereCancelledAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+  const query = DB.instance.selectFrom('waitlist_restaurants').where('cancelled_at', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))

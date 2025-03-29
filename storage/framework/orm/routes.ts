@@ -150,6 +150,16 @@ route.patch('tax-rates/{id}', 'TaxRateUpdateOrmAction')
 
 route.delete('tax-rates/{id}', 'TaxRateDestroyOrmAction')
 
+route.get('print-logs', 'PrintLogIndexOrmAction')
+
+route.post('print-logs', 'PrintLogStoreOrmAction')
+
+route.get('print-logs/{id}', 'PrintLogShowOrmAction')
+
+route.patch('print-logs/{id}', 'PrintLogUpdateOrmAction')
+
+route.delete('print-logs/{id}', 'PrintLogDestroyOrmAction')
+
 route.get('transactions', 'TransactionIndexOrmAction')
 
 route.post('transactions', 'TransactionStoreOrmAction')

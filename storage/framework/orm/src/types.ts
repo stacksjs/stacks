@@ -21,6 +21,7 @@ import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
+import type { PrintLogsTable } from '../src/models/PrintLog'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductItemsTable } from '../src/models/ProductItem'
 import type { ProductUnitsTable } from '../src/models/ProductUnit'
@@ -103,6 +104,7 @@ export interface Database {
   orders: OrdersTable
   coupons: CouponsTable
   tax_rates: TaxRatesTable
+  print_logs: PrintLogsTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
   product_items: ProductItemsTable

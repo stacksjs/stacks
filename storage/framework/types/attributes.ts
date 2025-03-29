@@ -84,6 +84,8 @@ export interface Attributes {
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
+  seated_at: Date | string
+  no_show_at: Date | string
   rating: number
   content: string
   is_verified_purchase: boolean
@@ -128,6 +130,12 @@ export interface Attributes {
   applicable_categories: string
   rate: number
   region: string | string[]
+  printer: string
+  document: string
+  timestamp: Date | string
+  size: number
+  pages: number
+  duration: number
   payment_method: string
   payment_details: string
   transaction_reference: string
@@ -137,7 +145,6 @@ export interface Attributes {
   points: number
   source_reference_id: string
   is_used: boolean
-  size: string
   color: string
   sku: string
   custom_options: string

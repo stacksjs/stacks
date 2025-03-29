@@ -23,6 +23,9 @@ interface RequestDataWaitlistRestaurant {
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
+  seated_at: date
+  no_show_at: date
+  cancelled_at: date
   customer_id: number
   created_at?: Date
   updated_at?: Date
@@ -39,6 +42,9 @@ export class WaitlistRestaurantRequest extends Request<RequestDataWaitlistRestau
   public quoted_wait_time = 0
   public actual_wait_time = 0
   public queue_position = 0
+  public seated_at = ''
+  public no_show_at = ''
+  public cancelled_at = ''
   public customer_id = 0
   public created_at = new Date()
   public updated_at = new Date()
