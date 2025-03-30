@@ -27,6 +27,7 @@
     "types": [
       "bun",
       "vite/client",
+      "unplugin-vue-router/client",
       // "vue/ref-macros",
       "vite-plugin-pwa/client",
       "vite-plugin-vue-layouts/client",
