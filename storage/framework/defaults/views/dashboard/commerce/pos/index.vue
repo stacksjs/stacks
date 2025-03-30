@@ -4,7 +4,7 @@ import { useHead } from '@vueuse/head'
 import { useLocalStorage } from '@vueuse/core'
 
 useHead({
-  title: 'Restaurant POS - Table Ordering',
+  title: 'Self-Service Menu',
 })
 
 // Define menu item type
@@ -334,8 +334,11 @@ function updateItemQuantity(index: number, quantity: number): void {
     return
   }
 
-  currentOrder.items[index].quantity = quantity
-  updateOrderTotal()
+  const item = currentOrder.items[index]
+  if (item) {
+    item.quantity = quantity
+    updateOrderTotal()
+  }
 }
 
 // Update order total
@@ -351,14 +354,20 @@ const currentEditingItemIndex = ref(-1)
 const tempSpecialInstructions = ref('')
 
 function openSpecialInstructionsModal(index: number): void {
-  currentEditingItemIndex.value = index
-  tempSpecialInstructions.value = currentOrder.items[index].specialInstructions
-  showSpecialInstructionsModal.value = true
+  const item = currentOrder.items[index]
+  if (item) {
+    currentEditingItemIndex.value = index
+    tempSpecialInstructions.value = item.specialInstructions
+    showSpecialInstructionsModal.value = true
+  }
 }
 
 function saveSpecialInstructions(): void {
   if (currentEditingItemIndex.value >= 0) {
-    currentOrder.items[currentEditingItemIndex.value].specialInstructions = tempSpecialInstructions.value
+    const item = currentOrder.items[currentEditingItemIndex.value]
+    if (item) {
+      item.specialInstructions = tempSpecialInstructions.value
+    }
   }
   showSpecialInstructionsModal.value = false
 }
@@ -416,6 +425,14 @@ function getAllergyClass(allergy: string): string {
       return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
   }
 }
+
+// Add the scrollToOrder function to the script
+function scrollToOrder(): void {
+  const orderElement = document.getElementById('order-section')
+  if (orderElement) {
+    orderElement.scrollIntoView({ behavior: 'smooth' })
+  }
+}
 </script>
 
 <template>
@@ -425,15 +442,15 @@ function getAllergyClass(allergy: string): string {
         <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Restaurant Menu</h1>
+            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Self-Service Menu</h1>
             <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Table {{ tableNumber }} - Order your meal directly from your table
+              Device {{ tableNumber }} - Browse and order directly from your device
             </p>
           </div>
           <div class="mt-4 sm:mt-0 flex items-center gap-4">
-            <!-- Table selection dropdown -->
+            <!-- Device selection dropdown -->
             <div>
-              <label for="table-select" class="sr-only">Select Table</label>
+              <label for="table-select" class="sr-only">Select Device</label>
               <select
                 id="table-select"
                 v-model="tableNumber"
@@ -441,7 +458,7 @@ function getAllergyClass(allergy: string): string {
                 class="block rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
               >
                 <option v-for="table in availableTables" :key="table" :value="table">
-                  Table {{ table }}
+                  Device {{ table }}
                 </option>
               </select>
             </div>
@@ -449,10 +466,11 @@ function getAllergyClass(allergy: string): string {
             <!-- View cart button -->
             <button
               type="button"
+              @click="scrollToOrder"
               class="relative inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               <div class="i-hugeicons-shopping-cart-02 h-5 w-5 mr-1"></div>
-              View Order
+              View Receipt
               <span
                 v-if="currentOrder.items.length > 0"
                 class="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs font-bold text-white"
@@ -476,7 +494,7 @@ function getAllergyClass(allergy: string): string {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Products</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Items</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ menuItems.length }}</div>
                     </dd>
@@ -486,18 +504,18 @@ function getAllergyClass(allergy: string): string {
             </div>
           </div>
 
-          <!-- Table selection card -->
+          <!-- Device selection card -->
           <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
                   <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
-                    <div class="i-hugeicons-table h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
+                    <div class="i-hugeicons-tablet h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
                   </div>
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Table</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Device</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ tableNumber }}</div>
                     </dd>
@@ -577,55 +595,6 @@ function getAllergyClass(allergy: string): string {
           </div>
         </div>
 
-        <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
-          <span class="mr-2">Sort by:</span>
-          <button
-            @click="toggleSort('name')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
-          >
-            Name
-            <span v-if="sortBy === 'name'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('price')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'price' }"
-          >
-            Price
-            <span v-if="sortBy === 'price'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('rating')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'rating' }"
-          >
-            Rating
-            <span v-if="sortBy === 'rating'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-          <button
-            @click="toggleSort('dateAdded')"
-            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
-          >
-            Date Added
-            <span v-if="sortBy === 'dateAdded'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
-            </span>
-          </button>
-        </div>
-
         <!-- Menu items grid view -->
         <div v-if="viewMode === 'grid'" class="mt-6">
           <div v-if="filteredMenuItems.length === 0" class="py-12 text-center">
@@ -634,7 +603,7 @@ function getAllergyClass(allergy: string): string {
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
           </div>
 
-          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+          <div v-else class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <!-- Menu item card -->
             <div
               v-for="item in filteredMenuItems"
@@ -767,151 +736,124 @@ function getAllergyClass(allergy: string): string {
           </table>
         </div>
 
-        <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
-          <div class="flex flex-1 justify-between sm:hidden">
-            <button
-              @click="previousPage"
-              :disabled="currentPage === 1"
-              :class="[
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              Previous
-            </button>
-            <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="[
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white',
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700'
-              ]"
-            >
-              Next
-            </button>
-          </div>
-          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-            <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredMenuItems.length) }}</span> of
-                <span class="font-medium">{{ filteredMenuItems.length }}</span> results
-              </p>
-            </div>
-            <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <button
-                  @click="previousPage"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
-                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
-                >
-                  <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
-                </button>
-                <button
-                  v-for="page in totalPages"
-                  :key="page"
-                  @click="changePage(page)"
-                  :class="[
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
-                    page === currentPage
-                      ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-blue-gray-700'
-                  ]"
-                >
-                  {{ page }}
-                </button>
-                <button
-                  @click="nextPage"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700 dark:text-gray-500"
-                  :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
-                >
-                  <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
-                </button>
-              </nav>
-            </div>
-          </div>
-        </div>
-
         <!-- Current Order section (cart) -->
-        <div class="mt-8 bg-white shadow-sm rounded-lg overflow-hidden dark:bg-blue-gray-800">
-          <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Your Order (Table {{ tableNumber }})</h2>
-          </div>
+        <div id="order-section" class="mt-8 bg-white shadow-sm rounded-lg overflow-hidden dark:bg-blue-gray-800">
+          <div class="receipt-container p-4">
+            <div class="receipt mx-auto max-w-sm bg-white p-4 shadow-md dark:bg-blue-gray-800">
+              <!-- Receipt header -->
+              <h1 class="logo text-center text-xl font-bold mb-3 dark:text-white">Self-Service Menu</h1>
+              <div class="address text-center mb-2 text-sm font-mono dark:text-gray-300">
+                Device #{{ tableNumber }} - Local Location
+              </div>
+              <div class="transactionDetails flex justify-between text-xs font-mono mb-2 dark:text-gray-400">
+                <div class="detail">REG#01</div>
+                <div class="detail">TRN#{{ currentOrder.id }}</div>
+                <div class="detail">DEV#{{ tableNumber }}</div>
+              </div>
+              <div class="transactionDetails text-center text-xs font-mono mb-2 dark:text-gray-400">
+                {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
+              </div>
+              <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
+                *************************************
+              </div>
 
-          <div v-if="currentOrder.items.length === 0" class="p-6 text-center">
-            <div class="i-hugeicons-shopping-cart mx-auto h-12 w-12 text-gray-400"></div>
-            <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Your order is empty</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Add items from the menu to start your order.</p>
-          </div>
+              <div v-if="currentOrder.items.length === 0" class="p-6 text-center">
+                <div class="i-hugeicons-receipt h-12 w-12 mx-auto text-gray-400"></div>
+                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">Your receipt is empty</h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 font-mono">Add items from the menu to get started.</p>
+              </div>
 
-          <div v-else>
-            <ul class="divide-y divide-gray-200 dark:divide-gray-700">
-              <li v-for="(item, index) in currentOrder.items" :key="index" class="px-6 py-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center">
+              <div v-else>
+                <!-- Receipt items -->
+                <div v-for="(item, index) in currentOrder.items" :key="index" class="transactionDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+                  <div class="detail">{{ item.quantity }}</div>
+                  <div class="detail flex-grow mx-2">{{ item.name }}</div>
+                  <div class="detail">${{ (item.price * item.quantity).toFixed(2) }}</div>
+                </div>
+
+                <div v-for="(item, index) in currentOrder.items" :key="`note-${index}`" class="mt-0 mb-2">
+                  <p v-if="item.specialInstructions" class="text-xs text-gray-500 dark:text-gray-400 font-mono pl-5">
+                    {{ item.specialInstructions }}
+                  </p>
+                </div>
+
+                <div class="item-actions mt-2 mb-2 border-t border-dashed border-gray-200 dark:border-gray-700 pt-2">
+                  <div class="flex items-center justify-between mb-1">
+                    <span class="text-xs font-mono text-gray-700 dark:text-gray-300">Edit Items:</span>
+                  </div>
+                  <div v-for="(item, index) in currentOrder.items" :key="`controls-${index}`" class="flex items-center justify-between mb-1 px-1 py-1 rounded bg-gray-50 dark:bg-blue-gray-700 text-xs">
+                    <div class="flex items-center">
+                      <span class="font-mono">{{ item.name }}</span>
+                    </div>
                     <div class="flex items-center">
                       <button
                         @click="updateItemQuantity(index, item.quantity - 1)"
                         class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                       >
-                        <div class="i-hugeicons-minus h-5 w-5"></div>
+                        <div class="i-hugeicons-minus h-4 w-4"></div>
                       </button>
-                      <span class="mx-2 text-gray-700 dark:text-gray-300">{{ item.quantity }}</span>
+                      <span class="mx-1 text-gray-700 dark:text-gray-300 font-mono">{{ item.quantity }}</span>
                       <button
                         @click="updateItemQuantity(index, item.quantity + 1)"
                         class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
                       >
-                        <div class="i-hugeicons-plus-sign h-5 w-5"></div>
+                        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
                       </button>
-                    </div>
-
-                    <div class="ml-4">
-                      <p class="text-sm font-medium text-gray-900 dark:text-white">{{ item.name }}</p>
-                      <p v-if="item.specialInstructions" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {{ item.specialInstructions }}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900 dark:text-white">${{ (item.price * item.quantity).toFixed(2) }}</span>
-                    <div class="ml-4 flex">
                       <button
                         @click="openSpecialInstructionsModal(index)"
-                        class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400"
+                        class="p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400 ml-1"
                       >
-                        <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                        <div class="i-hugeicons-edit-01 h-4 w-4"></div>
                       </button>
                       <button
                         @click="removeFromOrder(index)"
-                        class="p-1 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                        class="p-1 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 dark:text-gray-500 dark:hover:text-red-400 ml-1"
                       >
-                        <div class="i-hugeicons-waste h-5 w-5"></div>
+                        <div class="i-hugeicons-waste h-4 w-4"></div>
                       </button>
                     </div>
                   </div>
                 </div>
-              </li>
-            </ul>
 
-            <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-              <div class="flex justify-between text-base font-medium text-gray-900 dark:text-white">
-                <p>Total</p>
-                <p>${{ currentOrder.totalAmount.toFixed(2) }}</p>
-              </div>
-              <p class="mt-0.5 text-sm text-gray-500 dark:text-gray-400">Taxes calculated at checkout</p>
-              <div class="mt-4">
-                <button
-                  @click="placeOrder"
-                  class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
-                >
-                  Place Order
-                </button>
+                <!-- Receipt total -->
+                <div class="break text-center font-mono text-xs my-2 dark:text-gray-400">
+                  *************************************
+                </div>
+
+                <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+                  <div class="detail font-bold">SUBTOTAL</div>
+                  <div class="detail font-bold">${{ currentOrder.totalAmount.toFixed(2) }}</div>
+                </div>
+                <div class="paymentDetails flex justify-between text-xs font-mono my-1 dark:text-gray-300">
+                  <div class="detail">TAX</div>
+                  <div class="detail">${{ (currentOrder.totalAmount * 0.0825).toFixed(2) }}</div>
+                </div>
+                <div class="paymentDetails flex justify-between text-xs font-mono my-1 font-bold dark:text-gray-300 border-t border-dashed border-gray-200 dark:border-gray-700 pt-1">
+                  <div class="detail">TOTAL</div>
+                  <div class="detail">${{ (currentOrder.totalAmount * 1.0825).toFixed(2) }}</div>
+                </div>
+
+                <div class="receiptBarcode my-4 text-center">
+                  <div class="barcode font-mono text-3xl dark:text-gray-300">
+                    |||||||||||||||||||
+                  </div>
+                  <div class="text-xs font-mono dark:text-gray-400">
+                    {{ Date.now().toString().substring(0, 12) }}
+                  </div>
+                </div>
+
+                <div class="returnPolicy text-xs font-mono text-center mb-3 dark:text-gray-400">
+                  Thank you for your purchase!
+                </div>
+
+                <div class="mt-4">
+                  <button
+                    @click="placeOrder"
+                    class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800"
+                  >
+                    Complete Purchase
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -982,29 +924,52 @@ function getAllergyClass(allergy: string): string {
             </div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Order Placed Successfully!
+                Purchase Complete!
               </h3>
               <div class="mt-2">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Your order has been placed for table {{ orderSummary?.tableNumber }}. Your food will be prepared shortly.
+                  Your purchase on device {{ orderSummary?.tableNumber }} has been confirmed.
                 </p>
               </div>
               <div class="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Order Summary</h4>
-                <ul class="mt-2 divide-y divide-gray-200 dark:divide-gray-700">
-                  <li v-for="(item, index) in orderSummary?.items || []" :key="index" class="py-2 flex justify-between">
-                    <div class="text-sm text-gray-700 dark:text-gray-300">
-                      {{ item.quantity }}x {{ item.name }}
-                      <span v-if="item.specialInstructions" class="block text-xs text-gray-500 dark:text-gray-400">
-                        {{ item.specialInstructions }}
-                      </span>
+                <h4 class="text-sm font-medium text-gray-900 dark:text-white font-mono">Receipt Summary</h4>
+
+                <!-- Receipt style summary -->
+                <div class="mx-auto max-w-sm p-4 font-mono">
+                  <div class="text-xs text-gray-500 dark:text-gray-400 text-center mb-2">
+                    {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
+                  </div>
+
+                  <div class="break text-center text-xs my-2 dark:text-gray-400">
+                    *************************************
+                  </div>
+
+                  <div v-for="(item, index) in orderSummary?.items || []" :key="index"
+                       class="flex justify-between text-sm text-gray-700 dark:text-gray-300 my-1">
+                    <div class="flex">
+                      <span class="mr-2">{{ item.quantity }}</span>
+                      <span>{{ item.name }}</span>
                     </div>
-                    <span class="text-sm text-gray-700 dark:text-gray-300">${{ (item.price * item.quantity).toFixed(2) }}</span>
-                  </li>
-                </ul>
-                <div class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">Total</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">${{ orderSummary?.totalAmount?.toFixed(2) || '0.00' }}</span>
+                    <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+                  </div>
+
+                  <div class="break text-center text-xs my-2 dark:text-gray-400">
+                    *************************************
+                  </div>
+
+                  <div class="flex justify-between text-sm font-bold mt-2">
+                    <span class="text-gray-900 dark:text-white">TOTAL</span>
+                    <span class="text-gray-900 dark:text-white">${{ orderSummary?.totalAmount?.toFixed(2) || '0.00' }}</span>
+                  </div>
+
+                  <div class="receiptBarcode my-4 text-center">
+                    <div class="barcode text-2xl dark:text-gray-300">
+                      |||||||||||||||||||
+                    </div>
+                    <div class="text-xs dark:text-gray-400">
+                      {{ Date.now().toString().substring(0, 12) }}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1023,3 +988,37 @@ function getAllergyClass(allergy: string): string {
     </div>
   </main>
 </template>
+
+<style scoped>
+.receipt-container {
+  background: #f1f1f1;
+  padding: 20px 10px;
+}
+
+.receipt {
+  font-family: 'Courier New', monospace;
+  background: #fff;
+  box-shadow: 5px 5px 19px #ccc;
+}
+
+.barcode {
+  font-family: 'Libre Barcode 128', monospace, 'Courier New';
+  font-size: 42px;
+  text-align: center;
+}
+
+.dark .receipt {
+  box-shadow: 5px 5px 19px #111;
+}
+
+.break {
+  text-align: center;
+  font-weight: bold;
+}
+
+@media print {
+  .receipt {
+    box-shadow: none;
+  }
+}
+</style>
