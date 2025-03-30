@@ -37,7 +37,7 @@
     "@iconify-json/carbon": "^1.2.8",
     "@shikijs/vitepress-twoslash": "^3.2.1",
     "@vite-pwa/assets-generator": "^0.2.6",
-    "@vite-pwa/vitepress": "^0.5.4",
+    "@vite-pwa/vitepress": "^1.0.0",
     "unocss": "^66.0.0",
     "unplugin-icons": "^22.1.0",
     "unplugin-vue-components": "^28.4.1",
