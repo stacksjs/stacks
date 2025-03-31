@@ -6,7 +6,7 @@ export default {
   table: 'print_devices',
   primaryKey: 'id',
   autoIncrement: true,
-
+  hasMany: ['Receipt'],
   traits: {
     useUuid: true,
     useTimestamps: true,

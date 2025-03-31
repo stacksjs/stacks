@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../device/destroy'
 import { exportPrintDevices } from '../device/export'
-import { fetchAll, fetchById } from '../device/fetch'
+import { countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById } from '../device/fetch'
 import { bulkStore, store } from '../device/store'
 import { update, updatePrintCount, updateStatus } from '../device/update'
 
@@ -370,6 +370,90 @@ describe('Print Device Module', () => {
     it('should handle empty device list during export', async () => {
       const spreadsheet = await exportPrintDevices('csv')
       expect(spreadsheet).toBeDefined()
+    })
+  })
+
+  describe('print counting', () => {
+    it('should count total prints across all devices', async () => {
+      // Create a test device
+      const requestData = {
+        name: 'Main Printer',
+        mac_address: '00:11:22:33:44:55',
+        location: 'Office 101',
+        terminal: 'TERM001',
+        status: 'online',
+        last_ping: Date.now(),
+        print_count: 0,
+      }
+
+      const request = new TestRequest(requestData)
+      const device = await store(request as any)
+      const deviceId = device?.id !== undefined ? Number(device.id) : undefined
+
+      expect(deviceId).toBeDefined()
+      if (!deviceId) {
+        throw new Error('Failed to create test device')
+      }
+
+      // Update print count for the device
+      await updatePrintCount(deviceId, 100)
+
+      // Count total prints
+      const totalPrints = await countTotalPrints()
+      expect(totalPrints).toBe(100)
+    })
+
+    it('should count prints for a specific device', async () => {
+      // Create two test devices
+      const device1Data = {
+        name: 'Printer 1',
+        mac_address: '00:11:22:33:44:55',
+        location: 'Office 101',
+        terminal: 'TERM001',
+        status: 'online',
+        last_ping: Date.now(),
+        print_count: 0,
+      }
+
+      const device2Data = {
+        name: 'Printer 2',
+        mac_address: 'AA:BB:CC:DD:EE:FF',
+        location: 'Office 102',
+        terminal: 'TERM002',
+        status: 'online',
+        last_ping: Date.now(),
+        print_count: 0,
+      }
+
+      const device1 = await store(new TestRequest(device1Data) as any)
+      const device2 = await store(new TestRequest(device2Data) as any)
+
+      const device1Id = device1?.id !== undefined ? Number(device1.id) : undefined
+      const device2Id = device2?.id !== undefined ? Number(device2.id) : undefined
+
+      expect(device1Id).toBeDefined()
+      expect(device2Id).toBeDefined()
+
+      if (!device1Id || !device2Id) {
+        throw new Error('Failed to create test devices')
+      }
+
+      // Update print counts for both devices
+      await updatePrintCount(device1Id, 50)
+      await updatePrintCount(device2Id, 75)
+
+      // Count prints for each device
+      const device1Prints = await countPrintsByDeviceId(device1Id)
+      const device2Prints = await countPrintsByDeviceId(device2Id)
+
+      expect(device1Prints).toBe(50)
+      expect(device2Prints).toBe(75)
+    })
+
+    it('should return 0 when counting prints for non-existent device', async () => {
+      const nonExistentDeviceId = 99999
+      const prints = await countPrintsByDeviceId(nonExistentDeviceId)
+      expect(prints).toBe(0)
     })
   })
 })
