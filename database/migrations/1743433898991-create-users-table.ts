@@ -19,4 +19,7 @@ export async function up(db: Database<any>) {
     .execute()
 
   await db.schema.createIndex('users_team_id_index').on('users').column('team_id').execute()
+
+  await db.schema.createIndex('users_email_name_index').on('users').columns(['email', 'name']).execute()
+  await db.schema.createIndex('users_job_title_status_index').on('users').columns(['job_title', 'created_at']).execute()
 }

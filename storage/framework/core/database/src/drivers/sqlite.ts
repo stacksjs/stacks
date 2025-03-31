@@ -217,6 +217,9 @@ async function createTableMigration(modelPath: string) {
   if (useBillable)
     migrationContent += `    .addColumn('stripe_id', 'varchar(255)')\n`
 
+  if (useSoftDeletes)
+    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       if (!modelRelation.foreignKey)
@@ -238,17 +241,23 @@ async function createTableMigration(modelPath: string) {
     migrationContent += '    .addColumn(\'updated_at\', \'timestamp\')\n'
   }
 
-  if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
-
-  migrationContent += `    .execute()\n`
+  // Add execute() after all columns are defined
+  migrationContent += `    .execute()\n\n`
 
   if (otherModelRelations?.length) {
     for (const modelRelation of otherModelRelations) {
       if (!modelRelation.foreignKey)
         continue
 
-      migrationContent += `  \n await db.schema.createIndex('${tableName}_${modelRelation.foreignKey}_index').on('${tableName}').column('${modelRelation.foreignKey}').execute()\n\n`
+      migrationContent += generateForeignKeyIndexSQL(tableName, modelRelation.foreignKey)
+    }
+  }
+
+  // Add composite indexes if defined
+  if (model.indexes?.length) {
+    migrationContent += '\n'
+    for (const index of model.indexes) {
+      migrationContent += generateIndexCreationSQL(tableName, index.name, index.columns)
     }
   }
 
@@ -388,18 +397,18 @@ async function createAlterTableMigration(modelPath: string) {
   const tableName = getTableName(model, modelPath)
   let hasChanged = false
 
+  // Get the previous model to compare indexes
+  const oldModelPath = path.frameworkPath(`models/${modelName}.ts`)
+  const oldModel = (await import(oldModelPath)).default as Model
+
   // Assuming you have a function to get the fields from the last migration
-  // For simplicity, this is not implemented here
   const lastMigrationFields = await getLastMigrationFields(modelName)
   const lastFields = lastMigrationFields ?? {}
   const currentFields = model.attributes as AttributesElements
 
   // Determine fields to add and remove
-
   const changes = pluckChanges(Object.keys(lastFields), Object.keys(currentFields))
-
   const fieldsToAdd = changes?.added || []
-
   const fieldsToRemove = changes?.removed || []
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
@@ -465,6 +474,26 @@ async function createAlterTableMigration(modelPath: string) {
     migrationContent += reArrangeColumns(model.attributes, tableName)
   }
 
+  // Handle index changes
+  const oldIndexes = oldModel.indexes || []
+  const newIndexes = model.indexes || []
+
+  // Drop removed indexes
+  for (const oldIndex of oldIndexes) {
+    if (!newIndexes.find(newIndex => newIndex.name === oldIndex.name)) {
+      hasChanged = true
+      migrationContent += `  await db.schema.dropIndex('${oldIndex.name}').execute()\n`
+    }
+  }
+
+  // Add new indexes
+  for (const newIndex of newIndexes) {
+    if (!oldIndexes.find(oldIndex => oldIndex.name === newIndex.name)) {
+      hasChanged = true
+      migrationContent += generateIndexCreationSQL(tableName, newIndex.name, newIndex.columns)
+    }
+  }
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
@@ -473,7 +502,6 @@ async function createAlterTableMigration(modelPath: string) {
 
   if (hasChanged) {
     Bun.write(migrationFilePath, migrationContent)
-
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
 }
@@ -497,4 +525,13 @@ function reArrangeColumns(attributes: AttributesElements | undefined, tableName:
   }
 
   return migrationContent
+}
+
+function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
+  const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
+  return `  await db.schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+}
+
+function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
 }

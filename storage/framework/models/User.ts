@@ -8,6 +8,18 @@ export default {
   primaryKey: 'id', // defaults to `id`
   autoIncrement: true, // defaults to true
 
+  // Define composite indexes
+  indexes: [
+    {
+      name: 'users_email_name_index',
+      columns: ['email', 'name'],
+    },
+    {
+      name: 'users_job_title_status_index',
+      columns: ['job_title', 'created_at'],
+    },
+  ],
+
   traits: {
     useAuth: {
       usePasskey: true,
@@ -15,7 +27,6 @@ export default {
     useUuid: true,
     useTimestamps: true, // defaults to true, `timestampable` used as an alias
     useSearch: {
-
       displayable: ['id', 'job_title', 'name', 'email'], // the fields to become d (defaults to all fields)
       searchable: ['job_title', 'name', 'email'], // the fields to become searchable (defaults to all fields)
       sortable: ['created_at', 'updated_at'], // the fields to become sortable (defaults to all fields)

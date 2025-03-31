@@ -89,7 +89,7 @@ type LogAttribute = string
 
 interface ActivityLogOption {
   exclude: LogAttribute[]
-  include: LogAttribute[] // default to “*”
+  include: LogAttribute[] // default to "*"
   logOnly: LogAttribute[]
 }
 
@@ -143,6 +143,7 @@ export interface ModelOptions extends Base {
   table?: string // defaults to the lowercase, plural name of the model name (or the name of the model file)
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
+  indexes?: CompositeIndex[]
   dashboard?: {
     highlight?: boolean | number // defaults to undefined
   }
@@ -213,6 +214,11 @@ export interface Attribute {
     rule: VineType
     message?: ValidatorMessage
   }
+}
+
+export interface CompositeIndex {
+  name: string
+  columns: string[]
 }
 
 export interface AttributesElements {
