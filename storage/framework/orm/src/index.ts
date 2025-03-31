@@ -44,6 +44,8 @@ export { type NewPaymentTransaction, default as PaymentTransaction, type Payment
 
 export { type NewPost, default as Post, type PostJsonResponse, type PostUpdate } from './models/Post'
 
+export { type NewPrintDevice, default as PrintDevice, type PrintDeviceJsonResponse, type PrintDeviceUpdate } from './models/PrintDevice'
+
 export { type NewProduct, default as Product, type ProductJsonResponse, type ProductUpdate } from './models/Product'
 
 export { type NewProductItem, default as ProductItem, type ProductItemJsonResponse, type ProductItemUpdate } from './models/ProductItem'

@@ -6,6 +6,16 @@ route.post('users', 'UserStoreOrmAction')
 
 route.get('users/{id}', 'UserShowOrmAction')
 
+route.get('print-devices', 'PrintDeviceIndexOrmAction')
+
+route.post('print-devices', 'PrintDeviceStoreOrmAction')
+
+route.get('print-devices/{id}', 'PrintDeviceShowOrmAction')
+
+route.patch('print-devices/{id}', 'PrintDeviceUpdateOrmAction')
+
+route.delete('print-devices/{id}', 'PrintDeviceDestroyOrmAction')
+
 route.get('product-categories', 'CategoryIndexOrmAction')
 
 route.post('product-categories', 'CategoryStoreOrmAction')

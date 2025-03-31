@@ -11,6 +11,7 @@ import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
 import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { PaymentModel } from '../orm/src/models/Payment'
+import type { PrintDeviceModel } from '../orm/src/models/PrintDevice'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
@@ -31,6 +32,9 @@ export interface ModelEvents {
   'user:created': UserModel
   'user:updated': UserModel
   'user:deleted': UserModel
+  'print-device:created': PrintDeviceModel
+  'print-device:updated': PrintDeviceModel
+  'print-device:deleted': PrintDeviceModel
   'category:created': CategoryModel
   'category:updated': CategoryModel
   'category:deleted': CategoryModel

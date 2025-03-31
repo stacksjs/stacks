@@ -29,6 +29,11 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  mac_address: string
+  location: string
+  terminal: string
+  last_ping: number
+  print_count: number
   image_url: string
   is_active: boolean
   parent_category_id: string
