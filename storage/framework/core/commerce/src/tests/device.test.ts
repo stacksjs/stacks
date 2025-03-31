@@ -484,12 +484,38 @@ describe('Print Device Module', () => {
         throw new Error('Failed to create test device')
       }
 
-      // Create some test receipts with non-error statuses
-      // Note: You'll need to implement the receipt creation logic here
-      // This is a placeholder for the actual receipt creation code
-      // await createReceipt(deviceId, 'success')
-      // await createReceipt(deviceId, 'success')
-      // await createReceipt(deviceId, 'success')
+      await storeReceipt(new TestRequest({
+        printer: 'Main Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'success',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
+
+      await storeReceipt(new TestRequest({
+        printer: 'Main2 Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'success',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
+
+      await storeReceipt(new TestRequest({
+        printer: 'Main3 Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'success',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
 
       const errorRate = await calculateErrorRate()
       expect(errorRate).toBe(0)
@@ -515,8 +541,8 @@ describe('Print Device Module', () => {
         throw new Error('Failed to create test device')
       }
 
-      await storeReceipt({
-        printer: 'Main Printer',
+      await storeReceipt(new TestRequest({
+        printer: 'Main12 Printer',
         document: 'Test Document',
         timestamp: Date.now(),
         status: 'error',
@@ -524,7 +550,40 @@ describe('Print Device Module', () => {
         size: 100,
         pages: 1,
         print_device_id: deviceId,
-      })
+      }) as any)
+
+      await storeReceipt(new TestRequest({
+        printer: 'Main34 Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'success',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
+
+      await storeReceipt(new TestRequest({
+        printer: 'Main2 Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'error',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
+
+      await storeReceipt(new TestRequest({
+        printer: 'Main33 Printer',
+        document: 'Test Document',
+        timestamp: Date.now(),
+        status: 'success',
+        duration: 100,
+        size: 100,
+        pages: 1,
+        print_device_id: deviceId,
+      }) as any)
 
       const errorRate = await calculateErrorRate()
       expect(errorRate).toBe(50) // 2 out of 4 receipts have error status
