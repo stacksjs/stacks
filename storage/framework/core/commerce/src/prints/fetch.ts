@@ -1,12 +1,12 @@
-import type { PrintLogJsonResponse } from '@stacksjs/orm'
+import type { ReceiptJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**
  * Fetch a print log by ID
  */
-export async function fetchById(id: number): Promise<PrintLogJsonResponse | undefined> {
+export async function fetchById(id: number): Promise<ReceiptJsonResponse | undefined> {
   return await db
-    .selectFrom('print_logs')
+    .selectFrom('receipts')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst()
@@ -15,8 +15,8 @@ export async function fetchById(id: number): Promise<PrintLogJsonResponse | unde
 /**
  * Fetch all print logs
  */
-export async function fetchAll(): Promise<PrintLogJsonResponse[]> {
-  return await db.selectFrom('print_logs').selectAll().execute()
+export async function fetchAll(): Promise<ReceiptJsonResponse[]> {
+  return await db.selectFrom('receipts').selectAll().execute()
 }
 
 /**
@@ -39,7 +39,7 @@ export async function fetchPrintJobStats(
     averageDuration: number
   }> {
   const stats = await db
-    .selectFrom('print_logs')
+    .selectFrom('receipts')
     .where('timestamp', '>=', startDate)
     .where('timestamp', '<=', endDate)
     .select([
@@ -82,7 +82,7 @@ export async function fetchSuccessRate(
     warning: number
   }> {
   const stats = await db
-    .selectFrom('print_logs')
+    .selectFrom('receipts')
     .where('timestamp', '>=', startDate)
     .where('timestamp', '<=', endDate)
     .select([

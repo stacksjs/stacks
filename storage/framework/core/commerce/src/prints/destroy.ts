@@ -9,7 +9,7 @@ import { db } from '@stacksjs/database'
 export async function destroy(id: number): Promise<boolean> {
   try {
     const result = await db
-      .deleteFrom('print_logs')
+      .deleteFrom('receipts')
       .where('id', '=', id)
       .executeTakeFirst()
 
@@ -37,7 +37,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   try {
     // Perform the delete operation
     const result = await db
-      .deleteFrom('print_logs')
+      .deleteFrom('receipts')
       .where('id', 'in', ids)
       .executeTakeFirst()
 
@@ -46,7 +46,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete print logs: ${error.message}`)
+      throw new TypeError(`Failed to delete receipts: ${error.message}`)
     }
 
     throw error

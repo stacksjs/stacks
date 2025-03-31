@@ -1,4 +1,4 @@
-import type { PrintLogJsonResponse, PrintLogRequestType } from '@stacksjs/orm'
+import type { ReceiptJsonResponse, ReceiptRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
@@ -10,7 +10,7 @@ import { fetchById } from './fetch'
  * @param request The updated print log data
  * @returns The updated print log record
  */
-export async function update(id: number, request: PrintLogRequestType): Promise<PrintLogJsonResponse | undefined> {
+export async function update(id: number, request: ReceiptRequestType): Promise<ReceiptJsonResponse | undefined> {
   // Validate the request data
   await request.validate()
 
@@ -18,7 +18,7 @@ export async function update(id: number, request: PrintLogRequestType): Promise<
   const existingLog = await fetchById(id)
 
   if (!existingLog) {
-    throw new Error(`Print log with ID ${id} not found`)
+    throw new Error(`Receipt with ID ${id} not found`)
   }
 
   // Create update data object using request fields
@@ -41,7 +41,7 @@ export async function update(id: number, request: PrintLogRequestType): Promise<
   try {
     // Update the print log
     await db
-      .updateTable('print_logs')
+      .updateTable('receipts')
       .set(updateData)
       .where('id', '=', id)
       .execute()
@@ -51,7 +51,7 @@ export async function update(id: number, request: PrintLogRequestType): Promise<
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to update print log: ${error.message}`)
+      throw new TypeError(`Failed to update receipt: ${error.message}`)
     }
 
     throw error
@@ -68,18 +68,18 @@ export async function update(id: number, request: PrintLogRequestType): Promise<
 export async function updateStatus(
   id: number,
   status: 'success' | 'failed' | 'warning',
-): Promise<PrintLogJsonResponse | undefined> {
+): Promise<ReceiptJsonResponse | undefined> {
   // Check if print log exists
-  const printLog = await fetchById(id)
+  const receipt = await fetchById(id)
 
-  if (!printLog) {
-    throw new Error(`Print log with ID ${id} not found`)
+  if (!receipt) {
+    throw new Error(`Receipt with ID ${id} not found`)
   }
 
   try {
     // Update the print log status
     await db
-      .updateTable('print_logs')
+      .updateTable('receipts')
       .set({
         status,
         updated_at: formatDate(new Date()),
@@ -92,7 +92,7 @@ export async function updateStatus(
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to update print log status: ${error.message}`)
+      throw new TypeError(`Failed to update receipt status: ${error.message}`)
     }
 
     throw error
@@ -113,12 +113,12 @@ export async function updatePrintJob(
   size?: number,
   pages?: number,
   duration?: number,
-): Promise<PrintLogJsonResponse | undefined> {
+): Promise<ReceiptJsonResponse | undefined> {
   // Check if print log exists
-  const printLog = await fetchById(id)
+  const receipt = await fetchById(id)
 
-  if (!printLog) {
-    throw new Error(`Print log with ID ${id} not found`)
+  if (!receipt) {
+    throw new Error(`Receipt with ID ${id} not found`)
   }
 
   // Create update data with only provided fields
@@ -138,13 +138,13 @@ export async function updatePrintJob(
 
   // If no fields to update, just return the existing print log
   if (Object.keys(updateData).length === 1) { // Only updated_at was set
-    return printLog
+    return receipt
   }
 
   try {
     // Update the print log
     await db
-      .updateTable('print_logs')
+      .updateTable('receipts')
       .set(updateData)
       .where('id', '=', id)
       .execute()
@@ -154,7 +154,7 @@ export async function updatePrintJob(
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to update print job information: ${error.message}`)
+      throw new TypeError(`Failed to update receipt job information: ${error.message}`)
     }
 
     throw error

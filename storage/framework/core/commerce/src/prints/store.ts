@@ -14,7 +14,7 @@ export async function store(request: ReceiptRequestType): Promise<ReceiptJsonRes
 
   try {
     // Prepare print log data
-    const printData: NewReceipt = {
+    const receiptData: NewReceipt = {
       printer: request.get('printer'),
       document: request.get('document'),
       timestamp: request.get<number>('timestamp'),
@@ -24,28 +24,28 @@ export async function store(request: ReceiptRequestType): Promise<ReceiptJsonRes
       duration: request.get('duration'),
     }
 
-    printData.uuid = randomUUIDv7()
+    receiptData.uuid = randomUUIDv7()
 
     // Insert the print log
     const result = await db
       .insertInto('receipts')
-      .values(printData)
+      .values(receiptData)
       .executeTakeFirst()
 
-    const printId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    const receiptId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
 
     // Retrieve the newly created print log
-    const printLog = await db
+    const receipt = await db
       .selectFrom('receipts')
-      .where('id', '=', printId)
+      .where('id', '=', receiptId)
       .selectAll()
       .executeTakeFirst()
 
-    return printLog
+    return receipt
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to create print log: ${error.message}`)
+      throw new TypeError(`Failed to create receipt: ${error.message}`)
     }
 
     throw error
@@ -72,7 +72,7 @@ export async function bulkStore(requests: ReceiptRequestType[]): Promise<number>
         request.validate()
 
         // Prepare print log data
-        const printData: NewReceipt = {
+        const receiptData: NewReceipt = {
           printer: request.get('printer'),
           document: request.get('document'),
           timestamp: request.get<number>('timestamp'),
@@ -82,12 +82,12 @@ export async function bulkStore(requests: ReceiptRequestType[]): Promise<number>
           duration: request.get<number>('duration'),
         }
 
-        printData.uuid = randomUUIDv7()
+        receiptData.uuid = randomUUIDv7()
 
         // Insert the print log
         await trx
           .insertInto('receipts')
-          .values(printData)
+          .values(receiptData)
           .execute()
 
         createdCount++
