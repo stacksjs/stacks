@@ -21,12 +21,12 @@ import type { PaymentMethodsTable } from '../src/models/PaymentMethod'
 import type { PaymentProductsTable } from '../src/models/PaymentProduct'
 import type { PaymentTransactionsTable } from '../src/models/PaymentTransaction'
 import type { PostsTable } from '../src/models/Post'
-import type { PrintLogsTable } from '../src/models/PrintLog'
 import type { ProductsTable } from '../src/models/Product'
 import type { ProductItemsTable } from '../src/models/ProductItem'
 import type { ProductUnitsTable } from '../src/models/ProductUnit'
 import type { ProductVariantsTable } from '../src/models/ProductVariant'
 import type { ProjectsTable } from '../src/models/Project'
+import type { ReceiptsTable } from '../src/models/Receipt'
 import type { ReleasesTable } from '../src/models/Release'
 import type { RequestsTable } from '../src/models/Request'
 import type { ReviewsTable } from '../src/models/Review'
@@ -95,6 +95,7 @@ export interface Database {
   shipping_zones: ShippingZonesTable
   customers: CustomersTable
   products: ProductsTable
+  receipts: ReceiptsTable
   product_variants: ProductVariantsTable
   license_keys: LicenseKeysTable
   waitlist_restaurants: WaitlistRestaurantsTable
@@ -104,7 +105,6 @@ export interface Database {
   orders: OrdersTable
   coupons: CouponsTable
   tax_rates: TaxRatesTable
-  print_logs: PrintLogsTable
   transactions: TransactionsTable
   loyalty_points: LoyaltyPointsTable
   product_items: ProductItemsTable

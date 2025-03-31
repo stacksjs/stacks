@@ -2,8 +2,8 @@ import type { Model } from '@stacksjs/types'
 import { schema } from '@stacksjs/validation'
 
 export default {
-  name: 'PrintLog',
-  table: 'print_logs',
+  name: 'Receipt',
+  table: 'receipts',
   primaryKey: 'id',
   autoIncrement: true,
 

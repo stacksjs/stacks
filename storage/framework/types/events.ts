@@ -11,11 +11,11 @@ import type { LoyaltyRewardModel } from '../orm/src/models/LoyaltyReward'
 import type { ManufacturerModel } from '../orm/src/models/Manufacturer'
 import type { OrderModel } from '../orm/src/models/Order'
 import type { PaymentModel } from '../orm/src/models/Payment'
-import type { PrintLogModel } from '../orm/src/models/PrintLog'
 import type { ProductModel } from '../orm/src/models/Product'
 import type { ProductItemModel } from '../orm/src/models/ProductItem'
 import type { ProductUnitModel } from '../orm/src/models/ProductUnit'
 import type { ProductVariantModel } from '../orm/src/models/ProductVariant'
+import type { ReceiptModel } from '../orm/src/models/Receipt'
 import type { ReviewModel } from '../orm/src/models/Review'
 import type { ShippingMethodModel } from '../orm/src/models/ShippingMethod'
 import type { ShippingRateModel } from '../orm/src/models/ShippingRate'
@@ -58,6 +58,9 @@ export interface ModelEvents {
   'product:created': ProductModel
   'product:updated': ProductModel
   'product:deleted': ProductModel
+  'receipt:created': ReceiptModel
+  'receipt:updated': ReceiptModel
+  'receipt:deleted': ReceiptModel
   'product-variant:created': ProductVariantModel
   'product-variant:updated': ProductVariantModel
   'product-variant:deleted': ProductVariantModel
@@ -85,9 +88,6 @@ export interface ModelEvents {
   'tax-rate:created': TaxRateModel
   'tax-rate:updated': TaxRateModel
   'tax-rate:deleted': TaxRateModel
-  'print-log:created': PrintLogModel
-  'print-log:updated': PrintLogModel
-  'print-log:deleted': PrintLogModel
   'transaction:created': TransactionModel
   'transaction:updated': TransactionModel
   'transaction:deleted': TransactionModel

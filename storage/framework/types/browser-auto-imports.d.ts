@@ -536,6 +536,7 @@ declare module 'vue' {
     readonly extendRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['extendRef']>
     readonly format: UnwrapRef<typeof import('../core/datetime/dist/index.js')['format']>
     readonly formatTimeAgo: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['formatTimeAgo']>
+    readonly getActiveHead: UnwrapRef<typeof import('@unhead/vue')['getActiveHead']>
     readonly getActivePinia: UnwrapRef<typeof import('pinia')['getActivePinia']>
     readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
     readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>

@@ -73,6 +73,12 @@ export interface Attributes {
   preparation_time: number
   allergens: string
   nutritional_info: string
+  printer: string
+  document: string
+  timestamp: number
+  size: number
+  pages: number
+  duration: number
   variant: string
   type: string
   options: string
@@ -130,12 +136,6 @@ export interface Attributes {
   applicable_categories: string
   rate: number
   region: string | string[]
-  printer: string
-  document: string
-  timestamp: number
-  size: number
-  pages: number
-  duration: number
   payment_method: string
   payment_details: string
   transaction_reference: string

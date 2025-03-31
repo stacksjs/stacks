@@ -1,18 +1,18 @@
-import type { PrintLogRequestType } from '@stacksjs/orm'
+import type { ReceiptRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { PrintLog } from '@stacksjs/orm'
+import { Receipt } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'PrintLog Update',
-  description: 'PrintLog Update ORM Action',
+  name: 'Receipt Update',
+  description: 'Receipt Update ORM Action',
   method: 'PATCH',
-  async handle(request: PrintLogRequestType) {
+  async handle(request: ReceiptRequestType) {
     await request.validate()
 
     const id = request.getParam('id')
-    const model = await PrintLog.findOrFail(Number(id))
+    const model = await Receipt.findOrFail(Number(id))
 
     const result = model.update(request.all())
 

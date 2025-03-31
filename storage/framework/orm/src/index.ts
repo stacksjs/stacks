@@ -44,8 +44,6 @@ export { type NewPaymentTransaction, default as PaymentTransaction, type Payment
 
 export { type NewPost, default as Post, type PostJsonResponse, type PostUpdate } from './models/Post'
 
-export { type NewPrintLog, default as PrintLog, type PrintLogJsonResponse, type PrintLogUpdate } from './models/PrintLog'
-
 export { type NewProduct, default as Product, type ProductJsonResponse, type ProductUpdate } from './models/Product'
 
 export { type NewProductItem, default as ProductItem, type ProductItemJsonResponse, type ProductItemUpdate } from './models/ProductItem'
@@ -55,6 +53,8 @@ export { type NewProductUnit, default as ProductUnit, type ProductUnitJsonRespon
 export { type NewProductVariant, default as ProductVariant, type ProductVariantJsonResponse, type ProductVariantUpdate } from './models/ProductVariant'
 
 export { type NewProject, default as Project, type ProjectJsonResponse, type ProjectUpdate } from './models/Project'
+
+export { type NewReceipt, default as Receipt, type ReceiptJsonResponse, type ReceiptUpdate } from './models/Receipt'
 
 export { type NewRelease, default as Release, type ReleaseJsonResponse, type ReleaseUpdate } from './models/Release'
 

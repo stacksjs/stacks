@@ -80,6 +80,16 @@ route.post('products', 'ProductStoreOrmAction')
 
 route.get('products/{id}', 'ProductShowOrmAction')
 
+route.get('print-logs', 'ReceiptIndexOrmAction')
+
+route.post('print-logs', 'ReceiptStoreOrmAction')
+
+route.get('print-logs/{id}', 'ReceiptShowOrmAction')
+
+route.patch('print-logs/{id}', 'ReceiptUpdateOrmAction')
+
+route.delete('print-logs/{id}', 'ReceiptDestroyOrmAction')
+
 route.get('product-variants', 'ProductVariantIndexOrmAction')
 
 route.post('product-variants', 'ProductVariantStoreOrmAction')
@@ -149,16 +159,6 @@ route.get('tax-rates/{id}', 'TaxRateShowOrmAction')
 route.patch('tax-rates/{id}', 'TaxRateUpdateOrmAction')
 
 route.delete('tax-rates/{id}', 'TaxRateDestroyOrmAction')
-
-route.get('print-logs', 'PrintLogIndexOrmAction')
-
-route.post('print-logs', 'PrintLogStoreOrmAction')
-
-route.get('print-logs/{id}', 'PrintLogShowOrmAction')
-
-route.patch('print-logs/{id}', 'PrintLogUpdateOrmAction')
-
-route.delete('print-logs/{id}', 'PrintLogDestroyOrmAction')
 
 route.get('transactions', 'TransactionIndexOrmAction')
 

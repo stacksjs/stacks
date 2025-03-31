@@ -1,5 +1,5 @@
 import type { schema } from '@stacksjs/validation'
-import type { PrintLogRequestType } from '../types/requests'
+import type { ReceiptRequestType } from '../types/requests'
 import { Request } from '@stacksjs/router'
 import { customValidate, validateField } from '@stacksjs/validation'
 
@@ -11,7 +11,7 @@ interface ValidationField {
 interface CustomAttributes {
   [key: string]: ValidationField
 }
-interface RequestDataPrintLog {
+interface RequestDataReceipt {
   id: number
   printer: string
   document: string
@@ -23,7 +23,7 @@ interface RequestDataPrintLog {
   created_at?: Date
   updated_at?: Date
 }
-export class PrintLogRequest extends Request<RequestDataPrintLog> implements PrintLogRequestType {
+export class ReceiptRequest extends Request<RequestDataReceipt> implements ReceiptRequestType {
   public id = 1
   public printer = ''
   public document = ''
@@ -37,7 +37,7 @@ export class PrintLogRequest extends Request<RequestDataPrintLog> implements Pri
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
-      await validateField('PrintLog', this.all())
+      await validateField('Receipt', this.all())
     }
     else {
       await customValidate(attributes, this.all())
@@ -45,4 +45,4 @@ export class PrintLogRequest extends Request<RequestDataPrintLog> implements Pri
   }
 }
 
-export const printLogRequest = new PrintLogRequest()
+export const receiptRequest = new ReceiptRequest()
