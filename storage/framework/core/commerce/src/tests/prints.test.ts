@@ -1,4 +1,4 @@
-import type { PrintLogJsonResponse } from '@stacksjs/orm'
+import type { ReceiptJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../prints/destroy'
@@ -41,25 +41,25 @@ describe('Print Log Module', () => {
       }
 
       const request = new TestRequest(requestData)
-      const printLog = await store(request as any)
+      const receipt = await store(request as any)
 
-      expect(printLog).toBeDefined()
-      expect(printLog?.printer).toBe('HP LaserJet')
-      expect(printLog?.document).toBe('invoice.pdf')
-      expect(printLog?.status).toBe('success')
-      expect(printLog?.size).toBe(1024)
-      expect(printLog?.pages).toBe(5)
-      expect(printLog?.duration).toBe(30)
-      expect(printLog?.uuid).toBeDefined()
+      expect(receipt).toBeDefined()
+      expect(receipt?.printer).toBe('HP LaserJet')
+      expect(receipt?.document).toBe('invoice.pdf')
+      expect(receipt?.status).toBe('success')
+      expect(receipt?.size).toBe(1024)
+      expect(receipt?.pages).toBe(5)
+      expect(receipt?.duration).toBe(30)
+      expect(receipt?.uuid).toBeDefined()
 
       // Save the ID for further testing
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Verify we can fetch the print log we just created
-      if (printId) {
-        const fetchedPrint = await fetchById(printId)
-        expect(fetchedPrint).toBeDefined()
-        expect(fetchedPrint?.id).toBe(printId)
+      if (receiptId) {
+        const fetchedReceipt = await fetchById(receiptId)
+        expect(fetchedReceipt).toBeDefined()
+        expect(fetchedReceipt?.id).toBe(receiptId)
       }
     })
 
@@ -72,16 +72,16 @@ describe('Print Log Module', () => {
       }
 
       const request = new TestRequest(minimalRequestData)
-      const printLog = await store(request as any)
+      const receipt = await store(request as any)
 
-      expect(printLog).toBeDefined()
-      expect(printLog?.printer).toBe('Epson Printer')
-      expect(printLog?.document).toBe('report.pdf')
-      expect(printLog?.status).toBe('success')
-      expect(printLog?.size).toBeNull()
-      expect(printLog?.pages).toBeNull()
-      expect(printLog?.duration).toBeNull()
-      expect(printLog?.uuid).toBeDefined()
+      expect(receipt).toBeDefined()
+      expect(receipt?.printer).toBe('Epson Printer')
+      expect(receipt?.document).toBe('report.pdf')
+      expect(receipt?.status).toBe('success')
+      expect(receipt?.size).toBeNull()
+      expect(receipt?.pages).toBeNull()
+      expect(receipt?.duration).toBeNull()
+      expect(receipt?.uuid).toBeDefined()
     })
 
     it('should create multiple print logs with bulk store', async () => {
@@ -119,8 +119,8 @@ describe('Print Log Module', () => {
       expect(count).toBe(3)
 
       // Verify print logs can be fetched
-      const allPrintLogs = await fetchAll()
-      expect(allPrintLogs.length).toBeGreaterThanOrEqual(3)
+      const allReceipts = await fetchAll()
+      expect(allReceipts.length).toBeGreaterThanOrEqual(3)
     })
 
     it('should return 0 when trying to bulk store an empty array', async () => {
@@ -144,13 +144,13 @@ describe('Print Log Module', () => {
 
       // Create the print log
       const createRequest = new TestRequest(requestData)
-      const printLog = await store(createRequest as any)
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receipt = await store(createRequest as any)
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
-      expect(printId).toBeDefined()
-      if (!printId) {
-        throw new Error('Failed to create test print log')
+      expect(receiptId).toBeDefined()
+      if (!receiptId) {
+        throw new Error('Failed to create test receipt')
       }
 
       // Update the print log with new data
@@ -165,17 +165,17 @@ describe('Print Log Module', () => {
       }
 
       const updateRequest = new TestRequest(updateData)
-      const updatedPrint = await update(printId, updateRequest as any)
+      const updatedReceipt = await update(receiptId, updateRequest as any)
 
       // Verify the update was successful
-      expect(updatedPrint).toBeDefined()
-      expect(updatedPrint?.id).toBe(printId)
-      expect(updatedPrint?.printer).toBe('HP LaserJet Pro')
-      expect(updatedPrint?.document).toBe('updated_invoice.pdf')
-      expect(updatedPrint?.status).toBe('warning')
-      expect(updatedPrint?.size).toBe(2048)
-      expect(updatedPrint?.pages).toBe(10)
-      expect(updatedPrint?.duration).toBe(45)
+      expect(updatedReceipt).toBeDefined()
+      expect(updatedReceipt?.id).toBe(receiptId)
+      expect(updatedReceipt?.printer).toBe('HP LaserJet Pro')
+      expect(updatedReceipt?.document).toBe('updated_invoice.pdf')
+      expect(updatedReceipt?.status).toBe('warning')
+      expect(updatedReceipt?.size).toBe(2048)
+      expect(updatedReceipt?.pages).toBe(10)
+      expect(updatedReceipt?.duration).toBe(45)
     })
 
     it('should update a print log\'s status', async () => {
@@ -191,24 +191,24 @@ describe('Print Log Module', () => {
       }
 
       const request = new TestRequest(requestData)
-      const printLog = await store(request as any)
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receipt = await store(request as any)
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
-      expect(printId).toBeDefined()
-      if (!printId) {
-        throw new Error('Failed to create test print log')
+      expect(receiptId).toBeDefined()
+      if (!receiptId) {
+        throw new Error('Failed to create test receipt')
       }
 
       // Update status to warning
-      const updatedPrint = await updateStatus(printId, 'warning')
-      expect(updatedPrint).toBeDefined()
-      expect(updatedPrint?.status).toBe('warning')
+      const updatedReceipt = await updateStatus(receiptId, 'warning')
+      expect(updatedReceipt).toBeDefined()
+      expect(updatedReceipt?.status).toBe('warning')
 
       // Update status to failed
-      const failedPrint = await updateStatus(printId, 'failed')
-      expect(failedPrint).toBeDefined()
-      expect(failedPrint?.status).toBe('failed')
+      const failedReceipt = await updateStatus(receiptId, 'failed')
+      expect(failedReceipt).toBeDefined()
+      expect(failedReceipt?.status).toBe('failed')
     })
 
     it('should update print job information', async () => {
@@ -224,21 +224,21 @@ describe('Print Log Module', () => {
       }
 
       const request = new TestRequest(requestData)
-      const printLog = await store(request as any)
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receipt = await store(request as any)
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
-      expect(printId).toBeDefined()
-      if (!printId) {
-        throw new Error('Failed to create test print log')
+      expect(receiptId).toBeDefined()
+      if (!receiptId) {
+        throw new Error('Failed to create test receipt')
       }
 
       // Update print job information
-      const updatedPrint = await updatePrintJob(printId, 2048, 10, 45)
+      const updatedReceipt = await updatePrintJob(receiptId, 2048, 10, 45)
 
-      expect(updatedPrint).toBeDefined()
-      expect(updatedPrint?.size).toBe(2048)
-      expect(updatedPrint?.pages).toBe(10)
-      expect(updatedPrint?.duration).toBe(45)
+      expect(updatedReceipt).toBeDefined()
+      expect(updatedReceipt?.size).toBe(2048)
+      expect(updatedReceipt?.pages).toBe(10)
+      expect(updatedReceipt?.duration).toBe(45)
     })
   })
 
@@ -257,26 +257,26 @@ describe('Print Log Module', () => {
 
       // Create the print log
       const request = new TestRequest(requestData)
-      const printLog = await store(request as any)
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receipt = await store(request as any)
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
       // Make sure we have a valid print ID before proceeding
-      expect(printId).toBeDefined()
-      if (!printId) {
-        throw new Error('Failed to create test print log')
+      expect(receiptId).toBeDefined()
+      if (!receiptId) {
+        throw new Error('Failed to create test receipt')
       }
 
       // Verify the print log exists
-      let fetchedPrint = await fetchById(printId)
-      expect(fetchedPrint).toBeDefined()
+      let fetchedReceipt = await fetchById(receiptId)
+      expect(fetchedReceipt).toBeDefined()
 
       // Delete the print log
-      const deleted = await destroy(printId)
+      const deleted = await destroy(receiptId)
       expect(deleted).toBe(true)
 
       // Verify the print log no longer exists
-      fetchedPrint = await fetchById(printId)
-      expect(fetchedPrint).toBeUndefined()
+      fetchedReceipt = await fetchById(receiptId)
+      expect(fetchedReceipt).toBeUndefined()
     })
 
     it('should return 0 when trying to delete an empty array of print logs', async () => {
@@ -323,12 +323,12 @@ describe('Print Log Module', () => {
       await bulkStore(requests as any)
 
       // Fetch all print logs
-      const allPrintLogs = await fetchAll()
-      expect(allPrintLogs).toBeDefined()
-      expect(allPrintLogs.length).toBe(3)
-      expect(allPrintLogs.map((p: PrintLogJsonResponse) => p.printer)).toContain('HP LaserJet')
-      expect(allPrintLogs.map((p: PrintLogJsonResponse) => p.printer)).toContain('Epson Printer')
-      expect(allPrintLogs.map((p: PrintLogJsonResponse) => p.printer)).toContain('Canon Printer')
+      const allReceipts = await fetchAll()
+      expect(allReceipts).toBeDefined()
+      expect(allReceipts.length).toBe(3)
+      expect(allReceipts.map((p: ReceiptJsonResponse) => p.printer)).toContain('HP LaserJet')
+      expect(allReceipts.map((p: ReceiptJsonResponse) => p.printer)).toContain('Epson Printer')
+      expect(allReceipts.map((p: ReceiptJsonResponse) => p.printer)).toContain('Canon Printer')
     })
 
     it('should fetch a print log by ID', async () => {
@@ -344,24 +344,24 @@ describe('Print Log Module', () => {
       }
 
       const request = new TestRequest(requestData)
-      const printLog = await store(request as any)
-      const printId = printLog?.id !== undefined ? Number(printLog.id) : undefined
+      const receipt = await store(request as any)
+      const receiptId = receipt?.id !== undefined ? Number(receipt.id) : undefined
 
-      expect(printId).toBeDefined()
-      if (!printId) {
-        throw new Error('Failed to create test print log')
+      expect(receiptId).toBeDefined()
+      if (!receiptId) {
+        throw new Error('Failed to create test receipt')
       }
 
       // Fetch the print log by ID
-      const fetchedPrint = await fetchById(printId)
-      expect(fetchedPrint).toBeDefined()
-      expect(fetchedPrint?.id).toBe(printId)
-      expect(fetchedPrint?.printer).toBe('HP LaserJet')
-      expect(fetchedPrint?.document).toBe('invoice.pdf')
-      expect(fetchedPrint?.status).toBe('success')
-      expect(fetchedPrint?.size).toBe(1024)
-      expect(fetchedPrint?.pages).toBe(5)
-      expect(fetchedPrint?.duration).toBe(30)
+      const fetchedReceipt = await fetchById(receiptId)
+      expect(fetchedReceipt).toBeDefined()
+      expect(fetchedReceipt?.id).toBe(receiptId)
+      expect(fetchedReceipt?.printer).toBe('HP LaserJet')
+      expect(fetchedReceipt?.document).toBe('invoice.pdf')
+      expect(fetchedReceipt?.status).toBe('success')
+      expect(fetchedReceipt?.size).toBe(1024)
+      expect(fetchedReceipt?.pages).toBe(5)
+      expect(fetchedReceipt?.duration).toBe(30)
     })
 
     it('should fetch print job statistics within a date range', async () => {
