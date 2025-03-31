@@ -146,6 +146,7 @@ export async function copyModelFiles(modelPath: string): Promise<void> {
   // store the fields of the model to a file
   await Bun.$`cp ${modelPath} ${copiedModelPath}`
 }
+
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
@@ -241,6 +242,16 @@ async function createTableMigration(modelPath: string) {
     migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
 
   migrationContent += `    .execute()\n`
+
+  if (otherModelRelations?.length) {
+    for (const modelRelation of otherModelRelations) {
+      if (!modelRelation.foreignKey)
+        continue
+
+      migrationContent += `  \n await db.schema.createIndex('${tableName}_${modelRelation.foreignKey}_index').on('${tableName}').column('${modelRelation.foreignKey}').execute()\n\n`
+    }
+  }
+
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()

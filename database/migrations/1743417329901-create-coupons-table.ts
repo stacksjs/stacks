@@ -25,4 +25,6 @@ export async function up(db: Database<any>) {
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
+
+  await db.schema.createIndex('coupons_product_id_index').on('coupons').column('product_id').execute()
 }

@@ -20,4 +20,6 @@ export async function up(db: Database<any>) {
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
+
+  await db.schema.createIndex('personal_access_tokens_team_id_index').on('personal_access_tokens').column('team_id').execute()
 }

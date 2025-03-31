@@ -1,6 +1,5 @@
 import type { PrintLogJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
-import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../prints/destroy'
 import { fetchAll, fetchById, fetchPrintJobStats, fetchSuccessRate } from '../prints/fetch'

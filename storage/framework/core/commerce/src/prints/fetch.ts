@@ -66,7 +66,7 @@ export async function fetchPrintJobStats(
 
 /**
  * Calculate the success rate percentage for print jobs within a date range
- * 
+ *
  * @param startDate Start date for the range
  * @param endDate End date for the range
  * @returns Object containing success rate percentage and detailed counts

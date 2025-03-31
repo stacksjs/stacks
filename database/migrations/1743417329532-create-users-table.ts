@@ -3,19 +3,20 @@ import { sql } from '@stacksjs/database'
 
 export async function up(db: Database<any>) {
   await db.schema
-    .createTable('customers')
+    .createTable('users')
     .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())
     .addColumn('uuid', 'text')
-    .addColumn('name', 'text', col => col.notNull())
     .addColumn('email', 'text', col => col.unique().notNull())
-    .addColumn('phone', 'text', col => col.notNull())
-    .addColumn('total_spent', 'numeric', col => col.defaultTo(0))
-    .addColumn('last_order', 'text')
-    .addColumn('status', 'text', col => col.notNull().defaultTo('Active'))
-    .addColumn('avatar', 'text')
-    .addColumn('user_id', 'integer', col =>
-      col.references('users.id').onDelete('cascade'))
+    .addColumn('name', 'text', col => col.notNull())
+    .addColumn('password', 'text', col => col.notNull())
+    .addColumn('job_title', 'text', col => col.notNull())
+    .addColumn('stripe_id', 'varchar(255)')
+    .addColumn('team_id', 'integer', col =>
+      col.references('teams.id').onDelete('cascade'))
+    .addColumn('public_passkey', 'text')
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
+
+  await db.schema.createIndex('users_team_id_index').on('users').column('team_id').execute()
 }
