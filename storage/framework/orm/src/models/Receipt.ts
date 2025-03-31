@@ -1,14 +1,17 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { PrintDeviceModel } from './PrintDevice'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
+
 import { BaseOrm } from '../utils/base'
 
 export interface ReceiptsTable {
   id: Generated<number>
+  print_device_id: number
   printer: string
   document: string
   timestamp: number
@@ -43,7 +46,7 @@ export type ReceiptUpdate = Updateable<ReceiptsTable>
 
 export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []
-  private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'uuid']
+  private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'uuid', 'print_device_id']
   private readonly guarded: Array<keyof ReceiptJsonResponse> = []
   protected attributes = {} as ReceiptJsonResponse
   protected originalAttributes = {} as ReceiptJsonResponse
@@ -167,6 +170,14 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get print_device_id(): number {
+    return this.attributes.print_device_id
+  }
+
+  get print_device(): PrintDeviceModel | undefined {
+    return this.attributes.print_device
   }
 
   get id(): number {
@@ -869,6 +880,20 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     return instance.applyWhereIn<V>(column, values)
   }
 
+  async printDeviceBelong(): Promise<PrintDeviceModel> {
+    if (this.print_device_id === undefined)
+      throw new HttpError(500, 'Relation Error!')
+
+    const model = await PrintDevice
+      .where('id', '=', this.print_device_id)
+      .first()
+
+    if (!model)
+      throw new HttpError(500, 'Model Relation Not Found!')
+
+    return model
+  }
+
   toSearchableObject(): Partial<ReceiptJsonResponse> {
     return {
       id: this.id,
@@ -912,6 +937,8 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
 
       updated_at: this.updated_at,
 
+      print_device_id: this.print_device_id,
+      print_device: this.print_device,
       ...this.customColumns,
     }
 

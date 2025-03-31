@@ -4,6 +4,13 @@ export {
   destroy,
 } from './destroy'
 
+// Functions from export.ts
+export {
+  downloadPrintDevices,
+  exportPrintDevices,
+  storePrintDevicesExport,
+} from './export'
+
 // Functions from fetch.ts
 export {
   fetchAll,
@@ -22,10 +29,3 @@ export {
   updatePrintCount,
   updateStatus,
 } from './update'
-
-// Functions from export.ts
-export {
-  downloadPrintDevices,
-  exportPrintDevices,
-  storePrintDevicesExport,
-} from './export'

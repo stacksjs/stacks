@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../device/destroy'
+import { exportPrintDevices } from '../device/export'
 import { fetchAll, fetchById } from '../device/fetch'
 import { bulkStore, store } from '../device/store'
 import { update, updatePrintCount, updateStatus } from '../device/update'
-import { downloadPrintDevices, exportPrintDevices, storePrintDevicesExport } from '../device/export'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -69,6 +69,9 @@ describe('Print Device Module', () => {
         mac_address: 'AA:BB:CC:DD:EE:FF',
         location: 'Server Room',
         terminal: 'TERM002',
+        status: 'offline',
+        last_ping: Date.now(),
+        print_count: 0,
       }
 
       const request = new TestRequest(minimalRequestData)

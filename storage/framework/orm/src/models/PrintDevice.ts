@@ -1,10 +1,12 @@
 import type { Generated, Insertable, RawBuilder, Selectable, Updateable } from '@stacksjs/database'
 import type { Operator } from '@stacksjs/orm'
+import type { ReceiptModel } from './Receipt'
 import { randomUUIDv7 } from 'bun'
 import { sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { dispatch } from '@stacksjs/events'
 import { DB } from '@stacksjs/orm'
+
 import { BaseOrm } from '../utils/base'
 
 export interface PrintDevicesTable {
@@ -167,6 +169,10 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
     for (const [key, fn] of Object.entries(customSetter)) {
       (model as any)[key] = await fn()
     }
+  }
+
+  get receipts(): ReceiptModel[] | [] {
+    return this.attributes.receipts
   }
 
   get id(): number {
@@ -912,6 +918,7 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
 
       updated_at: this.updated_at,
 
+      receipts: this.receipts,
       ...this.customColumns,
     }
 
