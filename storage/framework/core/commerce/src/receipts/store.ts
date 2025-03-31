@@ -62,39 +62,32 @@ export async function bulkStore(requests: ReceiptRequestType[]): Promise<number>
   if (!requests.length)
     return 0
 
-  let createdCount = 0
-
   try {
-    // Process each print log
-    await db.transaction().execute(async (trx) => {
-      for (const request of requests) {
-        // Validate request data
-        request.validate()
+    // Prepare all print log data
+    const receiptDataArray = requests.map((request) => {
+      // Validate request data
+      request.validate()
 
-        // Prepare print log data
-        const receiptData: NewReceipt = {
-          printer: request.get('printer'),
-          document: request.get('document'),
-          timestamp: request.get<number>('timestamp'),
-          status: request.get('status'),
-          size: request.get<number>('size'),
-          pages: request.get<number>('pages'),
-          duration: request.get<number>('duration'),
-        }
-
-        receiptData.uuid = randomUUIDv7()
-
-        // Insert the print log
-        await trx
-          .insertInto('receipts')
-          .values(receiptData)
-          .execute()
-
-        createdCount++
+      // Prepare print log data
+      return {
+        printer: request.get('printer'),
+        document: request.get('document'),
+        timestamp: request.get<number>('timestamp'),
+        status: request.get('status'),
+        size: request.get<number>('size'),
+        pages: request.get<number>('pages'),
+        duration: request.get<number>('duration'),
+        uuid: randomUUIDv7(),
       }
     })
 
-    return createdCount
+    // Insert all print logs in a single statement
+    const result = await db
+      .insertInto('receipts')
+      .values(receiptDataArray)
+      .executeTakeFirst()
+
+    return Number(result.numInsertedOrUpdatedRows)
   }
   catch (error) {
     if (error instanceof Error) {

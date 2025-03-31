@@ -1,10 +1,10 @@
 import type { ReceiptJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../prints/destroy'
-import { fetchAll, fetchById, fetchPrintJobStats, fetchSuccessRate } from '../prints/fetch'
-import { bulkStore, store } from '../prints/store'
-import { update, updatePrintJob, updateStatus } from '../prints/update'
+import { bulkDestroy, destroy } from '../receipts/destroy'
+import { fetchAll, fetchById, fetchPageStats, fetchPrintJobStats, fetchPrintsPerHour, fetchPrintTimeStats, fetchSuccessRate } from '../receipts/fetch'
+import { bulkStore, store } from '../receipts/store'
+import { update, updatePrintJob, updateStatus } from '../receipts/update'
 
 // Create a request-like object for testing
 class TestRequest {
@@ -668,6 +668,524 @@ describe('Print Log Module', () => {
       expect(stats.warning).toBe(0)
       expect(stats.failed).toBe(0)
       expect(stats.successRate).toBe(100) // Only today's job was successful
+    })
+
+    it('should calculate total pages and average pages per receipt within a date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test receipts with different page counts
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate,
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+        new TestRequest({
+          printer: 'Brother Printer',
+          document: 'error.pdf',
+          timestamp: startDate,
+          status: 'failed',
+          size: 256,
+          pages: 1,
+          duration: 5,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      // Fetch page statistics
+      const stats = await fetchPageStats(startDate, endDate)
+
+      // Verify the statistics
+      expect(stats).toBeDefined()
+      expect(stats.totalReceipts).toBe(4)
+      expect(stats.totalPages).toBe(18) // 5 + 10 + 2 + 1
+      expect(stats.averagePagesPerReceipt).toBe(5) // 18 / 4 rounded
+    })
+
+    it('should return zero statistics when no receipts exist in date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      const stats = await fetchPageStats(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalReceipts).toBe(0)
+      expect(stats.totalPages).toBe(0)
+      expect(stats.averagePagesPerReceipt).toBe(0)
+    })
+
+    it('should calculate correct average when all receipts have same page count', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test receipts with same page count
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice1.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 1,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'invoice2.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 1,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'invoice3.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 512,
+          pages: 1,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPageStats(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalReceipts).toBe(3)
+      expect(stats.totalPages).toBe(3)
+      expect(stats.averagePagesPerReceipt).toBe(1) // 3 / 3 = 1
+    })
+
+    it('should only count receipts within the specified date range for page statistics', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create receipts with different dates
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate - 86400000, // Yesterday
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: endDate + 1, // Tomorrow
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPageStats(startDate, endDate)
+
+      // Verify only today's receipt is counted
+      expect(stats).toBeDefined()
+      expect(stats.totalReceipts).toBe(1)
+      expect(stats.totalPages).toBe(5)
+      expect(stats.averagePagesPerReceipt).toBe(5) // 5 / 1 = 5
+    })
+
+    it('should calculate print time statistics within a date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test receipts with different durations
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate,
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+        new TestRequest({
+          printer: 'Brother Printer',
+          document: 'error.pdf',
+          timestamp: startDate,
+          status: 'failed',
+          size: 256,
+          pages: 1,
+          duration: 5,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      // Fetch print time statistics
+      const stats = await fetchPrintTimeStats(startDate, endDate)
+
+      // Verify the statistics
+      expect(stats).toBeDefined()
+      expect(stats.totalJobs).toBe(4)
+      expect(stats.averageDuration).toBe(24) // (30 + 45 + 15 + 5) / 4 rounded
+      expect(stats.minDuration).toBe(5)
+      expect(stats.maxDuration).toBe(45)
+    })
+
+    it('should return zero statistics when no receipts exist in date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      const stats = await fetchPrintTimeStats(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalJobs).toBe(0)
+      expect(stats.averageDuration).toBe(0)
+      expect(stats.minDuration).toBe(0)
+      expect(stats.maxDuration).toBe(0)
+    })
+
+    it('should calculate correct statistics when all receipts have same duration', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test receipts with same duration
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice1.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 1,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'invoice2.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 2048,
+          pages: 1,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'invoice3.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 512,
+          pages: 1,
+          duration: 30,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPrintTimeStats(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalJobs).toBe(3)
+      expect(stats.averageDuration).toBe(30)
+      expect(stats.minDuration).toBe(30)
+      expect(stats.maxDuration).toBe(30)
+    })
+
+    it('should only count receipts within the specified date range for print time statistics', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create receipts with different dates
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate - 86400000, // Yesterday
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: endDate + 1, // Tomorrow
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPrintTimeStats(startDate, endDate)
+
+      // Verify only today's receipt is counted
+      expect(stats).toBeDefined()
+      expect(stats.totalJobs).toBe(1)
+      expect(stats.averageDuration).toBe(30)
+      expect(stats.minDuration).toBe(30)
+      expect(stats.maxDuration).toBe(30)
+    })
+
+    it('should calculate prints per hour statistics within a date range', async () => {
+      // Use a fixed timestamp for today at midnight
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const startDate = today.getTime()
+      const endDate = startDate + 86399999 // End of today
+
+      // Create test receipts with different timestamps
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate + (2 * 3600000), // 2 AM
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate + (2 * 3600000), // 2 AM
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: startDate + (14 * 3600000), // 2 PM
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+        new TestRequest({
+          printer: 'Brother Printer',
+          document: 'error.pdf',
+          timestamp: startDate + (14 * 3600000), // 2 PM
+          status: 'failed',
+          size: 256,
+          pages: 1,
+          duration: 5,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      // Fetch prints per hour statistics
+      const stats = await fetchPrintsPerHour(startDate, endDate)
+
+      // Verify the statistics
+      expect(stats).toBeDefined()
+      expect(stats.totalPrints).toBe(4)
+      expect(stats.totalHours).toBe(24)
+
+      // Verify hourly breakdown
+      expect(stats.hourlyBreakdown).toHaveLength(24)
+      expect(stats.hourlyBreakdown[2].count).toBe(2) // 2 prints at 2 AM
+      expect(stats.hourlyBreakdown[14].count).toBe(2) // 2 prints at 2 PM
+      // All other hours should have 0 prints
+      stats.hourlyBreakdown.forEach((hour: { hour: number, count: number }, index: number) => {
+        if (index !== 2 && index !== 14) {
+          expect(hour.count).toBe(0)
+        }
+      })
+    })
+
+    it('should return zero statistics when no receipts exist in date range', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      const stats = await fetchPrintsPerHour(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalPrints).toBe(0)
+      expect(stats.totalHours).toBe(24)
+      expect(stats.printsPerHour).toBe(0)
+      expect(stats.hourlyBreakdown).toHaveLength(24)
+      stats.hourlyBreakdown.forEach((hour: { hour: number, count: number }) => {
+        expect(hour.count).toBe(0)
+      })
+    })
+
+    it('should calculate correct statistics for a single hour', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 3600000 // One hour later
+
+      // Create test receipts all in the same hour
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice1.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 1,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'invoice2.pdf',
+          timestamp: startDate + 1800000, // 30 minutes later
+          status: 'success',
+          size: 2048,
+          pages: 1,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'invoice3.pdf',
+          timestamp: startDate + 3000000, // 50 minutes later
+          status: 'success',
+          size: 512,
+          pages: 1,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPrintsPerHour(startDate, endDate)
+
+      expect(stats).toBeDefined()
+      expect(stats.totalPrints).toBe(3)
+      expect(stats.totalHours).toBe(1)
+      expect(stats.printsPerHour).toBe(3) // 3 prints / 1 hour
+      expect(stats.hourlyBreakdown).toHaveLength(24)
+      // Only the first hour should have prints
+      stats.hourlyBreakdown.forEach((hour: { hour: number, count: number }, index: number) => {
+        expect(hour.count).toBe(index === 0 ? 3 : 0)
+      })
+    })
+
+    it('should only count receipts within the specified date range for hourly statistics', async () => {
+      const now = Date.now()
+      const startDate = now - (now % 86400000) // Start of today
+      const endDate = startDate + 86399999 // End of today
+
+      // Create receipts with different dates
+      const requests = [
+        new TestRequest({
+          printer: 'HP LaserJet',
+          document: 'invoice.pdf',
+          timestamp: startDate,
+          status: 'success',
+          size: 1024,
+          pages: 5,
+          duration: 30,
+        }),
+        new TestRequest({
+          printer: 'Epson Printer',
+          document: 'report.pdf',
+          timestamp: startDate - 86400000, // Yesterday
+          status: 'success',
+          size: 2048,
+          pages: 10,
+          duration: 45,
+        }),
+        new TestRequest({
+          printer: 'Canon Printer',
+          document: 'document.pdf',
+          timestamp: endDate + 1, // Tomorrow
+          status: 'warning',
+          size: 512,
+          pages: 2,
+          duration: 15,
+        }),
+      ]
+
+      await bulkStore(requests as any)
+
+      const stats = await fetchPrintsPerHour(startDate, endDate)
+
+      // Verify only today's receipt is counted
+      expect(stats).toBeDefined()
+      expect(stats.totalPrints).toBe(1)
+      expect(stats.totalHours).toBe(24)
+      expect(stats.hourlyBreakdown).toHaveLength(24)
+      // Only the first hour should have prints
+      stats.hourlyBreakdown.forEach((hour: { hour: number, count: number }, index: number) => {
+        expect(hour.count).toBe(index === 0 ? 1 : 0)
+      })
     })
   })
 })
