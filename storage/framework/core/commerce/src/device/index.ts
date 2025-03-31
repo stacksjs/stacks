@@ -22,3 +22,10 @@ export {
   updatePrintCount,
   updateStatus,
 } from './update'
+
+// Functions from export.ts
+export {
+  downloadPrintDevices,
+  exportPrintDevices,
+  storePrintDevicesExport,
+} from './export'
