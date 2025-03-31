@@ -16,7 +16,7 @@ interface RequestDataAccessToken {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[]
+  abilities: string[] | string
   last_used_at: date
   expires_at: date
   revoked_at: date

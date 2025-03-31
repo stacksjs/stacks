@@ -13,7 +13,7 @@ interface CustomAttributes {
 }
 interface RequestDataRequest {
   id: number
-  method: string[]
+  method: string[] | string
   path: string
   status_code: number
   duration_ms: number

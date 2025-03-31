@@ -17,7 +17,7 @@ interface RequestDataShippingZone {
   countries: string
   regions: string
   postal_codes: string
-  status: string[]
+  status: string[] | string
   shipping_method_id: number
   created_at?: Date
   updated_at?: Date

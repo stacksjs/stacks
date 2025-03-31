@@ -54,3 +54,24 @@ export async function countPrintsByDeviceId(printDeviceId: number): Promise<numb
 
   return result?.print_count ?? 0
 }
+
+/**
+ * Calculate error rate percentage based on receipts
+ */
+export async function calculateErrorRate(): Promise<number> {
+  const result = await db
+    .selectFrom('receipts')
+    .select([
+      db.fn.count<number>('id').as('total'),
+      db.fn.count<number>('id')
+        .filterWhere('status', '=', 'error')
+        .as('error_count'),
+    ])
+    .executeTakeFirst()
+
+  if (!result?.total || result.total === 0) {
+    return 0
+  }
+
+  return Number(((result.error_count ?? 0) / result.total) * 100)
+}

@@ -17,7 +17,7 @@ interface RequestDataShippingMethod {
   description: string
   base_rate: number
   free_shipping: number
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }

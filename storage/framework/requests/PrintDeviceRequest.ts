@@ -17,7 +17,7 @@ interface RequestDataPrintDevice {
   mac_address: string
   location: string
   terminal: string
-  status: string[]
+  status: string[] | string
   last_ping: number
   print_count: number
   created_at?: Date

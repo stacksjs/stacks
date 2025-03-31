@@ -17,10 +17,10 @@ interface RequestDataWaitlistProduct {
   email: string
   phone: string
   party_size: number
-  notification_preference: string[]
+  notification_preference: string[] | string
   source: string
   notes: string
-  status: string[]
+  status: string[] | string
   notified_at: string
   purchased_at: string
   cancelled_at: string

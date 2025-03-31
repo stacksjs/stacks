@@ -55,7 +55,7 @@ interface RequestDataAccessToken {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[]
+  abilities: string[] | string
   last_used_at: date
   expires_at: date
   revoked_at: date
@@ -74,7 +74,7 @@ export interface AccessTokenRequestType extends Request {
   name: string
   token: string
   plain_text_token: string
-  abilities: string[]
+  abilities: string[] | string
   last_used_at: date
   expires_at: date
   revoked_at: date
@@ -234,7 +234,7 @@ interface RequestDataPrintDevice {
   mac_address: string
   location: string
   terminal: string
-  status: string[]
+  status: string[] | string
   last_ping: number
   print_count: number
   created_at?: Date
@@ -249,7 +249,7 @@ export interface PrintDeviceRequestType extends Request {
   mac_address: string
   location: string
   terminal: string
-  status: string[]
+  status: string[] | string
   last_ping: number
   print_count: number
   created_at?: Date
@@ -330,7 +330,7 @@ interface RequestDataDriver {
   phone: string
   vehicle_number: string
   license: string
-  status: string[]
+  status: string[] | string
   user_id: number
   created_at?: Date
   updated_at?: Date
@@ -344,7 +344,7 @@ export interface DriverRequestType extends Request {
   phone: string
   vehicle_number: string
   license: string
-  status: string[]
+  status: string[] | string
   user_id: number
   created_at?: Date
   updated_at?: Date
@@ -356,10 +356,10 @@ interface RequestDataWaitlistProduct {
   email: string
   phone: string
   party_size: number
-  notification_preference: string[]
+  notification_preference: string[] | string
   source: string
   notes: string
-  status: string[]
+  status: string[] | string
   notified_at: string
   purchased_at: string
   cancelled_at: string
@@ -377,10 +377,10 @@ export interface WaitlistProductRequestType extends Request {
   email: string
   phone: string
   party_size: number
-  notification_preference: string[]
+  notification_preference: string[] | string
   source: string
   notes: string
-  status: string[]
+  status: string[] | string
   notified_at: string
   purchased_at: string
   cancelled_at: string
@@ -398,7 +398,7 @@ interface RequestDataDigitalDelivery {
   expiry_days: number
   requires_login: boolean
   automatic_delivery: boolean
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }
@@ -413,7 +413,7 @@ export interface DigitalDeliveryRequestType extends Request {
   expiry_days: number
   requires_login: boolean
   automatic_delivery: boolean
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }
@@ -468,7 +468,7 @@ interface RequestDataShippingZone {
   countries: string
   regions: string
   postal_codes: string
-  status: string[]
+  status: string[] | string
   shipping_method_id: number
   created_at?: Date
   updated_at?: Date
@@ -482,7 +482,7 @@ export interface ShippingZoneRequestType extends Request {
   countries: string
   regions: string
   postal_codes: string
-  status: string[]
+  status: string[] | string
   shipping_method_id: number
   created_at?: Date
   updated_at?: Date
@@ -495,7 +495,7 @@ interface RequestDataCustomer {
   phone: string
   total_spent: number
   last_order: string
-  status: string[]
+  status: string[] | string
   avatar: string
   user_id: number
   created_at?: Date
@@ -511,7 +511,7 @@ export interface CustomerRequestType extends Request {
   phone: string
   total_spent: number
   last_order: string
-  status: string[]
+  status: string[] | string
   avatar: string
   user_id: number
   created_at?: Date
@@ -559,7 +559,7 @@ interface RequestDataReceipt {
   printer: string
   document: string
   timestamp: number
-  status: string[]
+  status: string[] | string
   size: number
   pages: number
   duration: number
@@ -575,7 +575,7 @@ export interface ReceiptRequestType extends Request {
   printer: string
   document: string
   timestamp: number
-  status: string[]
+  status: string[] | string
   size: number
   pages: number
   duration: number
@@ -590,7 +590,7 @@ interface RequestDataProductVariant {
   type: string
   description: string
   options: string
-  status: string[]
+  status: string[] | string
   product_id: number
   created_at?: Date
   updated_at?: Date
@@ -604,7 +604,7 @@ export interface ProductVariantRequestType extends Request {
   type: string
   description: string
   options: string
-  status: string[]
+  status: string[] | string
   product_id: number
   created_at?: Date
   updated_at?: Date
@@ -613,9 +613,9 @@ export interface ProductVariantRequestType extends Request {
 interface RequestDataLicenseKey {
   id: number
   key: string
-  template: string[]
+  template: string[] | string
   expiry_date: date
-  status: string[]
+  status: string[] | string
   customer_id: number
   product_id: number
   order_id: number
@@ -628,9 +628,9 @@ export interface LicenseKeyRequestType extends Request {
   all: () => RequestDataLicenseKey
   id: number
   key: string
-  template: string[]
+  template: string[] | string
   expiry_date: date
-  status: string[]
+  status: string[] | string
   customer_id: number
   product_id: number
   order_id: number
@@ -645,8 +645,8 @@ interface RequestDataWaitlistRestaurant {
   phone: string
   party_size: number
   check_in_time: string
-  table_preference: string[]
-  status: string[]
+  table_preference: string[] | string
+  status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
@@ -667,8 +667,8 @@ export interface WaitlistRestaurantRequestType extends Request {
   phone: string
   party_size: number
   check_in_time: string
-  table_preference: string[]
-  status: string[]
+  table_preference: string[] | string
+  status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
@@ -882,8 +882,8 @@ interface RequestDataTaxRate {
   rate: number
   type: string
   country: string
-  region: string[]
-  status: string[]
+  region: string[] | string
+  status: string[] | string
   is_default: boolean
   created_at?: Date
   updated_at?: Date
@@ -897,8 +897,8 @@ export interface TaxRateRequestType extends Request {
   rate: number
   type: string
   country: string
-  region: string[]
-  status: string[]
+  region: string[] | string
+  status: string[] | string
   is_default: boolean
   created_at?: Date
   updated_at?: Date
@@ -1030,7 +1030,7 @@ interface RequestDataShippingMethod {
   description: string
   base_rate: number
   free_shipping: number
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }
@@ -1043,7 +1043,7 @@ export interface ShippingMethodRequestType extends Request {
   description: string
   base_rate: number
   free_shipping: number
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }
@@ -1184,7 +1184,7 @@ export interface PaymentTransactionRequestType extends Request {
 
 interface RequestDataRequest {
   id: number
-  method: string[]
+  method: string[] | string
   path: string
   status_code: number
   duration_ms: number
@@ -1201,7 +1201,7 @@ export interface RequestRequestType extends Request {
   get: <T = string>(key: string, defaultValue?: T) => T
   all: () => RequestDataRequest
   id: number
-  method: string[]
+  method: string[] | string
   path: string
   status_code: number
   duration_ms: number

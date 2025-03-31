@@ -17,8 +17,8 @@ interface RequestDataTaxRate {
   rate: number
   type: string
   country: string
-  region: string[]
-  status: string[]
+  region: string[] | string
+  status: string[] | string
   is_default: boolean
   created_at?: Date
   updated_at?: Date

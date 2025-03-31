@@ -19,7 +19,7 @@ interface RequestDataDigitalDelivery {
   expiry_days: number
   requires_login: boolean
   automatic_delivery: boolean
-  status: string[]
+  status: string[] | string
   created_at?: Date
   updated_at?: Date
 }

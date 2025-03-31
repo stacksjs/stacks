@@ -17,7 +17,7 @@ interface RequestDataDriver {
   phone: string
   vehicle_number: string
   license: string
-  status: string[]
+  status: string[] | string
   user_id: number
   created_at?: Date
   updated_at?: Date

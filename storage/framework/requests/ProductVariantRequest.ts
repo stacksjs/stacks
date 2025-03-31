@@ -17,7 +17,7 @@ interface RequestDataProductVariant {
   type: string
   description: string
   options: string
-  status: string[]
+  status: string[] | string
   product_id: number
   created_at?: Date
   updated_at?: Date

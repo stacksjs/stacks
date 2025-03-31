@@ -18,7 +18,7 @@ interface RequestDataCustomer {
   phone: string
   total_spent: number
   last_order: string
-  status: string[]
+  status: string[] | string
   avatar: string
   user_id: number
   created_at?: Date

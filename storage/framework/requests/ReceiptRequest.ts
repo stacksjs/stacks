@@ -16,7 +16,7 @@ interface RequestDataReceipt {
   printer: string
   document: string
   timestamp: number
-  status: string[]
+  status: string[] | string
   size: number
   pages: number
   duration: number

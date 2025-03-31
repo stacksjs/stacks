@@ -18,8 +18,8 @@ interface RequestDataWaitlistRestaurant {
   phone: string
   party_size: number
   check_in_time: string
-  table_preference: string[]
-  status: string[]
+  table_preference: string[] | string
+  status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number

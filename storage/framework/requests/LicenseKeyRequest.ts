@@ -14,9 +14,9 @@ interface CustomAttributes {
 interface RequestDataLicenseKey {
   id: number
   key: string
-  template: string[]
+  template: string[] | string
   expiry_date: date
-  status: string[]
+  status: string[] | string
   customer_id: number
   product_id: number
   order_id: number

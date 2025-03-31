@@ -22,6 +22,7 @@ export async function store(request: ReceiptRequestType): Promise<ReceiptJsonRes
       size: request.get<number>('size'),
       pages: request.get<number>('pages'),
       duration: request.get('duration'),
+      print_device_id: request.get<number>('print_device_id'),
     }
 
     receiptData.uuid = randomUUIDv7()
@@ -77,6 +78,7 @@ export async function bulkStore(requests: ReceiptRequestType[]): Promise<number>
         size: request.get<number>('size'),
         pages: request.get<number>('pages'),
         duration: request.get<number>('duration'),
+        print_device_id: request.get<number>('print_device_id'),
         uuid: randomUUIDv7(),
       }
     })

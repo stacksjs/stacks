@@ -686,7 +686,7 @@ export async function writeModelRequest(): Promise<void> {
 
     // Group attributes by their entity type
     for (const attribute of attributes) {
-      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[]' : attribute.fieldArray?.entity
+      const entity = attribute.fieldArray?.entity === 'enum' ? 'string[] | string' : attribute.fieldArray?.entity
       let defaultValue: string | boolean | number | string[] = `''`
 
       if (attribute.fieldArray?.entity === 'boolean')
