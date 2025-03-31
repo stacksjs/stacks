@@ -1,4 +1,4 @@
-import type { NewPrintLog, PrintLogJsonResponse, PrintLogRequestType } from '@stacksjs/orm'
+import type { NewReceipt, ReceiptJsonResponse, ReceiptRequestType } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
@@ -8,13 +8,13 @@ import { db } from '@stacksjs/database'
  * @param request Print log data to store
  * @returns The newly created print log record
  */
-export async function store(request: PrintLogRequestType): Promise<PrintLogJsonResponse | undefined> {
+export async function store(request: ReceiptRequestType): Promise<ReceiptJsonResponse | undefined> {
   // Validate the request data
   await request.validate()
 
   try {
     // Prepare print log data
-    const printData: NewPrintLog = {
+    const printData: NewReceipt = {
       printer: request.get('printer'),
       document: request.get('document'),
       timestamp: request.get<number>('timestamp'),
@@ -28,7 +28,7 @@ export async function store(request: PrintLogRequestType): Promise<PrintLogJsonR
 
     // Insert the print log
     const result = await db
-      .insertInto('print_logs')
+      .insertInto('receipts')
       .values(printData)
       .executeTakeFirst()
 
@@ -36,7 +36,7 @@ export async function store(request: PrintLogRequestType): Promise<PrintLogJsonR
 
     // Retrieve the newly created print log
     const printLog = await db
-      .selectFrom('print_logs')
+      .selectFrom('receipts')
       .where('id', '=', printId)
       .selectAll()
       .executeTakeFirst()
@@ -58,7 +58,7 @@ export async function store(request: PrintLogRequestType): Promise<PrintLogJsonR
  * @param requests Array of print log data to store
  * @returns Number of print logs created
  */
-export async function bulkStore(requests: PrintLogRequestType[]): Promise<number> {
+export async function bulkStore(requests: ReceiptRequestType[]): Promise<number> {
   if (!requests.length)
     return 0
 
@@ -72,7 +72,7 @@ export async function bulkStore(requests: PrintLogRequestType[]): Promise<number
         request.validate()
 
         // Prepare print log data
-        const printData: NewPrintLog = {
+        const printData: NewReceipt = {
           printer: request.get('printer'),
           document: request.get('document'),
           timestamp: request.get<number>('timestamp'),
@@ -86,7 +86,7 @@ export async function bulkStore(requests: PrintLogRequestType[]): Promise<number
 
         // Insert the print log
         await trx
-          .insertInto('print_logs')
+          .insertInto('receipts')
           .values(printData)
           .execute()
 
@@ -98,7 +98,7 @@ export async function bulkStore(requests: PrintLogRequestType[]): Promise<number
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to create print logs in bulk: ${error.message}`)
+      throw new TypeError(`Failed to create receipts in bulk: ${error.message}`)
     }
 
     throw error
