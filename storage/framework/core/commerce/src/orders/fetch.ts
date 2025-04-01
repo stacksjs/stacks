@@ -8,12 +8,19 @@ import { db } from '@stacksjs/database'
 
 /**
  * Fetch all orders from the database with their items
+ * @param limit Optional limit on number of orders to fetch
  */
-export async function fetchAll(): Promise<OrderJsonResponse[]> {
-  const orders = await db
+export async function fetchAll(limit?: number): Promise<OrderJsonResponse[]> {
+  let query = db
     .selectFrom('orders')
     .selectAll()
-    .execute()
+    .orderBy('created_at', 'desc')
+
+  if (limit) {
+    query = query.limit(limit)
+  }
+
+  const orders = await query.execute()
 
   // Fetch items for each order
   return await Promise.all(orders.map(async (order) => {
@@ -28,6 +35,14 @@ export async function fetchAll(): Promise<OrderJsonResponse[]> {
       items,
     }
   }))
+}
+
+/**
+ * Fetch the most recent orders
+ * @param limit Number of recent orders to fetch (default: 10)
+ */
+export async function fetchRecent(limit: number = 10): Promise<OrderJsonResponse[]> {
+  return fetchAll(limit)
 }
 
 /**
