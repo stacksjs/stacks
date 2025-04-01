@@ -1,7 +1,7 @@
 import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { PrintDevice } from '@stacksjs/orm'
+import { devices } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -12,10 +12,9 @@ export default new Action({
     await request.validate()
 
     const id = request.getParam('id')
-    const model = await PrintDevice.findOrFail(Number(id))
 
-    const result = model.update(request.all())
+    const model = await devices.update(Number(id), request)
 
-    return response.json(result)
+    return response.json(model)
   },
 })

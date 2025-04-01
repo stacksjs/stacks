@@ -1,6 +1,8 @@
 import type { OrderRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { orders } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +12,7 @@ export default new Action({
   async handle(request: OrderRequestType) {
     const id = request.getParam('id')
 
-    const model = await Order.findOrFail(Number(id))
+    const model = await orders.fetchById(Number(id))
 
     return response.json(model)
   },

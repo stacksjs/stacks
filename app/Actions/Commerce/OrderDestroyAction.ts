@@ -6,14 +6,17 @@ import { orders } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'Order Store',
-  description: 'Order Store ORM Action',
-  method: 'POST',
+  name: 'Order Destroy',
+  description: 'Order Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: OrderRequestType) {
-    await request.validate()
+    const id = request.getParam('id')
 
-    const model = await orders.store(request)
+    await orders.destroy(Number(id))
 
-    return response.json(model)
+    return response.json({
+      success: true,
+      message: 'Order deleted successfully',
+    })
   },
 })

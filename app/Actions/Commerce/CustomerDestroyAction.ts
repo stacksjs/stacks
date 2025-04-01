@@ -1,5 +1,7 @@
 import type { CustomerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { customers } from '@stacksjs/commerce'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Customer Destroy',
@@ -8,10 +10,8 @@ export default new Action({
   async handle(request: CustomerRequestType) {
     const id = request.getParam('id')
 
-    const model = await Customer.findOrFail(Number(id))
+    await customers.destroy(Number(id))
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'Customer deleted successfully' })
   },
 })

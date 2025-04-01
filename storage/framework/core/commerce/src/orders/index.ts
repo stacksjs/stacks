@@ -19,3 +19,14 @@ export {
   fetchDailyOrderTrends,
   fetchStats,
 } from './fetch'
+
+export {
+  bulkStore,
+  store,
+} from './store'
+
+export {
+  update,
+  updateDeliveryInfo,
+  updateStatus,
+} from './update'

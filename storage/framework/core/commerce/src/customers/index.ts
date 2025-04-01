@@ -1,6 +1,6 @@
 export {
-  bulkRemove,
-  remove,
+  bulkDestroy,
+  destroy,
 } from './destroy'
 
 export {

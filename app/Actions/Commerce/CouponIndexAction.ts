@@ -1,4 +1,3 @@
-import type { CouponRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { coupons } from '@stacksjs/commerce'

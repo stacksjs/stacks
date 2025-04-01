@@ -1,4 +1,3 @@
-import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { deliveryRoutes } from '@stacksjs/commerce'

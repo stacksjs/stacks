@@ -1,10 +1,11 @@
 // Main ecommerce module index file
 import * as coupons from './coupons'
 import * as customers from './customers'
+import * as devices from './devices'
 import * as digital from './digital'
 import * as drivers from './drivers'
 import * as giftCards from './gift-cards'
-import * as licenses from './license'
+import * as licenses from './licenses'
 import * as manufacturer from './manufacturer'
 import * as orders from './orders'
 import * as payments from './payments'
@@ -38,6 +39,7 @@ type DigitalModule = typeof digital
 type TaxModule = typeof tax
 type DeliveryRoutesModule = typeof deliveryRoutes
 type WaitlistModule = typeof waitlist
+type DevicesModule = typeof devices
 export interface EcommerceNamespace {
   coupons: CouponsModule
   customers: CustomersModule
@@ -58,6 +60,7 @@ export interface EcommerceNamespace {
   digital: DigitalModule
   tax: TaxModule
   waitlist: WaitlistModule
+  devices: DevicesModule
 }
 
 export const ecommerce: EcommerceNamespace = {
@@ -78,6 +81,7 @@ export const ecommerce: EcommerceNamespace = {
   licenses,
   unit,
   digital,
+  devices,
   tax,
   waitlist,
 }
@@ -88,6 +92,7 @@ export {
   coupons,
   customers,
   deliveryRoutes,
+  devices,
   digital,
   drivers,
   giftCards,

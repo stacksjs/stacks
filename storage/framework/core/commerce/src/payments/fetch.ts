@@ -1,3 +1,4 @@
+import type { PaymentJsonResponse } from '@stacksjs/orm'
 import { db, sql } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 
@@ -26,6 +27,21 @@ export interface PaymentStats {
       is_increase: boolean
     }
   }
+}
+
+export async function fetchAll(): Promise<PaymentJsonResponse[]> {
+  return await db
+    .selectFrom('payments')
+    .selectAll()
+    .execute()
+}
+
+export async function fetchById(id: number): Promise<PaymentJsonResponse | undefined> {
+  return await db
+    .selectFrom('payments')
+    .selectAll()
+    .where('id', '=', id)
+    .executeTakeFirst()
 }
 
 /**

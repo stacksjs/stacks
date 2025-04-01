@@ -1,6 +1,6 @@
 import type { PaymentRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { payments } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,7 +9,8 @@ export default new Action({
   method: 'POST',
   async handle(request: PaymentRequestType) {
     await request.validate()
-    const model = await Payment.create(request.all())
+
+    const model = await payments.store(request)
 
     return response.json(model)
   },

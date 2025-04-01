@@ -1,4 +1,3 @@
-import type { ManufacturerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { manufacturer } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Manufacturer Index',
   description: 'Manufacturer Index ORM Action',
   method: 'GET',
-  async handle(request: ManufacturerRequestType) {
+  async handle() {
     const results = await manufacturer.fetchWithProductCount()
 
     return response.json(results)

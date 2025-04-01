@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../device/destroy'
-import { exportPrintDevices } from '../device/export'
-import { calculateErrorRate, calculatePrinterHealth, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById, getPrinterStatusCounts } from '../device/fetch'
-import { bulkStore, store } from '../device/store'
-import { update, updatePrintCount, updateStatus } from '../device/update'
+import { bulkDestroy, destroy } from '../devices/destroy'
+import { exportPrintDevices } from '../devices/export'
+import { calculateErrorRate, calculatePrinterHealth, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById, getPrinterStatusCounts } from '../devices/fetch'
+import { bulkStore, store } from '../devices/store'
+import { update, updatePrintCount, updateStatus } from '../devices/update'
 import { store as storeReceipt } from '../receipts/store'
 
 // Create a request-like object for testing

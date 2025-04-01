@@ -1,7 +1,8 @@
 import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { PrintDevice } from '@stacksjs/orm'
+import { devices } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,10 +12,8 @@ export default new Action({
   async handle(request: PrintDeviceRequestType) {
     const id = request.getParam('id')
 
-    const model = await PrintDevice.findOrFail(Number(id))
+    await devices.destroy(Number(id))
 
-    model.delete()
-
-    return response.json({ message: 'Model deleted!' })
+    return response.json({ message: 'PrintDevice deleted successfully' })
   },
 })

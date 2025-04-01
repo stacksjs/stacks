@@ -1,7 +1,7 @@
 import type { PrintDeviceRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { PrintDevice } from '@stacksjs/orm'
+import { devices } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +11,7 @@ export default new Action({
   async handle(request: PrintDeviceRequestType) {
     const id = request.getParam('id')
 
-    const model = await PrintDevice.findOrFail(Number(id))
+    const model = await devices.fetchById(Number(id))
 
     return response.json(model)
   },

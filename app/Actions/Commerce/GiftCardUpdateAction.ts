@@ -17,4 +17,4 @@ export default new Action({
 
     return response.json(model)
   },
-}) 
+})

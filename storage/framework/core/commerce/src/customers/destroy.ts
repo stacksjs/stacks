@@ -7,7 +7,7 @@ import { fetchById } from './fetch'
  * @param id The ID of the customer to delete
  * @returns True if the deletion was successful, false otherwise
  */
-export async function remove(id: number): Promise<boolean> {
+export async function destroy(id: number): Promise<boolean> {
   try {
     // First check if the customer exists
     const customer = await fetchById(id)
@@ -39,7 +39,7 @@ export async function remove(id: number): Promise<boolean> {
  * @param ids Array of customer IDs to delete
  * @returns Number of customers successfully deleted
  */
-export async function bulkRemove(ids: number[]): Promise<number> {
+export async function bulkDestroy(ids: number[]): Promise<number> {
   if (!ids.length)
     return 0
 

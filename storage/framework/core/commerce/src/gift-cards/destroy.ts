@@ -1,6 +1,6 @@
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
 import { formatDate } from '@stacksjs/orm'
+import { fetchById } from './fetch'
 
 /**
  * Delete a gift card by ID
