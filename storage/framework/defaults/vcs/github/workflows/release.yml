@@ -1,15 +1,20 @@
-name: CI
+name: Release
 
 on:
   push:
     tags:
       - 'v*'
 
-jobs:
-  release:
-    # name: Release
-    runs-on: ubuntu-latest
+permissions:
+  contents: write
+  packages: write
+  id-token: write
 
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ env.VERSION }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -49,7 +54,156 @@ jobs:
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
 
+      - name: Extract tag version
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
       - name: Create GitHub Release
-        run: bunx changelogithub
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            storage/framework/core/buddy/bin/buddy-linux-x64.zip
+            storage/framework/core/buddy/bin/buddy-linux-arm64.zip
+            storage/framework/core/buddy/bin/buddy-windows-x64.zip
+            storage/framework/core/buddy/bin/buddy-darwin-x64.zip
+            storage/framework/core/buddy/bin/buddy-darwin-arm64.zip
+          name: ${{ env.VERSION }}
+          tag_name: ${{ env.VERSION }}
+          generate_release_notes: true
         env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  homebrew:
+    needs: npm
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug Tag
+        run: |
+          echo "Tag: ${GITHUB_REF#refs/tags/}"
+          echo "Version from previous job: ${{ needs.release.outputs.version }}"
+
+      - name: Generate GitHub App Token
+        id: generate-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.GH_APP_ID }}
+          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+
+      - name: Setup GitHub CLI with PAT
+        run: |
+          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
+
+      - name: Ensure Homebrew Tap Repository Exists
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          if ! gh repo view stacksjs/homebrew-tap &>/dev/null; then
+            echo "Creating homebrew-tap repository..."
+            gh repo create stacksjs/homebrew-tap --public --description "Homebrew tap for Stacks packages"
+          else
+            echo "homebrew-tap repository already exists"
+          fi
+
+      - name: Authenticate GitHub CLI with App Token
+        run: echo "${{ steps.generate-token.outputs.token }}" | gh auth login --with-token
+
+      - name: Wait for Release Assets
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "Waiting for release assets to be available..."
+
+          # Wait for assets to be available (max 10 minutes)
+          TIMEOUT=600
+          START_TIME=$(date +%s)
+
+          while [ $(( $(date +%s) - START_TIME )) -lt $TIMEOUT ]; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64)
+            echo "HTTP response code: $HTTP_CODE"
+
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "302" ]; then
+              echo "Assets are available!"
+              break
+            fi
+
+            echo "Assets not ready yet, waiting 10 seconds..."
+            sleep 10
+          done
+
+          if [ $(( $(date +%s) - START_TIME )) -ge $TIMEOUT ]; then
+            echo "Timed out waiting for assets, proceeding anyway..."
+          fi
+
+          # Force continue even if we couldn't detect the file
+          # Sometimes GitHub's API can be inconsistent
+          echo "Continuing with asset download..."
+
+      - name: Download Binaries Directly
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          mkdir -p .github/temp
+          cd .github/temp
+
+          # Try direct download with retries
+          download_with_retry() {
+            local url=$1
+            local output=$2
+            local max_retries=5
+            local retry=0
+
+            while [ $retry -lt $max_retries ]; do
+              echo "Downloading $url (attempt $(($retry + 1))/$max_retries)"
+              if curl -L -s -f "$url" -o "$output"; then
+                echo "Downloaded $output successfully"
+                return 0
+              fi
+              echo "Download failed, retrying in 5 seconds..."
+              retry=$((retry + 1))
+              sleep 5
+            done
+
+            echo "Failed to download $url after $max_retries attempts"
+            return 1
+          }
+
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-arm64" "buddy-darwin-arm64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-darwin-x64" "buddy-darwin-x64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-arm64" "buddy-linux-arm64"
+          download_with_retry "https://github.com/stacksjs/stacks/releases/download/$VERSION/buddy-linux-x64" "buddy-linux-x64"
+
+          cd ../..
+
+      - name: Update Homebrew Formula
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          bash .github/scripts/update-homebrew-formula.sh $VERSION
+
+      - name: Push to Homebrew Tap Repository
+        run: |
+          # Clone the tap repo using GitHub App token
+          git clone https://x-access-token:${{ steps.generate-token.outputs.token }}@github.com/stacksjs/homebrew-tap.git
+
+          # Set up Git config
+          cd homebrew-tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Copy the formula to the tap repo
+          mkdir -p Formula
+          cp ../.github/homebrew/stacks.rb Formula/
+
+          # Check if there are changes to commit
+          if git status --porcelain | grep -q .; then
+            # Push the changes to the tap repo
+            git add Formula/stacks.rb
+            git commit -m "chore: update stacks formula to ${GITHUB_REF#refs/tags/}"
+            git push
+            echo "Successfully updated homebrew formula!"
+          else
+            echo "No changes to commit"
+          fi
