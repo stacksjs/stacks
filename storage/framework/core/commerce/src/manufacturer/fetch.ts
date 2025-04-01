@@ -1,5 +1,5 @@
 import type { ManufacturerJsonResponse } from '@stacksjs/orm'
-import type { FetchProductManufacturersOptions, ProductManufacturerResponse } from '../types'
+import type { FetchManufacturersOptions, ManufacturerResponse } from '../types'
 import { db } from '@stacksjs/database'
 
 /**
@@ -40,7 +40,7 @@ export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJso
 /**
  * Fetch manufacturers by country
  */
-export async function fetchByCountry(country: string, options: FetchProductManufacturersOptions = {}): Promise<ProductManufacturerResponse> {
+export async function fetchByCountry(country: string, options: FetchManufacturersOptions = {}): Promise<ManufacturerResponse> {
   // Set default values
   const page = options.page || 1
   const limit = options.limit || 10
@@ -83,11 +83,7 @@ export async function fetchByCountry(country: string, options: FetchProductManuf
 /**
  * Fetch manufacturers with their product count
  */
-export async function fetchWithProductCount(options: FetchProductManufacturersOptions = {}): Promise<ProductManufacturerResponse> {
-  // Set default values
-  const page = options.page || 1
-  const limit = options.limit || 10
-
+export async function fetchWithProductCount(options: FetchManufacturersOptions = {}): Promise<ManufacturerJsonResponse[]> {
   // Start building the query
   const query = db.selectFrom('manufacturers as m')
     .leftJoin('products as p', 'p.manufacturer_id', 'm.id')
@@ -104,42 +100,13 @@ export async function fetchWithProductCount(options: FetchProductManufacturersOp
     ])
     .groupBy('m.id')
 
-  const countQuery = db.selectFrom('manufacturers')
-
   // Apply filters if provided
-  if (options.country) {
+  if (options.country)
     query.where('m.country', '=', options.country)
-    countQuery.where('country', '=', options.country)
-  }
 
-  if (options.featured !== undefined) {
+  if (options.featured !== undefined)
     query.where('m.featured', '=', options.featured)
-    countQuery.where('featured', '=', options.featured)
-  }
 
-  // Get total count for pagination
-  const countResult = await countQuery
-    .select(eb => eb.fn.count('id').as('total'))
-    .executeTakeFirst()
-
-  const total = Number(countResult?.total || 0)
-
-  // Apply pagination
-  const manufacturers = await query
-    .limit(limit)
-    .offset((page - 1) * limit)
-    .execute()
-
-  // Calculate pagination info
-  const totalPages = Math.ceil(total / limit)
-
-  return {
-    data: manufacturers,
-    paging: {
-      total_records: total,
-      page,
-      total_pages: totalPages,
-    },
-    next_cursor: page < totalPages ? page + 1 : null,
-  }
+  // Return all manufacturers
+  return query.execute()
 }

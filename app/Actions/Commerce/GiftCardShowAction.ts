@@ -1,6 +1,8 @@
 import type { GiftCardRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { giftCards } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +12,7 @@ export default new Action({
   async handle(request: GiftCardRequestType) {
     const id = request.getParam('id')
 
-    const model = await GiftCard.findOrFail(Number(id))
+    const model = await giftCards.fetchById(Number(id))
 
     return response.json(model)
   },

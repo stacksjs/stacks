@@ -1,6 +1,10 @@
 import type { LicenseKeyRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { licenses } from '@stacksjs/commerce'
+
+import { response } from '@stacksjs/router'
+
 export default new Action({
   name: 'LicenseKey Destroy',
   description: 'LicenseKey Destroy ORM Action',
@@ -8,10 +12,10 @@ export default new Action({
   async handle(request: LicenseKeyRequestType) {
     const id = request.getParam('id')
 
-    const model = await LicenseKey.findOrFail(Number(id))
+    await licenses.destroy(Number(id))
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({
+      message: 'License key deleted successfully',
+    })
   },
 })

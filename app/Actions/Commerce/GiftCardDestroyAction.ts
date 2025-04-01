@@ -6,14 +6,14 @@ import { giftCards } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'GiftCard Store',
-  description: 'GiftCard Store ORM Action',
-  method: 'POST',
+  name: 'GiftCard Destroy',
+  description: 'GiftCard Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: GiftCardRequestType) {
-    await request.validate()
+    const id = request.getParam('id')
 
-    const model = await giftCards.store(request)
+    await giftCards.destroy(Number(id))
 
-    return response.json(model)
+    return response.json({ message: 'GiftCard deleted successfully' })
   },
-})
+}) 

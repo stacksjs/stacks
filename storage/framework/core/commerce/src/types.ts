@@ -194,7 +194,7 @@ export interface ReviewResponse extends BaseResponse {
   data: ReviewJsonResponse[]
 }
 
-export interface ProductManufacturerResponse extends BaseResponse {
+export interface ManufacturerResponse extends BaseResponse {
   data: ManufacturerJsonResponse[]
 }
 export interface ReviewStats {
@@ -243,7 +243,7 @@ export interface CategoryStats {
 /**
  * Options for fetching product manufacturers
  */
-export interface FetchProductManufacturersOptions {
+export interface FetchManufacturersOptions {
   /** Page number for pagination */
   page?: number
 

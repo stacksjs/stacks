@@ -1,12 +1,13 @@
 import { db } from '@stacksjs/database'
 import { fetchById } from './fetch'
+import { formatDate } from '@stacksjs/orm'
 
 /**
  * Delete a gift card by ID
  * @param id The ID of the gift card to delete
  * @returns A boolean indicating whether the deletion was successful
  */
-export async function remove(id: number): Promise<boolean> {
+export async function destroy(id: number): Promise<boolean> {
   // First check if the gift card exists
   const giftCard = await fetchById(id)
 
@@ -28,7 +29,7 @@ export async function remove(id: number): Promise<boolean> {
  * @param ids Array of gift card IDs to delete
  * @returns Number of gift cards successfully deleted
  */
-export async function bulkRemove(ids: number[]): Promise<number> {
+export async function bulkDestroy(ids: number[]): Promise<number> {
   if (!ids.length) {
     return 0
   }
@@ -46,7 +47,7 @@ export async function bulkRemove(ids: number[]): Promise<number> {
  * Delete expired gift cards
  * @returns Number of gift cards deleted
  */
-export async function removeExpired(): Promise<number> {
+export async function destroyExpired(): Promise<number> {
   const currentDate = new Date().toISOString().split('T')[0]
 
   // Delete expired gift cards
@@ -77,7 +78,7 @@ export async function deactivate(id: number): Promise<boolean> {
     .set({
       is_active: false,
       status: 'DEACTIVATED',
-      updated_at: new Date(),
+      updated_at: formatDate(new Date()),
     })
     .where('id', '=', id)
     .executeTakeFirst()
