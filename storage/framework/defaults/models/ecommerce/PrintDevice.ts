@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'print-devices',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

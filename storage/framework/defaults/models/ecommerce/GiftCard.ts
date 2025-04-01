@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'gift-cards',
-      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'license-keys',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

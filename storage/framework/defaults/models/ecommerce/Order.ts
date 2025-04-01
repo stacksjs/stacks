@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'orders',
-      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

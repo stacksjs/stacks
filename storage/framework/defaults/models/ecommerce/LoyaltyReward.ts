@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'loyalty-rewards',
-      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

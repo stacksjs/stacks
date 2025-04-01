@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'digital-deliveries',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'product-manufacturers',
-      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

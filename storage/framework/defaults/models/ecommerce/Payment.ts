@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'payments',
-      routes: ['index', 'store', 'show'],
     },
 
     observe: true,

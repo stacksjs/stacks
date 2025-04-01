@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'print-logs',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

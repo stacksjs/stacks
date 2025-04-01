@@ -1,6 +1,10 @@
 import type { DriverRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { drivers } from '@stacksjs/commerce'
+
+import { response } from '@stacksjs/router'
+
 export default new Action({
   name: 'Driver Destroy',
   description: 'Driver Destroy ORM Action',
@@ -8,10 +12,8 @@ export default new Action({
   async handle(request: DriverRequestType) {
     const id = request.getParam('id')
 
-    const model = await Driver.findOrFail(Number(id))
+    await drivers.destroy(Number(id))
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'Driver deleted successfully' })
   },
 })

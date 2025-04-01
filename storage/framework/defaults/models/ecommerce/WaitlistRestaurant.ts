@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'waitlist-restaurants',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,
