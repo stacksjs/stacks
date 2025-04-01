@@ -1,16 +1,17 @@
-import type { ManufacturerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { response } from '@stacksjs/router'
+import { products } from '@stacksjs/commerce'
+
+import { request, response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Manufacturer Show',
   description: 'Manufacturer Show ORM Action',
   method: 'GET',
-  async handle(request: ManufacturerRequestType) {
+  async handle() {
     const id = request.getParam('id')
 
-    const model = await Manufacturer.findOrFail(Number(id))
+    const model = await products.manufacturer.fetchById(Number(id))
 
     return response.json(model)
   },
