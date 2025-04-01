@@ -108,3 +108,23 @@ export async function calculatePrinterHealth(): Promise<number> {
 
   return Number(((result.online_count ?? 0) / result.total) * 100)
 }
+
+/**
+ * Get printer counts by status for visualization
+ */
+export async function getPrinterStatusCounts(): Promise<Record<string, number>> {
+  const result = await db
+    .selectFrom('print_devices')
+    .select([
+      'status',
+      db.fn.count<number>('id').as('count'),
+    ])
+    .groupBy('status')
+    .execute()
+
+  // Convert array to object with status as key and count as value
+  return result.reduce((acc, curr) => {
+    acc[curr.status as string] = curr.count
+    return acc
+  }, {} as Record<string, number>)
+}

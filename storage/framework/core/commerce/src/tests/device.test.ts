@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../device/destroy'
 import { exportPrintDevices } from '../device/export'
-import { calculateErrorRate, calculatePrinterHealth, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById } from '../device/fetch'
+import { calculateErrorRate, calculatePrinterHealth, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById, getPrinterStatusCounts } from '../device/fetch'
 import { bulkStore, store } from '../device/store'
 import { update, updatePrintCount, updateStatus } from '../device/update'
 import { store as storeReceipt } from '../receipts/store'
@@ -683,6 +683,66 @@ describe('Print Device Module', () => {
 
       const health = await calculatePrinterHealth()
       expect(health).toBe(50) // 2 out of 4 printers are online
+    })
+  })
+
+  describe('printer status counts', () => {
+    it('should return empty object when no printers exist', async () => {
+      const counts = await getPrinterStatusCounts()
+      expect(counts).toEqual({})
+    })
+
+    it('should return correct counts for each status', async () => {
+      // Create printers with different statuses
+      const printers = [
+        {
+          name: 'Online Printer 1',
+          mac_address: '00:11:22:33:44:55',
+          location: 'Office 101',
+          terminal: 'TERM001',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Online Printer 2',
+          mac_address: 'AA:BB:CC:DD:EE:FF',
+          location: 'Office 102',
+          terminal: 'TERM002',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Offline Printer',
+          mac_address: '11:22:33:44:55:66',
+          location: 'Office 103',
+          terminal: 'TERM003',
+          status: 'offline',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Warning Printer',
+          mac_address: '22:33:44:55:66:77',
+          location: 'Office 104',
+          terminal: 'TERM004',
+          status: 'warning',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+      ]
+
+      for (const printer of printers) {
+        await store(new TestRequest(printer) as any)
+      }
+
+      const counts = await getPrinterStatusCounts()
+      expect(counts).toEqual({
+        online: 2,
+        offline: 1,
+        warning: 1,
+      })
     })
   })
 })
