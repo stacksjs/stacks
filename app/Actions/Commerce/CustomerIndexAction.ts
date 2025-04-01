@@ -1,7 +1,8 @@
 import { Action } from '@stacksjs/actions'
+import { customers } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
-import { customers } from '@stacksjs/commerce'
 export default new Action({
   name: 'Customer Index',
   description: 'Customer Index ORM Action',

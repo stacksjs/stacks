@@ -6,14 +6,14 @@ import { coupons } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'Coupon Store',
-  description: 'Coupon Store ORM Action',
-  method: 'POST',
+  name: 'Coupon Destroy',
+  description: 'Coupon Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: CouponRequestType) {
-    await request.validate()
+    const id = request.getParam('id')
 
-    const model = await coupons.store(request)
+    await coupons.deleteCoupon(Number(id))
 
-    return response.json(model)
+    return response.json({ message: 'Coupon deleted successfully' })
   },
 })

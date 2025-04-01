@@ -1,4 +1,8 @@
+import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+
+import { deliveryRoutes } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +10,7 @@ export default new Action({
   description: 'DeliveryRoute Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = DeliveryRoute.all()
+    const results = await deliveryRoutes.fetchAll()
 
     return response.json(results)
   },

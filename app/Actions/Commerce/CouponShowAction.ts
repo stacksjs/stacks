@@ -1,6 +1,8 @@
 import type { CouponRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { coupons } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +12,7 @@ export default new Action({
   async handle(request: CouponRequestType) {
     const id = request.getParam('id')
 
-    const model = await Coupon.findOrFail(Number(id))
+    const model = await coupons.fetchById(Number(id))
 
     return response.json(model)
   },

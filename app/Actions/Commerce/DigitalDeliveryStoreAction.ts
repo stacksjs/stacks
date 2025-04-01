@@ -1,6 +1,8 @@
 import type { DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { digital } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,7 +11,8 @@ export default new Action({
   method: 'POST',
   async handle(request: DigitalDeliveryRequestType) {
     await request.validate()
-    const model = await DigitalDelivery.create(request.all())
+
+    const model = await digital.store(request)
 
     return response.json(model)
   },

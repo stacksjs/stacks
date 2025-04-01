@@ -1,6 +1,8 @@
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { deliveryRoutes } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +12,7 @@ export default new Action({
   async handle(request: DeliveryRouteRequestType) {
     const id = request.getParam('id')
 
-    const model = await DeliveryRoute.findOrFail(Number(id))
+    const model = await deliveryRoutes.fetchById(Number(id))
 
     return response.json(model)
   },

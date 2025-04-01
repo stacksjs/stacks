@@ -1,6 +1,8 @@
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { deliveryRoutes } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,7 +11,8 @@ export default new Action({
   method: 'POST',
   async handle(request: DeliveryRouteRequestType) {
     await request.validate()
-    const model = await DeliveryRoute.create(request.all())
+
+    const model = await deliveryRoutes.store(request)
 
     return response.json(model)
   },

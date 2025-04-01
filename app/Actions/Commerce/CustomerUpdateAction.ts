@@ -1,9 +1,9 @@
 import type { CustomerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { response } from '@stacksjs/router'
-
 import { customers } from '@stacksjs/commerce'
+
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Customer Update',

@@ -1,6 +1,10 @@
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { deliveryRoutes } from '@stacksjs/commerce'
+
+import { response } from '@stacksjs/router'
+
 export default new Action({
   name: 'DeliveryRoute Destroy',
   description: 'DeliveryRoute Destroy ORM Action',
@@ -8,10 +12,8 @@ export default new Action({
   async handle(request: DeliveryRouteRequestType) {
     const id = request.getParam('id')
 
-    const model = await DeliveryRoute.findOrFail(Number(id))
+    await deliveryRoutes.destroy(Number(id))
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'DeliveryRoute deleted successfully' })
   },
 })

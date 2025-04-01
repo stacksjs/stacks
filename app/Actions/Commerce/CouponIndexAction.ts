@@ -1,4 +1,8 @@
+import type { CouponRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+
+import { coupons } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +10,7 @@ export default new Action({
   description: 'Coupon Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = Coupon.all()
+    const results = await coupons.fetchAll()
 
     return response.json(results)
   },

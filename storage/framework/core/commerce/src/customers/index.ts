@@ -4,8 +4,8 @@ export {
 } from './destroy'
 
 export {
+  fetchAll,
   fetchById,
-  fetchAll
 } from './fetch'
 
 export {

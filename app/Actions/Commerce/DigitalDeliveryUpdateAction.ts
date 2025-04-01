@@ -1,20 +1,20 @@
 import type { DigitalDeliveryRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { digital } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'DigitalDelivery Update',
   description: 'DigitalDelivery Update ORM Action',
-  method: 'PATCH',
+  method: 'PUT',
   async handle(request: DigitalDeliveryRequestType) {
     await request.validate()
-
     const id = request.getParam('id')
-    const model = await DigitalDelivery.findOrFail(Number(id))
 
-    const result = model.update(request.all())
+    const model = await digital.update(Number(id), request)
 
-    return response.json(result)
+    return response.json(model)
   },
 })
