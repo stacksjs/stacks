@@ -5,6 +5,7 @@ export {
 
 export {
   fetchById,
+  fetchAll
 } from './fetch'
 
 export {

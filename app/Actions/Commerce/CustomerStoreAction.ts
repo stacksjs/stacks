@@ -1,6 +1,8 @@
 import type { CustomerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { customers } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,7 +11,8 @@ export default new Action({
   method: 'POST',
   async handle(request: CustomerRequestType) {
     await request.validate()
-    const model = await Customer.create(request.all())
+
+    const model = await customers.store(request)
 
     return response.json(model)
   },

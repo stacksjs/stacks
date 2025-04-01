@@ -3,6 +3,8 @@ import { Action } from '@stacksjs/actions'
 
 import { response } from '@stacksjs/router'
 
+import { customers } from '@stacksjs/commerce'
+
 export default new Action({
   name: 'Customer Update',
   description: 'Customer Update ORM Action',
@@ -11,9 +13,8 @@ export default new Action({
     await request.validate()
 
     const id = request.getParam('id')
-    const model = await Customer.findOrFail(Number(id))
 
-    const result = model.update(request.all())
+    const result = await customers.update(Number(id), request)
 
     return response.json(result)
   },
