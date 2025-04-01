@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/stepper",
   "type": "module",
-  "version": "0.70.22",
+  "version": "0.69.5",
   "description": "A modern stepper component.",
   "author": "Chris Breuer",
   "contributors": [
@@ -52,7 +52,7 @@
   },
   "devDependencies": {
     "@iconify-json/hugeicons": "^1.2.4",
-    "@microsoft/api-extractor": "^7.52.2",
+    "@microsoft/api-extractor": "^7.52.1",
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/development": "workspace:*",
     "@stacksjs/dialog": "workspace:*",

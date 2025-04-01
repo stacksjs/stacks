@@ -12,7 +12,6 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     Starport: typeof import('vue-starport')['Starport']
     StarportCarrier: typeof import('vue-starport')['StarportCarrier']
-    Step: typeof import('./src/components/Step.vue')['default']
     Stepper: typeof import('./src/components/Stepper.vue')['default']
   }
 }

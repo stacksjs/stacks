@@ -1,12 +1,8 @@
 import type { App, Plugin } from 'vue'
 import type { OptionParams, StepperProps } from './types'
-import Step from './components/Step.vue'
 import Stepper from './components/Stepper.vue'
 
-// Export all components
-export { Step }
 export { Stepper }
-export { Step as StepperStep }
 
 // Export types
 export type { OptionParams, StepperProps }
@@ -20,7 +16,6 @@ export interface StepperInstance {
 // Plugin installation
 export function install(app: App) {
   app.component('Stepper', Stepper)
-  app.component('StepperStep', Step)
 }
 
 // Create plugin

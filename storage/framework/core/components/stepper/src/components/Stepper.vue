@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import Step from './Step.vue'
 
 defineOptions({
   name: 'Stepper',
@@ -69,7 +68,7 @@ async function handleStepSelect(index: number) {
   // If moving forward, validate current step first
   if (index > currentStep.value) {
     const currentStepConfig = props.steps[currentStep.value]
-    if (currentStepConfig.validator) {
+    if (currentStepConfig?.validator) {
       isValidating.value = true
       error.value = null
 
@@ -97,9 +96,7 @@ async function handleStepSelect(index: number) {
 async function next() {
   if (currentStep.value < props.steps.length - 1) {
     try {
-      console.log('Current step before:', currentStep.value)
       await handleStepSelect(currentStep.value + 1)
-      console.log('Current step after:', currentStep.value)
     } catch (error) {
       console.error('Error in next:', error)
     }
@@ -141,49 +138,125 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    class="stepper relative px-4"
-    :class="[
-      isVertical ? 'flex flex-col space-y-0' : 'flex flex-row items-center justify-between w-full'
-    ]"
-  >
-    <template v-for="(step, index) in steps" :key="index">
-      <!-- Default Step Template -->
-      <Step
-        v-if="!$slots.step"
-        :index="index"
-        :title="step.title"
-        :subtitle="showStepSubtitle ? step.subtitle : undefined"
-        :description="showStepDescription ? step.description : undefined"
-        :status="stepStatuses[index]"
-        :is-last-step="index === steps.length - 1"
-        :orientation="orientation"
-        :data-orientation="orientation"
-        :style="[
-          orientation === 'horizontal' && index !== steps.length - 1
-            ? { minWidth: '150px', flex: 1 }
-            : null
+  <div class="relative flex justify-center w-full px-4 min-h-32">
+    <div
+      class="flex "
+      :class="[
+        isVertical ? 'flex-col space-y-0' : 'flex-row items-center justify-between'
+      ]"
+    >
+      <div
+        v-for="(step, index) in steps"
+        :key="'step-'+index"
+        class="flex-1"
+        :class="[
+          orientation === 'horizontal' ? 'mx-4' : ''
         ]"
-        @select="handleStepSelect"
-      />
+      >
+        <!-- Default Step Template -->
+        <div
+          v-if="!$slots.step"
+          class="relative flex transition-all duration-300 ease-in-out"
+          :class="[
+            orientation === 'vertical' ? 'items-start gap-4' : 'flex-col items-center gap-4',
+            orientation === 'horizontal' && index !== steps.length - 1 ? 'mr-8' : '',
+            stepStatuses[index] === 'completed' ? 'hover:opacity-90 cursor-pointer' : '',
+            stepStatuses[index] === 'current' ? 'scale-102' : '',
+            stepStatuses[index] === 'error' ? 'animate-shake' : ''
+          ]"
+          @click="handleStepSelect(index)"
+        >
+          <!-- Step Icon Container -->
+          <div class="relative flex"
+            :class="[
+              orientation === 'vertical' ? 'flex-col items-center' : ''
+            ]"
+          >
+            <div
+              class="relative z-10 flex items-center justify-center transition-all duration-200 ease-in-out border-2 rounded-full h-9 w-9"
+              :class="{
+                'bg-primary-600 border-primary-600 text-white': stepStatuses[index] === 'completed',
+                'bg-white border-primary-600 text-primary-600': stepStatuses[index] === 'current',
+                'bg-white border-gray-300 text-gray-400': stepStatuses[index] === 'upcoming',
+                'bg-white border-error-600 text-error-600': stepStatuses[index] === 'error'
+              }"
+            >
+              <div class="flex items-center justify-center w-5 h-5">
+                <template v-if="stepStatuses[index] === 'completed'">
+                  <div class="i-hugeicons-checkmark-circle-01" />
+                </template>
+                <template v-else>
+                  {{ index + 1 }}
+                </template>
+              </div>
+            </div>
 
-      <!-- Custom Step Template -->
-      <slot
-        v-else
-        name="step"
-        :step="step"
-        :index="index"
-        :status="stepStatuses[index]"
-        :is-last-step="index === steps.length - 1"
-        :is-vertical="isVertical"
-        :select="() => handleStepSelect(index)"
-      />
-    </template>
+            <!-- Connector Line -->
+            <div
+              v-if="index !== steps.length - 1"
+              class="absolute transition-all duration-300 ease-in-out"
+              :class="[
+                orientation === 'vertical'
+                  ? 'top-9 left-1/2 h-[calc(100%+1rem)] w-0.5 -translate-x-1/2'
+                  : 'left-[calc(100%+0.25rem)] top-1/2 w-[calc(200%+0.2rem)] h-0.5 -translate-y-1/2',
+                {
+                  'bg-primary-600': stepStatuses[index] === 'completed',
+                  'bg-gray-300': stepStatuses[index] !== 'completed'
+                }
+              ]"
+            />
+          </div>
+
+          <!-- Content -->
+          <div
+            class="flex flex-col pt-1 min-h-10"
+            :class="[
+              orientation === 'vertical' ? 'pb-8' : 'items-center pb-4 w-full'
+            ]"
+          >
+            <!-- Title -->
+            <span
+              class="text-sm font-medium"
+              :class="{
+                'text-gray-900': ['completed', 'current'].includes(stepStatuses[index] || ''),
+                'text-error-600': stepStatuses[index] === 'error',
+                'text-gray-400': stepStatuses[index] === 'upcoming'
+              }"
+            >
+              {{ step.title }}
+            </span>
+
+            <!-- Description -->
+            <span
+              v-if="step.description"
+              class="mt-1 text-sm text-gray-500"
+              :class="[
+                orientation === 'vertical' ? 'text-left' : 'text-center'
+              ]"
+            >
+              {{ step.description }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Custom Step Template -->
+        <slot
+          v-else
+          name="step"
+          :step="step"
+          :index="index"
+          :status="stepStatuses[index]"
+          :is-last-step="index === steps.length - 1"
+          :is-vertical="isVertical"
+          :select="() => handleStepSelect(index)"
+        />
+      </div>
+    </div>
 
     <!-- Error Message -->
     <div
       v-if="error"
-      class="absolute -bottom-6 left-0 right-0 text-center text-sm text-error-600 transition-all duration-200"
+      class="absolute left-0 right-0 text-sm text-center transition-all duration-200 -bottom-6 text-error-600"
     >
       {{ error }}
     </div>
@@ -193,35 +266,23 @@ defineExpose({
       v-if="isValidating"
       class="absolute inset-0 flex items-center justify-center bg-white/50 backdrop-blur-sm"
     >
-      <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary-600 border-t-transparent" />
+      <div class="w-8 h-8 border-4 rounded-full animate-spin border-primary-600 border-t-transparent" />
     </div>
   </div>
 </template>
 
 <style scoped>
-.stepper {
-  display: flex;
-  width: 100%;
-  min-height: 8rem;
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
 }
 
-/* Theme customization classes */
-:deep(.step-completed) {
-  --tw-primary-600: var(--stepper-primary-color, theme('colors.primary.600'));
+.scale-102 {
+  transform: scale(1.02);
 }
 
-:deep(.step-error) {
-  --tw-error-600: var(--stepper-error-color, theme('colors.error.600'));
-}
-
-/* Horizontal layout adjustments */
-:deep([data-orientation="horizontal"]) {
-  flex: 1;
-  min-width: 150px;
-  position: relative;
-}
-
-:deep([data-orientation="horizontal"]:not(:last-child)) {
-  margin-right: 2rem;
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
 }
 </style>
