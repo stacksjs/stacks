@@ -1,4 +1,4 @@
-import type { PrintDeviceJsonResponse } from '@stacksjs/orm'
+import type { PrintDeviceJsonResponse, ReceiptJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 
 /**
@@ -74,4 +74,37 @@ export async function calculateErrorRate(): Promise<number> {
   }
 
   return Number(((result.error_count ?? 0) / result.total) * 100)
+}
+
+/**
+ * Fetch all errors from receipts for a specific print device
+ */
+export async function fetchErrorsByDeviceId(printDeviceId: number): Promise<ReceiptJsonResponse[]> {
+  return await db
+    .selectFrom('receipts')
+    .where('print_device_id', '=', printDeviceId)
+    .where('status', '=', 'error')
+    .selectAll()
+    .execute()
+}
+
+/**
+ * Calculate printer health percentage based on online status
+ */
+export async function calculatePrinterHealth(): Promise<number> {
+  const result = await db
+    .selectFrom('print_devices')
+    .select([
+      db.fn.count<number>('id').as('total'),
+      db.fn.count<number>('id')
+        .filterWhere('status', '=', 'online')
+        .as('online_count'),
+    ])
+    .executeTakeFirst()
+
+  if (!result?.total || result.total === 0) {
+    return 0
+  }
+
+  return Number(((result.online_count ?? 0) / result.total) * 100)
 }

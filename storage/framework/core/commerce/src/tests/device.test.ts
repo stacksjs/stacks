@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
 import { bulkDestroy, destroy } from '../device/destroy'
 import { exportPrintDevices } from '../device/export'
-import { calculateErrorRate, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById } from '../device/fetch'
+import { calculateErrorRate, calculatePrinterHealth, countPrintsByDeviceId, countTotalPrints, fetchAll, fetchById } from '../device/fetch'
 import { bulkStore, store } from '../device/store'
 import { update, updatePrintCount, updateStatus } from '../device/update'
 import { store as storeReceipt } from '../receipts/store'
@@ -587,6 +587,102 @@ describe('Print Device Module', () => {
 
       const errorRate = await calculateErrorRate()
       expect(errorRate).toBe(50) // 2 out of 4 receipts have error status
+    })
+  })
+
+  describe('printer health calculation', () => {
+    it('should calculate 0% health when no printers exist', async () => {
+      const health = await calculatePrinterHealth()
+      expect(health).toBe(0)
+    })
+
+    it('should calculate 100% health when all printers are online', async () => {
+      // Create multiple online printers
+      const printers = [
+        {
+          name: 'Printer 1',
+          mac_address: '00:11:22:33:44:55',
+          location: 'Office 101',
+          terminal: 'TERM001',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Printer 2',
+          mac_address: 'AA:BB:CC:DD:EE:FF',
+          location: 'Office 102',
+          terminal: 'TERM002',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Printer 3',
+          mac_address: '11:22:33:44:55:66',
+          location: 'Office 103',
+          terminal: 'TERM003',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+      ]
+
+      for (const printer of printers) {
+        await store(new TestRequest(printer) as any)
+      }
+
+      const health = await calculatePrinterHealth()
+      expect(health).toBe(100)
+    })
+
+    it('should calculate correct health percentage with mixed printer statuses', async () => {
+      // Create printers with different statuses
+      const printers = [
+        {
+          name: 'Online Printer',
+          mac_address: '00:11:22:33:44:55',
+          location: 'Office 101',
+          terminal: 'TERM001',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Offline Printer',
+          mac_address: 'AA:BB:CC:DD:EE:FF',
+          location: 'Office 102',
+          terminal: 'TERM002',
+          status: 'offline',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Warning Printer',
+          mac_address: '11:22:33:44:55:66',
+          location: 'Office 103',
+          terminal: 'TERM003',
+          status: 'warning',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+        {
+          name: 'Online Printer 2',
+          mac_address: '22:33:44:55:66:77',
+          location: 'Office 104',
+          terminal: 'TERM004',
+          status: 'online',
+          last_ping: Date.now(),
+          print_count: 0,
+        },
+      ]
+
+      for (const printer of printers) {
+        await store(new TestRequest(printer) as any)
+      }
+
+      const health = await calculatePrinterHealth()
+      expect(health).toBe(50) // 2 out of 4 printers are online
     })
   })
 })
