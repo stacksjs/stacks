@@ -1,4 +1,3 @@
-import type { DriverRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { drivers } from '@stacksjs/commerce'
@@ -9,7 +8,7 @@ export default new Action({
   name: 'Driver Index',
   description: 'Driver Index ORM Action',
   method: 'GET',
-  async handle(request: DriverRequestType) {
+  async handle() {
     const results = await drivers.fetchAll()
 
     return response.json(results)
