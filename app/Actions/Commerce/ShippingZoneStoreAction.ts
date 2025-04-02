@@ -1,6 +1,6 @@
 import type { ShippingZoneRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,8 +8,7 @@ export default new Action({
   description: 'ShippingZone Store ORM Action',
   method: 'POST',
   async handle(request: ShippingZoneRequestType) {
-    await request.validate()
-    const model = await ShippingZone.create(request.all())
+    const model = await shippings.zones.store(request)
 
     return response.json(model)
   },

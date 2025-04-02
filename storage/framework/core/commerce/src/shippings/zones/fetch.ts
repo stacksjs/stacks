@@ -1,5 +1,12 @@
-import type { ShippingZoneJsonResponse } from '../../../../orm/src/models/ShippingZone'
+import type { ShippingZoneJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+
+/**
+ * Fetch all shipping zones
+ */
+export async function fetchAll(): Promise<ShippingZoneJsonResponse[]> {
+  return await db.selectFrom('shipping_zones').selectAll().execute()
+}
 
 /**
  * Fetch a shipping zone by ID

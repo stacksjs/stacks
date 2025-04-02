@@ -6,6 +6,7 @@ export {
 } from './destroy'
 
 export {
+  fetchAll,
   fetchById,
   formatZoneOptions,
   getActiveShippingZones,

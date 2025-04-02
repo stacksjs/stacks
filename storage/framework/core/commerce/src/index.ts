@@ -6,7 +6,6 @@ import * as giftCards from './gift-cards'
 import * as orders from './orders'
 import * as payments from './payments'
 import * as products from './products'
-import * as rates from './rates'
 import * as receipts from './receipts'
 import * as restaurant from './restaurant'
 import * as shippings from './shippings'
@@ -21,7 +20,6 @@ type OrdersModule = typeof orders
 type PaymentsModule = typeof payments
 type ProductsModule = typeof products
 type RestaurantModule = typeof restaurant
-type RatesModule = typeof rates
 type TaxModule = typeof tax
 type WaitlistModule = typeof waitlist
 type DevicesModule = typeof devices
@@ -35,7 +33,6 @@ export interface EcommerceNamespace {
   payments: PaymentsModule
   products: ProductsModule
   restaurant: RestaurantModule
-  rates: RatesModule
   shippings: ShippingsModule
   tax: TaxModule
   waitlist: WaitlistModule
@@ -51,7 +48,6 @@ export const ecommerce: EcommerceNamespace = {
   orders,
   payments,
   products,
-  rates,
   receipts,
   restaurant,
   shippings,
@@ -69,7 +65,6 @@ export {
   orders,
   payments,
   products,
-  rates,
   receipts,
   restaurant,
   shippings,

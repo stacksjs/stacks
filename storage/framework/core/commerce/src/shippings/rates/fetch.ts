@@ -13,6 +13,13 @@ export async function fetchById(id: number): Promise<ShippingRateJsonResponse | 
 }
 
 /**
+ * Fetch all shipping rates
+ */
+export async function fetchAll(): Promise<ShippingRateJsonResponse[]> {
+  return await db.selectFrom('shipping_rates').selectAll().execute()
+}
+
+/**
  * Get shipping rates by zone
  *
  * @param zone Shipping zone identifier

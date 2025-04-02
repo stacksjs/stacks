@@ -1,6 +1,6 @@
 import type { TaxRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { tax } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,8 +8,7 @@ export default new Action({
   description: 'TaxRate Store ORM Action',
   method: 'POST',
   async handle(request: TaxRateRequestType) {
-    await request.validate()
-    const model = await TaxRate.create(request.all())
+    const model = await tax.store(request)
 
     return response.json(model)
   },

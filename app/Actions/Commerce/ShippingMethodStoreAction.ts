@@ -1,6 +1,6 @@
 import type { ShippingMethodRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-import { shipping } from '@stacksjs/commerce'
+import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingMethod Store ORM Action',
   method: 'POST',
   async handle(request: ShippingMethodRequestType) {
-    const model = await shipping.store(request)
+    const model = await shippings.methods.store(request)
 
     return response.json(model)
   },

@@ -1,6 +1,6 @@
 import type { ShippingRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,7 +10,7 @@ export default new Action({
   async handle(request: ShippingRateRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await ShippingRate.findOrFail(id)
+    const model = await shippings.rates.fetchById(id)
 
     return response.json(model)
   },

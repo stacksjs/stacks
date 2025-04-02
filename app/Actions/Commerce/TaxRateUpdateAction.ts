@@ -1,6 +1,6 @@
 import type { TaxRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { tax } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,13 +8,9 @@ export default new Action({
   description: 'TaxRate Update ORM Action',
   method: 'PATCH',
   async handle(request: TaxRateRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
-    const model = await TaxRate.findOrFail(id)
+    const model = await tax.update(id, request)
 
-    const result = model.update(request.all())
-
-    return response.json(result)
+    return response.json(model)
   },
 })

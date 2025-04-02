@@ -1,5 +1,7 @@
 import type { ShippingZoneRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { shippings } from '@stacksjs/commerce'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'ShippingZone Destroy',
@@ -8,10 +10,8 @@ export default new Action({
   async handle(request: ShippingZoneRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await ShippingZone.findOrFail(id)
+    await shippings.zones.destroy(id)
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'ShippingZone deleted successfully' })
   },
 })

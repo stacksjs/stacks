@@ -1,5 +1,7 @@
 import type { TaxRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { tax } from '@stacksjs/commerce'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'TaxRate Destroy',
@@ -8,10 +10,8 @@ export default new Action({
   async handle(request: TaxRateRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await TaxRate.findOrFail(id)
+    await tax.destroy(id)
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'TaxRate deleted successfully' })
   },
 })

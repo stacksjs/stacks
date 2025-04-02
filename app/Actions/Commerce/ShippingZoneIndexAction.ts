@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { shippings } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +7,7 @@ export default new Action({
   description: 'ShippingZone Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = ShippingZone.all()
+    const results = shippings.zones.fetchAll()
 
     return response.json(results)
   },
