@@ -78,6 +78,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "vue-starport": "^0.4.0",
     "vue3-ace-editor": "^2.2.4",
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.1"
   }
 }
