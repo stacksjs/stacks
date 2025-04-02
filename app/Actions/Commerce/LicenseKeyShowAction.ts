@@ -10,9 +10,9 @@ export default new Action({
   description: 'LicenseKey Show ORM Action',
   method: 'GET',
   async handle(request: LicenseKeyRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await licenses.fetchById(Number(id))
+    const model = await licenses.fetchById(id)
 
     return response.json(model)
   },

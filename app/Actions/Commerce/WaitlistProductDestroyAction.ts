@@ -9,9 +9,9 @@ export default new Action({
   description: 'WaitlistProduct Destroy ORM Action',
   method: 'DELETE',
   async handle(request: WaitlistProductRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await WaitlistProduct.findOrFail(Number(id))
+    const model = await WaitlistProduct.findOrFail(id)
 
     model.delete()
 

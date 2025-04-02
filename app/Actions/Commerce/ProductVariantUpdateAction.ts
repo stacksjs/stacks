@@ -10,9 +10,9 @@ export default new Action({
   async handle(request: ProductVariantRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const result = await products.variants.update(Number(id), request)
+    const result = await products.variants.update(id, request)
 
     return response.json(result)
   },

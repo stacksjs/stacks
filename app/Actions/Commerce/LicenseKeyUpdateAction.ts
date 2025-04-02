@@ -10,9 +10,9 @@ export default new Action({
   description: 'LicenseKey Update ORM Action',
   method: 'PUT',
   async handle(request: LicenseKeyRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const results = await licenses.update(Number(id), request)
+    const results = await licenses.update(id, request)
 
     return response.json(results)
   },

@@ -10,9 +10,9 @@ export default new Action({
   description: 'DigitalDelivery Show ORM Action',
   method: 'GET',
   async handle(request: DigitalDeliveryRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await digital.fetchById(Number(id))
+    const model = await digital.fetchById(id)
 
     return response.json(model)
   },

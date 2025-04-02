@@ -10,9 +10,9 @@ export default new Action({
   description: 'ProductVariant Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ProductVariantRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await products.variants.destroy(Number(id))
+    await products.variants.destroy(id)
 
     return response.json({ message: 'Variant deleted successfully' })
   },

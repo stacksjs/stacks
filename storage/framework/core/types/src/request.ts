@@ -1,4 +1,4 @@
-import type { VineType } from '@stacksjs/types'
+import type { RouteParam, VineType } from '@stacksjs/types'
 
 export type * from '../../../types/requests'
 interface RequestData {
@@ -21,7 +21,7 @@ export interface RequestInstance {
 
   addBodies: (params: any) => void
 
-  addParam: (param: RouteParams) => void
+  addParam: (param: RouteParam) => void
 
   get: <T>(element: string, defaultValue?: T) => T
 
@@ -39,7 +39,7 @@ export interface RequestInstance {
 
   extractParamsFromRoute: (routePattern: string, pathname: string) => void
 
-  getParam: (key: string) => number | string | null
+  getParam: <T>(key: string) => T
 
   route: (key: string) => number | string | null
 

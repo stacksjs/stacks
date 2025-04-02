@@ -9,9 +9,9 @@ export default new Action({
   description: 'TaxRate Show ORM Action',
   method: 'GET',
   async handle(request: TaxRateRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await TaxRate.findOrFail(Number(id))
+    const model = await TaxRate.findOrFail(id)
 
     return response.json(model)
   },

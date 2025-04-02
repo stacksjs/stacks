@@ -10,8 +10,8 @@ export default new Action({
   async handle(request: ShippingZoneRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await ShippingZone.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await ShippingZone.findOrFail(id)
 
     const result = model.update(request.all())
 

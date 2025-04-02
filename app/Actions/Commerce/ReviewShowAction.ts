@@ -1,6 +1,6 @@
 import type { ReviewRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,9 +8,9 @@ export default new Action({
   description: 'Review Show ORM Action',
   method: 'GET',
   async handle(request: ReviewRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Review.findOrFail(Number(id))
+    const model = await products.reviews.fetchById(id)
 
     return response.json(model)
   },

@@ -11,9 +11,9 @@ export default new Action({
   async handle(request: ReceiptRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const result = await receipts.update(Number(id), request)
+    const result = await receipts.update(id, request)
 
     return response.json(result)
   },

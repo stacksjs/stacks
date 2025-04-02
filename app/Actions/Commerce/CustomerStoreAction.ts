@@ -10,8 +10,6 @@ export default new Action({
   description: 'Customer Store ORM Action',
   method: 'POST',
   async handle(request: CustomerRequestType) {
-    await request.validate()
-
     const model = await customers.store(request)
 
     return response.json(model)

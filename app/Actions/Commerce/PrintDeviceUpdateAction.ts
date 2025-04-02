@@ -11,9 +11,9 @@ export default new Action({
   async handle(request: PrintDeviceRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await devices.update(Number(id), request)
+    const model = await devices.update(id, request)
 
     return response.json(model)
   },

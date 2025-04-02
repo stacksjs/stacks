@@ -8,9 +8,9 @@ export default new Action({
   description: 'ShippingMethod Show ORM Action',
   method: 'GET',
   async handle(request: ShippingMethodRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await ShippingMethod.findOrFail(Number(id))
+    const model = await ShippingMethod.findOrFail(id)
 
     return response.json(model)
   },

@@ -17,11 +17,11 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 
-type RouteParams = { [key: string]: string | number } | null
+interface RouteParams { [key: string]: string | number }
 
 export class Request<T extends RequestData = RequestData> implements RequestInstance {
   public query: T = {} as T
-  public params: RouteParams = null
+  public params: RouteParams = {} as RouteParams
   public headers: any = {}
 
   public addQuery(url: URL): void {
@@ -85,8 +85,8 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.headers.get(headerParam)
   }
 
-  public getParam(key: string): number | string | null {
-    return this.params ? this.params[key] || null : null
+  public getParam<T>(key: string): T {
+    return this.params[key] as T
   }
 
   public route(key: string): number | string | null {

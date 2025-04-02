@@ -8,9 +8,9 @@ export default new Action({
   description: 'Transaction Show ORM Action',
   method: 'GET',
   async handle(request: TransactionRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Transaction.findOrFail(Number(id))
+    const model = await Transaction.findOrFail(id)
 
     return response.json(model)
   },

@@ -10,9 +10,9 @@ export default new Action({
   description: 'GiftCard Destroy ORM Action',
   method: 'DELETE',
   async handle(request: GiftCardRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await giftCards.destroy(Number(id))
+    await giftCards.destroy(id)
 
     return response.json({ message: 'GiftCard deleted successfully' })
   },

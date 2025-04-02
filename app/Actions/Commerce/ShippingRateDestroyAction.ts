@@ -6,9 +6,9 @@ export default new Action({
   description: 'ShippingRate Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ShippingRateRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await ShippingRate.findOrFail(Number(id))
+    const model = await ShippingRate.findOrFail(id)
 
     model.delete()
 

@@ -8,9 +8,9 @@ export default new Action({
   description: 'ShippingRate Show ORM Action',
   method: 'GET',
   async handle(request: ShippingRateRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await ShippingRate.findOrFail(Number(id))
+    const model = await ShippingRate.findOrFail(id)
 
     return response.json(model)
   },

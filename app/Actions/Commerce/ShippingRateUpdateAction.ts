@@ -10,8 +10,8 @@ export default new Action({
   async handle(request: ShippingRateRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await ShippingRate.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await ShippingRate.findOrFail(id)
 
     const result = model.update(request.all())
 

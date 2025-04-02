@@ -11,9 +11,9 @@ export default new Action({
   method: 'PUT',
   async handle(request: DriverRequestType) {
     await request.validate()
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await drivers.update(Number(id), request)
+    const model = await drivers.update(id, request)
 
     return response.json(model)
   },

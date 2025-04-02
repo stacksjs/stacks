@@ -10,9 +10,9 @@ export default new Action({
   description: 'ProductManufacturer Update ORM Action',
   method: 'PATCH',
   async handle(request: ManufacturerRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const result = await products.manufacturers.update(Number(id), request)
+    const result = await products.manufacturers.update(id, request)
 
     return response.json(result)
   },

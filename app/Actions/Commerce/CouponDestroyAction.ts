@@ -10,9 +10,9 @@ export default new Action({
   description: 'Coupon Destroy ORM Action',
   method: 'DELETE',
   async handle(request: CouponRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await coupons.deleteCoupon(Number(id))
+    await coupons.deleteCoupon(id)
 
     return response.json({ message: 'Coupon deleted successfully' })
   },

@@ -10,9 +10,9 @@ export default new Action({
   description: 'Receipt Show ORM Action',
   method: 'GET',
   async handle(request: ReceiptRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await receipts.fetchById(Number(id))
+    const model = await receipts.fetchById(id)
 
     return response.json(model)
   },

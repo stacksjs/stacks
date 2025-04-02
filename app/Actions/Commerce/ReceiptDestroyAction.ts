@@ -10,9 +10,9 @@ export default new Action({
   description: 'Receipt Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ReceiptRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await receipts.destroy(Number(id))
+    await receipts.destroy(id)
 
     return response.json({ message: 'Receipt deleted successfully' })
   },

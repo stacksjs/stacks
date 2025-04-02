@@ -10,9 +10,9 @@ export default new Action({
   description: 'Driver Show ORM Action',
   method: 'GET',
   async handle(request: DriverRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await drivers.fetchById(Number(id))
+    const model = await drivers.fetchById(id)
 
     return response.json(model)
   },

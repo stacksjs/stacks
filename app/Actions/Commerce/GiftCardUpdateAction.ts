@@ -11,9 +11,9 @@ export default new Action({
   method: 'PUT',
   async handle(request: GiftCardRequestType) {
     await request.validate()
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await giftCards.update(Number(id), request)
+    const model = await giftCards.update(id, request)
 
     return response.json(model)
   },

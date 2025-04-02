@@ -1,6 +1,6 @@
 import type { ReviewRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,8 +8,7 @@ export default new Action({
   description: 'Review Store ORM Action',
   method: 'POST',
   async handle(request: ReviewRequestType) {
-    await request.validate()
-    const model = await Review.create(request.all())
+    const model = await products.reviews.store(request)
 
     return response.json(model)
   },

@@ -10,8 +10,6 @@ export default new Action({
   description: 'Coupon Store ORM Action',
   method: 'POST',
   async handle(request: CouponRequestType) {
-    await request.validate()
-
     const model = await coupons.store(request)
 
     return response.json(model)

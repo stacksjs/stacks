@@ -10,9 +10,9 @@ export default new Action({
   description: 'DigitalDelivery Destroy ORM Action',
   method: 'DELETE',
   async handle(request: DigitalDeliveryRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await digital.destroy(Number(id))
+    await digital.destroy(id)
 
     return response.json({ message: 'DigitalDelivery deleted successfully' })
   },

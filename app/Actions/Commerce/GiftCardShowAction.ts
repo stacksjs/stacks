@@ -10,9 +10,9 @@ export default new Action({
   description: 'GiftCard Show ORM Action',
   method: 'GET',
   async handle(request: GiftCardRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await giftCards.fetchById(Number(id))
+    const model = await giftCards.fetchById(id)
 
     return response.json(model)
   },

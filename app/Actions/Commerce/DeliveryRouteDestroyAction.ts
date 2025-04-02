@@ -10,9 +10,9 @@ export default new Action({
   description: 'DeliveryRoute Destroy ORM Action',
   method: 'DELETE',
   async handle(request: DeliveryRouteRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await deliveryRoutes.destroy(Number(id))
+    await deliveryRoutes.destroy(id)
 
     return response.json({ message: 'DeliveryRoute deleted successfully' })
   },

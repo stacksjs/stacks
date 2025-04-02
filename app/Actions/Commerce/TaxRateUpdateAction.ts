@@ -10,8 +10,8 @@ export default new Action({
   async handle(request: TaxRateRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await TaxRate.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await TaxRate.findOrFail(id)
 
     const result = model.update(request.all())
 

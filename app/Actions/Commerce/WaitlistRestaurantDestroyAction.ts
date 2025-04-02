@@ -9,9 +9,9 @@ export default new Action({
   description: 'WaitlistRestaurant Destroy ORM Action',
   method: 'DELETE',
   async handle(request: WaitlistRestaurantRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await WaitlistRestaurant.findOrFail(Number(id))
+    const model = await WaitlistRestaurant.findOrFail(id)
 
     model.delete()
 

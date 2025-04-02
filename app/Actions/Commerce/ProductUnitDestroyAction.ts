@@ -10,9 +10,9 @@ export default new Action({
   description: 'ProductUnit Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ProductUnitRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await products.units.destroy(Number(id))
+    await products.units.destroy(id)
 
     return response.json({ message: 'Unit deleted successfully' })
   },

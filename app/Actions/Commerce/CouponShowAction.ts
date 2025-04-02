@@ -10,9 +10,9 @@ export default new Action({
   description: 'Coupon Show ORM Action',
   method: 'GET',
   async handle(request: CouponRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await coupons.fetchById(Number(id))
+    const model = await coupons.fetchById(id)
 
     return response.json(model)
   },

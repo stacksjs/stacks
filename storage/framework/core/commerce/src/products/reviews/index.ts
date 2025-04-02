@@ -5,12 +5,11 @@ export {
 
 // Functions from fetch.ts
 export {
+  fetchAll,
   fetchApprovedByProductId,
   fetchById,
   fetchByProductId,
   fetchByUserId,
-  fetchMostHelpfulByProductId,
-  fetchReviewStats,
 } from './fetch'
 
 // Functions from store.ts

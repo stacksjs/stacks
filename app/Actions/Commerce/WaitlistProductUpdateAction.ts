@@ -11,8 +11,8 @@ export default new Action({
   async handle(request: WaitlistProductRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await WaitlistProduct.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await WaitlistProduct.findOrFail(id)
 
     const result = model.update(request.all())
 

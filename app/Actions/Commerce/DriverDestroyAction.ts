@@ -10,9 +10,9 @@ export default new Action({
   description: 'Driver Destroy ORM Action',
   method: 'DELETE',
   async handle(request: DriverRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await drivers.destroy(Number(id))
+    await drivers.destroy(id)
 
     return response.json({ message: 'Driver deleted successfully' })
   },

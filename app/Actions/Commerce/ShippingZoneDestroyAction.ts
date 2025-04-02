@@ -6,9 +6,9 @@ export default new Action({
   description: 'ShippingZone Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ShippingZoneRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await ShippingZone.findOrFail(Number(id))
+    const model = await ShippingZone.findOrFail(id)
 
     model.delete()
 

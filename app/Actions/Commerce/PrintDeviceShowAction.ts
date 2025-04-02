@@ -9,9 +9,9 @@ export default new Action({
   description: 'PrintDevice Show ORM Action',
   method: 'GET',
   async handle(request: PrintDeviceRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await devices.fetchById(Number(id))
+    const model = await devices.fetchById(id)
 
     return response.json(model)
   },

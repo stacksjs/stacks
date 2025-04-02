@@ -10,9 +10,9 @@ export default new Action({
   description: 'Customer Update ORM Action',
   method: 'PATCH',
   async handle(request: CustomerRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const result = await customers.update(Number(id), request)
+    const result = await customers.update(id, request)
 
     return response.json(result)
   },

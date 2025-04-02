@@ -10,9 +10,9 @@ export default new Action({
   description: 'ProductManufacturer Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ManufacturerRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    await products.manufacturers.destroy(Number(id))
+    await products.manufacturers.destroy(id)
 
     return response.json({ message: 'Manufacturer deleted successfully' })
   },
