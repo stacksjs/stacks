@@ -68,6 +68,6 @@
     "kolorist": "1.8.0",
     "ora": "^8.2.0",
     "prompts": "^2.4.2",
-    "supports-hyperlinks": "^3.2.0"
+    "supports-hyperlinks": "^4.0.0"
   }
 }
