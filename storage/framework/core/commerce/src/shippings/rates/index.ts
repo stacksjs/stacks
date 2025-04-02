@@ -7,12 +7,12 @@ export {
 
 // Functions from fetch.ts
 export {
+  fetchAll,
   fetchById,
   formatShippingRateOptions,
   getRateByWeightAndZone,
   getRatesByZone,
   getShippingRatesByMethod,
-  fetchAll,
 } from './fetch'
 
 // Functions from store.ts

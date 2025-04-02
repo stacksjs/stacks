@@ -9,7 +9,6 @@ export default new Action({
   description: 'ProductUnit Store ORM Action',
   method: 'POST',
   async handle(request: ProductUnitRequestType) {
-    await request.validate()
     const model = await products.units.store(request)
 
     return response.json(model)

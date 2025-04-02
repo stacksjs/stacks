@@ -8,8 +8,6 @@ export default new Action({
   description: 'Payment Store ORM Action',
   method: 'POST',
   async handle(request: PaymentRequestType) {
-    await request.validate()
-
     const model = await payments.store(request)
 
     return response.json(model)

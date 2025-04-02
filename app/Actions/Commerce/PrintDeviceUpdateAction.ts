@@ -9,8 +9,6 @@ export default new Action({
   description: 'PrintDevice Update ORM Action',
   method: 'PATCH',
   async handle(request: PrintDeviceRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
 
     const model = await devices.update(id, request)

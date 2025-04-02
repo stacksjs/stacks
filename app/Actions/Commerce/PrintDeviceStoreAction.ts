@@ -9,8 +9,6 @@ export default new Action({
   description: 'PrintDevice Store ORM Action',
   method: 'POST',
   async handle(request: PrintDeviceRequestType) {
-    await request.validate()
-
     const model = await devices.store(request)
 
     return response.json(model)

@@ -1,7 +1,6 @@
 import type { WaitlistRestaurantRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { WaitlistRestaurant } from '@stacksjs/orm'
+import { waitlists } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,10 +10,8 @@ export default new Action({
   async handle(request: WaitlistRestaurantRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await WaitlistRestaurant.findOrFail(id)
+    await waitlists.restaurant.destroy(id)
 
-    model.delete()
-
-    return response.json({ message: 'Model deleted!' })
+    return response.json({ message: 'WaitlistRestaurant deleted successfully' })
   },
 })

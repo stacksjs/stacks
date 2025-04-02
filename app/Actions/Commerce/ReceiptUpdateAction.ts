@@ -9,8 +9,6 @@ export default new Action({
   description: 'Receipt Update ORM Action',
   method: 'PATCH',
   async handle(request: ReceiptRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
 
     const result = await receipts.update(id, request)

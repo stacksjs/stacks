@@ -1,7 +1,7 @@
 import type { DriverRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { drivers } from '@stacksjs/commerce'
+import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
 
@@ -12,7 +12,7 @@ export default new Action({
   async handle(request: DriverRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await drivers.fetchById(id)
+    const model = await shippings.drivers.fetchById(id)
 
     return response.json(model)
   },

@@ -1,7 +1,6 @@
 import type { WaitlistRestaurantRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { WaitlistRestaurant } from '@stacksjs/orm'
+import { waitlists } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,8 +8,7 @@ export default new Action({
   description: 'WaitlistRestaurant Store ORM Action',
   method: 'POST',
   async handle(request: WaitlistRestaurantRequestType) {
-    await request.validate()
-    const model = await WaitlistRestaurant.create(request.all())
+    const model = await waitlists.restaurant.store(request)
 
     return response.json(model)
   },

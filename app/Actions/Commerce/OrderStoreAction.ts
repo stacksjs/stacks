@@ -10,8 +10,6 @@ export default new Action({
   description: 'Order Store ORM Action',
   method: 'POST',
   async handle(request: OrderRequestType) {
-    await request.validate()
-
     const model = await orders.store(request)
 
     return response.json(model)

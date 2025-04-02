@@ -1,7 +1,6 @@
 import type { WaitlistRestaurantRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
-import { WaitlistRestaurant } from '@stacksjs/orm'
+import { waitlists } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,7 +10,7 @@ export default new Action({
   async handle(request: WaitlistRestaurantRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await WaitlistRestaurant.findOrFail(id)
+    const model = await waitlists.restaurant.fetchById(id)
 
     return response.json(model)
   },

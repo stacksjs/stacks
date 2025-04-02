@@ -8,8 +8,6 @@ export default new Action({
   description: 'ProductVariant Update ORM Action',
   method: 'PATCH',
   async handle(request: ProductVariantRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
 
     const result = await products.variants.update(id, request)

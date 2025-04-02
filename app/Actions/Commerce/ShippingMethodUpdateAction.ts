@@ -8,8 +8,6 @@ export default new Action({
   description: 'ShippingMethod Update ORM Action',
   method: 'PATCH',
   async handle(request: ShippingMethodRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
     const model = await shippings.methods.update(id, request)
 

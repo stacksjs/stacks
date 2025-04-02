@@ -8,7 +8,6 @@ export default new Action({
   description: 'ProductVariant Store ORM Action',
   method: 'POST',
   async handle(request: ProductVariantRequestType) {
-    await request.validate()
     const model = await products.variants.store(request)
 
     return response.json(model)

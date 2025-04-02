@@ -8,8 +8,6 @@ export default new Action({
   description: 'ShippingZone Update ORM Action',
   method: 'PATCH',
   async handle(request: ShippingZoneRequestType) {
-    await request.validate()
-
     const id = request.getParam<number>('id')
     const model = await shippings.zones.update(id, request)
 

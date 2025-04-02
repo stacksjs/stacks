@@ -1,7 +1,7 @@
 import type { DeliveryRouteRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { deliveryRoutes } from '@stacksjs/commerce'
+import { shippings } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
 
@@ -12,7 +12,7 @@ export default new Action({
   async handle(request: DeliveryRouteRequestType) {
     const id = request.getParam<number>('id')
 
-    await deliveryRoutes.destroy(id)
+    await shippings.routes.destroy(id)
 
     return response.json({ message: 'DeliveryRoute deleted successfully' })
   },

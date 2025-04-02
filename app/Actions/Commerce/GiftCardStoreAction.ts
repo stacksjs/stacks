@@ -10,8 +10,6 @@ export default new Action({
   description: 'GiftCard Store ORM Action',
   method: 'POST',
   async handle(request: GiftCardRequestType) {
-    await request.validate()
-
     const model = await giftCards.store(request)
 
     return response.json(model)
