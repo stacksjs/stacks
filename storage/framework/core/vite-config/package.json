@@ -90,12 +90,12 @@
     "unplugin-auto-import": "^19.1.2",
     "unplugin-vue-components": "^28.4.1",
     "unplugin-vue-markdown": "^28.3.1",
-    "vite": "^6.2.3",
+    "vite": "^6.2.4",
     "vite-plugin-full-reload": "^1.2.0",
     "vite-plugin-inspect": "^11.0.0",
     "vite-plugin-local": "^0.5.0",
     "vite-plugin-pwa": "^1.0.0",
-    "vite-ssg": "^26.1.0",
+    "vite-ssg": "^26.1.1",
     "vite-ssg-sitemap": "^0.8.1 "
   }
 }
