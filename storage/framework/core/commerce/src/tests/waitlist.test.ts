@@ -2,7 +2,7 @@ import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../waitlist/destroy'
+import { bulkDestroy, destroy } from '../waitlists/products/destroy'
 import {
   fetchAll,
   fetchBetweenDates,
@@ -16,9 +16,9 @@ import {
   fetchNotifiedBetweenDates,
   fetchPurchasedBetweenDates,
   fetchWaiting,
-} from '../waitlist/fetch'
-import { bulkStore, store } from '../waitlist/store'
-import { update, updatePartySize, updateStatus } from '../waitlist/update'
+} from '../waitlists/products/fetch'
+import { bulkStore, store } from '../waitlists/products/store'
+import { update, updatePartySize, updateStatus } from '../waitlists/products/update'
 
 // Create a request-like object for testing
 class TestRequest {

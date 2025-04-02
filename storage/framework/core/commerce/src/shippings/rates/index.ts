@@ -12,6 +12,7 @@ export {
   getRateByWeightAndZone,
   getRatesByZone,
   getShippingRatesByMethod,
+  fetchAll,
 } from './fetch'
 
 // Functions from store.ts

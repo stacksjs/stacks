@@ -2,7 +2,7 @@ import type { WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../restaurant/destroy'
+import { bulkDestroy, destroy } from '../waitlists/restaurant/destroy'
 import {
   fetchAll,
   fetchAverageWaitTimes,
@@ -20,9 +20,9 @@ import {
   fetchWaiting,
   fetchWaitingWithPartySizes,
   fetchWaitingWithQuotedTimes,
-} from '../restaurant/fetch'
-import { bulkStore, store } from '../restaurant/store'
-import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../restaurant/update'
+} from '../waitlists/restaurant/fetch'
+import { bulkStore, store } from '../waitlists/restaurant/store'
+import { update, updatePartySize, updateQueuePosition, updateStatus, updateWaitTimes } from '../waitlists/restaurant/update'
 
 // Create a request-like object for testing
 class TestRequest {

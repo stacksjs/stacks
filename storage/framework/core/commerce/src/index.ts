@@ -7,10 +7,10 @@ import * as orders from './orders'
 import * as payments from './payments'
 import * as products from './products'
 import * as receipts from './receipts'
-import * as restaurant from './restaurant'
+import * as restaurant from './waitlists/restaurant'
 import * as shippings from './shippings'
 import * as tax from './tax'
-import * as waitlist from './waitlist'
+import * as waitlist from './waitlists/products'
 
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
