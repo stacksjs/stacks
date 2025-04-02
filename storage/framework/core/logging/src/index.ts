@@ -4,6 +4,14 @@ import { buddyOptions, stripAnsi } from '@stacksjs/cli'
 import { handleError, writeToLogFile } from '@stacksjs/error-handling'
 import { ExitCode } from '@stacksjs/types'
 import { consola, createConsola } from 'consola'
+import * as p from '@stacksjs/path'
+import { Logger } from '@stacksjs/clarity'
+
+const clarityLog = new Logger('stacks', {
+  level: 'debug',
+  logDirectory: p.projectPath('storage/logs'),
+})
+
 
 // import type { Prompt } from '@stacksjs/cli'
 
@@ -80,30 +88,30 @@ export const log: Log = {
   info: async (message: string, options?: LogOptions) => {
     if (options?.styled === false)
       console.log(message)
-    else logger.info(message)
-    await writeToLogFile(`INFO: ${stripAnsi(message)}`)
+    // else clarityLog.info(message)
+    // await writeToLogFile(`INFO: ${stripAnsi(message)}`)
   },
 
   success: async (message: string, options?: LogOptions) => {
     if (options?.styled === false)
       console.log(message)
-    else logger.success(message)
-    await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
+    else clarityLog.success(message)
+    // await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
   },
 
   warn: async (message: string, options?: LogOptions) => {
     if (options?.styled === false)
       console.log(message)
-    else logger.warn(message)
-    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+    else clarityLog.warn(message)
+    // await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
 
   /** alias for `log.warn()`. */
   warning: async (message: string, options?: LogOptions) => {
     if (options?.styled === false)
       console.log(message)
-    else logger.warn(message)
-    await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+    else clarityLog.warn(message)
+    // await writeToLogFile(`WARN: ${stripAnsi(message)}`)
   },
 
   error: async (err: string | Error | object | unknown, options?: ErrorOptions) => {
@@ -117,8 +125,8 @@ export const log: Log = {
     if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
       return writeToLogFile(message)
 
-    logger.debug(message)
-    await writeToLogFile(stripAnsi(message))
+    clarityLog.debug(message)
+    // await writeToLogFile(stripAnsi(message))
   },
 
   dump: (...args: any[]) => args.forEach(arg => console.log(arg)),

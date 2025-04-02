@@ -24,7 +24,7 @@ dirs.push(...components)
 const startTime = Date.now()
 
 for (const dir of dirs) {
-  if (dir.includes('bun-create') || dir.includes('dist'))
+  if (dir.includes('bun-create') || dir.includes('dist') || dir.includes('core/desktop'))
     continue
 
   console.log(`Building ${dir}`)
