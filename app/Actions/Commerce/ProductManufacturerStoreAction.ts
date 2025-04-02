@@ -8,7 +8,7 @@ export default new Action({
   description: 'ProductManufacturer Store ORM Action',
   method: 'POST',
   async handle(request: ManufacturerRequestType) {
-    const model = await products.manufacturerss.store(request)
+    const model = await products.manufacturers.store(request)
 
     return response.json(model)
   },

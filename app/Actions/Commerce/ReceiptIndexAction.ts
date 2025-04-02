@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { receipts } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -6,7 +7,7 @@ export default new Action({
   description: 'Receipt Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = Receipt.all()
+    const results = await receipts.fetchAll()
 
     return response.json(results)
   },

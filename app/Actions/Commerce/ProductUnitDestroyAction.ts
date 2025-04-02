@@ -2,16 +2,18 @@ import type { ProductUnitRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
 import { products } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'ProductUnit Store',
-  description: 'ProductUnit Store ORM Action',
-  method: 'POST',
+  name: 'ProductUnit Destroy',
+  description: 'ProductUnit Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: ProductUnitRequestType) {
-    await request.validate()
-    const model = await products.units.store(request)
+    const id = request.getParam('id')
 
-    return response.json(model)
+    await products.units.destroy(Number(id))
+
+    return response.json({ message: 'Unit deleted successfully' })
   },
 })

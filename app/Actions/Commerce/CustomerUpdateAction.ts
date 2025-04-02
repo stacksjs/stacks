@@ -10,8 +10,6 @@ export default new Action({
   description: 'Customer Update ORM Action',
   method: 'PATCH',
   async handle(request: CustomerRequestType) {
-    await request.validate()
-
     const id = request.getParam('id')
 
     const result = await customers.update(Number(id), request)

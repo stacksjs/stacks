@@ -2,7 +2,7 @@ import * as categories from './categories'
 import * as items from './items'
 import * as manufacturers from './manufacturers'
 import * as reviews from './reviews'
-import * as unit from './unit'
+import * as units from './units'
 import * as variants from './variants'
 
 export {
@@ -10,7 +10,7 @@ export {
   items,
   manufacturers,
   reviews,
-  unit,
+  units,
   variants,
 }
 
@@ -19,7 +19,7 @@ interface ProductsNamespace {
   items: typeof items
   manufacturers: typeof manufacturers
   reviews: typeof reviews
-  unit: typeof unit
+  units: typeof units
   variants: typeof variants
 }
 
@@ -28,7 +28,7 @@ const products: ProductsNamespace = {
   items,
   manufacturers,
   reviews,
-  unit,
+  units,
   variants,
 }
 

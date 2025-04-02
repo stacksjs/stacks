@@ -12,7 +12,7 @@ export default new Action({
   async handle(request: ManufacturerRequestType) {
     const id = request.getParam('id')
 
-    await products.manufacturerss.destroy(Number(id))
+    await products.manufacturers.destroy(Number(id))
 
     return response.json({ message: 'Manufacturer deleted successfully' })
   },

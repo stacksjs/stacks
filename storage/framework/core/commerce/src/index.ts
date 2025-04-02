@@ -10,6 +10,7 @@ import * as orders from './orders'
 import * as payments from './payments'
 import * as products from './products'
 import * as rates from './rates'
+import * as receipts from './receipts'
 import * as restaurant from './restaurant'
 import * as deliveryRoutes from './routes'
 import * as shipping from './shipping'
@@ -34,6 +35,7 @@ type TaxModule = typeof tax
 type DeliveryRoutesModule = typeof deliveryRoutes
 type WaitlistModule = typeof waitlist
 type DevicesModule = typeof devices
+type ReceiptsModule = typeof receipts
 
 export interface EcommerceNamespace {
   coupons: CouponsModule
@@ -53,6 +55,7 @@ export interface EcommerceNamespace {
   tax: TaxModule
   waitlist: WaitlistModule
   devices: DevicesModule
+  receipts: ReceiptsModule
 }
 
 export const ecommerce: EcommerceNamespace = {
@@ -73,6 +76,7 @@ export const ecommerce: EcommerceNamespace = {
   devices,
   tax,
   waitlist,
+  receipts,
 }
 
 export default ecommerce
@@ -90,6 +94,7 @@ export {
   payments,
   products,
   rates,
+  receipts,
   restaurant,
   shipping,
   tax,

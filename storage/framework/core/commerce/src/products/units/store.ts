@@ -1,6 +1,6 @@
 // Import dependencies
 import type { ProductUnitRequestType } from '@stacksjs/orm'
-import type { NewProductUnit, ProductUnitJsonResponse } from '../../../../orm/src/models/ProductUnit'
+import type { NewProductUnit, ProductUnitJsonResponse } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

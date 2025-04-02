@@ -1,7 +1,8 @@
 import type { ReceiptRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { Receipt } from '@stacksjs/orm'
+import { receipts } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,10 +12,8 @@ export default new Action({
   async handle(request: ReceiptRequestType) {
     const id = request.getParam('id')
 
-    const model = await Receipt.findOrFail(Number(id))
+    await receipts.destroy(Number(id))
 
-    model.delete()
-
-    return response.json({ message: 'Model deleted!' })
+    return response.json({ message: 'Receipt deleted successfully' })
   },
 })

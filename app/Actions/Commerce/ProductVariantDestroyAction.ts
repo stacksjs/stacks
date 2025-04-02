@@ -1,6 +1,10 @@
 import type { ProductVariantRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { products } from '@stacksjs/commerce'
+
+import { response } from '@stacksjs/router'
+
 export default new Action({
   name: 'ProductVariant Destroy',
   description: 'ProductVariant Destroy ORM Action',
@@ -8,10 +12,8 @@ export default new Action({
   async handle(request: ProductVariantRequestType) {
     const id = request.getParam('id')
 
-    const model = await ProductVariant.findOrFail(Number(id))
+    await products.variants.destroy(Number(id))
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'Variant deleted successfully' })
   },
 })

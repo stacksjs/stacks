@@ -1,7 +1,7 @@
 import type { ReceiptRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { Receipt } from '@stacksjs/orm'
+import { receipts } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -12,9 +12,8 @@ export default new Action({
     await request.validate()
 
     const id = request.getParam('id')
-    const model = await Receipt.findOrFail(Number(id))
 
-    const result = model.update(request.all())
+    const result = await receipts.update(Number(id), request)
 
     return response.json(result)
   },

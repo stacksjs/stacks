@@ -1,7 +1,7 @@
 import type { ReceiptRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
-import { Receipt } from '@stacksjs/orm'
+import { receipts } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -9,8 +9,7 @@ export default new Action({
   description: 'Receipt Store ORM Action',
   method: 'POST',
   async handle(request: ReceiptRequestType) {
-    await request.validate()
-    const model = await Receipt.create(request.all())
+    const model = await receipts.store(request)
 
     return response.json(model)
   },

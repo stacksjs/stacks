@@ -4,6 +4,11 @@ export {
 } from './destroy'
 
 export {
+  fetchAll,
+  fetchById,
+} from './fetch'
+
+export {
   bulkStore,
   formatVariantOptions,
   generateVariantCombinations,
