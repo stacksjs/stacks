@@ -8,8 +8,8 @@ export {
 
 // Functions from fetch.ts
 export {
-  fetchById,
   fetchAll,
+  fetchById,
 } from './fetch'
 
 // Functions from store.ts

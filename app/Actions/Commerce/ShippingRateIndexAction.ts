@@ -1,6 +1,5 @@
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
-import { shipping } from '@stacksjs/commerce'
 
 export default new Action({
   name: 'ShippingRate Index',

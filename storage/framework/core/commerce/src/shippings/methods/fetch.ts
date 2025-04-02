@@ -18,4 +18,3 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
 export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
   return await db.selectFrom('shipping_methods').selectAll().execute()
 }
-  
