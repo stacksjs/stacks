@@ -11,3 +11,11 @@ export async function fetchById(id: number): Promise<ShippingMethodJsonResponse 
     .selectAll()
     .executeTakeFirst()
 }
+
+/**
+ * Fetch all shipping methods
+ */
+export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
+  return await db.selectFrom('shipping_methods').selectAll().execute()
+}
+  

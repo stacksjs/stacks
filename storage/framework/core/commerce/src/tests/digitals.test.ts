@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../digital/destroy'
-import { fetchAll, fetchById } from '../digital/fetch'
-import { bulkStore, store } from '../digital/store'
-import { update, updateDeliverySettings, updateStatus } from '../digital/update'
+import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../shippings/digital/destroy'
+import { fetchAll, fetchById } from '../shippings/digital/fetch'
+import { bulkStore, store } from '../shippings/digital/store'
+import { update, updateDeliverySettings, updateStatus } from '../shippings/digital/update'
 
 // Create a request-like object for testing
 class TestRequest {

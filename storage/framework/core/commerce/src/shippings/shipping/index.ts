@@ -9,6 +9,7 @@ export {
 // Functions from fetch.ts
 export {
   fetchById,
+  fetchAll,
 } from './fetch'
 
 // Functions from store.ts

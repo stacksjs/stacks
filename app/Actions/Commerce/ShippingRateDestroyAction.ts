@@ -1,5 +1,7 @@
 import type { ShippingRateRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+import { shipping } from '@stacksjs/commerce'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'ShippingRate Destroy',
@@ -8,10 +10,8 @@ export default new Action({
   async handle(request: ShippingRateRequestType) {
     const id = request.getParam<number>('id')
 
-    const model = await ShippingRate.findOrFail(id)
+    await shipping.destroy(id)
 
-    model.delete()
-
-    return 'Model deleted!'
+    return response.json({ message: 'ShippingRate deleted successfully' })
   },
 })

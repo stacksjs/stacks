@@ -1,6 +1,6 @@
 import type { ShippingMethodRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { shipping } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -11,10 +11,8 @@ export default new Action({
     await request.validate()
 
     const id = request.getParam<number>('id')
-    const model = await ShippingMethod.findOrFail(id)
+    const model = await shipping.update(id, request)
 
-    const result = model.update(request.all())
-
-    return response.json(result)
+    return response.json(model)
   },
 })
