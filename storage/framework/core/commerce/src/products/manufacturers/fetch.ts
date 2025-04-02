@@ -2,6 +2,10 @@ import type { ManufacturerJsonResponse } from '@stacksjs/orm'
 import type { FetchManufacturersOptions, ManufacturerResponse } from '../types'
 import { db } from '@stacksjs/database'
 
+export function fetchAll(): Promise<ManufacturerJsonResponse[]> {
+  return db.selectFrom('manufacturers').selectAll().execute()
+}
+
 /**
  * Fetch a product manufacturer by ID
  */

@@ -1,6 +1,6 @@
 import type { ManufacturerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
-
+import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,8 +8,7 @@ export default new Action({
   description: 'Manufacturer Store ORM Action',
   method: 'POST',
   async handle(request: ManufacturerRequestType) {
-    await request.validate()
-    const model = await Manufacturer.create(request.all())
+    const model = await products.manufacturers.store(request)
 
     return response.json(model)
   },

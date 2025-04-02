@@ -11,7 +11,7 @@ export default new Action({
   async handle() {
     const id = request.getParam('id')
 
-    const model = await products.manufacturer.fetchById(Number(id))
+    const model = await products.manufacturers.fetchById(Number(id))
 
     return response.json(model)
   },

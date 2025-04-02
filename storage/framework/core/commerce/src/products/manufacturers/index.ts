@@ -4,6 +4,7 @@ export {
 } from './destroy'
 
 export {
+  fetchAll,
   fetchByCountry,
   fetchById,
   fetchByUuid,

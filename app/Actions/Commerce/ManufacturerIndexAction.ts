@@ -9,7 +9,7 @@ export default new Action({
   description: 'Manufacturer Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = await products.manufacturer.fetchWithProductCount()
+    const results = await products.manufacturers.fetchWithProductCount()
 
     return response.json(results)
   },

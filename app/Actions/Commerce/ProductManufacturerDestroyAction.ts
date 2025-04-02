@@ -1,17 +1,19 @@
 import type { ManufacturerRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+
 import { products } from '@stacksjs/commerce'
+
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'ProductManufacturer Show',
-  description: 'ProductManufacturer Show ORM Action',
-  method: 'GET',
+  name: 'ProductManufacturer Destroy',
+  description: 'ProductManufacturer Destroy ORM Action',
+  method: 'DELETE',
   async handle(request: ManufacturerRequestType) {
     const id = request.getParam('id')
 
-    const model = await products.manufacturerss.fetchById(Number(id))
+    await products.manufacturerss.destroy(Number(id))
 
-    return response.json(model)
+    return response.json({ message: 'Manufacturer deleted successfully' })
   },
 })

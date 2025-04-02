@@ -664,14 +664,14 @@
     },
     "storage/framework/core/components/stepper": {
       "name": "@stacksjs/stepper",
-      "version": "0.70.22",
+      "version": "0.69.5",
       "dependencies": {
         "@stacksjs/ui": "workspace:*",
         "highlight.js": "^11.11.1",
       },
       "devDependencies": {
         "@iconify-json/hugeicons": "^1.2.4",
-        "@microsoft/api-extractor": "^7.52.2",
+        "@microsoft/api-extractor": "^7.52.1",
         "@stacksjs/alias": "workspace:*",
         "@stacksjs/development": "workspace:*",
         "@stacksjs/dialog": "workspace:*",
