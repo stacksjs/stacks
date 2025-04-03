@@ -1,15 +1,14 @@
 import { Action } from '@stacksjs/actions'
-
-import { shippings } from '@stacksjs/commerce'
+import { orders } from '@stacksjs/commerce'
 
 import { response } from '@stacksjs/router'
 
 export default new Action({
-  name: 'DeliveryRoute Index',
-  description: 'DeliveryRoute Index ORM Action',
+  name: 'Order Export',
+  description: 'Order Export ORM Action',
   method: 'GET',
   async handle() {
-    const results = await shippings.routes.fetchAll()
+    const results = await orders.exportOrders()
 
     return response.json(results)
   },

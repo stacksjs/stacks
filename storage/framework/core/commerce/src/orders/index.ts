@@ -21,7 +21,6 @@ export {
 } from './fetch'
 
 export {
-  bulkStore,
   store,
 } from './store'
 
