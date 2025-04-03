@@ -1,23 +1,4 @@
-import { useStorage, useFetch } from '@vueuse/core'
-
-export interface Items {
-  id: number
-  product_id: number
-  manufacturer_id: number
-  category_id: number
-  name: string
-  size?: string
-  color?: string
-  price: number
-  image_url?: string
-  is_available?: boolean
-  inventory_count?: number
-  sku: string
-  custom_options?: string
-  uuid?: string
-  created_at?: string
-  updated_at?: string
-}
+import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent items array using VueUse's useStorage
 const items = useStorage<Items[]>('items', [])
@@ -102,7 +83,7 @@ async function deleteItem(id: number) {
   if (index !== -1) {
     items.value.splice(index, 1)
   }
-  
+
   return true
 }
 

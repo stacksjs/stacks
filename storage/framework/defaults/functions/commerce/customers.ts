@@ -1,5 +1,5 @@
-import { useStorage, useFetch } from '@vueuse/core'
-import { Customers } from '../../types/customer'
+import type { Customers } from '../../types'
+import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent customers array using VueUse's useStorage
 const customers = useStorage<Customers[]>('customers', [])
@@ -85,10 +85,9 @@ async function deleteCustomer(id: number) {
   if (index !== -1) {
     customers.value.splice(index, 1)
   }
-  
+
   return true
 }
-
 
 // Export the composable
 export function useCustomers() {

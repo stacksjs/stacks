@@ -1,5 +1,5 @@
-import { useStorage, useFetch } from '@vueuse/core'
-import type { Coupons } from '../../types/coupon'
+import type { Coupons } from '../../types'
+import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent coupons array using VueUse's useStorage
 const coupons = useStorage<Coupons[]>('coupons', [])
@@ -84,7 +84,7 @@ async function deleteCoupon(id: number) {
   if (index !== -1) {
     coupons.value.splice(index, 1)
   }
-  
+
   return true
 }
 

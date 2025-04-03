@@ -1,5 +1,5 @@
-import { useStorage, useFetch } from '@vueuse/core'
-import type { Orders } from '../../types/order'
+import type { Orders } from '../../types'
+import { useFetch, useStorage } from '@vueuse/core'
 
 // Create a persistent orders array using VueUse's useStorage
 const orders = useStorage<Orders[]>('orders', [])
@@ -84,7 +84,7 @@ async function deleteOrder(id: number) {
   if (index !== -1) {
     orders.value.splice(index, 1)
   }
-  
+
   return true
 }
 

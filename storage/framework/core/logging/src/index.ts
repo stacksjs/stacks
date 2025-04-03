@@ -1,17 +1,16 @@
 /* eslint no-console: 0 */
 import process from 'node:process'
-import { buddyOptions, stripAnsi } from '@stacksjs/cli'
+import { Logger } from '@stacksjs/clarity'
+import { buddyOptions } from '@stacksjs/cli'
 import { handleError, writeToLogFile } from '@stacksjs/error-handling'
+import * as p from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { consola, createConsola } from 'consola'
-import * as p from '@stacksjs/path'
-import { Logger } from '@stacksjs/clarity'
 
 const clarityLog = new Logger('stacks', {
   level: 'debug',
   logDirectory: p.projectPath('storage/logs'),
 })
-
 
 // import type { Prompt } from '@stacksjs/cli'
 
