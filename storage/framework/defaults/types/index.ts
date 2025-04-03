@@ -119,3 +119,47 @@ export interface Variants {
   created_at?: string
   updated_at?: string
 }
+
+export interface GiftCard {
+  id: number
+  customer_id: number
+  code: string
+  initial_balance: number
+  current_balance: number
+  currency?: string
+  status: string
+  purchaser_id?: string
+  recipient_email?: string
+  recipient_name?: string
+  personal_message?: string
+  is_digital?: boolean
+  is_reloadable?: boolean
+  is_active?: boolean
+  expiry_date?: Date | string
+  last_used_date?: Date | string
+  template_id?: string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Payment {
+  id: number
+  order_id: number
+  customer_id: number
+  amount: number
+  method: string
+  status: string
+  currency?: string
+  reference_number?: string
+  card_last_four?: string
+  card_brand?: string
+  billing_email?: string
+  transaction_id?: string
+  payment_provider?: string
+  refund_amount?: number
+  notes?: string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
