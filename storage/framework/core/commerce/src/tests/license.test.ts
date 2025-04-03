@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../shippings/licenses/destroy'
-import { fetchAll, fetchById } from '../shippings/licenses/fetch'
-import { bulkStore, store } from '../shippings/licenses/store'
-import { update, updateExpiration, updateStatus } from '../shippings/licenses/update'
+import { bulkDestroy, bulkSoftDelete, destroy, softDelete } from '../shippings/license-keys/destroy'
+import { fetchAll, fetchById } from '../shippings/license-keys/fetch'
+import { bulkStore, store } from '../shippings/license-keys/store'
+import { update, updateExpiration, updateStatus } from '../shippings/license-keys/update'
 
 // Create a request-like object for testing
 class TestRequest {

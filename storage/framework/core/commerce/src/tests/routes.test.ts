@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { formatDate } from '@stacksjs/orm'
 import { refreshDatabase } from '@stacksjs/testing'
-import { bulkDestroy, destroy } from '../shippings/routes/destroy'
-import { fetchByDriver, fetchById } from '../shippings/routes/fetch'
-import { store } from '../shippings/routes/store'
-import { update, updateMetrics, updateStops } from '../shippings/routes/update'
+import { bulkDestroy, destroy } from '../shippings/delivery-routes/destroy'
+import { fetchByDriver, fetchById } from '../shippings/delivery-routes/fetch'
+import { store } from '../shippings/delivery-routes/store'
+import { update, updateMetrics, updateStops } from '../shippings/delivery-routes/update'
 
 // Create a request-like object for testing
 class TestRequest {
