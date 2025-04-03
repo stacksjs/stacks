@@ -1,4 +1,5 @@
 import { useFetch, useStorage } from '@vueuse/core'
+import { Items } from '../../../types'
 
 // Create a persistent items array using VueUse's useStorage
 const items = useStorage<Items[]>('items', [])
@@ -6,7 +7,7 @@ const items = useStorage<Items[]>('items', [])
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all items
-async function fetchItems() {
+async function fetchItems(): Promise<Items[]> {
   const { error, data } = useFetch<Items[]>(`${baseURL}/commerce/products/items`)
 
   if (error.value) {
@@ -24,7 +25,7 @@ async function fetchItems() {
   }
 }
 
-async function createItem(item: Items) {
+async function createItem(item: Items): Promise<Items | null> {
   const { error, data } = useFetch<Items>(`${baseURL}/commerce/products/items`, {
     method: 'POST',
     headers: {
@@ -45,7 +46,7 @@ async function createItem(item: Items) {
   return null
 }
 
-async function updateItem(item: Items) {
+async function updateItem(item: Items): Promise<Items | null> {
   const { error, data } = useFetch<Items>(`${baseURL}/commerce/products/items/${item.id}`, {
     method: 'PATCH',
     headers: {
@@ -69,7 +70,7 @@ async function updateItem(item: Items) {
   return null
 }
 
-async function deleteItem(id: number) {
+async function deleteItem(id: number): Promise<boolean> {
   const { error } = useFetch(`${baseURL}/commerce/products/items/${id}`, {
     method: 'DELETE',
   })

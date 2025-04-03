@@ -1,17 +1,6 @@
 import { useFetch, useStorage } from '@vueuse/core'
+import { Variants } from '../../../types'
 
-export interface Variants {
-  id: number
-  product_id: number
-  variant: string
-  type: string
-  description?: string
-  options?: string
-  status: string | string[]
-  uuid?: string
-  created_at?: string
-  updated_at?: string
-}
 
 // Create a persistent variants array using VueUse's useStorage
 const variants = useStorage<Variants[]>('variants', [])

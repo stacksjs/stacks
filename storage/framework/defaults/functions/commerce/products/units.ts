@@ -19,7 +19,7 @@ const units = useStorage<Units[]>('units', [])
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all units
-async function fetchUnits() {
+async function fetchUnits(): Promise<Units[]> {
   const { error, data } = useFetch<Units[]>(`${baseURL}/commerce/products/units`)
 
   if (error.value) {
@@ -37,7 +37,7 @@ async function fetchUnits() {
   }
 }
 
-async function createUnit(unit: Units) {
+async function createUnit(unit: Units): Promise<Units | null> {
   const { error, data } = useFetch<Units>(`${baseURL}/commerce/products/units`, {
     method: 'POST',
     headers: {
@@ -58,7 +58,7 @@ async function createUnit(unit: Units) {
   return null
 }
 
-async function updateUnit(unit: Units) {
+async function updateUnit(unit: Units): Promise<Units | null> {
   const { error, data } = useFetch<Units>(`${baseURL}/commerce/products/units/${unit.id}`, {
     method: 'PATCH',
     headers: {
@@ -82,7 +82,7 @@ async function updateUnit(unit: Units) {
   return null
 }
 
-async function deleteUnit(id: number) {
+async function deleteUnit(id: number): Promise<boolean> {
   const { error } = useFetch(`${baseURL}/commerce/products/units/${id}`, {
     method: 'DELETE',
   })

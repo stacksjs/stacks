@@ -1,23 +1,6 @@
 import { useFetch, useStorage } from '@vueuse/core'
+import { Reviews } from '../../../types'
 
-export interface Reviews {
-  id: number
-  product_id: number
-  customer_id: number
-  rating: number
-  title: string
-  content: string
-  is_verified_purchase?: boolean
-  is_approved?: boolean
-  is_featured?: boolean
-  helpful_votes?: number
-  unhelpful_votes?: number
-  purchase_date?: string
-  images?: string
-  uuid?: string
-  created_at?: string
-  updated_at?: string
-}
 
 // Create a persistent reviews array using VueUse's useStorage
 const reviews = useStorage<Reviews[]>('reviews', [])
@@ -25,7 +8,7 @@ const reviews = useStorage<Reviews[]>('reviews', [])
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all reviews
-async function fetchReviews() {
+async function fetchReviews(): Promise<Reviews[]> {
   const { error, data } = useFetch<Reviews[]>(`${baseURL}/commerce/products/reviews`)
 
   if (error.value) {
@@ -43,7 +26,7 @@ async function fetchReviews() {
   }
 }
 
-async function createReview(review: Reviews) {
+async function createReview(review: Reviews): Promise<Reviews | null> {
   const { error, data } = useFetch<Reviews>(`${baseURL}/commerce/products/reviews`, {
     method: 'POST',
     headers: {
@@ -64,7 +47,7 @@ async function createReview(review: Reviews) {
   return null
 }
 
-async function updateReview(review: Reviews) {
+async function updateReview(review: Reviews): Promise<Reviews | null> {
   const { error, data } = useFetch<Reviews>(`${baseURL}/commerce/products/reviews/${review.id}`, {
     method: 'PATCH',
     headers: {
@@ -88,7 +71,7 @@ async function updateReview(review: Reviews) {
   return null
 }
 
-async function deleteReview(id: number) {
+async function deleteReview(id: number): Promise<boolean> {
   const { error } = useFetch(`${baseURL}/commerce/products/reviews/${id}`, {
     method: 'DELETE',
   })

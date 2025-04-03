@@ -1,4 +1,5 @@
 import { useFetch, useStorage } from '@vueuse/core'
+import { Categories } from '../../../types'
 
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])
@@ -6,7 +7,7 @@ const categories = useStorage<Categories[]>('categories', [])
 const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all categories
-async function fetchCategories() {
+async function fetchCategories(): Promise<Categories[]> {
   const { error, data } = useFetch<Categories[]>(`${baseURL}/commerce/products/categories`)
 
   if (error.value) {
@@ -24,7 +25,7 @@ async function fetchCategories() {
   }
 }
 
-async function createCategory(category: Categories) {
+async function createCategory(category: Categories): Promise<Categories | null> {
   const { error, data } = useFetch<Categories>(`${baseURL}/commerce/products/categories`, {
     method: 'POST',
     headers: {
@@ -45,7 +46,7 @@ async function createCategory(category: Categories) {
   return null
 }
 
-async function updateCategory(category: Categories) {
+async function updateCategory(category: Categories): Promise<Categories | null> {
   const { error, data } = useFetch<Categories>(`${baseURL}/commerce/products/categories/${category.id}`, {
     method: 'PATCH',
     headers: {
@@ -69,7 +70,7 @@ async function updateCategory(category: Categories) {
   return null
 }
 
-async function deleteCategory(id: number) {
+async function deleteCategory(id: number): Promise<boolean> {
   const { error } = useFetch(`${baseURL}/commerce/products/categories/${id}`, {
     method: 'DELETE',
   })

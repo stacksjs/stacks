@@ -86,3 +86,36 @@ export interface Items {
   created_at?: string
   updated_at?: string
 }
+
+
+export interface Reviews {
+  id: number
+  product_id: number
+  customer_id: number
+  rating: number
+  title: string
+  content: string
+  is_verified_purchase?: boolean
+  is_approved?: boolean
+  is_featured?: boolean
+  helpful_votes?: number
+  unhelpful_votes?: number
+  purchase_date?: string
+  images?: string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Variants {
+  id: number
+  product_id: number
+  variant: string
+  type: string
+  description?: string
+  options?: string
+  status: string | string[]
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
