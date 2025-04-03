@@ -814,7 +814,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
 
   if (apiRoute === 'index') {
     handleString += `async handle() {
-        const results = ${modelName}.all()
+        const results = await ${modelName}.all()
 
         return response.json(results)
       },`

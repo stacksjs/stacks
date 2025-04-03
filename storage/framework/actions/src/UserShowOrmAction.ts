@@ -1,20 +1,19 @@
 import { Action } from '@stacksjs/actions'
-import { mail } from '@stacksjs/email'
 
 export default new Action({
   name: 'User Show',
   description: 'User Show ORM Action',
   method: 'GET',
   async handle() {
-    mail.send({
-      from: {
-        address: 'gtorregosa@gmail.com',
-        name: 'Glenn',
-      },
-      to: 'chrisbreuer93@gmail.com',
-      subject: 'Test Email',
-      template: 'WelcomeTest',
-    })
+    // mail.send({
+    //   from: {
+    //     address: 'gtorregosa@gmail.com',
+    //     name: 'Glenn',
+    //   },
+    //   to: 'chrisbreuer93@gmail.com',
+    //   subject: 'Test Email',
+    //   template: 'WelcomeTest',
+    // })
 
     // async handle(request: UserRequestType) {
     // const id = request.getParam('id')
