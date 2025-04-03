@@ -1,5 +1,5 @@
+import type { Items } from '../../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-import { Items } from '../../../types'
 
 // Create a persistent items array using VueUse's useStorage
 const items = useStorage<Items[]>('items', [])

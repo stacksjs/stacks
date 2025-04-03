@@ -1,6 +1,5 @@
+import type { Variants } from '../../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-import { Variants } from '../../../types'
-
 
 // Create a persistent variants array using VueUse's useStorage
 const variants = useStorage<Variants[]>('variants', [])

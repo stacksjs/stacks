@@ -1,6 +1,5 @@
+import type { Reviews } from '../../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-import { Reviews } from '../../../types'
-
 
 // Create a persistent reviews array using VueUse's useStorage
 const reviews = useStorage<Reviews[]>('reviews', [])

@@ -96,7 +96,7 @@ async function deleteUnit(id: number): Promise<boolean> {
   if (index !== -1) {
     units.value.splice(index, 1)
   }
-  
+
   return true
 }
 

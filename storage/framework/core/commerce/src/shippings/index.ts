@@ -1,9 +1,9 @@
+import * as routes from './delivery-routes'
 import * as digital from './digital-deliveries'
 import * as drivers from './drivers'
 import * as licenses from './license-keys'
 import * as methods from './shipping-methods'
 import * as rates from './shipping-rates'
-import * as routes from './delivery-routes'
 import * as zones from './shipping-zones'
 
 export {

@@ -87,7 +87,6 @@ export interface Items {
   updated_at?: string
 }
 
-
 export interface Reviews {
   id: number
   product_id: number
@@ -173,6 +172,83 @@ export interface TaxRates {
   region: string | string[]
   status?: string | string[]
   is_default?: boolean
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ShippingMethods {
+  id: number
+  name: string
+  description?: string
+  base_rate: number
+  free_shipping?: number
+  status: string | string[]
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ShippingZones {
+  id: number
+  shipping_method_id: number
+  name: string
+  countries?: string
+  regions?: string
+  postal_codes?: string
+  status: string | string[]
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface ShippingRates {
+  id: number
+  method: string
+  zone: string
+  weight_from: number
+  weight_to: number
+  rate: number
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface DigitalDeliveries {
+  id: number
+  name: string
+  description: string
+  download_limit?: number
+  expiry_days: number
+  requires_login?: boolean
+  automatic_delivery?: boolean
+  status?: string | string[]
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface DeliveryRoutes {
+  id: number
+  driver: string
+  vehicle: string
+  stops: number
+  delivery_time: number
+  total_distance: number
+  last_active?: Date | string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface Drivers {
+  id: number
+  user_id: number
+  name: string
+  phone: string
+  vehicle_number: string
+  license: string
+  status?: string | string[]
   uuid?: string
   created_at?: string
   updated_at?: string

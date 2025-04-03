@@ -1,5 +1,5 @@
+import type { Payment } from '../../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-import { Payment } from '../../../types'
 
 // Create a persistent payments array using VueUse's useStorage
 const payments = useStorage<Payment[]>('payments', [])

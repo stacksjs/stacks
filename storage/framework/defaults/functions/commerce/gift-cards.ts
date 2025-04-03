@@ -1,5 +1,5 @@
+import type { GiftCard } from '../../../types'
 import { useFetch, useStorage } from '@vueuse/core'
-import { GiftCard } from '../../../types'
 
 // Create a persistent gift cards array using VueUse's useStorage
 const giftCards = useStorage<GiftCard[]>('giftCards', [])
