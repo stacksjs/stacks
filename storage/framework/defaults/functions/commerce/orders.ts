@@ -1,4 +1,4 @@
-import { useStorage } from '@vueuse/core'
+import { useStorage, useFetch } from '@vueuse/core'
 import type { Orders } from '../../types/order'
 
 // Create a persistent orders array using VueUse's useStorage
@@ -8,103 +8,84 @@ const baseURL = 'http://localhost:3008/api'
 
 // Basic fetch function to get all orders
 async function fetchOrders() {
-  try {
-    const response = await fetch(`${baseURL}/commerce/orders`)
+  const { error, data } = useFetch<Orders[]>(`${baseURL}/commerce/orders`)
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const data = await response.json() as Orders[]
-
-    // Ensure data is an array before assigning
-    if (Array.isArray(data)) {
-      orders.value = data
-      return data
-    }
-    else {
-      console.error('Expected array of orders but received:', typeof data)
-      return []
-    }
+  if (error.value) {
+    console.error('Error fetching orders:', error.value)
+    return []
   }
-  catch (error) {
-    console.error('Error fetching orders:', error)
+
+  if (Array.isArray(data.value)) {
+    orders.value = data.value
+    return data.value
+  }
+  else {
+    console.error('Expected array of orders but received:', typeof data.value)
     return []
   }
 }
 
 async function createOrder(order: Orders) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(order),
-    })
+  const { error, data } = useFetch<Orders>(`${baseURL}/commerce/orders`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(order),
+  })
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const data = await response.json() as Orders
-    orders.value.push(data)
-    return data
-  }
-  catch (error) {
-    console.error('Error creating order:', error)
+  if (error.value) {
+    console.error('Error creating order:', error.value)
     return null
   }
+
+  if (data.value) {
+    orders.value.push(data.value)
+    return data.value
+  }
+  return null
 }
 
 async function updateOrder(order: Orders) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/orders/${order.id}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(order),
-    })
+  const { error, data } = useFetch<Orders>(`${baseURL}/commerce/orders/${order.id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(order),
+  })
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const data = await response.json() as Orders
-    const index = orders.value.findIndex(o => o.id === order.id)
-    if (index !== -1) {
-      orders.value[index] = data
-    }
-    return data
-  }
-  catch (error) {
-    console.error('Error updating order:', error)
+  if (error.value) {
+    console.error('Error updating order:', error.value)
     return null
   }
+
+  if (data.value) {
+    const index = orders.value.findIndex(o => o.id === order.id)
+    if (index !== -1) {
+      orders.value[index] = data.value
+    }
+    return data.value
+  }
+  return null
 }
 
 async function deleteOrder(id: number) {
-  try {
-    const response = await fetch(`${baseURL}/commerce/orders/${id}`, {
-      method: 'DELETE',
-    })
+  const { error } = useFetch(`${baseURL}/commerce/orders/${id}`, {
+    method: 'DELETE',
+  })
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
-    }
-
-    const index = orders.value.findIndex(o => o.id === id)
-    if (index !== -1) {
-      orders.value.splice(index, 1)
-    }
-    
-    return true
-  }
-  catch (error) {
-    console.error('Error deleting order:', error)
+  if (error.value) {
+    console.error('Error deleting order:', error.value)
     return false
   }
+
+  const index = orders.value.findIndex(o => o.id === id)
+  if (index !== -1) {
+    orders.value.splice(index, 1)
+  }
+  
+  return true
 }
 
 // Export the composable
