@@ -3,64 +3,38 @@ import process from 'node:process'
 import { Logger } from '@stacksjs/clarity'
 import { buddyOptions } from '@stacksjs/cli'
 import { handleError, writeToLogFile } from '@stacksjs/error-handling'
-import * as p from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { consola, createConsola } from 'consola'
 
+// Initialize loggers
 const clarityLog = new Logger('stacks', {
   level: 'debug',
-  logDirectory: p.projectPath('storage/logs'),
+})
+const consolaLogger = createConsola({
+  level: determineLogLevel(),
 })
 
-// import type { Prompt } from '@stacksjs/cli'
-
-export function logLevel(): number {
-  /**
-   * This regex checks for:
-   *   - --verbose true or --verbose=true exactly at the end of the string ($ denotes the end of the string).
-   *   - --verbose - followed by optional spaces at the end.
-   *   - --verbose followed by optional spaces at the end.
-   *
-   * .trim() is used on options to ensure any trailing spaces in the entire options string do not affect the regex match.
-   */
+// Helper function to determine log level based on verbose flag
+function determineLogLevel(): number {
   const verboseRegex = /--verbose(?!\s*=\s*false|\s+false)(?:\s+|=true)?(?:$|\s)/
   const opts = buddyOptions()
-
-  if (verboseRegex.test(opts))
-    return 4
-
-  // const config = await import('@stacksjs/config')
-  // console.log('config', config)
-
-  // return config.logger.level
-  return 3
+  return verboseRegex.test(opts) ? 4 : 3
 }
 
-export const logger: Log = {
-  ...createConsola({
-    level: logLevel(),
-    // fancy: true,
-  }),
-  warning: (message: string) => console.warn(message),
-  dump: (...args: any[]) => console.log(...args),
-  dd: (...args: any[]) => {
-    console.log(...args)
-    process.exit(ExitCode.FatalError)
-  },
-  echo: (message: string) => console.log(message),
+// Helper function to format message for logging
+function formatMessage(...args: any[]): string {
+  return args.map(arg =>
+    typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+  ).join(' ')
 }
 
-export { consola, createConsola }
-
-type ErrorMessage = string
-export type ErrorOptions =
-  | {
-    shouldExit: boolean
-    silent?: boolean
-    message?: ErrorMessage
-  }
-  | any
-  | Error
+// Helper function to handle styled output
+function handleStyledOutput(message: string, logger: any, method: string, options?: LogOptions) {
+  if (options?.styled === false)
+    console.log(message)
+  else
+    logger[method](message)
+}
 
 export interface Log {
   info: (...args: any[]) => void
@@ -69,11 +43,6 @@ export interface Log {
   warn: (arg: string) => void
   warning: (arg: string) => void
   debug: (...args: any[]) => void
-  // prompt: Prompt
-  // start: logger.Start
-  // box: logger.Box
-  // start: any
-  // box: any
   dump: (...args: any[]) => void
   dd: (...args: any[]) => void
   echo: (...args: any[]) => void
@@ -83,70 +52,91 @@ export interface LogOptions {
   styled?: boolean
 }
 
+export type ErrorMessage = string
+export type ErrorOptions = {
+  shouldExit: boolean
+  silent?: boolean
+  message?: ErrorMessage
+} | any | Error
+
 export const log: Log = {
   info: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false)
-      console.log(message)
-    // else clarityLog.info(message)
-    // await writeToLogFile(`INFO: ${stripAnsi(message)}`)
+    handleStyledOutput(message, consolaLogger, 'info', options)
+    clarityLog.info(message)
   },
 
   success: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false)
-      console.log(message)
-    else clarityLog.success(message)
-    // await writeToLogFile(`SUCCESS: ${stripAnsi(message)}`)
+    handleStyledOutput(message, consolaLogger, 'success', options)
+    clarityLog.info(`SUCCESS: ${message}`)
   },
 
   warn: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false)
-      console.log(message)
-    else clarityLog.warn(message)
-    // await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+    handleStyledOutput(message, consolaLogger, 'warn', options)
+    clarityLog.warn(message)
   },
 
-  /** alias for `log.warn()`. */
   warning: async (message: string, options?: LogOptions) => {
-    if (options?.styled === false)
-      console.log(message)
-    else clarityLog.warn(message)
-    // await writeToLogFile(`WARN: ${stripAnsi(message)}`)
+    handleStyledOutput(message, consolaLogger, 'warn', options)
+    clarityLog.warn(message)
   },
 
   error: async (err: string | Error | object | unknown, options?: ErrorOptions) => {
+    const errorMessage = typeof err === 'string'
+      ? err
+      : err instanceof Error
+        ? err.message
+        : JSON.stringify(err)
+
+    handleStyledOutput(errorMessage, consolaLogger, 'error', options)
+    clarityLog.error(errorMessage)
     handleError(err, options)
   },
 
   debug: async (...args: any[]) => {
-    const formattedArgs = args.map(arg => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
-    const message = `DEBUG: ${formattedArgs.join(' ')}`
+    const message = `${formatMessage(...args)}`
 
-    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod')
+    if (process.env.APP_ENV === 'production' || process.env.APP_ENV === 'prod') {
+      clarityLog.debug(message)
       return writeToLogFile(message)
+    }
 
+    consolaLogger.debug(`DEBUG: ${message}`)
     clarityLog.debug(message)
-    // await writeToLogFile(stripAnsi(message))
   },
 
-  dump: (...args: any[]) => args.forEach(arg => console.log(arg)),
+  dump: (...args: any[]) => {
+    const message = formatMessage(...args)
+    console.log(message)
+    clarityLog.debug(`DUMP: ${message}`)
+  },
+
   dd: (...args: any[]) => {
-    args.forEach(arg => console.log(arg))
+    const message = formatMessage(...args)
+    console.log(message)
+    consolaLogger.error(message)
+    clarityLog.error(message)
     process.exit(ExitCode.FatalError)
   },
-  echo: (...args: any[]) => console.log(...args),
+
+  echo: (...args: any[]) => {
+    const message = formatMessage(...args)
+    console.log(message)
+    clarityLog.info(`ECHO: ${message}`)
+  },
 }
 
+// Export convenience functions
 export function dump(...args: any[]): void {
   args.forEach(arg => log.debug(arg))
 }
 
 export function dd(...args: any[]): void {
   log.info(args)
-  // we need to return a non-zero exit code to indicate an error
-  // e.g. if used in a CDK script, we want it to fail the deployment
   process.exit(ExitCode.FatalError)
 }
 
 export function echo(...args: any[]): void {
   console.log(...args)
 }
+
+export { consola, createConsola }
