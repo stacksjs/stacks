@@ -253,3 +253,44 @@ export interface Drivers {
   created_at?: string
   updated_at?: string
 }
+
+export interface WaitlistProduct {
+  id: number
+  product_id: number
+  customer_id: number
+  name: string
+  email: string
+  phone?: string
+  party_size: number
+  notification_preference: string | string[]
+  source: string
+  notes?: string
+  status: string | string[]
+  notified_at?: string
+  purchased_at?: string
+  cancelled_at?: string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
+
+export interface WaitlistRestaurant {
+  id: number
+  customer_id: number
+  name: string
+  email: string
+  phone?: string
+  party_size: number
+  check_in_time: string
+  table_preference: string | string[]
+  status: string | string[]
+  quoted_wait_time: number
+  actual_wait_time?: number
+  queue_position?: number
+  seated_at?: Date | string
+  no_show_at?: Date | string
+  cancelled_at?: Date | string
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
