@@ -447,6 +447,7 @@
     "format": true,
     "now": true,
     "parse": true,
-    "RetryOptions": true
+    "RetryOptions": true,
+    "Fetch": true
   }
 }

@@ -7,6 +7,7 @@
 export {}
 declare global {
   const EffectScope: typeof import('vue')['EffectScope']
+  const Fetch: typeof import('../core/browser/src/utils/fetch')['Fetch']
   const Head: typeof import('../core/browser/src/utils/vendors')['Head']
   const HeadVuePlugin: typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']
   const acceptHMRUpdate: typeof import('pinia')['acceptHMRUpdate']
@@ -458,6 +459,7 @@ declare module 'vue' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly Fetch: UnwrapRef<typeof import('../core/browser/src/utils/fetch')['Fetch']>
     readonly Head: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['Head']>
     readonly HeadVuePlugin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['HeadVuePlugin']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
@@ -465,7 +467,6 @@ declare module 'vue' {
     readonly anyOf: UnwrapRef<typeof import('../core/browser/src/utils/regex')['anyOf']>
     readonly asyncComputed: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['asyncComputed']>
     readonly autoResetRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['autoResetRef']>
-    readonly batchInvoke: UnwrapRef<typeof import('../core/browser/src/utils/function')['batchInvoke']>
     readonly breakpointsAntDesign: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsAntDesign']>
     readonly breakpointsBootstrapV5: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsBootstrapV5']>
     readonly breakpointsMasterCss: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['breakpointsMasterCss']>
@@ -644,7 +645,6 @@ declare module 'vue' {
     readonly syncRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['syncRefs']>
     readonly tab: UnwrapRef<typeof import('../core/browser/src/utils/regex')['tab']>
-    readonly tap: UnwrapRef<typeof import('../core/browser/src/utils/function')['tap']>
     readonly templateRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['templateRef']>
     readonly throttle: UnwrapRef<typeof import('../core/browser/src/utils/throttle')['throttle']>
     readonly throttledRef: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['throttledRef']>

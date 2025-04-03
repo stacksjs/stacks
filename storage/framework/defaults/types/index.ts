@@ -163,3 +163,17 @@ export interface Payment {
   created_at?: string
   updated_at?: string
 }
+
+export interface TaxRates {
+  id: number
+  name: string
+  rate: number
+  type: string
+  country: string
+  region: string | string[]
+  status?: string | string[]
+  is_default?: boolean
+  uuid?: string
+  created_at?: string
+  updated_at?: string
+}
