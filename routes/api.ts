@@ -111,11 +111,6 @@ route.group({ prefix: '/commerce' }, async () => {
   route.patch('/customers/{id}', 'Actions/Commerce/CustomerUpdateOrmAction')
   route.delete('/customers/{id}', 'Actions/Commerce/CustomerDestroyOrmAction')
 
-  // Products
-  route.get('/products', 'Actions/Commerce/ProductIndexOrmAction')
-  route.post('/products', 'Actions/Commerce/ProductStoreOrmAction')
-  route.get('/products/{id}', 'Actions/Commerce/ProductShowOrmAction')
-
   // Print Logs
   route.get('/print-logs', 'Actions/Commerce/ReceiptIndexOrmAction')
   route.post('/print-logs', 'Actions/Commerce/ReceiptStoreOrmAction')
