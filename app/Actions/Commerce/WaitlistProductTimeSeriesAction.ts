@@ -1,7 +1,7 @@
+import type { WaitlistProductRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { waitlists } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
-import type { WaitlistProductRequestType } from '@stacksjs/orm'
 
 export default new Action({
   name: 'WaitlistProduct Time Series',
@@ -18,9 +18,9 @@ export default new Action({
       // Add some metadata that might be useful for the graph
       totalDays: timeSeriesData.length,
       totalWaitlists: timeSeriesData.reduce((sum, { count }) => sum + count, 0),
-      averageWaitlistsPerDay: timeSeriesData.length > 0 
-        ? timeSeriesData.reduce((sum, { count }) => sum + count, 0) / timeSeriesData.length 
+      averageWaitlistsPerDay: timeSeriesData.length > 0
+        ? timeSeriesData.reduce((sum, { count }) => sum + count, 0) / timeSeriesData.length
         : 0,
     })
   },
-}) 
+})

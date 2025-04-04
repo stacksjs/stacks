@@ -672,15 +672,15 @@ interface RequestDataWaitlistRestaurant {
   email: string
   phone: string
   party_size: number
-  check_in_time: string
+  check_in_time: number
   table_preference: string[] | string
   status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
-  seated_at: date
-  no_show_at: date
-  cancelled_at: date
+  seated_at: number
+  no_show_at: number
+  cancelled_at: number
   customer_id: number
   created_at?: Date
   updated_at?: Date
@@ -694,15 +694,15 @@ export interface WaitlistRestaurantRequestType extends Request {
   email: string
   phone: string
   party_size: number
-  check_in_time: string
+  check_in_time: number
   table_preference: string[] | string
   status: string[] | string
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
-  seated_at: date
-  no_show_at: date
-  cancelled_at: date
+  seated_at: number
+  no_show_at: number
+  cancelled_at: number
   customer_id: number
   created_at?: Date
   updated_at?: Date

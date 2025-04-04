@@ -58,9 +58,9 @@ export default new Action({
     // Process seated counts
     const seatedStats = {
       total: seatedCounts.length,
-      byHour: Array(24).fill(0).map((_, hour) => ({
+      byHour: Array.from({ length: 24 }).fill(0).map((_, hour) => ({
         hour,
-        count: seatedCounts.filter(entry => {
+        count: seatedCounts.filter((entry) => {
           const entryHour = new Date(entry.seated_at).getHours()
           return entryHour === hour
         }).length,
@@ -70,9 +70,9 @@ export default new Action({
     // Process no-show counts
     const noShowStats = {
       total: noShowCounts.length,
-      byHour: Array(24).fill(0).map((_, hour) => ({
+      byHour: Array.from({ length: 24 }).fill(0).map((_, hour) => ({
         hour,
-        count: noShowCounts.filter(entry => {
+        count: noShowCounts.filter((entry) => {
           const entryHour = new Date(entry.no_show_at).getHours()
           return entryHour === hour
         }).length,
@@ -103,4 +103,4 @@ export default new Action({
       timeSeriesStats,
     })
   },
-}) 
+})

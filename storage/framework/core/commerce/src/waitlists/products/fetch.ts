@@ -341,7 +341,7 @@ export async function fetchCountBetweenDates(
 export async function fetchCountByDateGrouped(
   startDate?: Date,
   endDate?: Date,
-): Promise<{ date: string; count: number }[]> {
+): Promise<{ date: string, count: number }[]> {
   let query = db
     .selectFrom('waitlist_products')
     .select(['created_at'])

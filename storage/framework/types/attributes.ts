@@ -93,13 +93,13 @@ export interface Attributes {
   template: string | string[]
   expiry_date: Date | string
   party_size: number
-  check_in_time: string
+  check_in_time: number
   table_preference: string | string[]
   quoted_wait_time: number
   actual_wait_time: number
   queue_position: number
-  seated_at: Date | string
-  no_show_at: Date | string
+  seated_at: number
+  no_show_at: number
   rating: number
   content: string
   is_verified_purchase: boolean

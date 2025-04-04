@@ -16,15 +16,15 @@ export interface WaitlistRestaurantsTable {
   email: string
   phone?: string
   party_size: number
-  check_in_time: string
+  check_in_time: number
   table_preference: string | string[]
   status: string | string[]
   quoted_wait_time: number
   actual_wait_time?: number
   queue_position?: number
-  seated_at?: Date | string
-  no_show_at?: Date | string
-  cancelled_at?: Date | string
+  seated_at?: number
+  no_show_at?: number
+  cancelled_at?: number
   uuid?: string
 
   created_at?: string
@@ -210,7 +210,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return this.attributes.party_size
   }
 
-  get check_in_time(): string {
+  get check_in_time(): number {
     return this.attributes.check_in_time
   }
 
@@ -234,15 +234,15 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     return this.attributes.queue_position
   }
 
-  get seated_at(): Date | string | undefined {
+  get seated_at(): number | undefined {
     return this.attributes.seated_at
   }
 
-  get no_show_at(): Date | string | undefined {
+  get no_show_at(): number | undefined {
     return this.attributes.no_show_at
   }
 
-  get cancelled_at(): Date | string | undefined {
+  get cancelled_at(): number | undefined {
     return this.attributes.cancelled_at
   }
 
@@ -274,7 +274,7 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     this.attributes.party_size = value
   }
 
-  set check_in_time(value: string) {
+  set check_in_time(value: number) {
     this.attributes.check_in_time = value
   }
 
@@ -298,15 +298,15 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     this.attributes.queue_position = value
   }
 
-  set seated_at(value: Date | string) {
+  set seated_at(value: number) {
     this.attributes.seated_at = value
   }
 
-  set no_show_at(value: Date | string) {
+  set no_show_at(value: number) {
     this.attributes.no_show_at = value
   }
 
-  set cancelled_at(value: Date | string) {
+  set cancelled_at(value: number) {
     this.attributes.cancelled_at = value
   }
 
@@ -1144,7 +1144,7 @@ export async function wherePartySize(value: number): Promise<WaitlistRestaurantM
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
-export async function whereCheckInTime(value: string): Promise<WaitlistRestaurantModel[]> {
+export async function whereCheckInTime(value: number): Promise<WaitlistRestaurantModel[]> {
   const query = DB.instance.selectFrom('waitlist_restaurants').where('check_in_time', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
@@ -1186,21 +1186,21 @@ export async function whereQueuePosition(value: number): Promise<WaitlistRestaur
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
-export async function whereSeatedAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+export async function whereSeatedAt(value: number): Promise<WaitlistRestaurantModel[]> {
   const query = DB.instance.selectFrom('waitlist_restaurants').where('seated_at', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
-export async function whereNoShowAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+export async function whereNoShowAt(value: number): Promise<WaitlistRestaurantModel[]> {
   const query = DB.instance.selectFrom('waitlist_restaurants').where('no_show_at', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistRestaurantJsonResponse) => new WaitlistRestaurantModel(modelItem))
 }
 
-export async function whereCancelledAt(value: Date | string): Promise<WaitlistRestaurantModel[]> {
+export async function whereCancelledAt(value: number): Promise<WaitlistRestaurantModel[]> {
   const query = DB.instance.selectFrom('waitlist_restaurants').where('cancelled_at', '=', value)
   const results: WaitlistRestaurantJsonResponse = await query.execute()
 

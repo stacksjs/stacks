@@ -12,13 +12,13 @@ export {
   fetchCountBetweenDates,
   fetchCountByAllQuantities,
   fetchCountByDate,
+  fetchCountByDateGrouped,
   fetchCountByQuantity,
   fetchCountBySource,
   fetchCountByStatus,
   fetchNotifiedBetweenDates,
   fetchPurchasedBetweenDates,
   fetchWaiting,
-  fetchCountByDateGrouped,
 } from './fetch'
 
 export {
