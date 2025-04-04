@@ -228,6 +228,35 @@ export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
 }
 
 /**
+ * Fetch the count of waitlist products by status
+ * @param status The status to filter by
+ * @param startDate Optional start date to filter by
+ * @param endDate Optional end date to filter by
+ * @returns The count of waitlist products with the specified status
+ */
+export async function fetchCountByStatus(
+  status: string,
+  startDate?: Date,
+  endDate?: Date,
+): Promise<number> {
+  let query = db
+    .selectFrom('waitlist_products')
+    .select(eb => eb.fn.count<number>('id').as('count'))
+    .where('status', '=', status)
+
+  if (startDate && endDate) {
+    const startDateStr = formatDate(startDate)
+    const endDateStr = formatDate(endDate)
+    query = query
+      .where('created_at', '>=', startDateStr)
+      .where('created_at', '<=', endDateStr)
+  }
+
+  const result = await query.executeTakeFirst()
+  return result?.count ?? 0
+}
+
+/**
  * Fetch conversion rates for waitlist products
  * @param startDate Optional start date to filter by
  * @param endDate Optional end date to filter by

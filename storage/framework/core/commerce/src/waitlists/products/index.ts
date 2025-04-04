@@ -17,6 +17,7 @@ export {
   fetchCountByAllQuantities,
   fetchConversionRates,
   fetchWaiting,
+  fetchCountByStatus,
 } from './fetch'
 
 export {
