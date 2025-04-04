@@ -2,7 +2,7 @@ import type { Model, RelationConfig } from '@stacksjs/types'
 import { italic, log } from '@stacksjs/cli'
 import { db } from '@stacksjs/database'
 import { faker } from '@stacksjs/faker'
-import { fetchOtherModelRelations, findCoreModel, findUserModel, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, findCoreModel, getModelName, getRelationType, getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { makeHash } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
@@ -35,6 +35,10 @@ async function seedModel(name: string, modelPath: string, model: Model) {
 
   const otherRelations = await fetchOtherModelRelations(modelName)
 
+  const modelInstance = await getModelInstance(modelName)
+
+  const useUuid = modelInstance?.traits?.useUuid || false
+
   for (let i = 0; i < seedCount; i++) {
     const record: any = {}
 
@@ -63,6 +67,9 @@ async function seedModel(name: string, modelPath: string, model: Model) {
       }
     }
 
+    if (useUuid)
+      record.uuid = Bun.randomUUIDv7()
+
     await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
   }
 
@@ -73,12 +80,7 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   const record: any = {}
   const record2: any = {}
   const pivotRecord: any = {}
-  let modelInstance: Model
-
-  if (fs.existsSync(path.userModelsPath(`${relation?.model}.ts`)))
-    modelInstance = (await import(findUserModel(`${relation?.model}.ts`))).default as Model
-  else
-    modelInstance = (await import(findCoreModel(`${relation?.model}.ts`))).default as Model
+  const modelInstance = await getModelInstance(relation?.model)
 
   const relationModelInstance = (await import(path.userModelsPath(`${relation?.relationModel}.ts`))).default
 
@@ -127,8 +129,27 @@ async function seedPivotRelation(relation: RelationConfig): Promise<any> {
   pivotRecord[foreignKey] = relationData
   pivotRecord[modelKey] = modelData
 
+  if (useUuid)
+    pivotRecord.uuid = Bun.randomUUIDv7()
+
   if (pivotTable)
     await db.insertInto(pivotTable).values(pivotRecord).executeTakeFirstOrThrow()
+}
+
+async function getModelInstance(modelName: string): Promise<Model> {
+  let modelInstance: Model
+  let currentPath = path.userModelsPath(`${modelName}.ts`)
+
+  if (fs.existsSync(currentPath)) {
+    modelInstance = (await import(path.userModelsPath(`${modelName}.ts`))).default as Model
+  }
+  else {
+    currentPath = findCoreModel(`${modelName}.ts`)
+
+    modelInstance = (await import(currentPath)).default as Model
+  }
+
+  return modelInstance
 }
 
 async function seedModelRelation(modelName: string): Promise<bigint | number> {
@@ -143,7 +164,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
     modelInstance = (await import(currentPath)).default as Model
   }
 
-  if (!modelInstance)
+  if (modelInstance === null || modelInstance === undefined)
     return 1
 
   const record: any = {}
@@ -165,7 +186,7 @@ async function seedModelRelation(modelName: string): Promise<bigint | number> {
 
   const data = await db.insertInto(tableName).values(record).executeTakeFirstOrThrow()
 
-  return data.insertId || 1
+  return (Number(data.insertId) || Number(data.numInsertedOrUpdatedRows)) || 1
 }
 
 export async function seed(): Promise<void> {

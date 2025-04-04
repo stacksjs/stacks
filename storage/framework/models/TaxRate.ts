@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'tax-rates',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

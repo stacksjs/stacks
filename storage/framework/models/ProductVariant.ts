@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'product-variants',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

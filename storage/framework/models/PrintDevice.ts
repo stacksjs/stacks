@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'print-devices',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,
@@ -102,7 +101,7 @@ export default {
           invalid: 'Invalid timestamp format',
         },
       },
-      factory: faker => faker.date.recent(),
+      factory: faker => faker.date.recent().toISOString(),
     },
 
     print_count: {

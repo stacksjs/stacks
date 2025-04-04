@@ -19,8 +19,9 @@ export async function up(db: Database<any>) {
     .addColumn('seated_at', 'text')
     .addColumn('no_show_at', 'text')
     .addColumn('cancelled_at', 'text')
-    .addColumn('customer_id', 'integer', col =>
-      col.references('customers.id').onDelete('cascade'))
+    .addColumn('customer_id', 'integer', (col) =>
+        col.references('customers.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()

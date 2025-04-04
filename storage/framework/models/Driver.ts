@@ -26,7 +26,6 @@ export default {
 
     useApi: {
       uri: 'drivers',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

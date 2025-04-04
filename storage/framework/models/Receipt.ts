@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'print-logs',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,
@@ -66,7 +65,7 @@ export default {
           invalid: 'Invalid date format',
         },
       },
-      factory: faker => faker.date.recent(),
+      factory: faker => faker.date.recent().toISOString(),
     },
 
     status: {

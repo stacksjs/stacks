@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'shipping-rates',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

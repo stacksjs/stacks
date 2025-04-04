@@ -29,6 +29,10 @@ export interface Attributes {
   password: string
   title: string
   body: string
+  key: number
+  unit_price: number
+  image: string
+  provider_id: string
   mac_address: string
   location: string
   terminal: string
@@ -87,7 +91,6 @@ export interface Attributes {
   variant: string
   type: string
   options: string
-  key: string
   template: string | string[]
   expiry_date: Date | string
   check_in_time: string
@@ -176,7 +179,6 @@ export interface Attributes {
   brand: string
   exp_month: number
   exp_year: number
-  provider_id: string
   status_code: number
   duration_ms: number
   memory_usage: number
@@ -187,12 +189,10 @@ export interface Attributes {
   reserved_at: Date | string
   plan: string
   provider_status: string
-  unit_price: number
   provider_type: string
   provider_price_id: string
   trial_ends_at: string
   ends_at: string
-  image: string
   message: string
   stack: string
   additional_info: string

@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'delivery-routes',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

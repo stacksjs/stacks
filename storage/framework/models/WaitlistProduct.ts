@@ -23,7 +23,6 @@ export default {
 
     useApi: {
       uri: 'waitlist-products',
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
 
     observe: true,

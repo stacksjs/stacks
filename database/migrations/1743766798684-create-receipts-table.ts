@@ -13,8 +13,9 @@ export async function up(db: Database<any>) {
     .addColumn('size', 'numeric')
     .addColumn('pages', 'numeric')
     .addColumn('duration', 'numeric')
-    .addColumn('print_device_id', 'integer', col =>
-      col.references('print_devices.id').onDelete('cascade'))
+    .addColumn('print_device_id', 'integer', (col) =>
+        col.references('print_devices.id').onDelete('cascade')
+      ) 
     .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql`CURRENT_TIMESTAMP`))
     .addColumn('updated_at', 'timestamp')
     .execute()
