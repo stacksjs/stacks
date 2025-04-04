@@ -84,6 +84,9 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductShowOrmAction')
   route.patch('/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductUpdateOrmAction')
   route.delete('/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductDestroyOrmAction')
+  route.get('/waitlist-products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
+  route.get('/waitlist-products/status-stats', 'Actions/Commerce/WaitlistProductStatusAction')
+  route.get('/waitlist-products/quantity-distribution', 'Actions/Commerce/WaitlistProductQuantityDistributionAction')
 
   // Digital Deliveries
   route.get('/digital-deliveries', 'Actions/Commerce/DigitalDeliveryIndexOrmAction')

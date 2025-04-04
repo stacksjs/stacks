@@ -68,14 +68,14 @@ export default {
       factory: faker => faker.phone.number(),
     },
 
-    party_size: {
+    quantity: {
       required: true,
       order: 4,
       fillable: true,
       validation: {
         rule: schema.number().min(1),
         message: {
-          min: 'Party size must be at least 1',
+          min: 'Quantity must be at least 1',
         },
       },
       factory: faker => faker.number.int({ min: 1, max: 20 }),

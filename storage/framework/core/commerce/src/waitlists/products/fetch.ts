@@ -107,10 +107,10 @@ export async function fetchCountByAllQuantities(
   let query = db
     .selectFrom('waitlist_products')
     .select([
-      'party_size',
+      'quantity',
       eb => eb.fn.count<number>('id').as('count'),
     ])
-    .groupBy('party_size')
+    .groupBy('quantity')
 
   if (startDate && endDate) {
     const startDateStr = formatDate(startDate)
@@ -122,8 +122,8 @@ export async function fetchCountByAllQuantities(
 
   const results = await query.execute()
 
-  return results.reduce((acc, { party_size, count }) => {
-    acc[party_size] = count
+  return results.reduce((acc, { quantity, count }) => {
+    acc[quantity] = count
     return acc
   }, {} as Record<number, number>)
 }
