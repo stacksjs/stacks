@@ -331,3 +331,40 @@ export async function fetchCountBetweenDates(
 
   return result?.count ?? 0
 }
+
+/**
+ * Fetch the count of waitlist products grouped by date
+ * @param startDate Optional start date to filter by
+ * @param endDate Optional end date to filter by
+ * @returns An array of objects containing date and count
+ */
+export async function fetchCountByDateGrouped(
+  startDate?: Date,
+  endDate?: Date,
+): Promise<{ date: string; count: number }[]> {
+  let query = db
+    .selectFrom('waitlist_products')
+    .select(['created_at'])
+
+  if (startDate && endDate) {
+    const startDateStr = formatDate(startDate)
+    const endDateStr = formatDate(endDate)
+    query = query
+      .where('created_at', '>=', startDateStr)
+      .where('created_at', '<=', endDateStr)
+  }
+
+  const results = await query.execute()
+
+  // Group by date and count
+  const dateCounts = results.reduce((acc, { created_at }) => {
+    const date = created_at!.split('T')[0] // Get YYYY-MM-DD
+    acc[date] = (acc[date] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  // Convert to array and sort by date
+  return Object.entries(dateCounts)
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date))
+}

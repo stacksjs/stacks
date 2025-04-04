@@ -18,6 +18,7 @@ export {
   fetchNotifiedBetweenDates,
   fetchPurchasedBetweenDates,
   fetchWaiting,
+  fetchCountByDateGrouped,
 } from './fetch'
 
 export {

@@ -87,6 +87,7 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/waitlist-products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
   route.get('/waitlist-products/status-stats', 'Actions/Commerce/WaitlistProductStatusAction')
   route.get('/waitlist-products/quantity-distribution', 'Actions/Commerce/WaitlistProductQuantityDistributionAction')
+  route.get('/waitlist-products/time-series', 'Actions/Commerce/WaitlistProductTimeSeriesAction')
 
   // Digital Deliveries
   route.get('/digital-deliveries', 'Actions/Commerce/DigitalDeliveryIndexOrmAction')
