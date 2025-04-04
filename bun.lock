@@ -970,7 +970,7 @@
       "name": "@stacksjs/logging",
       "version": "0.70.22",
       "devDependencies": {
-        "@stacksjs/clarity": "^0.3.2",
+        "@stacksjs/clarity": "^0.3.3",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
@@ -2574,7 +2574,7 @@
 
     "@stacksjs/chat": ["@stacksjs/chat@workspace:storage/framework/core/chat"],
 
-    "@stacksjs/clarity": ["@stacksjs/clarity@0.3.2", "", { "bin": { "clarity": "dist/bin/cli.js" } }, "sha512-7NlGpvoA2U5Nw8NJCjyJnFBgTHQ9vCOjLWCsyJiE6LzzKZdZAbp2IrHqbL2/aH27aXZa2p6fda7mg2CIfkk4xA=="],
+    "@stacksjs/clarity": ["@stacksjs/clarity@0.3.3", "", { "bin": { "clarity": "dist/bin/cli.js" } }, "sha512-ECtLvbHWzyyVlBjoVSoD5+m0I9gn/OtRzvzZGMVrVE9wFhOlaasqYjk7ZzlqMd2PhoP/lJV2SSUgKcMEl7/QKA=="],
 
     "@stacksjs/cli": ["@stacksjs/cli@workspace:storage/framework/core/cli"],
 
