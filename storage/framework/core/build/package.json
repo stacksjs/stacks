@@ -47,7 +47,7 @@
     "@stacksjs/development": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@types/babel__generator": "^7.6.8",
+    "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.20.7",
     "bun-plugin-dtsx": "^0.21.9",
     "vue-docgen-web-types": "^0.1.8"
