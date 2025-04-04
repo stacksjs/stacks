@@ -10,6 +10,13 @@ export {
   fetchCancelledBetweenDates,
   fetchNotifiedBetweenDates,
   fetchPurchasedBetweenDates,
+  fetchCountBetweenDates,
+  fetchCountBySource,
+  fetchCountByDate,
+  fetchCountByQuantity,
+  fetchCountByAllQuantities,
+  fetchConversionRates,
+  fetchWaiting,
 } from './fetch'
 
 export {
