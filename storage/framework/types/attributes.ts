@@ -58,9 +58,9 @@ export interface Attributes {
   quantity: number
   notification_preference: string | string[]
   source: string
-  notified_at: string
-  purchased_at: string
-  cancelled_at: string
+  notified_at: number
+  purchased_at: number
+  cancelled_at: number
   download_limit: number
   expiry_days: number
   requires_login: boolean

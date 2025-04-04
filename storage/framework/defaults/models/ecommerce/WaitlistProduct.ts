@@ -130,27 +130,27 @@ export default {
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
     },
     purchased_at: {
       required: false,
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.future().getTime(), { probability: 0.7 }),
     },
     cancelled_at: {
       required: false,
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.future().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
   },
 

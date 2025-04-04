@@ -22,9 +22,9 @@ export interface WaitlistProductsTable {
   source: string
   notes?: string
   status: string | string[]
-  notified_at?: string
-  purchased_at?: string
-  cancelled_at?: string
+  notified_at?: number
+  purchased_at?: number
+  cancelled_at?: number
   uuid?: string
 
   created_at?: string
@@ -234,15 +234,15 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     return this.attributes.status
   }
 
-  get notified_at(): string | undefined {
+  get notified_at(): number | undefined {
     return this.attributes.notified_at
   }
 
-  get purchased_at(): string | undefined {
+  get purchased_at(): number | undefined {
     return this.attributes.purchased_at
   }
 
-  get cancelled_at(): string | undefined {
+  get cancelled_at(): number | undefined {
     return this.attributes.cancelled_at
   }
 
@@ -290,15 +290,15 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     this.attributes.status = value
   }
 
-  set notified_at(value: string) {
+  set notified_at(value: number) {
     this.attributes.notified_at = value
   }
 
-  set purchased_at(value: string) {
+  set purchased_at(value: number) {
     this.attributes.purchased_at = value
   }
 
-  set cancelled_at(value: string) {
+  set cancelled_at(value: number) {
     this.attributes.cancelled_at = value
   }
 
@@ -1160,21 +1160,21 @@ export async function whereStatus(value: string | string[]): Promise<WaitlistPro
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
-export async function whereNotifiedAt(value: string): Promise<WaitlistProductModel[]> {
+export async function whereNotifiedAt(value: number): Promise<WaitlistProductModel[]> {
   const query = DB.instance.selectFrom('waitlist_products').where('notified_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
-export async function wherePurchasedAt(value: string): Promise<WaitlistProductModel[]> {
+export async function wherePurchasedAt(value: number): Promise<WaitlistProductModel[]> {
   const query = DB.instance.selectFrom('waitlist_products').where('purchased_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
-export async function whereCancelledAt(value: string): Promise<WaitlistProductModel[]> {
+export async function whereCancelledAt(value: number): Promise<WaitlistProductModel[]> {
   const query = DB.instance.selectFrom('waitlist_products').where('cancelled_at', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
