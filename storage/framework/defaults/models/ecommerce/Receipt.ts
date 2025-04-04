@@ -65,7 +65,7 @@ export default {
           invalid: 'Invalid date format',
         },
       },
-      factory: faker => faker.date.recent(),
+      factory: faker => faker.date.recent().toISOString(),
     },
 
     status: {

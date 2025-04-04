@@ -4,7 +4,9 @@
   "version": "0.70.23",
   "description": "The Stacks development dependencies.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/development#readme",
@@ -35,22 +37,24 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md"],
+  "files": [
+    "README.md"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/alias": "workspace:*",
-    "@stacksjs/build": "workspace:*",
-    "@stacksjs/lint": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/alias": "^0.70.23",
+    "@stacksjs/build": "^0.70.23",
+    "@stacksjs/lint": "^0.70.23",
+    "@stacksjs/logging": "^0.70.23",
     "@stacksjs/rpx": "^0.10.0",
-    "@stacksjs/testing": "workspace:*",
-    "@stacksjs/tinker": "workspace:*",
-    "@stacksjs/tunnel": "workspace:*",
-    "@stacksjs/types": "workspace:*",
+    "@stacksjs/testing": "^0.70.23",
+    "@stacksjs/tinker": "^0.70.23",
+    "@stacksjs/tunnel": "^0.70.23",
+    "@stacksjs/types": "^0.70.23",
     "bun-plugin-dtsx": "^0.21.9",
     "typescript": "^5.8.2"
   },
