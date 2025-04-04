@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/table",
-  "version": "0.70.22",
+  "version": "0.70.23",
   "description": "The easy & modern way to work with tables. Facet filtering, searching, pagination, and more.",
   "author": "Stacks.js",
   "contributors": ["Chris Breuer <chris@stacksjs.org>"],
