@@ -17,7 +17,7 @@ export interface WaitlistProductsTable {
   name: string
   email: string
   phone?: string
-  party_size: number
+  quantity: number
   notification_preference: string | string[]
   source: string
   notes?: string
@@ -52,7 +52,7 @@ export type WaitlistProductUpdate = Updateable<WaitlistProductsTable>
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
-  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'party_size', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
+  private readonly fillable: Array<keyof WaitlistProductJsonResponse> = ['name', 'email', 'phone', 'quantity', 'notification_preference', 'source', 'notes', 'status', 'notified_at', 'purchased_at', 'cancelled_at', 'uuid', 'customer_id', 'product_id']
   private readonly guarded: Array<keyof WaitlistProductJsonResponse> = []
   protected attributes = {} as WaitlistProductJsonResponse
   protected originalAttributes = {} as WaitlistProductJsonResponse
@@ -214,8 +214,8 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     return this.attributes.phone
   }
 
-  get party_size(): number {
-    return this.attributes.party_size
+  get quantity(): number {
+    return this.attributes.quantity
   }
 
   get notification_preference(): string | string[] {
@@ -270,8 +270,8 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     this.attributes.phone = value
   }
 
-  set party_size(value: number) {
-    this.attributes.party_size = value
+  set quantity(value: number) {
+    this.attributes.quantity = value
   }
 
   set notification_preference(value: string | string[]) {
@@ -888,10 +888,10 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     return instance
   }
 
-  static wherePartySize(value: string): WaitlistProductModel {
+  static whereQuantity(value: string): WaitlistProductModel {
     const instance = new WaitlistProductModel(undefined)
 
-    instance.selectFromQuery = instance.selectFromQuery.where('party_size', '=', value)
+    instance.selectFromQuery = instance.selectFromQuery.where('quantity', '=', value)
 
     return instance
   }
@@ -1021,7 +1021,7 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
       name: this.name,
       email: this.email,
       phone: this.phone,
-      party_size: this.party_size,
+      quantity: this.quantity,
       notification_preference: this.notification_preference,
       source: this.source,
       notes: this.notes,
@@ -1125,8 +1125,8 @@ export async function wherePhone(value: string): Promise<WaitlistProductModel[]>
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))
 }
 
-export async function wherePartySize(value: number): Promise<WaitlistProductModel[]> {
-  const query = DB.instance.selectFrom('waitlist_products').where('party_size', '=', value)
+export async function whereQuantity(value: number): Promise<WaitlistProductModel[]> {
+  const query = DB.instance.selectFrom('waitlist_products').where('quantity', '=', value)
   const results: WaitlistProductJsonResponse = await query.execute()
 
   return results.map((modelItem: WaitlistProductJsonResponse) => new WaitlistProductModel(modelItem))

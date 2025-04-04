@@ -383,7 +383,7 @@ interface RequestDataWaitlistProduct {
   name: string
   email: string
   phone: string
-  party_size: number
+  quantity: number
   notification_preference: string[] | string
   source: string
   notes: string
@@ -404,7 +404,7 @@ export interface WaitlistProductRequestType extends Request {
   name: string
   email: string
   phone: string
-  party_size: number
+  quantity: number
   notification_preference: string[] | string
   source: string
   notes: string

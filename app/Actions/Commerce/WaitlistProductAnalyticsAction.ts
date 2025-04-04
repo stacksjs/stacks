@@ -1,7 +1,7 @@
+import type { WaitlistProductRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 import { waitlists } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
-import type { WaitlistProductRequestType } from '@stacksjs/orm'
 
 export default new Action({
   name: 'WaitlistProduct Analytics',
@@ -27,4 +27,4 @@ export default new Action({
       conversionRates,
     })
   },
-}) 
+})

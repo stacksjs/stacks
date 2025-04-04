@@ -55,7 +55,7 @@ export interface Attributes {
   phone: string
   vehicle_number: string
   license: string
-  party_size: number
+  quantity: number
   notification_preference: string | string[]
   source: string
   notified_at: string
@@ -68,7 +68,6 @@ export interface Attributes {
   manufacturer: string
   country: string
   featured: boolean
-  quantity: number
   price: number
   special_instructions: string
   countries: string
@@ -93,6 +92,7 @@ export interface Attributes {
   options: string
   template: string | string[]
   expiry_date: Date | string
+  party_size: number
   check_in_time: string
   table_preference: string | string[]
   quoted_wait_time: number

@@ -16,7 +16,7 @@ interface RequestDataWaitlistProduct {
   name: string
   email: string
   phone: string
-  party_size: number
+  quantity: number
   notification_preference: string[] | string
   source: string
   notes: string
@@ -34,7 +34,7 @@ export class WaitlistProductRequest extends Request<RequestDataWaitlistProduct> 
   public name = ''
   public email = ''
   public phone = ''
-  public party_size = 0
+  public quantity = 0
   public notification_preference = []
   public source = ''
   public notes = ''

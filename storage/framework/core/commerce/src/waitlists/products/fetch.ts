@@ -266,9 +266,9 @@ export async function fetchConversionRates(
   startDate?: Date,
   endDate?: Date,
 ): Promise<{
-  totalConversionRate: number
-  statusBreakdown: Record<string, { count: number, percentage: number }>
-}> {
+    totalConversionRate: number
+    statusBreakdown: Record<string, { count: number, percentage: number }>
+  }> {
   let query = db
     .selectFrom('waitlist_products')
     .select([
