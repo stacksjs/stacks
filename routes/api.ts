@@ -98,11 +98,11 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/product-manufacturers/{id}', 'Actions/Commerce/ManufacturerShowOrmAction')
 
   // Shipping Zones
-  route.get('/shipping-zones', 'Actions/Commerce/ShippingZoneIndexOrmAction')
-  route.post('/shipping-zones', 'Actions/Commerce/ShippingZoneStoreOrmAction')
-  route.get('/shipping-zones/{id}', 'Actions/Commerce/ShippingZoneShowOrmAction')
-  route.patch('/shipping-zones/{id}', 'Actions/Commerce/ShippingZoneUpdateOrmAction')
-  route.delete('/shipping-zones/{id}', 'Actions/Commerce/ShippingZoneDestroyOrmAction')
+  route.get('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexOrmAction')
+  route.post('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneStoreOrmAction')
+  route.get('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowOrmAction')
+  route.patch('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateOrmAction')
+  route.delete('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyOrmAction')
 
   // Customers
   route.get('/customers', 'Actions/Commerce/CustomerIndexOrmAction')
@@ -119,18 +119,18 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/print-logs/{id}', 'Actions/Commerce/ReceiptDestroyOrmAction')
 
   // Product Variants
-  route.get('/product-variants', 'Actions/Commerce/ProductVariantIndexOrmAction')
+  route.get('/product-variants', 'Actions/Commerce/Products/ProductVariantIndexOrmAction')
   route.post('/product-variants', 'Actions/Commerce/ProductVariantStoreOrmAction')
   route.get('/product-variants/{id}', 'Actions/Commerce/ProductVariantShowOrmAction')
   route.patch('/product-variants/{id}', 'Actions/Commerce/ProductVariantUpdateOrmAction')
   route.delete('/product-variants/{id}', 'Actions/Commerce/ProductVariantDestroyOrmAction')
 
   // License Keys
-  route.get('/license-keys', 'Actions/Commerce/LicenseKeyIndexOrmAction')
-  route.post('/license-keys', 'Actions/Commerce/LicenseKeyStoreOrmAction')
-  route.get('/license-keys/{id}', 'Actions/Commerce/LicenseKeyShowOrmAction')
-  route.patch('/license-keys/{id}', 'Actions/Commerce/LicenseKeyUpdateOrmAction')
-  route.delete('/license-keys/{id}', 'Actions/Commerce/LicenseKeyDestroyOrmAction')
+  route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexOrmAction')
+  route.post('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyStoreOrmAction')
+  route.get('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowOrmAction')
+  route.patch('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyUpdateOrmAction')
+  route.delete('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyDestroyOrmAction')
 
   // Waitlist Restaurants
   route.get('/waitlist-restaurants', 'Actions/Commerce/WaitlistRestaurantIndexOrmAction')
@@ -140,14 +140,14 @@ route.group({ prefix: '/commerce' }, async () => {
   route.delete('/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyOrmAction')
 
   // Product Reviews
-  route.get('/product-reviews', 'Actions/Commerce/ReviewIndexOrmAction')
-  route.post('/product-reviews', 'Actions/Commerce/ReviewStoreOrmAction')
-  route.get('/product-reviews/{id}', 'Actions/Commerce/ReviewShowOrmAction')
+  route.get('/product-reviews', 'Actions/Commerce/Product/ReviewIndexOrmAction')
+  route.post('/product-reviews', 'Actions/Commerce/Product/ReviewStoreOrmAction')
+  route.get('/product-reviews/{id}', 'Actions/Commerce/Product/ReviewShowOrmAction')
 
   // Product Units
-  route.get('/product-units', 'Actions/Commerce/ProductUnitIndexOrmAction')
-  route.post('/product-units', 'Actions/Commerce/ProductUnitStoreOrmAction')
-  route.get('/product-units/{id}', 'Actions/Commerce/ProductUnitShowOrmAction')
+  route.get('/product-units', 'Actions/Commerce/Product/UnitIndexOrmAction')
+  route.post('/product-units', 'Actions/Commerce/Product/UnitStoreOrmAction')
+  route.get('/product-units/{id}', 'Actions/Commerce/Product/UnitShowOrmAction')
 
   // Gift Cards
   route.get('/gift-cards', 'Actions/Commerce/GiftCardIndexOrmAction')
@@ -182,9 +182,9 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/loyalty-points/{id}', 'Actions/Commerce/LoyaltyPointShowOrmAction')
 
   // Product Items
-  route.get('/product-items', 'Actions/Commerce/ProductItemIndexOrmAction')
-  route.post('/product-items', 'Actions/Commerce/ProductItemStoreOrmAction')
-  route.get('/product-items/{id}', 'Actions/Commerce/ProductItemShowOrmAction')
+  route.get('/product-items', 'Actions/Commerce/Product/ItemIndexOrmAction')
+  route.post('/product-items', 'Actions/Commerce/Product/ItemStoreOrmAction')
+  route.get('/product-items/{id}', 'Actions/Commerce/Product/ItemShowOrmAction')
 
   // Loyalty Rewards
   route.get('/loyalty-rewards', 'Actions/Commerce/LoyaltyRewardIndexOrmAction')
@@ -192,25 +192,25 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/loyalty-rewards/{id}', 'Actions/Commerce/LoyaltyRewardShowOrmAction')
 
   // Shipping Methods
-  route.get('/shipping-methods', 'Actions/Commerce/ShippingMethodIndexOrmAction')
-  route.post('/shipping-methods', 'Actions/Commerce/ShippingMethodStoreOrmAction')
-  route.get('/shipping-methods/{id}', 'Actions/Commerce/ShippingMethodShowOrmAction')
-  route.patch('/shipping-methods/{id}', 'Actions/Commerce/ShippingMethodUpdateOrmAction')
-  route.delete('/shipping-methods/{id}', 'Actions/Commerce/ShippingMethodDestroyOrmAction')
+  route.get('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexOrmAction')
+  route.post('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreOrmAction')
+  route.get('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowOrmAction')
+  route.patch('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateOrmAction')
+  route.delete('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyOrmAction')
 
   // Shipping Rates
-  route.get('/shipping-rates', 'Actions/Commerce/ShippingRateIndexOrmAction')
-  route.post('/shipping-rates', 'Actions/Commerce/ShippingRateStoreOrmAction')
-  route.get('/shipping-rates/{id}', 'Actions/Commerce/ShippingRateShowOrmAction')
-  route.patch('/shipping-rates/{id}', 'Actions/Commerce/ShippingRateUpdateOrmAction')
-  route.delete('/shipping-rates/{id}', 'Actions/Commerce/ShippingRateDestroyOrmAction')
+  route.get('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexOrmAction')
+  route.post('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreOrmAction')
+  route.get('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowOrmAction')
+  route.patch('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateOrmAction')
+  route.delete('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyOrmAction')
 
   // Delivery Routes
-  route.get('/delivery-routes', 'Actions/Commerce/DeliveryRouteIndexOrmAction')
-  route.post('/delivery-routes', 'Actions/Commerce/DeliveryRouteStoreOrmAction')
-  route.get('/delivery-routes/{id}', 'Actions/Commerce/DeliveryRouteShowOrmAction')
-  route.patch('/delivery-routes/{id}', 'Actions/Commerce/DeliveryRouteUpdateOrmAction')
-  route.delete('/delivery-routes/{id}', 'Actions/Commerce/DeliveryRouteDestroyOrmAction')
+  route.get('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexOrmAction')
+  route.post('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteStoreOrmAction')
+  route.get('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowOrmAction')
+  route.patch('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateOrmAction')
+  route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyOrmAction')
 })
 
 route.group({ prefix: '/queues' }, async () => {
