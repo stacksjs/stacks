@@ -86,9 +86,9 @@ export default {
       order: 5,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.number(),
       },
-      factory: faker => faker.date.future().toISOString(),
+      factory: faker => faker.date.future().getTime(),
     },
 
     table_preference: {
@@ -155,27 +155,27 @@ export default {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
     no_show_at: {
       required: false,
       order: 12,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
     cancelled_at: {
       required: false,
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.past().toISOString(), { probability: 0.7 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.past().getTime(), { probability: 0.7 }),
     },
   },
 
