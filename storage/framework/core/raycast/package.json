@@ -29,6 +29,6 @@
     "@raycast/api": "^1.94.3",
     "@raycast/utils": "^1.19.1",
     "@stacksjs/development": "workspace:*",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
