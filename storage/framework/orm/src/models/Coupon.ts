@@ -91,7 +91,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
     this.updateFromQuery = DB.instance.updateTable('coupons')
     this.deleteFromQuery = DB.instance.deleteFrom('coupons')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: CouponJsonResponse | CouponJsonResponse[]): Promise<void> {

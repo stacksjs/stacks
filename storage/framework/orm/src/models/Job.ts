@@ -75,7 +75,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
     this.updateFromQuery = DB.instance.updateTable('jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('jobs')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: JobJsonResponse | JobJsonResponse[]): Promise<void> {

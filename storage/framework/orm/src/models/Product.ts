@@ -98,7 +98,6 @@ export class ProductModel extends BaseOrm<ProductModel, ProductsTable, ProductJs
     this.updateFromQuery = DB.instance.updateTable('products')
     this.deleteFromQuery = DB.instance.deleteFrom('products')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ProductJsonResponse | ProductJsonResponse[]): Promise<void> {

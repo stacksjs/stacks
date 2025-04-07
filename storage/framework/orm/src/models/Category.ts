@@ -81,7 +81,6 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
     this.updateFromQuery = DB.instance.updateTable('categories')
     this.deleteFromQuery = DB.instance.deleteFrom('categories')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: CategoryJsonResponse | CategoryJsonResponse[]): Promise<void> {

@@ -83,7 +83,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
     this.updateFromQuery = DB.instance.updateTable('payment_methods')
     this.deleteFromQuery = DB.instance.deleteFrom('payment_methods')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: PaymentMethodJsonResponse | PaymentMethodJsonResponse[]): Promise<void> {

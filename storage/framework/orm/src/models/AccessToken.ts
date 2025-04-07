@@ -85,7 +85,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
     this.updateFromQuery = DB.instance.updateTable('personal_access_tokens')
     this.deleteFromQuery = DB.instance.deleteFrom('personal_access_tokens')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: AccessTokenJsonResponse | AccessTokenJsonResponse[]): Promise<void> {

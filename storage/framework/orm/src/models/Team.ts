@@ -80,7 +80,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
     this.updateFromQuery = DB.instance.updateTable('teams')
     this.deleteFromQuery = DB.instance.deleteFrom('teams')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: TeamJsonResponse | TeamJsonResponse[]): Promise<void> {

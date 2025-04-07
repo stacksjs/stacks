@@ -75,7 +75,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
     this.updateFromQuery = DB.instance.updateTable('failed_jobs')
     this.deleteFromQuery = DB.instance.deleteFrom('failed_jobs')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: FailedJobJsonResponse | FailedJobJsonResponse[]): Promise<void> {

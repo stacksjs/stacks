@@ -84,7 +84,6 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     this.updateFromQuery = DB.instance.updateTable('receipts')
     this.deleteFromQuery = DB.instance.deleteFrom('receipts')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ReceiptJsonResponse | ReceiptJsonResponse[]): Promise<void> {

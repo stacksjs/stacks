@@ -79,7 +79,6 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
     this.updateFromQuery = DB.instance.updateTable('delivery_routes')
     this.deleteFromQuery = DB.instance.deleteFrom('delivery_routes')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: DeliveryRouteJsonResponse | DeliveryRouteJsonResponse[]): Promise<void> {

@@ -85,7 +85,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
     this.updateFromQuery = DB.instance.updateTable('loyalty_rewards')
     this.deleteFromQuery = DB.instance.deleteFrom('loyalty_rewards')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: LoyaltyRewardJsonResponse | LoyaltyRewardJsonResponse[]): Promise<void> {

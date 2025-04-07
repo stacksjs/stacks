@@ -906,7 +906,6 @@ export async function generateModelString(
       import { manageCharge, manageCheckout, manageCustomer, manageInvoice, managePaymentMethod, manageSubscription, manageTransaction, managePrice, manageSetupIntent, type Stripe } from '@stacksjs/payments'
       import { sql } from '@stacksjs/database'
       import { DB } from '@stacksjs/orm'
-import { BaseOrm } from '../utils/base'
       import { BaseOrm } from '../utils/base'
       import type { Operator } from '@stacksjs/orm'
       import type { CheckoutLineItem, CheckoutOptions, StripeCustomerOptions } from '@stacksjs/types'
@@ -981,7 +980,6 @@ import { BaseOrm } from '../utils/base'
           this.updateFromQuery = DB.instance.updateTable('${tableName}')
           this.deleteFromQuery = DB.instance.deleteFrom('${tableName}')
           this.hasSelect = false
-          this.hasSaved = false
         }
 
         protected async loadRelations(models: ${modelName}JsonResponse | ${modelName}JsonResponse[]): Promise<void> {

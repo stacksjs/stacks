@@ -85,7 +85,6 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
     this.updateFromQuery = DB.instance.updateTable('license_keys')
     this.deleteFromQuery = DB.instance.deleteFrom('license_keys')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: LicenseKeyJsonResponse | LicenseKeyJsonResponse[]): Promise<void> {

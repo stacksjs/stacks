@@ -80,7 +80,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
     this.updateFromQuery = DB.instance.updateTable('shipping_methods')
     this.deleteFromQuery = DB.instance.deleteFrom('shipping_methods')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ShippingMethodJsonResponse | ShippingMethodJsonResponse[]): Promise<void> {

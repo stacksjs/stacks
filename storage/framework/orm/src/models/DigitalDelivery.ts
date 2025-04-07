@@ -80,7 +80,6 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
     this.updateFromQuery = DB.instance.updateTable('digital_deliveries')
     this.deleteFromQuery = DB.instance.deleteFrom('digital_deliveries')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: DigitalDeliveryJsonResponse | DigitalDeliveryJsonResponse[]): Promise<void> {

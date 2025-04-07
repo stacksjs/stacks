@@ -83,7 +83,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
     this.updateFromQuery = DB.instance.updateTable('transactions')
     this.deleteFromQuery = DB.instance.deleteFrom('transactions')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: TransactionJsonResponse | TransactionJsonResponse[]): Promise<void> {

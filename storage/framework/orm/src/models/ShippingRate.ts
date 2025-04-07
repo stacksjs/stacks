@@ -78,7 +78,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
     this.updateFromQuery = DB.instance.updateTable('shipping_rates')
     this.deleteFromQuery = DB.instance.deleteFrom('shipping_rates')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ShippingRateJsonResponse | ShippingRateJsonResponse[]): Promise<void> {

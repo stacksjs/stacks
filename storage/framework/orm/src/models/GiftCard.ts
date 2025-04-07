@@ -92,7 +92,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     this.updateFromQuery = DB.instance.updateTable('gift_cards')
     this.deleteFromQuery = DB.instance.deleteFrom('gift_cards')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: GiftCardJsonResponse | GiftCardJsonResponse[]): Promise<void> {

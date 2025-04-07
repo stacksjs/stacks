@@ -82,7 +82,6 @@ export class PaymentTransactionModel extends BaseOrm<PaymentTransactionModel, Pa
     this.updateFromQuery = DB.instance.updateTable('payment_transactions')
     this.deleteFromQuery = DB.instance.deleteFrom('payment_transactions')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: PaymentTransactionJsonResponse | PaymentTransactionJsonResponse[]): Promise<void> {

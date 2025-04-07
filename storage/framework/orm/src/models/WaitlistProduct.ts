@@ -89,7 +89,6 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
     this.updateFromQuery = DB.instance.updateTable('waitlist_products')
     this.deleteFromQuery = DB.instance.deleteFrom('waitlist_products')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: WaitlistProductJsonResponse | WaitlistProductJsonResponse[]): Promise<void> {

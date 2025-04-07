@@ -72,7 +72,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
     this.updateFromQuery = DB.instance.updateTable('releases')
     this.deleteFromQuery = DB.instance.deleteFrom('releases')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ReleaseJsonResponse | ReleaseJsonResponse[]): Promise<void> {

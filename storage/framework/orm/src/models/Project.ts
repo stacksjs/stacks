@@ -74,7 +74,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
     this.updateFromQuery = DB.instance.updateTable('projects')
     this.deleteFromQuery = DB.instance.deleteFrom('projects')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ProjectJsonResponse | ProjectJsonResponse[]): Promise<void> {

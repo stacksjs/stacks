@@ -82,7 +82,6 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
     this.updateFromQuery = DB.instance.updateTable('print_devices')
     this.deleteFromQuery = DB.instance.deleteFrom('print_devices')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: PrintDeviceJsonResponse | PrintDeviceJsonResponse[]): Promise<void> {

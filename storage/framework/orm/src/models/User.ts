@@ -96,7 +96,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
     this.updateFromQuery = DB.instance.updateTable('users')
     this.deleteFromQuery = DB.instance.deleteFrom('users')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: UserJsonResponse | UserJsonResponse[]): Promise<void> {

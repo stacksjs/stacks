@@ -81,7 +81,6 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
     this.updateFromQuery = DB.instance.updateTable('shipping_zones')
     this.deleteFromQuery = DB.instance.deleteFrom('shipping_zones')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ShippingZoneJsonResponse | ShippingZoneJsonResponse[]): Promise<void> {

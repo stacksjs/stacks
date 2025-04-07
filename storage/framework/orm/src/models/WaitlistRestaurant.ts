@@ -89,7 +89,6 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
     this.updateFromQuery = DB.instance.updateTable('waitlist_restaurants')
     this.deleteFromQuery = DB.instance.deleteFrom('waitlist_restaurants')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: WaitlistRestaurantJsonResponse | WaitlistRestaurantJsonResponse[]): Promise<void> {

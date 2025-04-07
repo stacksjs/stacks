@@ -79,7 +79,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
     this.updateFromQuery = DB.instance.updateTable('manufacturers')
     this.deleteFromQuery = DB.instance.deleteFrom('manufacturers')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ManufacturerJsonResponse | ManufacturerJsonResponse[]): Promise<void> {

@@ -75,7 +75,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
     this.updateFromQuery = DB.instance.updateTable('errors')
     this.deleteFromQuery = DB.instance.deleteFrom('errors')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ErrorJsonResponse | ErrorJsonResponse[]): Promise<void> {

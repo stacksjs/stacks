@@ -95,7 +95,6 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
     this.updateFromQuery = DB.instance.updateTable('orders')
     this.deleteFromQuery = DB.instance.deleteFrom('orders')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: OrderJsonResponse | OrderJsonResponse[]): Promise<void> {

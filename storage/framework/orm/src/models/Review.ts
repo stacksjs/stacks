@@ -88,7 +88,6 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
     this.updateFromQuery = DB.instance.updateTable('reviews')
     this.deleteFromQuery = DB.instance.deleteFrom('reviews')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ReviewJsonResponse | ReviewJsonResponse[]): Promise<void> {

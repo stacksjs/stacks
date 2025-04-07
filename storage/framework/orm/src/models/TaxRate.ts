@@ -80,7 +80,6 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
     this.updateFromQuery = DB.instance.updateTable('tax_rates')
     this.deleteFromQuery = DB.instance.deleteFrom('tax_rates')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: TaxRateJsonResponse | TaxRateJsonResponse[]): Promise<void> {

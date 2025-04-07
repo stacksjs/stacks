@@ -82,7 +82,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
     this.updateFromQuery = DB.instance.updateTable('deployments')
     this.deleteFromQuery = DB.instance.deleteFrom('deployments')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: DeploymentJsonResponse | DeploymentJsonResponse[]): Promise<void> {

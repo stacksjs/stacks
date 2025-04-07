@@ -75,7 +75,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
     this.updateFromQuery = DB.instance.updateTable('posts')
     this.deleteFromQuery = DB.instance.deleteFrom('posts')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: PostJsonResponse | PostJsonResponse[]): Promise<void> {

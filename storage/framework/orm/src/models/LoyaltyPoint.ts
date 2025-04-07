@@ -80,7 +80,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
     this.updateFromQuery = DB.instance.updateTable('loyalty_points')
     this.deleteFromQuery = DB.instance.deleteFrom('loyalty_points')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: LoyaltyPointJsonResponse | LoyaltyPointJsonResponse[]): Promise<void> {

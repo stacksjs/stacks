@@ -82,7 +82,6 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
     this.updateFromQuery = DB.instance.updateTable('drivers')
     this.deleteFromQuery = DB.instance.deleteFrom('drivers')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: DriverJsonResponse | DriverJsonResponse[]): Promise<void> {

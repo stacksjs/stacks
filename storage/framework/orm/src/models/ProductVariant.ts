@@ -81,7 +81,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
     this.updateFromQuery = DB.instance.updateTable('product_variants')
     this.deleteFromQuery = DB.instance.deleteFrom('product_variants')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: ProductVariantJsonResponse | ProductVariantJsonResponse[]): Promise<void> {

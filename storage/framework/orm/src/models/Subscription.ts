@@ -86,7 +86,6 @@ export class SubscriptionModel extends BaseOrm<SubscriptionModel, SubscriptionsT
     this.updateFromQuery = DB.instance.updateTable('subscriptions')
     this.deleteFromQuery = DB.instance.deleteFrom('subscriptions')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: SubscriptionJsonResponse | SubscriptionJsonResponse[]): Promise<void> {

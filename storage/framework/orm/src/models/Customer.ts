@@ -95,7 +95,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
     this.updateFromQuery = DB.instance.updateTable('customers')
     this.deleteFromQuery = DB.instance.deleteFrom('customers')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: CustomerJsonResponse | CustomerJsonResponse[]): Promise<void> {

@@ -80,7 +80,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
     this.updateFromQuery = DB.instance.updateTable('requests')
     this.deleteFromQuery = DB.instance.deleteFrom('requests')
     this.hasSelect = false
-    this.hasSaved = false
   }
 
   protected async loadRelations(models: RequestJsonResponse | RequestJsonResponse[]): Promise<void> {
