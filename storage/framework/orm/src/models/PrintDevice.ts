@@ -26,6 +26,14 @@ export interface PrintDevicesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type PrintDeviceRead = PrintDevicesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type PrintDeviceWrite = Omit<PrintDevicesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface PrintDeviceResponse {
   data: PrintDeviceJsonResponse[]
   paging: {
@@ -36,12 +44,12 @@ export interface PrintDeviceResponse {
   next_cursor: number | null
 }
 
-export interface PrintDeviceJsonResponse extends Omit<Selectable<PrintDevicesTable>, 'password'> {
+export interface PrintDeviceJsonResponse extends Omit<Selectable<PrintDeviceRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewPrintDevice = Insertable<PrintDevicesTable>
-export type PrintDeviceUpdate = Updateable<PrintDevicesTable>
+export type NewPrintDevice = Insertable<PrintDeviceWrite>
+export type PrintDeviceUpdate = Updateable<PrintDeviceWrite>
 
 export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTable, PrintDeviceJsonResponse> {
   private readonly hidden: Array<keyof PrintDeviceJsonResponse> = []
@@ -666,8 +674,6 @@ export class PrintDeviceModel extends BaseOrm<PrintDeviceModel, PrintDevicesTabl
         dispatch('printDevice:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

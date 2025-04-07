@@ -24,6 +24,14 @@ export interface ShippingMethodsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ShippingMethodRead = ShippingMethodsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ShippingMethodWrite = Omit<ShippingMethodsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ShippingMethodResponse {
   data: ShippingMethodJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface ShippingMethodResponse {
   next_cursor: number | null
 }
 
-export interface ShippingMethodJsonResponse extends Omit<Selectable<ShippingMethodsTable>, 'password'> {
+export interface ShippingMethodJsonResponse extends Omit<Selectable<ShippingMethodRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewShippingMethod = Insertable<ShippingMethodsTable>
-export type ShippingMethodUpdate = Updateable<ShippingMethodsTable>
+export type NewShippingMethod = Insertable<ShippingMethodWrite>
+export type ShippingMethodUpdate = Updateable<ShippingMethodWrite>
 
 export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMethodsTable, ShippingMethodJsonResponse> {
   private readonly hidden: Array<keyof ShippingMethodJsonResponse> = []
@@ -648,8 +656,6 @@ export class ShippingMethodModel extends BaseOrm<ShippingMethodModel, ShippingMe
         dispatch('shippingMethod:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

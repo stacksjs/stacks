@@ -39,6 +39,14 @@ export interface OrdersTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type OrderRead = OrdersTable
+
+// Type for creating/updating model data (created_at is optional)
+export type OrderWrite = Omit<OrdersTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface OrderResponse {
   data: OrderJsonResponse[]
   paging: {
@@ -49,12 +57,12 @@ export interface OrderResponse {
   next_cursor: number | null
 }
 
-export interface OrderJsonResponse extends Omit<Selectable<OrdersTable>, 'password'> {
+export interface OrderJsonResponse extends Omit<Selectable<OrderRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewOrder = Insertable<OrdersTable>
-export type OrderUpdate = Updateable<OrdersTable>
+export type NewOrder = Insertable<OrderWrite>
+export type OrderUpdate = Updateable<OrderWrite>
 
 export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonResponse> {
   private readonly hidden: Array<keyof OrderJsonResponse> = []
@@ -735,8 +743,6 @@ export class OrderModel extends BaseOrm<OrderModel, OrdersTable, OrderJsonRespon
         dispatch('order:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

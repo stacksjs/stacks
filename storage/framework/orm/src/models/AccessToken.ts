@@ -29,6 +29,14 @@ export interface PersonalAccessTokensTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type AccessTokenRead = PersonalAccessTokensTable
+
+// Type for creating/updating model data (created_at is optional)
+export type AccessTokenWrite = Omit<PersonalAccessTokensTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface AccessTokenResponse {
   data: AccessTokenJsonResponse[]
   paging: {
@@ -39,12 +47,12 @@ export interface AccessTokenResponse {
   next_cursor: number | null
 }
 
-export interface AccessTokenJsonResponse extends Omit<Selectable<PersonalAccessTokensTable>, 'password'> {
+export interface AccessTokenJsonResponse extends Omit<Selectable<AccessTokenRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewAccessToken = Insertable<PersonalAccessTokensTable>
-export type AccessTokenUpdate = Updateable<PersonalAccessTokensTable>
+export type NewAccessToken = Insertable<AccessTokenWrite>
+export type AccessTokenUpdate = Updateable<AccessTokenWrite>
 
 export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTokensTable, AccessTokenJsonResponse> {
   private readonly hidden: Array<keyof AccessTokenJsonResponse> = []
@@ -691,8 +699,6 @@ export class AccessTokenModel extends BaseOrm<AccessTokenModel, PersonalAccessTo
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

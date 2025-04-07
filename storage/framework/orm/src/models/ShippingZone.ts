@@ -25,6 +25,14 @@ export interface ShippingZonesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ShippingZoneRead = ShippingZonesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ShippingZoneWrite = Omit<ShippingZonesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ShippingZoneResponse {
   data: ShippingZoneJsonResponse[]
   paging: {
@@ -35,12 +43,12 @@ export interface ShippingZoneResponse {
   next_cursor: number | null
 }
 
-export interface ShippingZoneJsonResponse extends Omit<Selectable<ShippingZonesTable>, 'password'> {
+export interface ShippingZoneJsonResponse extends Omit<Selectable<ShippingZoneRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewShippingZone = Insertable<ShippingZonesTable>
-export type ShippingZoneUpdate = Updateable<ShippingZonesTable>
+export type NewShippingZone = Insertable<ShippingZoneWrite>
+export type ShippingZoneUpdate = Updateable<ShippingZoneWrite>
 
 export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesTable, ShippingZoneJsonResponse> {
   private readonly hidden: Array<keyof ShippingZoneJsonResponse> = []
@@ -653,8 +661,6 @@ export class ShippingZoneModel extends BaseOrm<ShippingZoneModel, ShippingZonesT
         dispatch('shippingZone:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

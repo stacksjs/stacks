@@ -25,6 +25,14 @@ export interface ProductVariantsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ProductVariantRead = ProductVariantsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ProductVariantWrite = Omit<ProductVariantsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ProductVariantResponse {
   data: ProductVariantJsonResponse[]
   paging: {
@@ -35,12 +43,12 @@ export interface ProductVariantResponse {
   next_cursor: number | null
 }
 
-export interface ProductVariantJsonResponse extends Omit<Selectable<ProductVariantsTable>, 'password'> {
+export interface ProductVariantJsonResponse extends Omit<Selectable<ProductVariantRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewProductVariant = Insertable<ProductVariantsTable>
-export type ProductVariantUpdate = Updateable<ProductVariantsTable>
+export type NewProductVariant = Insertable<ProductVariantWrite>
+export type ProductVariantUpdate = Updateable<ProductVariantWrite>
 
 export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVariantsTable, ProductVariantJsonResponse> {
   private readonly hidden: Array<keyof ProductVariantJsonResponse> = []
@@ -653,8 +661,6 @@ export class ProductVariantModel extends BaseOrm<ProductVariantModel, ProductVar
         dispatch('productVariant:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -28,6 +28,14 @@ export interface ReceiptsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ReceiptRead = ReceiptsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ReceiptWrite = Omit<ReceiptsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ReceiptResponse {
   data: ReceiptJsonResponse[]
   paging: {
@@ -38,12 +46,12 @@ export interface ReceiptResponse {
   next_cursor: number | null
 }
 
-export interface ReceiptJsonResponse extends Omit<Selectable<ReceiptsTable>, 'password'> {
+export interface ReceiptJsonResponse extends Omit<Selectable<ReceiptRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewReceipt = Insertable<ReceiptsTable>
-export type ReceiptUpdate = Updateable<ReceiptsTable>
+export type NewReceipt = Insertable<ReceiptWrite>
+export type ReceiptUpdate = Updateable<ReceiptWrite>
 
 export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []
@@ -680,8 +688,6 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
         dispatch('receipt:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

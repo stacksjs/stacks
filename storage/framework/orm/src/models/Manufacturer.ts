@@ -23,6 +23,14 @@ export interface ManufacturersTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ManufacturerRead = ManufacturersTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ManufacturerWrite = Omit<ManufacturersTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ManufacturerResponse {
   data: ManufacturerJsonResponse[]
   paging: {
@@ -33,12 +41,12 @@ export interface ManufacturerResponse {
   next_cursor: number | null
 }
 
-export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturersTable>, 'password'> {
+export interface ManufacturerJsonResponse extends Omit<Selectable<ManufacturerRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewManufacturer = Insertable<ManufacturersTable>
-export type ManufacturerUpdate = Updateable<ManufacturersTable>
+export type NewManufacturer = Insertable<ManufacturerWrite>
+export type ManufacturerUpdate = Updateable<ManufacturerWrite>
 
 export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersTable, ManufacturerJsonResponse> {
   private readonly hidden: Array<keyof ManufacturerJsonResponse> = []
@@ -639,8 +647,6 @@ export class ManufacturerModel extends BaseOrm<ManufacturerModel, ManufacturersT
         dispatch('manufacturer:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

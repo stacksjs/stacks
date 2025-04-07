@@ -26,6 +26,14 @@ export interface DriversTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type DriverRead = DriversTable
+
+// Type for creating/updating model data (created_at is optional)
+export type DriverWrite = Omit<DriversTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface DriverResponse {
   data: DriverJsonResponse[]
   paging: {
@@ -36,12 +44,12 @@ export interface DriverResponse {
   next_cursor: number | null
 }
 
-export interface DriverJsonResponse extends Omit<Selectable<DriversTable>, 'password'> {
+export interface DriverJsonResponse extends Omit<Selectable<DriverRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewDriver = Insertable<DriversTable>
-export type DriverUpdate = Updateable<DriversTable>
+export type NewDriver = Insertable<DriverWrite>
+export type DriverUpdate = Updateable<DriverWrite>
 
 export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonResponse> {
   private readonly hidden: Array<keyof DriverJsonResponse> = []
@@ -658,8 +666,6 @@ export class DriverModel extends BaseOrm<DriverModel, DriversTable, DriverJsonRe
         dispatch('driver:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

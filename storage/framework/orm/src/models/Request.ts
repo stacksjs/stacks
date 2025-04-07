@@ -24,6 +24,14 @@ export interface RequestsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type RequestRead = RequestsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type RequestWrite = Omit<RequestsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface RequestResponse {
   data: RequestJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface RequestResponse {
   next_cursor: number | null
 }
 
-export interface RequestJsonResponse extends Omit<Selectable<RequestsTable>, 'password'> {
+export interface RequestJsonResponse extends Omit<Selectable<RequestRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewRequest = Insertable<RequestsTable>
-export type RequestUpdate = Updateable<RequestsTable>
+export type NewRequest = Insertable<RequestWrite>
+export type RequestUpdate = Updateable<RequestWrite>
 
 export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJsonResponse> {
   private readonly hidden: Array<keyof RequestJsonResponse> = []
@@ -664,8 +672,6 @@ export class RequestModel extends BaseOrm<RequestModel, RequestsTable, RequestJs
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

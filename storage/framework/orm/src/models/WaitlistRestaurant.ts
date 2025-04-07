@@ -33,6 +33,14 @@ export interface WaitlistRestaurantsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type WaitlistRestaurantRead = WaitlistRestaurantsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type WaitlistRestaurantWrite = Omit<WaitlistRestaurantsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface WaitlistRestaurantResponse {
   data: WaitlistRestaurantJsonResponse[]
   paging: {
@@ -43,12 +51,12 @@ export interface WaitlistRestaurantResponse {
   next_cursor: number | null
 }
 
-export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<WaitlistRestaurantsTable>, 'password'> {
+export interface WaitlistRestaurantJsonResponse extends Omit<Selectable<WaitlistRestaurantRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewWaitlistRestaurant = Insertable<WaitlistRestaurantsTable>
-export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantsTable>
+export type NewWaitlistRestaurant = Insertable<WaitlistRestaurantWrite>
+export type WaitlistRestaurantUpdate = Updateable<WaitlistRestaurantWrite>
 
 export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, WaitlistRestaurantsTable, WaitlistRestaurantJsonResponse> {
   private readonly hidden: Array<keyof WaitlistRestaurantJsonResponse> = []
@@ -725,8 +733,6 @@ export class WaitlistRestaurantModel extends BaseOrm<WaitlistRestaurantModel, Wa
         dispatch('waitlistRestaurant:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -26,6 +26,14 @@ export interface DeploymentsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type DeploymentRead = DeploymentsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type DeploymentWrite = Omit<DeploymentsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface DeploymentResponse {
   data: DeploymentJsonResponse[]
   paging: {
@@ -36,12 +44,12 @@ export interface DeploymentResponse {
   next_cursor: number | null
 }
 
-export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentsTable>, 'password'> {
+export interface DeploymentJsonResponse extends Omit<Selectable<DeploymentRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewDeployment = Insertable<DeploymentsTable>
-export type DeploymentUpdate = Updateable<DeploymentsTable>
+export type NewDeployment = Insertable<DeploymentWrite>
+export type DeploymentUpdate = Updateable<DeploymentWrite>
 
 export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, DeploymentJsonResponse> {
   private readonly hidden: Array<keyof DeploymentJsonResponse> = []
@@ -666,8 +674,6 @@ export class DeploymentModel extends BaseOrm<DeploymentModel, DeploymentsTable, 
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

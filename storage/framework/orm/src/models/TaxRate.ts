@@ -24,6 +24,14 @@ export interface TaxRatesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type TaxRateRead = TaxRatesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type TaxRateWrite = Omit<TaxRatesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface TaxRateResponse {
   data: TaxRateJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface TaxRateResponse {
   next_cursor: number | null
 }
 
-export interface TaxRateJsonResponse extends Omit<Selectable<TaxRatesTable>, 'password'> {
+export interface TaxRateJsonResponse extends Omit<Selectable<TaxRateRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewTaxRate = Insertable<TaxRatesTable>
-export type TaxRateUpdate = Updateable<TaxRatesTable>
+export type NewTaxRate = Insertable<TaxRateWrite>
+export type TaxRateUpdate = Updateable<TaxRateWrite>
 
 export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJsonResponse> {
   private readonly hidden: Array<keyof TaxRateJsonResponse> = []
@@ -660,8 +668,6 @@ export class TaxRateModel extends BaseOrm<TaxRateModel, TaxRatesTable, TaxRateJs
         dispatch('taxRate:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -16,6 +16,14 @@ export interface ReleasesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ReleaseRead = ReleasesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ReleaseWrite = Omit<ReleasesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ReleaseResponse {
   data: ReleaseJsonResponse[]
   paging: {
@@ -26,12 +34,12 @@ export interface ReleaseResponse {
   next_cursor: number | null
 }
 
-export interface ReleaseJsonResponse extends Omit<Selectable<ReleasesTable>, 'password'> {
+export interface ReleaseJsonResponse extends Omit<Selectable<ReleaseRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewRelease = Insertable<ReleasesTable>
-export type ReleaseUpdate = Updateable<ReleasesTable>
+export type NewRelease = Insertable<ReleaseWrite>
+export type ReleaseUpdate = Updateable<ReleaseWrite>
 
 export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJsonResponse> {
   private readonly hidden: Array<keyof ReleaseJsonResponse> = []
@@ -598,8 +606,6 @@ export class ReleaseModel extends BaseOrm<ReleaseModel, ReleasesTable, ReleaseJs
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

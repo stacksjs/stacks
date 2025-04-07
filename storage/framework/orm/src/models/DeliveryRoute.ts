@@ -23,6 +23,14 @@ export interface DeliveryRoutesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type DeliveryRouteRead = DeliveryRoutesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type DeliveryRouteWrite = Omit<DeliveryRoutesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface DeliveryRouteResponse {
   data: DeliveryRouteJsonResponse[]
   paging: {
@@ -33,12 +41,12 @@ export interface DeliveryRouteResponse {
   next_cursor: number | null
 }
 
-export interface DeliveryRouteJsonResponse extends Omit<Selectable<DeliveryRoutesTable>, 'password'> {
+export interface DeliveryRouteJsonResponse extends Omit<Selectable<DeliveryRouteRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewDeliveryRoute = Insertable<DeliveryRoutesTable>
-export type DeliveryRouteUpdate = Updateable<DeliveryRoutesTable>
+export type NewDeliveryRoute = Insertable<DeliveryRouteWrite>
+export type DeliveryRouteUpdate = Updateable<DeliveryRouteWrite>
 
 export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRoutesTable, DeliveryRouteJsonResponse> {
   private readonly hidden: Array<keyof DeliveryRouteJsonResponse> = []
@@ -651,8 +659,6 @@ export class DeliveryRouteModel extends BaseOrm<DeliveryRouteModel, DeliveryRout
         dispatch('deliveryRoute:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

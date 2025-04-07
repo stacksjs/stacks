@@ -40,6 +40,14 @@ export interface UsersTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type UserRead = UsersTable
+
+// Type for creating/updating model data (created_at is optional)
+export type UserWrite = Omit<UsersTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface UserResponse {
   data: UserJsonResponse[]
   paging: {
@@ -50,12 +58,12 @@ export interface UserResponse {
   next_cursor: number | null
 }
 
-export interface UserJsonResponse extends Omit<Selectable<UsersTable>, 'password'> {
+export interface UserJsonResponse extends Omit<Selectable<UserRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewUser = Insertable<UsersTable>
-export type UserUpdate = Updateable<UsersTable>
+export type NewUser = Insertable<UserWrite>
+export type UserUpdate = Updateable<UserWrite>
 
 export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> {
   private readonly hidden: Array<keyof UserJsonResponse> = ['password']
@@ -710,8 +718,6 @@ export class UserModel extends BaseOrm<UserModel, UsersTable, UserJsonResponse> 
         dispatch('user:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

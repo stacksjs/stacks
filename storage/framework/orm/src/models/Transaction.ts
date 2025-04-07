@@ -27,6 +27,14 @@ export interface TransactionsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type TransactionRead = TransactionsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type TransactionWrite = Omit<TransactionsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface TransactionResponse {
   data: TransactionJsonResponse[]
   paging: {
@@ -37,12 +45,12 @@ export interface TransactionResponse {
   next_cursor: number | null
 }
 
-export interface TransactionJsonResponse extends Omit<Selectable<TransactionsTable>, 'password'> {
+export interface TransactionJsonResponse extends Omit<Selectable<TransactionRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewTransaction = Insertable<TransactionsTable>
-export type TransactionUpdate = Updateable<TransactionsTable>
+export type NewTransaction = Insertable<TransactionWrite>
+export type TransactionUpdate = Updateable<TransactionWrite>
 
 export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTable, TransactionJsonResponse> {
   private readonly hidden: Array<keyof TransactionJsonResponse> = ['payment_details']
@@ -671,8 +679,6 @@ export class TransactionModel extends BaseOrm<TransactionModel, TransactionsTabl
         dispatch('transaction:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

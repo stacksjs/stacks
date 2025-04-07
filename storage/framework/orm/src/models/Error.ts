@@ -19,6 +19,14 @@ export interface ErrorsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ErrorRead = ErrorsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ErrorWrite = Omit<ErrorsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ErrorResponse {
   data: ErrorJsonResponse[]
   paging: {
@@ -29,12 +37,12 @@ export interface ErrorResponse {
   next_cursor: number | null
 }
 
-export interface ErrorJsonResponse extends Omit<Selectable<ErrorsTable>, 'password'> {
+export interface ErrorJsonResponse extends Omit<Selectable<ErrorRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewError = Insertable<ErrorsTable>
-export type ErrorUpdate = Updateable<ErrorsTable>
+export type NewError = Insertable<ErrorWrite>
+export type ErrorUpdate = Updateable<ErrorWrite>
 
 export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonResponse> {
   private readonly hidden: Array<keyof ErrorJsonResponse> = []
@@ -625,8 +633,6 @@ export class ErrorModel extends BaseOrm<ErrorModel, ErrorsTable, ErrorJsonRespon
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

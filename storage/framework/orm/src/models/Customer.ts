@@ -39,6 +39,14 @@ export interface CustomersTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type CustomerRead = CustomersTable
+
+// Type for creating/updating model data (created_at is optional)
+export type CustomerWrite = Omit<CustomersTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface CustomerResponse {
   data: CustomerJsonResponse[]
   paging: {
@@ -49,12 +57,12 @@ export interface CustomerResponse {
   next_cursor: number | null
 }
 
-export interface CustomerJsonResponse extends Omit<Selectable<CustomersTable>, 'password'> {
+export interface CustomerJsonResponse extends Omit<Selectable<CustomerRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewCustomer = Insertable<CustomersTable>
-export type CustomerUpdate = Updateable<CustomersTable>
+export type NewCustomer = Insertable<CustomerWrite>
+export type CustomerUpdate = Updateable<CustomerWrite>
 
 export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, CustomerJsonResponse> {
   private readonly hidden: Array<keyof CustomerJsonResponse> = []
@@ -719,8 +727,6 @@ export class CustomerModel extends BaseOrm<CustomerModel, CustomersTable, Custom
         dispatch('customer:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

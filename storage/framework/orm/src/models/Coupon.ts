@@ -35,6 +35,14 @@ export interface CouponsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type CouponRead = CouponsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type CouponWrite = Omit<CouponsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface CouponResponse {
   data: CouponJsonResponse[]
   paging: {
@@ -45,12 +53,12 @@ export interface CouponResponse {
   next_cursor: number | null
 }
 
-export interface CouponJsonResponse extends Omit<Selectable<CouponsTable>, 'password'> {
+export interface CouponJsonResponse extends Omit<Selectable<CouponRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewCoupon = Insertable<CouponsTable>
-export type CouponUpdate = Updateable<CouponsTable>
+export type NewCoupon = Insertable<CouponWrite>
+export type CouponUpdate = Updateable<CouponWrite>
 
 export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonResponse> {
   private readonly hidden: Array<keyof CouponJsonResponse> = []
@@ -739,8 +747,6 @@ export class CouponModel extends BaseOrm<CouponModel, CouponsTable, CouponJsonRe
         dispatch('coupon:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

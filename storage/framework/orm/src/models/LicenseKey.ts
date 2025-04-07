@@ -29,6 +29,14 @@ export interface LicenseKeysTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type LicenseKeyRead = LicenseKeysTable
+
+// Type for creating/updating model data (created_at is optional)
+export type LicenseKeyWrite = Omit<LicenseKeysTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface LicenseKeyResponse {
   data: LicenseKeyJsonResponse[]
   paging: {
@@ -39,12 +47,12 @@ export interface LicenseKeyResponse {
   next_cursor: number | null
 }
 
-export interface LicenseKeyJsonResponse extends Omit<Selectable<LicenseKeysTable>, 'password'> {
+export interface LicenseKeyJsonResponse extends Omit<Selectable<LicenseKeyRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewLicenseKey = Insertable<LicenseKeysTable>
-export type LicenseKeyUpdate = Updateable<LicenseKeysTable>
+export type NewLicenseKey = Insertable<LicenseKeyWrite>
+export type LicenseKeyUpdate = Updateable<LicenseKeyWrite>
 
 export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, LicenseKeyJsonResponse> {
   private readonly hidden: Array<keyof LicenseKeyJsonResponse> = []
@@ -665,8 +673,6 @@ export class LicenseKeyModel extends BaseOrm<LicenseKeyModel, LicenseKeysTable, 
         dispatch('licenseKey:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -22,6 +22,14 @@ export interface ShippingRatesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ShippingRateRead = ShippingRatesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ShippingRateWrite = Omit<ShippingRatesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ShippingRateResponse {
   data: ShippingRateJsonResponse[]
   paging: {
@@ -32,12 +40,12 @@ export interface ShippingRateResponse {
   next_cursor: number | null
 }
 
-export interface ShippingRateJsonResponse extends Omit<Selectable<ShippingRatesTable>, 'password'> {
+export interface ShippingRateJsonResponse extends Omit<Selectable<ShippingRateRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewShippingRate = Insertable<ShippingRatesTable>
-export type ShippingRateUpdate = Updateable<ShippingRatesTable>
+export type NewShippingRate = Insertable<ShippingRateWrite>
+export type ShippingRateUpdate = Updateable<ShippingRateWrite>
 
 export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesTable, ShippingRateJsonResponse> {
   private readonly hidden: Array<keyof ShippingRateJsonResponse> = []
@@ -642,8 +650,6 @@ export class ShippingRateModel extends BaseOrm<ShippingRateModel, ShippingRatesT
         dispatch('shippingRate:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

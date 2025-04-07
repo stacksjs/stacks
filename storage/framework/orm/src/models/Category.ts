@@ -25,6 +25,14 @@ export interface CategoriesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type CategoryRead = CategoriesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type CategoryWrite = Omit<CategoriesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface CategoryResponse {
   data: CategoryJsonResponse[]
   paging: {
@@ -35,12 +43,12 @@ export interface CategoryResponse {
   next_cursor: number | null
 }
 
-export interface CategoryJsonResponse extends Omit<Selectable<CategoriesTable>, 'password'> {
+export interface CategoryJsonResponse extends Omit<Selectable<CategoryRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewCategory = Insertable<CategoriesTable>
-export type CategoryUpdate = Updateable<CategoriesTable>
+export type NewCategory = Insertable<CategoryWrite>
+export type CategoryUpdate = Updateable<CategoryWrite>
 
 export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, CategoryJsonResponse> {
   private readonly hidden: Array<keyof CategoryJsonResponse> = []
@@ -657,8 +665,6 @@ export class CategoryModel extends BaseOrm<CategoryModel, CategoriesTable, Categ
         dispatch('category:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -33,6 +33,14 @@ export interface WaitlistProductsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type WaitlistProductRead = WaitlistProductsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type WaitlistProductWrite = Omit<WaitlistProductsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface WaitlistProductResponse {
   data: WaitlistProductJsonResponse[]
   paging: {
@@ -43,12 +51,12 @@ export interface WaitlistProductResponse {
   next_cursor: number | null
 }
 
-export interface WaitlistProductJsonResponse extends Omit<Selectable<WaitlistProductsTable>, 'password'> {
+export interface WaitlistProductJsonResponse extends Omit<Selectable<WaitlistProductRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewWaitlistProduct = Insertable<WaitlistProductsTable>
-export type WaitlistProductUpdate = Updateable<WaitlistProductsTable>
+export type NewWaitlistProduct = Insertable<WaitlistProductWrite>
+export type WaitlistProductUpdate = Updateable<WaitlistProductWrite>
 
 export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, WaitlistProductsTable, WaitlistProductJsonResponse> {
   private readonly hidden: Array<keyof WaitlistProductJsonResponse> = []
@@ -717,8 +725,6 @@ export class WaitlistProductModel extends BaseOrm<WaitlistProductModel, Waitlist
         dispatch('waitlistProduct:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

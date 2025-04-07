@@ -19,6 +19,14 @@ export interface JobsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type JobRead = JobsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type JobWrite = Omit<JobsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface JobResponse {
   data: JobJsonResponse[]
   paging: {
@@ -29,12 +37,12 @@ export interface JobResponse {
   next_cursor: number | null
 }
 
-export interface JobJsonResponse extends Omit<Selectable<JobsTable>, 'password'> {
+export interface JobJsonResponse extends Omit<Selectable<JobRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewJob = Insertable<JobsTable>
-export type JobUpdate = Updateable<JobsTable>
+export type NewJob = Insertable<JobWrite>
+export type JobUpdate = Updateable<JobWrite>
 
 export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
   private readonly hidden: Array<keyof JobJsonResponse> = []
@@ -625,8 +633,6 @@ export class JobModel extends BaseOrm<JobModel, JobsTable, JobJsonResponse> {
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

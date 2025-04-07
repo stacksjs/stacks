@@ -32,6 +32,14 @@ export interface ReviewsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ReviewRead = ReviewsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ReviewWrite = Omit<ReviewsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ReviewResponse {
   data: ReviewJsonResponse[]
   paging: {
@@ -42,12 +50,12 @@ export interface ReviewResponse {
   next_cursor: number | null
 }
 
-export interface ReviewJsonResponse extends Omit<Selectable<ReviewsTable>, 'password'> {
+export interface ReviewJsonResponse extends Omit<Selectable<ReviewRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewReview = Insertable<ReviewsTable>
-export type ReviewUpdate = Updateable<ReviewsTable>
+export type NewReview = Insertable<ReviewWrite>
+export type ReviewUpdate = Updateable<ReviewWrite>
 
 export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonResponse> {
   private readonly hidden: Array<keyof ReviewJsonResponse> = []
@@ -708,8 +716,6 @@ export class ReviewModel extends BaseOrm<ReviewModel, ReviewsTable, ReviewJsonRe
         dispatch('review:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -29,6 +29,14 @@ export interface LoyaltyRewardsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type LoyaltyRewardRead = LoyaltyRewardsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type LoyaltyRewardWrite = Omit<LoyaltyRewardsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface LoyaltyRewardResponse {
   data: LoyaltyRewardJsonResponse[]
   paging: {
@@ -39,12 +47,12 @@ export interface LoyaltyRewardResponse {
   next_cursor: number | null
 }
 
-export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyRewardsTable>, 'password'> {
+export interface LoyaltyRewardJsonResponse extends Omit<Selectable<LoyaltyRewardRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewLoyaltyReward = Insertable<LoyaltyRewardsTable>
-export type LoyaltyRewardUpdate = Updateable<LoyaltyRewardsTable>
+export type NewLoyaltyReward = Insertable<LoyaltyRewardWrite>
+export type LoyaltyRewardUpdate = Updateable<LoyaltyRewardWrite>
 
 export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewardsTable, LoyaltyRewardJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyRewardJsonResponse> = []
@@ -689,8 +697,6 @@ export class LoyaltyRewardModel extends BaseOrm<LoyaltyRewardModel, LoyaltyRewar
         dispatch('loyaltyReward:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

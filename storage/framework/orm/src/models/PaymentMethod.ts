@@ -27,6 +27,14 @@ export interface PaymentMethodsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type PaymentMethodRead = PaymentMethodsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type PaymentMethodWrite = Omit<PaymentMethodsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface PaymentMethodResponse {
   data: PaymentMethodJsonResponse[]
   paging: {
@@ -37,12 +45,12 @@ export interface PaymentMethodResponse {
   next_cursor: number | null
 }
 
-export interface PaymentMethodJsonResponse extends Omit<Selectable<PaymentMethodsTable>, 'password'> {
+export interface PaymentMethodJsonResponse extends Omit<Selectable<PaymentMethodRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewPaymentMethod = Insertable<PaymentMethodsTable>
-export type PaymentMethodUpdate = Updateable<PaymentMethodsTable>
+export type NewPaymentMethod = Insertable<PaymentMethodWrite>
+export type PaymentMethodUpdate = Updateable<PaymentMethodWrite>
 
 export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMethodsTable, PaymentMethodJsonResponse> {
   private readonly hidden: Array<keyof PaymentMethodJsonResponse> = []
@@ -671,8 +679,6 @@ export class PaymentMethodModel extends BaseOrm<PaymentMethodModel, PaymentMetho
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

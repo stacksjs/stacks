@@ -24,6 +24,14 @@ export interface TeamsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type TeamRead = TeamsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type TeamWrite = Omit<TeamsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface TeamResponse {
   data: TeamJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface TeamResponse {
   next_cursor: number | null
 }
 
-export interface TeamJsonResponse extends Omit<Selectable<TeamsTable>, 'password'> {
+export interface TeamJsonResponse extends Omit<Selectable<TeamRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewTeam = Insertable<TeamsTable>
-export type TeamUpdate = Updateable<TeamsTable>
+export type NewTeam = Insertable<TeamWrite>
+export type TeamUpdate = Updateable<TeamWrite>
 
 export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> {
   private readonly hidden: Array<keyof TeamJsonResponse> = []
@@ -658,8 +666,6 @@ export class TeamModel extends BaseOrm<TeamModel, TeamsTable, TeamJsonResponse> 
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

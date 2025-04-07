@@ -24,6 +24,14 @@ export interface LoyaltyPointsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type LoyaltyPointRead = LoyaltyPointsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type LoyaltyPointWrite = Omit<LoyaltyPointsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface LoyaltyPointResponse {
   data: LoyaltyPointJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface LoyaltyPointResponse {
   next_cursor: number | null
 }
 
-export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointsTable>, 'password'> {
+export interface LoyaltyPointJsonResponse extends Omit<Selectable<LoyaltyPointRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewLoyaltyPoint = Insertable<LoyaltyPointsTable>
-export type LoyaltyPointUpdate = Updateable<LoyaltyPointsTable>
+export type NewLoyaltyPoint = Insertable<LoyaltyPointWrite>
+export type LoyaltyPointUpdate = Updateable<LoyaltyPointWrite>
 
 export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsTable, LoyaltyPointJsonResponse> {
   private readonly hidden: Array<keyof LoyaltyPointJsonResponse> = []
@@ -660,8 +668,6 @@ export class LoyaltyPointModel extends BaseOrm<LoyaltyPointModel, LoyaltyPointsT
         dispatch('loyaltyPoint:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

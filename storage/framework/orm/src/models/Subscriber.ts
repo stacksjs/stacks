@@ -15,6 +15,14 @@ export interface SubscribersTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type SubscriberRead = SubscribersTable
+
+// Type for creating/updating model data (created_at is optional)
+export type SubscriberWrite = Omit<SubscribersTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface SubscriberResponse {
   data: SubscriberJsonResponse[]
   paging: {
@@ -25,12 +33,12 @@ export interface SubscriberResponse {
   next_cursor: number | null
 }
 
-export interface SubscriberJsonResponse extends Omit<Selectable<SubscribersTable>, 'password'> {
+export interface SubscriberJsonResponse extends Omit<Selectable<SubscriberRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewSubscriber = Insertable<SubscribersTable>
-export type SubscriberUpdate = Updateable<SubscribersTable>
+export type NewSubscriber = Insertable<SubscriberWrite>
+export type SubscriberUpdate = Updateable<SubscriberWrite>
 
 export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, SubscriberJsonResponse> {
   private readonly hidden: Array<keyof SubscriberJsonResponse> = []
@@ -589,8 +597,6 @@ export class SubscriberModel extends BaseOrm<SubscriberModel, SubscribersTable, 
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -923,6 +923,14 @@ export async function generateModelString(
         ${fieldString}
       }
 
+      // Type for reading model data (created_at is required)
+      export type ${modelName}Read = ${formattedTableName}Table
+
+      // Type for creating/updating model data (created_at is optional)
+      export type ${modelName}Write = Omit<${formattedTableName}Table, 'created_at'> & {
+        created_at?: string
+      }
+
       export interface ${modelName}Response {
         data: ${modelName}JsonResponse[]
         paging: {
@@ -933,12 +941,12 @@ export async function generateModelString(
         next_cursor: number | null
       }
 
-      export interface ${modelName}JsonResponse extends Omit<Selectable<${formattedTableName}Table>, 'password'> {
+      export interface ${modelName}JsonResponse extends Omit<Selectable<${modelName}Read>, 'password'> {
         [key: string]: any
       }
 
-      export type New${modelName} = Insertable<${formattedTableName}Table>
-      export type ${modelName}Update = Updateable<${formattedTableName}Table>
+      export type New${modelName} = Insertable<${modelName}Write>
+      export type ${modelName}Update = Updateable<${modelName}Write>
 
       export class ${modelName}Model extends BaseOrm<${modelName}Model, ${formattedTableName}Table, ${modelName}JsonResponse> {
         private readonly hidden: Array<keyof ${modelName}JsonResponse> = ${hidden}
@@ -1478,8 +1486,6 @@ export async function generateModelString(
             ${mittUpdateStatement}
             return this.createInstance(model)
           }
-
-          this.hasSaved = true
 
           return undefined
         }

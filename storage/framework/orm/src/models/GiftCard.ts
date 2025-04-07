@@ -36,6 +36,14 @@ export interface GiftCardsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type GiftCardRead = GiftCardsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type GiftCardWrite = Omit<GiftCardsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface GiftCardResponse {
   data: GiftCardJsonResponse[]
   paging: {
@@ -46,12 +54,12 @@ export interface GiftCardResponse {
   next_cursor: number | null
 }
 
-export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardsTable>, 'password'> {
+export interface GiftCardJsonResponse extends Omit<Selectable<GiftCardRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewGiftCard = Insertable<GiftCardsTable>
-export type GiftCardUpdate = Updateable<GiftCardsTable>
+export type NewGiftCard = Insertable<GiftCardWrite>
+export type GiftCardUpdate = Updateable<GiftCardWrite>
 
 export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCardJsonResponse> {
   private readonly hidden: Array<keyof GiftCardJsonResponse> = []
@@ -748,8 +756,6 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
         dispatch('giftCard:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

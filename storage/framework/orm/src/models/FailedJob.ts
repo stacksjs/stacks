@@ -19,6 +19,14 @@ export interface FailedJobsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type FailedJobRead = FailedJobsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type FailedJobWrite = Omit<FailedJobsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface FailedJobResponse {
   data: FailedJobJsonResponse[]
   paging: {
@@ -29,12 +37,12 @@ export interface FailedJobResponse {
   next_cursor: number | null
 }
 
-export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobsTable>, 'password'> {
+export interface FailedJobJsonResponse extends Omit<Selectable<FailedJobRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewFailedJob = Insertable<FailedJobsTable>
-export type FailedJobUpdate = Updateable<FailedJobsTable>
+export type NewFailedJob = Insertable<FailedJobWrite>
+export type FailedJobUpdate = Updateable<FailedJobWrite>
 
 export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, FailedJobJsonResponse> {
   private readonly hidden: Array<keyof FailedJobJsonResponse> = []
@@ -625,8 +633,6 @@ export class FailedJobModel extends BaseOrm<FailedJobModel, FailedJobsTable, Fai
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

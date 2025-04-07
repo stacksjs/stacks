@@ -24,6 +24,14 @@ export interface DigitalDeliveriesTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type DigitalDeliveryRead = DigitalDeliveriesTable
+
+// Type for creating/updating model data (created_at is optional)
+export type DigitalDeliveryWrite = Omit<DigitalDeliveriesTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface DigitalDeliveryResponse {
   data: DigitalDeliveryJsonResponse[]
   paging: {
@@ -34,12 +42,12 @@ export interface DigitalDeliveryResponse {
   next_cursor: number | null
 }
 
-export interface DigitalDeliveryJsonResponse extends Omit<Selectable<DigitalDeliveriesTable>, 'password'> {
+export interface DigitalDeliveryJsonResponse extends Omit<Selectable<DigitalDeliveryRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewDigitalDelivery = Insertable<DigitalDeliveriesTable>
-export type DigitalDeliveryUpdate = Updateable<DigitalDeliveriesTable>
+export type NewDigitalDelivery = Insertable<DigitalDeliveryWrite>
+export type DigitalDeliveryUpdate = Updateable<DigitalDeliveryWrite>
 
 export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalDeliveriesTable, DigitalDeliveryJsonResponse> {
   private readonly hidden: Array<keyof DigitalDeliveryJsonResponse> = []
@@ -660,8 +668,6 @@ export class DigitalDeliveryModel extends BaseOrm<DigitalDeliveryModel, DigitalD
         dispatch('digitalDelivery:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

@@ -18,6 +18,14 @@ export interface ProjectsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ProjectRead = ProjectsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ProjectWrite = Omit<ProjectsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ProjectResponse {
   data: ProjectJsonResponse[]
   paging: {
@@ -28,12 +36,12 @@ export interface ProjectResponse {
   next_cursor: number | null
 }
 
-export interface ProjectJsonResponse extends Omit<Selectable<ProjectsTable>, 'password'> {
+export interface ProjectJsonResponse extends Omit<Selectable<ProjectRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewProject = Insertable<ProjectsTable>
-export type ProjectUpdate = Updateable<ProjectsTable>
+export type NewProject = Insertable<ProjectWrite>
+export type ProjectUpdate = Updateable<ProjectWrite>
 
 export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJsonResponse> {
   private readonly hidden: Array<keyof ProjectJsonResponse> = []
@@ -616,8 +624,6 @@ export class ProjectModel extends BaseOrm<ProjectModel, ProjectsTable, ProjectJs
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

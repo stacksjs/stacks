@@ -34,6 +34,14 @@ export interface ProductItemsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type ProductItemRead = ProductItemsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type ProductItemWrite = Omit<ProductItemsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface ProductItemResponse {
   data: ProductItemJsonResponse[]
   paging: {
@@ -44,12 +52,12 @@ export interface ProductItemResponse {
   next_cursor: number | null
 }
 
-export interface ProductItemJsonResponse extends Omit<Selectable<ProductItemsTable>, 'password'> {
+export interface ProductItemJsonResponse extends Omit<Selectable<ProductItemRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewProductItem = Insertable<ProductItemsTable>
-export type ProductItemUpdate = Updateable<ProductItemsTable>
+export type NewProductItem = Insertable<ProductItemWrite>
+export type ProductItemUpdate = Updateable<ProductItemWrite>
 
 export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTable, ProductItemJsonResponse> {
   private readonly hidden: Array<keyof ProductItemJsonResponse> = []
@@ -710,8 +718,6 @@ export class ProductItemModel extends BaseOrm<ProductItemModel, ProductItemsTabl
         dispatch('productItem:updated', model)
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }

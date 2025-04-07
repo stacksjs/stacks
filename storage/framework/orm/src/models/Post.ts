@@ -19,6 +19,14 @@ export interface PostsTable {
 
 }
 
+// Type for reading model data (created_at is required)
+export type PostRead = PostsTable
+
+// Type for creating/updating model data (created_at is optional)
+export type PostWrite = Omit<PostsTable, 'created_at'> & {
+  created_at?: string
+}
+
 export interface PostResponse {
   data: PostJsonResponse[]
   paging: {
@@ -29,12 +37,12 @@ export interface PostResponse {
   next_cursor: number | null
 }
 
-export interface PostJsonResponse extends Omit<Selectable<PostsTable>, 'password'> {
+export interface PostJsonResponse extends Omit<Selectable<PostRead>, 'password'> {
   [key: string]: any
 }
 
-export type NewPost = Insertable<PostsTable>
-export type PostUpdate = Updateable<PostsTable>
+export type NewPost = Insertable<PostWrite>
+export type PostUpdate = Updateable<PostWrite>
 
 export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> {
   private readonly hidden: Array<keyof PostJsonResponse> = []
@@ -609,8 +617,6 @@ export class PostModel extends BaseOrm<PostModel, PostsTable, PostJsonResponse> 
 
       return this.createInstance(model)
     }
-
-    this.hasSaved = true
 
     return undefined
   }
