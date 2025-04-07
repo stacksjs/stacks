@@ -121,7 +121,7 @@ export interface Attributes {
   personal_message: string
   is_digital: boolean
   is_reloadable: boolean
-  last_used_date: Date | string
+  last_used_date: number
   template_id: string
   total_amount: number
   tax_amount: number

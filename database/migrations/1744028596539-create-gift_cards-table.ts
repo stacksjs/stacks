@@ -18,8 +18,8 @@ export async function up(db: Database<any>) {
     .addColumn('is_digital', 'integer')
     .addColumn('is_reloadable', 'integer')
     .addColumn('is_active', 'integer', col => col.defaultTo(true))
-    .addColumn('expiry_date', 'text')
-    .addColumn('last_used_date', 'text')
+    .addColumn('expiry_date', 'numeric')
+    .addColumn('last_used_date', 'numeric')
     .addColumn('template_id', 'text')
     .addColumn('customer_id', 'integer', col =>
       col.references('customers.id').onDelete('cascade'))

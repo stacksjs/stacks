@@ -162,14 +162,13 @@ export default {
       order: 13,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
       factory: (faker) => {
-        // Set expiry to 1-3 years in the future
         const now = new Date()
         const yearOffset = faker.number.int({ min: 1, max: 3 })
         const futureDate = new Date(now.setFullYear(now.getFullYear() + yearOffset))
-        return futureDate.toISOString()
+        return futureDate.getTime()
       },
     },
 

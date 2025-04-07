@@ -26,7 +26,7 @@ export interface GiftCardsTable {
   is_reloadable?: boolean
   is_active?: boolean
   expiry_date?: number
-  last_used_date?: Date | string
+  last_used_date?: number
   template_id?: string
   uuid?: string
 
@@ -253,7 +253,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     return this.attributes.expiry_date
   }
 
-  get last_used_date(): Date | string | undefined {
+  get last_used_date(): number | undefined {
     return this.attributes.last_used_date
   }
 
@@ -325,7 +325,7 @@ export class GiftCardModel extends BaseOrm<GiftCardModel, GiftCardsTable, GiftCa
     this.attributes.expiry_date = value
   }
 
-  set last_used_date(value: Date | string) {
+  set last_used_date(value: number) {
     this.attributes.last_used_date = value
   }
 
@@ -1245,7 +1245,7 @@ export async function whereExpiryDate(value: number): Promise<GiftCardModel[]> {
   return results.map((modelItem: GiftCardJsonResponse) => new GiftCardModel(modelItem))
 }
 
-export async function whereLastUsedDate(value: Date | string): Promise<GiftCardModel[]> {
+export async function whereLastUsedDate(value: number): Promise<GiftCardModel[]> {
   const query = DB.instance.selectFrom('gift_cards').where('last_used_date', '=', value)
   const results: GiftCardJsonResponse = await query.execute()
 

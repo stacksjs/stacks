@@ -789,7 +789,7 @@ interface RequestDataGiftCard {
   is_reloadable: boolean
   is_active: boolean
   expiry_date: number
-  last_used_date: date
+  last_used_date: number
   template_id: string
   customer_id: number
   created_at?: Date
@@ -813,7 +813,7 @@ export interface GiftCardRequestType extends Request {
   is_reloadable: boolean
   is_active: boolean
   expiry_date: number
-  last_used_date: date
+  last_used_date: number
   template_id: string
   customer_id: number
   created_at?: Date

@@ -177,9 +177,9 @@ export default {
       order: 14,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
       },
-      factory: faker => faker.helpers.maybe(() => faker.date.recent().toISOString(), { probability: 0.3 }),
+      factory: faker => faker.helpers.maybe(() => faker.date.recent().getTime(), { probability: 0.3 }),
     },
 
     template_id: {
