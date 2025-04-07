@@ -421,3 +421,35 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
     days_range: daysRange,
   }
 }
+
+/**
+ * Get total value of all gift cards
+ */
+export async function fetchTotalValue(): Promise<{
+  total_value: number
+}> {
+  const totalValue = await db
+    .selectFrom('gift_cards')
+    .select(db.fn.sum('initial_balance').as('total_value'))
+    .executeTakeFirst()
+
+  return {
+    total_value: Number(totalValue?.total_value || 0),
+  }
+}
+
+/**
+ * Get total current balance of all gift cards
+ */
+export async function fetchTotalCurrentBalance(): Promise<{
+  total_balance: number
+}> {
+  const totalBalance = await db
+    .selectFrom('gift_cards')
+    .select(db.fn.sum('current_balance').as('total_balance'))
+    .executeTakeFirst()
+
+  return {
+    total_balance: Number(totalBalance?.total_balance || 0),
+  }
+}

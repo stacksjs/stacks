@@ -8,7 +8,11 @@ export default new Action({
   method: 'GET',
 
   async handle() {
-    const stats = await giftCards.compareActiveGiftCards(30) // Default to 30 days
+    const [stats, totalValue, totalBalance] = await Promise.all([
+      giftCards.compareActiveGiftCards(30), // Default to 30 days
+      giftCards.fetchTotalValue(),
+      giftCards.fetchTotalCurrentBalance(),
+    ])
 
     return response.json({
       active_gift_cards: {
@@ -19,6 +23,8 @@ export default new Action({
           is_increase: stats.difference >= 0,
         },
       },
+      total_value: totalValue,
+      current_balance: totalBalance,
     })
   },
 }) 

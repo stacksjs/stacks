@@ -12,6 +12,8 @@ export {
   fetchByCode,
   fetchById,
   fetchStats,
+  fetchTotalValue,
+  fetchTotalCurrentBalance,
 } from './fetch'
 
 export {
