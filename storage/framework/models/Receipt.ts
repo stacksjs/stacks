@@ -116,6 +116,17 @@ export default {
       },
       factory: faker => faker.number.int({ min: 1, max: 50 }),
     },
+    metadata: {
+      required: false,
+      order: 8,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => ({
+        lorem: faker.lorem.sentence(),
+      }),
+    },
   },
 
   dashboard: {

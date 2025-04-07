@@ -1,5 +1,6 @@
 import type { Database } from '@stacksjs/orm'
 import type { RawBuilder } from 'kysely'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { Kysely, MysqlDialect, PostgresDialect, sql } from 'kysely'
@@ -112,4 +113,23 @@ export const now: RawBuilder<any> = sql`now()`
 
 export const db: Kysely<Database> = new Kysely<Database>({
   dialect: getDialect(),
+
+  log(event) {
+    if (!config.database.logging)
+      return
+
+    if (event.level === 'error') {
+      console.error('Query failed : ', {
+        durationMs: event.queryDurationMillis,
+        error: event.error,
+        sql: event.query.sql,
+      })
+    }
+    else { // `'query'`
+      console.log('Query executed : ', {
+        durationMs: event.queryDurationMillis,
+        sql: event.query.sql,
+      })
+    }
+  },
 })

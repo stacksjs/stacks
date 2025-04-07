@@ -485,7 +485,7 @@ export async function fetchCurrentWaitTimes(): Promise<{
  */
 export async function fetchSeatedStats(): Promise<{
   total: number
-  byHour: Array<{ hour: number; count: number }>
+  byHour: Array<{ hour: number, count: number }>
 }> {
   const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000
   const seatedEntries = await db
@@ -497,7 +497,7 @@ export async function fetchSeatedStats(): Promise<{
 
   const byHour = Array.from({ length: 24 }, (_, hour) => ({
     hour,
-    count: seatedEntries.filter(entry => {
+    count: seatedEntries.filter((entry) => {
       const entryHour = entry.seated_at
 
       return entryHour === hour
@@ -540,7 +540,7 @@ export async function fetchTimeSeriesStats(): Promise<Record<string, {
     }
     acc[date!].total++
     acc[date!][curr.status]++
-    
+
     return acc
   }, {} as Record<string, {
     total: number

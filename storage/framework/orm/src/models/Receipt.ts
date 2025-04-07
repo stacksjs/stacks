@@ -19,6 +19,7 @@ export interface ReceiptsTable {
   size?: number
   pages?: number
   duration?: number
+  metadata?: string
   uuid?: string
 
   created_at?: string
@@ -46,7 +47,7 @@ export type ReceiptUpdate = Updateable<ReceiptsTable>
 
 export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJsonResponse> {
   private readonly hidden: Array<keyof ReceiptJsonResponse> = []
-  private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'uuid', 'print_device_id']
+  private readonly fillable: Array<keyof ReceiptJsonResponse> = ['printer', 'document', 'timestamp', 'status', 'size', 'pages', 'duration', 'metadata', 'uuid', 'print_device_id']
   private readonly guarded: Array<keyof ReceiptJsonResponse> = []
   protected attributes = {} as ReceiptJsonResponse
   protected originalAttributes = {} as ReceiptJsonResponse
@@ -216,6 +217,10 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     return this.attributes.duration
   }
 
+  get metadata(): string | undefined {
+    return this.attributes.metadata
+  }
+
   get created_at(): string | undefined {
     return this.attributes.created_at
   }
@@ -254,6 +259,10 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
 
   set duration(value: number) {
     this.attributes.duration = value
+  }
+
+  set metadata(value: string) {
+    this.attributes.metadata = value
   }
 
   set updated_at(value: string) {
@@ -874,6 +883,14 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
     return instance
   }
 
+  static whereMetadata(value: string): ReceiptModel {
+    const instance = new ReceiptModel(undefined)
+
+    instance.selectFromQuery = instance.selectFromQuery.where('metadata', '=', value)
+
+    return instance
+  }
+
   static whereIn<V = number>(column: keyof ReceiptsTable, values: V[]): ReceiptModel {
     const instance = new ReceiptModel(undefined)
 
@@ -932,6 +949,7 @@ export class ReceiptModel extends BaseOrm<ReceiptModel, ReceiptsTable, ReceiptJs
       size: this.size,
       pages: this.pages,
       duration: this.duration,
+      metadata: this.metadata,
 
       created_at: this.created_at,
 
@@ -1049,6 +1067,13 @@ export async function wherePages(value: number): Promise<ReceiptModel[]> {
 
 export async function whereDuration(value: number): Promise<ReceiptModel[]> {
   const query = DB.instance.selectFrom('receipts').where('duration', '=', value)
+  const results: ReceiptJsonResponse = await query.execute()
+
+  return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))
+}
+
+export async function whereMetadata(value: string): Promise<ReceiptModel[]> {
+  const query = DB.instance.selectFrom('receipts').where('metadata', '=', value)
   const results: ReceiptJsonResponse = await query.execute()
 
   return results.map((modelItem: ReceiptJsonResponse) => new ReceiptModel(modelItem))

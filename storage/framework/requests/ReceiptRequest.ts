@@ -20,6 +20,7 @@ interface RequestDataReceipt {
   size: number
   pages: number
   duration: number
+  metadata: string
   print_device_id: number
   created_at?: Date
   updated_at?: Date
@@ -33,6 +34,7 @@ export class ReceiptRequest extends Request<RequestDataReceipt> implements Recei
   public size = 0
   public pages = 0
   public duration = 0
+  public metadata = ''
   public print_device_id = 0
   public created_at = new Date()
   public updated_at = new Date()

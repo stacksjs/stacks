@@ -1,8 +1,8 @@
 /* eslint no-console: 0 */
 import process from 'node:process'
 import { Logger } from '@stacksjs/clarity'
-import * as p from '@stacksjs/path'
 import { handleError } from '@stacksjs/error-handling'
+import * as p from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
 // Initialize logger with default options

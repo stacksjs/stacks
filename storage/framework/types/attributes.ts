@@ -87,6 +87,7 @@ export interface Attributes {
   size: number
   pages: number
   duration: number
+  metadata: string
   variant: string
   type: string
   options: string

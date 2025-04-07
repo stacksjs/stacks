@@ -15,7 +15,7 @@ export default new Action({
     ] = await Promise.all([
       waitlists.restaurant.fetchCurrentWaitTimes(),
       waitlists.restaurant.fetchSeatedStats(),
-      waitlists.restaurant.fetchNoShowStats(),
+      waitlists.restaurant.fetchNoShowStats(new Date(Date.now() - 24 * 60 * 60 * 1000), new Date()),
       waitlists.restaurant.fetchTimeSeriesStats(),
     ])
 

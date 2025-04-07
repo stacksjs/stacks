@@ -1,6 +1,6 @@
 export interface DatabaseOptions {
   default: string
-
+  logging?: boolean
   connections: {
     mysql?: {
       url?: string

@@ -591,6 +591,7 @@ interface RequestDataReceipt {
   size: number
   pages: number
   duration: number
+  metadata: string
   print_device_id: number
   created_at?: Date
   updated_at?: Date
@@ -607,6 +608,7 @@ export interface ReceiptRequestType extends Request {
   size: number
   pages: number
   duration: number
+  metadata: string
   print_device_id: number
   created_at?: Date
   updated_at?: Date

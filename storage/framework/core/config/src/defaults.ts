@@ -127,7 +127,7 @@ export const defaults: StacksOptions = {
 
   database: {
     default: 'sqlite',
-
+    logging: false,
     connections: {
       sqlite: {
         database: userDatabasePath('stacks.sqlite'),
