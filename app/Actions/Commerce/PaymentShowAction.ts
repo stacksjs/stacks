@@ -10,7 +10,7 @@ export default new Action({
 
   async handle(request: PaymentRequestType) {
     const id = request.get<number>('id')
-    
+
     const payment = await payments.fetchById(id)
 
     return response.json(payment)

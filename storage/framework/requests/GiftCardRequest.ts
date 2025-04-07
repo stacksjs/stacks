@@ -25,7 +25,7 @@ interface RequestDataGiftCard {
   is_digital: boolean
   is_reloadable: boolean
   is_active: boolean
-  expiry_date: date
+  expiry_date: number
   last_used_date: date
   template_id: string
   customer_id: number
@@ -46,7 +46,7 @@ export class GiftCardRequest extends Request<RequestDataGiftCard> implements Gif
   public is_digital = false
   public is_reloadable = false
   public is_active = false
-  public expiry_date = ''
+  public expiry_date = 0
   public last_used_date = ''
   public template_id = ''
   public customer_id = 0

@@ -27,4 +27,4 @@ export default new Action({
       current_balance: totalBalance,
     })
   },
-}) 
+})
