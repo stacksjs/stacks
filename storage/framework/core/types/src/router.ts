@@ -1,4 +1,5 @@
 import type { Action } from '@stacksjs/actions'
+import type { Request } from '@stacksjs/router'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
@@ -24,7 +25,7 @@ export interface MiddlewareOptions {
   name: string
   description?: string
   priority: number
-  handle: () => Promise<void>
+  handle: (request: Request) => Promise<void>
 }
 
 export type StatusCode = 200 | 201 | 202 | 204 | 301 | 302 | 304 | 400 | 401 | 403 | 404 | 500
@@ -32,7 +33,7 @@ export type RedirectCode = Extract<StatusCode, 301 | 302>
 
 export interface RouteParam { [key: string]: string | number }
 
-export type MiddlewareFn = () => void
+export type MiddlewareFn = (request: Request) => Promise<void>
 
 export interface Middlewares {
   logger: MiddlewareFn

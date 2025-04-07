@@ -1,10 +1,11 @@
-import { Middleware, request } from '@stacksjs/router'
-import { Team } from '../../orm/src'
+import { Middleware } from '@stacksjs/router'
+import { Team } from '@stacksjs/orm'
+import type { Request } from '@stacksjs/router'
 
 export default new Middleware({
   name: 'Team ',
   priority: 1,
-  async handle() {
+  async handle(request: Request) {
     const bearerToken = request.bearerToken() || ''
 
     if (!bearerToken) {

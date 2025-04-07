@@ -1,6 +1,6 @@
 // import { HttpError } from '@stacksjs/error-handling'
 // import { Middleware, request } from '@stacksjs/router'
-// import { AccessToken, Team } from '../../storage/framework/orm/src'
+// import { AccessToken, Team } from '@stacksjs/orm'
 
 // export default new Middleware({
 //   name: 'API Authentication',
