@@ -45,7 +45,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "@aws-sdk/client-bedrock": "^3.782.0",
+    "@aws-sdk/client-bedrock": "^3.784.0",
     "@aws-sdk/client-cloudformation": "^3.782.0",
     "@aws-sdk/client-cloudfront": "^3.782.0",
     "@aws-sdk/client-cloudwatch-logs": "^3.782.0",
