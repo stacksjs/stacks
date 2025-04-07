@@ -1,7 +1,7 @@
 import type { GiftCardJsonResponse } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, toTimestamp } from '@stacksjs/orm'
 
 /**
  * Fetch all gift cards from the database
@@ -61,7 +61,8 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .executeTakeFirst()
 
   // Active gift cards
-  const currentDate = new Date().toISOString().split('T')[0]
+  const currentDate = toTimestamp(new Date())
+
   const activeGiftCards = await db
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
@@ -115,7 +116,7 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
-    .where('expiry_date', '<=', thirtyDaysFromNow.toISOString().split('T')[0])
+    .where('expiry_date', '<=', toTimestamp(thirtyDaysFromNow))
     .where('expiry_date', '>=', currentDate)
     .selectAll()
     .limit(5)
@@ -218,7 +219,7 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
     .where(eb => eb.or([
-      eb('expiry_date', '>=', today),
+      eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ]))
     .where('created_at', '>=', formatDate(currentPeriodStart))
@@ -232,7 +233,7 @@ export async function compareActiveGiftCards(daysRange: number = 30): Promise<{
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
     .where(eb => eb.or([
-      eb('expiry_date', '>=', previousPeriodStart),
+      eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ]))
     .where('created_at', '>=', formatDate(previousPeriodStart))
@@ -320,7 +321,7 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
     .where(eb => eb.or([
-      eb('expiry_date', '>=', today),
+      eb('expiry_date', '>=', toTimestamp(today)),
       eb('expiry_date', 'is', null),
     ]))
     .where('created_at', '>=', formatDate(currentPeriodStart))
@@ -338,7 +339,7 @@ export async function calculateGiftCardValues(daysRange: number = 30): Promise<{
     .where('is_active', '=', true)
     .where('status', '=', 'ACTIVE')
     .where(eb => eb.or([
-      eb('expiry_date', '>=', formatDate(previousPeriodStart)),
+      eb('expiry_date', '>=', toTimestamp(previousPeriodStart)),
       eb('expiry_date', 'is', null),
     ]))
     .where('created_at', '>=', formatDate(previousPeriodStart))

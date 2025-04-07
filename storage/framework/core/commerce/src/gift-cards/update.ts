@@ -1,6 +1,6 @@
 import type { GiftCardJsonResponse, GiftCardRequestType } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, toTimestamp } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 
 /**
@@ -104,7 +104,7 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
       .updateTable('gift_cards')
       .set({
         current_balance: newBalance,
-        last_used_date: formatDate(new Date()),
+        last_used_date: toTimestamp(new Date()),
         status: newBalance === 0 ? 'USED' : 'ACTIVE',
         updated_at: formatDate(new Date()),
       })
