@@ -1,6 +1,6 @@
 import type { WaitlistRestaurantJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, toTimestamp } from '@stacksjs/orm'
 
 /**
  * Fetch a restaurant waitlist entry by ID
@@ -288,8 +288,8 @@ export async function fetchTablesTurnedToday(): Promise<{
   const endOfDay = new Date(today)
   endOfDay.setHours(23, 59, 59, 999)
 
-  const startDateStr = formatDate(startOfDay)
-  const endDateStr = formatDate(endOfDay)
+  const startDateStr = toTimestamp(startOfDay)
+  const endDateStr = toTimestamp(endOfDay)
 
   // Fetch all seated entries for today
   const seatedEntries = await db
@@ -345,8 +345,8 @@ export async function fetchSeatingRate(
     seatingRate: number
     statusBreakdown: Record<string, { count: number, percentage: number }>
   }> {
-  const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const startDateStr = toTimestamp(startDate)
+  const endDateStr = toTimestamp(endDate)
 
   const results = await db
     .selectFrom('waitlist_restaurants')
@@ -397,8 +397,8 @@ export async function fetchNoShowStats(
     breakdownByTablePreference: Record<string, number>
     breakdownByPartySize: Record<number, number>
   }> {
-  const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const startDateStr = toTimestamp(startDate)
+  const endDateStr = toTimestamp(endDate)
 
   // Build base query for no-show entries
   const noShowQuery = db
@@ -498,43 +498,14 @@ export async function fetchSeatedStats(): Promise<{
   const byHour = Array.from({ length: 24 }, (_, hour) => ({
     hour,
     count: seatedEntries.filter(entry => {
-      const entryHour = new Date(entry.seated_at).getHours()
+      const entryHour = entry.seated_at
+
       return entryHour === hour
     }).length,
   }))
 
   return {
     total: seatedEntries.length,
-    byHour,
-  }
-}
-
-/**
- * Fetch no-show statistics for the last 24 hours
- * @returns Object containing total no-show count and hourly breakdown
- */
-export async function fetchNoShowStats(): Promise<{
-  total: number
-  byHour: Array<{ hour: number; count: number }>
-}> {
-  const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000
-  const noShowEntries = await db
-    .selectFrom('waitlist_restaurants')
-    .select(['no_show_at'])
-    .where('status', '=', 'no_show')
-    .where('no_show_at', '>=', twentyFourHoursAgo)
-    .execute()
-
-  const byHour = Array.from({ length: 24 }, (_, hour) => ({
-    hour,
-    count: noShowEntries.filter(entry => {
-      const entryHour = new Date(entry.no_show_at).getHours()
-      return entryHour === hour
-    }).length,
-  }))
-
-  return {
-    total: noShowEntries.length,
     byHour,
   }
 }
@@ -556,9 +527,10 @@ export async function fetchTimeSeriesStats(): Promise<Record<string, {
     .execute()
 
   return entries.reduce((acc, curr) => {
-    const date = new Date(curr.created_at).toISOString().split('T')[0]
-    if (!acc[date]) {
-      acc[date] = {
+    const date = curr.created_at
+
+    if (!acc[date!]) {
+      acc[date!] = {
         total: 0,
         waiting: 0,
         seated: 0,
@@ -566,8 +538,9 @@ export async function fetchTimeSeriesStats(): Promise<Record<string, {
         no_show: 0,
       }
     }
-    acc[date].total++
-    acc[date][curr.status]++
+    acc[date!].total++
+    acc[date!][curr.status]++
+    
     return acc
   }, {} as Record<string, {
     total: number

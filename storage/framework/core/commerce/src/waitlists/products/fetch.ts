@@ -1,6 +1,6 @@
 import type { WaitlistProductJsonResponse } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
-import { formatDate } from '@stacksjs/orm'
+import { formatDate, toTimestamp } from '@stacksjs/orm'
 
 /**
  * Fetch a waitlist product by ID
@@ -159,8 +159,8 @@ export async function fetchNotifiedBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const startDateStr = toTimestamp(startDate)
+  const endDateStr = toTimestamp(endDate)
 
   return await db
     .selectFrom('waitlist_products')
@@ -181,8 +181,8 @@ export async function fetchPurchasedBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const startDateStr = toTimestamp(startDate)
+  const endDateStr = toTimestamp(endDate)
 
   return await db
     .selectFrom('waitlist_products')
@@ -203,8 +203,8 @@ export async function fetchCancelledBetweenDates(
   startDate: Date,
   endDate: Date,
 ): Promise<WaitlistProductJsonResponse[]> {
-  const startDateStr = formatDate(startDate)
-  const endDateStr = formatDate(endDate)
+  const startDateStr = toTimestamp(startDate)
+  const endDateStr = toTimestamp(endDate)
 
   return await db
     .selectFrom('waitlist_products')

@@ -1506,3 +1506,12 @@ export function findUserModel(modelName: string): string {
 export function formatDate(date: Date): string {
   return date.toISOString().replace('T', ' ').split('.')[0]
 }
+
+/**
+ * Format a date to ISO string and remove milliseconds
+ * @param date The date to format
+ * @returns Formatted date string in format: YYYY-MM-DD HH:mm:ss
+ */
+export function toTimestamp(date: Date): number {
+  return date.getTime()
+}
