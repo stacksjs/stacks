@@ -1,6 +1,5 @@
 // Import dependencies
-import type { ShippingZoneRequestType } from '@stacksjs/orm'
-import type { NewShippingZone, ShippingZoneJsonResponse } from '../../../../orm/src/models/ShippingZone'
+import type { ShippingZoneRequestType, ShippingZoneJsonResponse, NewShippingZone } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 
