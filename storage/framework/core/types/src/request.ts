@@ -46,4 +46,10 @@ export interface RequestInstance {
   getParams: () => RouteParams
 
   getParamAsInt: (key: string) => number | null
+
+  browser: () => string | null
+
+  ip: () => string | null
+
+  ipForRateLimit: () => string | null
 }
