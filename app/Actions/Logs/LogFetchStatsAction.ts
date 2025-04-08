@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
-import { response } from '@stacksjs/router'
 import { Log } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'Log Stats',
@@ -24,27 +24,27 @@ export default new Action({
       const month = date.getMonth() + 1
       const year = date.getFullYear()
       const key = `${year}-${month}-${day} ${hour}:00`
-      
+
       if (!acc[key]) {
         acc[key] = 0
       }
       acc[key]++
-      
+
       return acc
     }, {})
 
     // Format data for line graph
     const data = Object.entries(hourlyStats).map(([time, count]) => ({
       time,
-      count
+      count,
     }))
 
     return response.json({
       data,
       timeRange: {
         start: twentyFourHoursAgo,
-        end: now
-      }
+        end: now,
+      },
     })
   },
 })
