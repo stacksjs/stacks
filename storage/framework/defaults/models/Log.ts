@@ -9,6 +9,7 @@ export default {
 
   traits: {
     useTimestamps: true,
+    useApi: true,
     useSearch: {
       displayable: ['id', 'type', 'source', 'message', 'project', 'timestamp'],
       searchable: ['message', 'project', 'file'],
