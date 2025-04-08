@@ -14,7 +14,7 @@ export default new Action({
     const id = request.getParam<number>('id')
     const model = await Log.findOrFail(id)
 
-    const result = model.update(request.all())
+    const result = model?.update(request.all())
 
     return response.json(result)
   },

@@ -842,7 +842,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
 
         const model = await ${modelName}.findOrFail(id)
 
-        model.delete()
+        model?.delete()
 
         return response.json({ message: 'Model deleted!' })
       },`
