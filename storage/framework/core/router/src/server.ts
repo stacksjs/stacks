@@ -1,5 +1,5 @@
 import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
-import type { RateLimitResult } from 'ts-rate-limiter'
+// import type { RateLimitResult } from 'ts-rate-limiter'
 
 import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
@@ -8,30 +8,30 @@ import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
-import { RateLimiter } from 'ts-rate-limiter'
+// import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
 
 import { middlewares } from './middleware'
 
 import { request as RequestParam } from './request'
 
-const limiter = new RateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  maxRequests: 100,
-  algorithm: 'sliding-window',
-  handler: (req: Request, result: RateLimitResult) => {
-    return new Response(JSON.stringify({
-      error: 'Too many requests',
-      retryAfter: Math.ceil(result.remaining / 1000),
-    }), {
-      status: 429,
-      headers: {
-        'Content-Type': 'application/json',
-        'Retry-After': Math.ceil(result.remaining / 1000).toString(),
-      },
-    })
-  },
-})
+// const limiter = new RateLimiter({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   maxRequests: 100,
+//   algorithm: 'sliding-window',
+//   handler: (req: Request, result: RateLimitResult) => {
+//     return new Response(JSON.stringify({
+//       error: 'Too many requests',
+//       retryAfter: Math.ceil(result.remaining / 1000),
+//     }), {
+//       status: 429,
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'Retry-After': Math.ceil(result.remaining / 1000).toString(),
+//       },
+//     })
+//   },
+// })
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -61,15 +61,15 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   log.debug(`Headers: ${JSON.stringify(req.headers)}`)
   log.debug(`Body: ${JSON.stringify(req.body)}`)
 
-  const result = await limiter.check(req)
+  // const result = await limiter.check(req)
 
-  if (!result.allowed) {
-    log.info(`Rate limit exceeded: ${result.current}/${result.limit}`)
-    log.info(`Reset in ${Math.ceil(result.remaining / 1000)} seconds`)
+  // if (!result.allowed) {
+  //   log.info(`Rate limit exceeded: ${result.current}/${result.limit}`)
+  //   log.info(`Reset in ${Math.ceil(result.remaining / 1000)} seconds`)
 
-    // Handle rate limiting in your own way
-    return new Response('Too many requests', { status: 429 })
-  }
+  //   // Handle rate limiting in your own way
+  //   return new Response('Too many requests', { status: 429 })
+  // }
 
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
   const url: URL = new URL(trimmedUrl) as URL
