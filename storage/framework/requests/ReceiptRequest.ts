@@ -22,8 +22,8 @@ interface RequestDataReceipt {
   duration: number
   metadata: string
   print_device_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ReceiptRequest extends Request<RequestDataReceipt> implements ReceiptRequestType {
   public id = 1
@@ -36,8 +36,8 @@ export class ReceiptRequest extends Request<RequestDataReceipt> implements Recei
   public duration = 0
   public metadata = ''
   public print_device_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

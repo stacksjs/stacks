@@ -22,8 +22,8 @@ interface RequestDataProductItem {
   inventory_count: number
   sku: string
   custom_options: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ProductItemRequest extends Request<RequestDataProductItem> implements ProductItemRequestType {
   public id = 1
@@ -36,8 +36,8 @@ export class ProductItemRequest extends Request<RequestDataProductItem> implemen
   public inventory_count = 0
   public sku = ''
   public custom_options = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -27,8 +27,8 @@ interface RequestDataOrder {
   customer_id: number
   gift_card_id: number
   coupon_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class OrderRequest extends Request<RequestDataOrder> implements OrderRequestType {
   public id = 1
@@ -46,8 +46,8 @@ export class OrderRequest extends Request<RequestDataOrder> implements OrderRequ
   public customer_id = 0
   public gift_card_id = 0
   public coupon_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

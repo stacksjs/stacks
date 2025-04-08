@@ -21,8 +21,8 @@ interface RequestDataDeployment {
   deploy_script: string
   terminal_output: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class DeploymentRequest extends Request<RequestDataDeployment> implements DeploymentRequestType {
   public id = 1
@@ -34,8 +34,8 @@ export class DeploymentRequest extends Request<RequestDataDeployment> implements
   public deploy_script = ''
   public terminal_output = ''
   public user_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

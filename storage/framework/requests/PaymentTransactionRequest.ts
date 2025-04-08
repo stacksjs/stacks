@@ -20,8 +20,8 @@ interface RequestDataPaymentTransaction {
   provider_id: string
   user_id: number
   payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class PaymentTransactionRequest extends Request<RequestDataPaymentTransaction> implements PaymentTransactionRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class PaymentTransactionRequest extends Request<RequestDataPaymentTransac
   public provider_id = ''
   public user_id = 0
   public payment_method_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

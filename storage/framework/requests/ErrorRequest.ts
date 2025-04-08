@@ -18,8 +18,8 @@ interface RequestDataError {
   stack: string
   status: number
   additional_info: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ErrorRequest extends Request<RequestDataError> implements ErrorRequestType {
   public id = 1
@@ -28,8 +28,8 @@ export class ErrorRequest extends Request<RequestDataError> implements ErrorRequ
   public stack = ''
   public status = 0
   public additional_info = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

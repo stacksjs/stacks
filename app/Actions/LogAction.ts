@@ -19,7 +19,7 @@ export default new Action({
     },
 
     level: {
-      rule: schema.enum(['info', 'warn', 'error']),
+      rule: schema.string().in(['info', 'warn', 'error']),
       message: 'The log level must be one of "info", "warn", or "error".',
     },
   },

@@ -18,8 +18,8 @@ interface RequestDataUser {
   job_title: string
   password: string
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class UserRequest extends Request<RequestDataUser> implements UserRequestType {
   public id = 1
@@ -28,8 +28,8 @@ export class UserRequest extends Request<RequestDataUser> implements UserRequest
   public job_title = ''
   public password = ''
   public team_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

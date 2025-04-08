@@ -725,8 +725,8 @@ export async function writeModelRequest(): Promise<void> {
     }
 
     if (useTimestamps) {
-      fieldStringInt += `public created_at = new Date
-        public updated_at = new Date
+      fieldStringInt += `public created_at = ''
+        public updated_at = ''
       `
     }
 
@@ -735,14 +735,14 @@ export async function writeModelRequest(): Promise<void> {
 
     if (useSoftDeletes) {
       fieldStringInt += `
-        public deleted_at = new Date()
+        public deleted_at = ''
       `
 
-      fieldString += `deleted_at?: Date\n`
+      fieldString += `deleted_at?: string\n`
     }
 
-    fieldString += `created_at?: Date
-      updated_at?: Date`
+    fieldString += `created_at?: string
+      updated_at?: string`
 
     const requestFile = Bun.file(path.frameworkPath(`requests/${modelName}Request.ts`))
 
@@ -1227,7 +1227,7 @@ export async function generateKyselyTypes(): Promise<void> {
   text += '  backup_eligible: boolean\n'
   text += '  backup_status: boolean\n'
   text += '  transports?: string\n'
-  text += '  created_at?: Date\n'
+  text += '  created_at?: string\n'
   text += '  last_used_at: string \n'
   text += '}\n\n'
 

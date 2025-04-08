@@ -20,8 +20,8 @@ interface RequestDataLoyaltyPoint {
   description: string
   expiry_date: string
   is_used: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class LoyaltyPointRequest extends Request<RequestDataLoyaltyPoint> implements LoyaltyPointRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class LoyaltyPointRequest extends Request<RequestDataLoyaltyPoint> implem
   public description = ''
   public expiry_date = ''
   public is_used = false
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

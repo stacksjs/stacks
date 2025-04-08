@@ -16,8 +16,8 @@ interface RequestDataProject {
   description: string
   url: string
   status: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ProjectRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -28,16 +28,16 @@ export interface ProjectRequestType extends Request {
   description: string
   url: string
   status: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataSubscriberEmail {
   id: number
   email: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
+  deleted_at?: string
+  created_at?: string
+  updated_at?: string
 }
 export interface SubscriberEmailRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -45,9 +45,9 @@ export interface SubscriberEmailRequestType extends Request {
   all: () => RequestDataSubscriberEmail
   id: number
   email: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
+  deleted_at?: string
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataAccessToken {
@@ -63,8 +63,8 @@ interface RequestDataAccessToken {
   device_name: string
   is_single_use: boolean
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface AccessTokenRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -82,8 +82,8 @@ export interface AccessTokenRequestType extends Request {
   device_name: string
   is_single_use: boolean
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataTeam {
@@ -97,8 +97,8 @@ interface RequestDataTeam {
   path: string
   is_personal: boolean
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface TeamRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -114,16 +114,16 @@ export interface TeamRequestType extends Request {
   path: string
   is_personal: boolean
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataSubscriber {
   id: number
   subscribed: boolean
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface SubscriberRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -132,8 +132,8 @@ export interface SubscriberRequestType extends Request {
   id: number
   subscribed: boolean
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataDeployment {
@@ -146,8 +146,8 @@ interface RequestDataDeployment {
   deploy_script: string
   terminal_output: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface DeploymentRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -162,16 +162,16 @@ export interface DeploymentRequestType extends Request {
   deploy_script: string
   terminal_output: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataRelease {
   id: number
   name: string
   version: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ReleaseRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -180,8 +180,8 @@ export interface ReleaseRequestType extends Request {
   id: number
   name: string
   version: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataUser {
@@ -191,8 +191,8 @@ interface RequestDataUser {
   job_title: string
   password: string
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface UserRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -204,8 +204,8 @@ export interface UserRequestType extends Request {
   job_title: string
   password: string
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPost {
@@ -213,8 +213,8 @@ interface RequestDataPost {
   title: string
   body: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PostRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -224,8 +224,8 @@ export interface PostRequestType extends Request {
   title: string
   body: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPaymentProduct {
@@ -237,8 +237,8 @@ interface RequestDataPaymentProduct {
   status: string
   image: string
   provider_id: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PaymentProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -252,8 +252,8 @@ export interface PaymentProductRequestType extends Request {
   status: string
   image: string
   provider_id: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPrintDevice {
@@ -265,8 +265,8 @@ interface RequestDataPrintDevice {
   status: string[] | string
   last_ping: number
   print_count: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PrintDeviceRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -280,8 +280,8 @@ export interface PrintDeviceRequestType extends Request {
   status: string[] | string
   last_ping: number
   print_count: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataCategory {
@@ -292,8 +292,8 @@ interface RequestDataCategory {
   is_active: boolean
   parent_category_id: string
   display_order: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface CategoryRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -306,8 +306,8 @@ export interface CategoryRequestType extends Request {
   is_active: boolean
   parent_category_id: string
   display_order: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPayment {
@@ -326,8 +326,8 @@ interface RequestDataPayment {
   notes: string
   customer_id: number
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PaymentRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -348,8 +348,8 @@ export interface PaymentRequestType extends Request {
   notes: string
   customer_id: number
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataDriver {
@@ -360,8 +360,8 @@ interface RequestDataDriver {
   license: string
   status: string[] | string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface DriverRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -374,8 +374,8 @@ export interface DriverRequestType extends Request {
   license: string
   status: string[] | string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataWaitlistProduct {
@@ -393,8 +393,8 @@ interface RequestDataWaitlistProduct {
   cancelled_at: number
   customer_id: number
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface WaitlistProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -414,8 +414,8 @@ export interface WaitlistProductRequestType extends Request {
   cancelled_at: number
   customer_id: number
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataDigitalDelivery {
@@ -427,8 +427,8 @@ interface RequestDataDigitalDelivery {
   requires_login: boolean
   automatic_delivery: boolean
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface DigitalDeliveryRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -442,8 +442,8 @@ export interface DigitalDeliveryRequestType extends Request {
   requires_login: boolean
   automatic_delivery: boolean
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataManufacturer {
@@ -452,8 +452,8 @@ interface RequestDataManufacturer {
   description: string
   country: string
   featured: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ManufacturerRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -464,8 +464,8 @@ export interface ManufacturerRequestType extends Request {
   description: string
   country: string
   featured: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataOrderItem {
@@ -474,8 +474,8 @@ interface RequestDataOrderItem {
   price: number
   special_instructions: string
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface OrderItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -486,8 +486,8 @@ export interface OrderItemRequestType extends Request {
   price: number
   special_instructions: string
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataShippingZone {
@@ -498,8 +498,8 @@ interface RequestDataShippingZone {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ShippingZoneRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -512,8 +512,8 @@ export interface ShippingZoneRequestType extends Request {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataCustomer {
@@ -526,8 +526,8 @@ interface RequestDataCustomer {
   status: string[] | string
   avatar: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface CustomerRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -542,8 +542,8 @@ export interface CustomerRequestType extends Request {
   status: string[] | string
   avatar: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataProduct {
@@ -559,8 +559,8 @@ interface RequestDataProduct {
   nutritional_info: string
   category_id: number
   manufacturer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ProductRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -578,8 +578,8 @@ export interface ProductRequestType extends Request {
   nutritional_info: string
   category_id: number
   manufacturer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataReceipt {
@@ -593,8 +593,8 @@ interface RequestDataReceipt {
   duration: number
   metadata: string
   print_device_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ReceiptRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -610,8 +610,8 @@ export interface ReceiptRequestType extends Request {
   duration: number
   metadata: string
   print_device_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataProductVariant {
@@ -622,8 +622,8 @@ interface RequestDataProductVariant {
   options: string
   status: string[] | string
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ProductVariantRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -636,8 +636,8 @@ export interface ProductVariantRequestType extends Request {
   options: string
   status: string[] | string
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataLicenseKey {
@@ -649,8 +649,8 @@ interface RequestDataLicenseKey {
   customer_id: number
   product_id: number
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface LicenseKeyRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -664,8 +664,8 @@ export interface LicenseKeyRequestType extends Request {
   customer_id: number
   product_id: number
   order_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataWaitlistRestaurant {
@@ -684,8 +684,8 @@ interface RequestDataWaitlistRestaurant {
   no_show_at: number
   cancelled_at: number
   customer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface WaitlistRestaurantRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -706,8 +706,8 @@ export interface WaitlistRestaurantRequestType extends Request {
   no_show_at: number
   cancelled_at: number
   customer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataReview {
@@ -724,8 +724,8 @@ interface RequestDataReview {
   images: string
   customer_id: number
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ReviewRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -744,8 +744,8 @@ export interface ReviewRequestType extends Request {
   images: string
   customer_id: number
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataProductUnit {
@@ -756,8 +756,8 @@ interface RequestDataProductUnit {
   description: string
   is_default: boolean
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ProductUnitRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -770,8 +770,8 @@ export interface ProductUnitRequestType extends Request {
   description: string
   is_default: boolean
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataGiftCard {
@@ -792,8 +792,8 @@ interface RequestDataGiftCard {
   last_used_date: number
   template_id: string
   customer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface GiftCardRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -816,8 +816,8 @@ export interface GiftCardRequestType extends Request {
   last_used_date: number
   template_id: string
   customer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataOrder {
@@ -836,8 +836,8 @@ interface RequestDataOrder {
   customer_id: number
   gift_card_id: number
   coupon_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface OrderRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -858,8 +858,8 @@ export interface OrderRequestType extends Request {
   customer_id: number
   gift_card_id: number
   coupon_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataCoupon {
@@ -879,8 +879,8 @@ interface RequestDataCoupon {
   applicable_products: string
   applicable_categories: string
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface CouponRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -902,8 +902,8 @@ export interface CouponRequestType extends Request {
   applicable_products: string
   applicable_categories: string
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataTaxRate {
@@ -915,8 +915,8 @@ interface RequestDataTaxRate {
   region: string[] | string
   status: string[] | string
   is_default: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface TaxRateRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -930,8 +930,8 @@ export interface TaxRateRequestType extends Request {
   region: string[] | string
   status: string[] | string
   is_default: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataTransaction {
@@ -943,8 +943,8 @@ interface RequestDataTransaction {
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface TransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -958,8 +958,8 @@ export interface TransactionRequestType extends Request {
   transaction_reference: string
   loyalty_points_earned: number
   loyalty_points_redeemed: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataLoyaltyPoint {
@@ -971,8 +971,8 @@ interface RequestDataLoyaltyPoint {
   description: string
   expiry_date: string
   is_used: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface LoyaltyPointRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -986,8 +986,8 @@ export interface LoyaltyPointRequestType extends Request {
   description: string
   expiry_date: string
   is_used: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataProductItem {
@@ -1001,8 +1001,8 @@ interface RequestDataProductItem {
   inventory_count: number
   sku: string
   custom_options: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ProductItemRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1018,8 +1018,8 @@ export interface ProductItemRequestType extends Request {
   inventory_count: number
   sku: string
   custom_options: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataLoyaltyReward {
@@ -1033,8 +1033,8 @@ interface RequestDataLoyaltyReward {
   is_active: boolean
   expiry_days: number
   image_url: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface LoyaltyRewardRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1050,8 +1050,8 @@ export interface LoyaltyRewardRequestType extends Request {
   is_active: boolean
   expiry_days: number
   image_url: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataShippingMethod {
@@ -1061,8 +1061,8 @@ interface RequestDataShippingMethod {
   base_rate: number
   free_shipping: number
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ShippingMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1074,8 +1074,8 @@ export interface ShippingMethodRequestType extends Request {
   base_rate: number
   free_shipping: number
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataShippingRate {
@@ -1085,8 +1085,8 @@ interface RequestDataShippingRate {
   weight_from: number
   weight_to: number
   rate: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ShippingRateRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1098,8 +1098,8 @@ export interface ShippingRateRequestType extends Request {
   weight_from: number
   weight_to: number
   rate: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataDeliveryRoute {
@@ -1111,8 +1111,8 @@ interface RequestDataDeliveryRoute {
   total_distance: number
   last_active: date
   driver_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface DeliveryRouteRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1126,8 +1126,8 @@ export interface DeliveryRouteRequestType extends Request {
   total_distance: number
   last_active: date
   driver_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataFailedJob {
@@ -1137,8 +1137,8 @@ interface RequestDataFailedJob {
   payload: string
   exception: string
   failed_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface FailedJobRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1150,8 +1150,8 @@ export interface FailedJobRequestType extends Request {
   payload: string
   exception: string
   failed_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPaymentMethod {
@@ -1164,8 +1164,8 @@ interface RequestDataPaymentMethod {
   is_default: boolean
   provider_id: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PaymentMethodRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1180,8 +1180,8 @@ export interface PaymentMethodRequestType extends Request {
   is_default: boolean
   provider_id: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataPaymentTransaction {
@@ -1193,8 +1193,8 @@ interface RequestDataPaymentTransaction {
   provider_id: string
   user_id: number
   payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface PaymentTransactionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1208,8 +1208,8 @@ export interface PaymentTransactionRequestType extends Request {
   provider_id: string
   user_id: number
   payment_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataRequest {
@@ -1222,9 +1222,9 @@ interface RequestDataRequest {
   memory_usage: number
   user_agent: string
   error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
+  deleted_at?: string
+  created_at?: string
+  updated_at?: string
 }
 export interface RequestRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1239,9 +1239,9 @@ export interface RequestRequestType extends Request {
   memory_usage: number
   user_agent: string
   error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
+  deleted_at?: string
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataJob {
@@ -1251,8 +1251,8 @@ interface RequestDataJob {
   attempts: number
   available_at: number
   reserved_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface JobRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1264,8 +1264,8 @@ export interface JobRequestType extends Request {
   attempts: number
   available_at: number
   reserved_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataLog {
@@ -1277,8 +1277,8 @@ interface RequestDataLog {
   project: string
   stacktrace: string
   file: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface LogRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1292,8 +1292,8 @@ export interface LogRequestType extends Request {
   project: string
   stacktrace: string
   file: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataSubscription {
@@ -1310,8 +1310,8 @@ interface RequestDataSubscription {
   ends_at: string
   last_used_at: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface SubscriptionRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1330,8 +1330,8 @@ export interface SubscriptionRequestType extends Request {
   ends_at: string
   last_used_at: string
   user_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 interface RequestDataError {
@@ -1341,8 +1341,8 @@ interface RequestDataError {
   stack: string
   status: number
   additional_info: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export interface ErrorRequestType extends Request {
   validate: (attributes?: CustomAttributes) => void
@@ -1354,8 +1354,8 @@ export interface ErrorRequestType extends Request {
   stack: string
   status: number
   additional_info: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 
 export type ModelRequest = ProjectRequestType | SubscriberEmailRequestType | AccessTokenRequestType | TeamRequestType | SubscriberRequestType | DeploymentRequestType | ReleaseRequestType | UserRequestType | PostRequestType | PaymentProductRequestType | PrintDeviceRequestType | CategoryRequestType | PaymentRequestType | DriverRequestType | WaitlistProductRequestType | DigitalDeliveryRequestType | ManufacturerRequestType | OrderItemRequestType | ShippingZoneRequestType | CustomerRequestType | ProductRequestType | ReceiptRequestType | ProductVariantRequestType | LicenseKeyRequestType | WaitlistRestaurantRequestType | ReviewRequestType | ProductUnitRequestType | GiftCardRequestType | OrderRequestType | CouponRequestType | TaxRateRequestType | TransactionRequestType | LoyaltyPointRequestType | ProductItemRequestType | LoyaltyRewardRequestType | ShippingMethodRequestType | ShippingRateRequestType | DeliveryRouteRequestType | FailedJobRequestType | PaymentMethodRequestType | PaymentTransactionRequestType | RequestRequestType | JobRequestType | LogRequestType | SubscriptionRequestType | ErrorRequestType

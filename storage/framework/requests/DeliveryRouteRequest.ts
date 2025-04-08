@@ -20,8 +20,8 @@ interface RequestDataDeliveryRoute {
   total_distance: number
   last_active: date
   driver_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class DeliveryRouteRequest extends Request<RequestDataDeliveryRoute> implements DeliveryRouteRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class DeliveryRouteRequest extends Request<RequestDataDeliveryRoute> impl
   public total_distance = 0
   public last_active = ''
   public driver_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

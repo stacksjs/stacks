@@ -19,8 +19,8 @@ interface RequestDataShippingZone {
   postal_codes: string
   status: string[] | string
   shipping_method_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ShippingZoneRequest extends Request<RequestDataShippingZone> implements ShippingZoneRequestType {
   public id = 1
@@ -30,8 +30,8 @@ export class ShippingZoneRequest extends Request<RequestDataShippingZone> implem
   public postal_codes = ''
   public status = []
   public shipping_method_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

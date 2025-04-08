@@ -19,8 +19,8 @@ interface RequestDataProductVariant {
   options: string
   status: string[] | string
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ProductVariantRequest extends Request<RequestDataProductVariant> implements ProductVariantRequestType {
   public id = 1
@@ -30,8 +30,8 @@ export class ProductVariantRequest extends Request<RequestDataProductVariant> im
   public options = ''
   public status = []
   public product_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

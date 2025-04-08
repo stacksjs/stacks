@@ -18,8 +18,8 @@ interface RequestDataJob {
   attempts: number
   available_at: number
   reserved_at: date
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class JobRequest extends Request<RequestDataJob> implements JobRequestType {
   public id = 1
@@ -28,8 +28,8 @@ export class JobRequest extends Request<RequestDataJob> implements JobRequestTyp
   public attempts = 0
   public available_at = 0
   public reserved_at = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

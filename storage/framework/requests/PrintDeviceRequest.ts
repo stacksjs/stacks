@@ -20,8 +20,8 @@ interface RequestDataPrintDevice {
   status: string[] | string
   last_ping: number
   print_count: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class PrintDeviceRequest extends Request<RequestDataPrintDevice> implements PrintDeviceRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class PrintDeviceRequest extends Request<RequestDataPrintDevice> implemen
   public status = []
   public last_ping = 0
   public print_count = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -19,8 +19,8 @@ interface RequestDataProductUnit {
   description: string
   is_default: boolean
   product_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ProductUnitRequest extends Request<RequestDataProductUnit> implements ProductUnitRequestType {
   public id = 1
@@ -30,8 +30,8 @@ export class ProductUnitRequest extends Request<RequestDataProductUnit> implemen
   public description = ''
   public is_default = false
   public product_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -20,8 +20,8 @@ interface RequestDataPaymentProduct {
   status: string
   image: string
   provider_id: string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class PaymentProductRequest extends Request<RequestDataPaymentProduct> implements PaymentProductRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class PaymentProductRequest extends Request<RequestDataPaymentProduct> im
   public status = ''
   public image = ''
   public provider_id = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

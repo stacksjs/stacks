@@ -72,7 +72,7 @@ export interface PasskeysTable {
   backup_eligible: boolean
   backup_status: boolean
   transports?: string
-  created_at?: Date
+  created_at?: string
   last_used_at: string
 }
 

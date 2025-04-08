@@ -18,8 +18,8 @@ interface RequestDataShippingMethod {
   base_rate: number
   free_shipping: number
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ShippingMethodRequest extends Request<RequestDataShippingMethod> implements ShippingMethodRequestType {
   public id = 1
@@ -28,8 +28,8 @@ export class ShippingMethodRequest extends Request<RequestDataShippingMethod> im
   public base_rate = 0
   public free_shipping = 0
   public status = []
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

@@ -24,8 +24,8 @@ interface RequestDataAccessToken {
   device_name: string
   is_single_use: boolean
   team_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class AccessTokenRequest extends Request<RequestDataAccessToken> implements AccessTokenRequestType {
   public id = 1
@@ -40,8 +40,8 @@ export class AccessTokenRequest extends Request<RequestDataAccessToken> implemen
   public device_name = ''
   public is_single_use = false
   public team_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

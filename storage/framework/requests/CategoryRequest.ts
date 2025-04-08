@@ -19,8 +19,8 @@ interface RequestDataCategory {
   is_active: boolean
   parent_category_id: string
   display_order: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class CategoryRequest extends Request<RequestDataCategory> implements CategoryRequestType {
   public id = 1
@@ -30,8 +30,8 @@ export class CategoryRequest extends Request<RequestDataCategory> implements Cat
   public is_active = false
   public parent_category_id = ''
   public display_order = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

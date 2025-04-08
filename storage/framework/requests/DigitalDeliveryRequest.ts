@@ -20,8 +20,8 @@ interface RequestDataDigitalDelivery {
   requires_login: boolean
   automatic_delivery: boolean
   status: string[] | string
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class DigitalDeliveryRequest extends Request<RequestDataDigitalDelivery> implements DigitalDeliveryRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class DigitalDeliveryRequest extends Request<RequestDataDigitalDelivery> 
   public requires_login = false
   public automatic_delivery = false
   public status = []
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

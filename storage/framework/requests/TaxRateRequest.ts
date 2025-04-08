@@ -20,8 +20,8 @@ interface RequestDataTaxRate {
   region: string[] | string
   status: string[] | string
   is_default: boolean
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class TaxRateRequest extends Request<RequestDataTaxRate> implements TaxRateRequestType {
   public id = 1
@@ -32,8 +32,8 @@ export class TaxRateRequest extends Request<RequestDataTaxRate> implements TaxRa
   public region = []
   public status = []
   public is_default = false
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

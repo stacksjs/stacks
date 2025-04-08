@@ -21,9 +21,9 @@ interface RequestDataRequest {
   memory_usage: number
   user_agent: string
   error_message: string
-  deleted_at?: Date
-  created_at?: Date
-  updated_at?: Date
+  deleted_at?: string
+  created_at?: string
+  updated_at?: string
 }
 export class RequestRequest extends Request<RequestDataRequest> implements RequestRequestType {
   public id = 1
@@ -35,10 +35,10 @@ export class RequestRequest extends Request<RequestDataRequest> implements Reque
   public memory_usage = 0
   public user_agent = ''
   public error_message = ''
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
 
-  public deleted_at = new Date()
+  public deleted_at = ''
 
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {

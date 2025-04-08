@@ -24,8 +24,8 @@ interface RequestDataProduct {
   nutritional_info: string
   category_id: number
   manufacturer_id: number
-  created_at?: Date
-  updated_at?: Date
+  created_at?: string
+  updated_at?: string
 }
 export class ProductRequest extends Request<RequestDataProduct> implements ProductRequestType {
   public id = 1
@@ -40,8 +40,8 @@ export class ProductRequest extends Request<RequestDataProduct> implements Produ
   public nutritional_info = ''
   public category_id = 0
   public manufacturer_id = 0
-  public created_at = new Date()
-  public updated_at = new Date()
+  public created_at = ''
+  public updated_at = ''
   public uuid = ''
   public async validate(attributes?: CustomAttributes): Promise<void> {
     if (attributes === undefined || attributes === null) {
