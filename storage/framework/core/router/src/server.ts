@@ -1,4 +1,4 @@
-import type { Model, Route, RouteParam, StatusCode } from '@stacksjs/types'
+import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
 import process from 'node:process'
 
 import { handleError } from '@stacksjs/error-handling'
@@ -31,17 +31,6 @@ const limiter = new RateLimiter({
     })
   }
 })
-
-interface ServeOptions {
-  host?: string
-  port?: number
-  debug?: boolean
-  timezone?: string
-}
-
-interface Options {
-  statusCode?: StatusCode
-}
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
   const hostname = options.host || 'localhost'
@@ -148,8 +137,9 @@ function extractDynamicSegments(routePattern: string, path: string): RouteParam 
   const match = path.match(regexPattern)
 
   if (!match) {
-    return null
+    return {}
   }
+
   const dynamicSegmentNames = [...routePattern.matchAll(/\{(\w+)\}/g)].map(m => m[1])
   const dynamicSegmentValues = match.slice(1) // First match is the whole string, so we slice it off
 
@@ -505,6 +495,7 @@ async function executeMiddleware(route: Route): Promise<any> {
     }
   }
 }
+
 function isString(val: unknown): val is string {
   return typeof val === 'string'
 }

@@ -21,6 +21,18 @@ export interface Route {
   statusCode?: StatusCode
 }
 
+
+export interface ServeOptions {
+  host?: string
+  port?: number
+  debug?: boolean
+  timezone?: string
+}
+
+export interface Options {
+  statusCode?: StatusCode
+}
+
 export interface MiddlewareOptions {
   name: string
   description?: string

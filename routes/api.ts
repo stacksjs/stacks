@@ -70,6 +70,8 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/payments', 'Actions/Commerce/PaymentIndexOrmAction')
   route.post('/payments', 'Actions/Commerce/PaymentStoreOrmAction')
   route.get('/payments/{id}', 'Actions/Commerce/PaymentShowOrmAction')
+  route.get('/payments/stats', 'Actions/Commerce/PaymentFetchStatsAction')
+  route.get('/payments/monthly-trends', 'Actions/Commerce/PaymentMonthlyTrendsAction')
 
   // Drivers
   route.get('/drivers', 'Actions/Commerce/DriverIndexOrmAction')
@@ -142,6 +144,7 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantShowOrmAction')
   route.patch('/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateOrmAction')
   route.delete('/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyOrmAction')
+  route.get('/waitlist-restaurants/dashboard', 'Actions/Commerce/WaitlistRestaurantDashboardAction')
 
   // Product Reviews
   route.get('/product-reviews', 'Actions/Commerce/Product/ReviewIndexOrmAction')
@@ -157,11 +160,14 @@ route.group({ prefix: '/commerce' }, async () => {
   route.get('/gift-cards', 'Actions/Commerce/GiftCardIndexOrmAction')
   route.post('/gift-cards', 'Actions/Commerce/GiftCardStoreOrmAction')
   route.get('/gift-cards/{id}', 'Actions/Commerce/GiftCardShowOrmAction')
+  route.get('/gift-cards/stats', 'Actions/Commerce/GiftCardStatsAction')
+  route.patch('/gift-cards/{id}/balance', 'Actions/Commerce/GiftCardUpdateBalanceAction')
 
   // Orders
   route.get('/orders', 'Actions/Commerce/OrderIndexOrmAction')
   route.post('/orders', 'Actions/Commerce/OrderStoreOrmAction')
   route.get('/orders/{id}', 'Actions/Commerce/OrderShowOrmAction')
+  route.get('/orders/export', 'Actions/Commerce/OrderExportAction')
 
   // Coupons
   route.get('/coupons', 'Actions/Commerce/CouponIndexOrmAction')
