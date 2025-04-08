@@ -1099,6 +1099,9 @@
     "storage/framework/core/router": {
       "name": "@stacksjs/router",
       "version": "0.70.23",
+      "dependencies": {
+        "ts-rate-limiter": "^0.3.1",
+      },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -4993,6 +4996,8 @@
     "ts-macro": ["ts-macro@0.1.25", "", { "dependencies": { "@volar/language-core": "^2.4.11", "@vue/language-core": "^2.2.8", "muggle-string": "^0.4.1", "unplugin-utils": "^0.2.4" } }, "sha512-C8Lxnn/XXvqMx+orKU6/gKrCmU/dOFUAxRstRTSmNUdrIjxoTuwsK8vTrLyYP0L+IVbIq9WgKBiGFUIab36l1Q=="],
 
     "ts-map": ["ts-map@1.0.3", "", {}, "sha512-vDWbsl26LIcPGmDpoVzjEP6+hvHZkBkLW7JpvwbCv/5IYPJlsbzCVXY3wsCeAxAUeTclNOUZxnLdGh3VBD/J6w=="],
+
+    "ts-rate-limiter": ["ts-rate-limiter@0.3.1", "", { "bin": { "ts-rate-limiter": "dist/bin/init-config.js" } }, "sha512-/u91IuiUTWJOWYfRbfRkV/3ZDFWuD9bTAwcZYUzn2iRwQwB/teGodqICqN5JSLx+FZ3UIeGpgTJbatL1GiqkAA=="],
 
     "ts-spreadsheets": ["ts-spreadsheets@0.2.0", "", { "bin": { "spreadsheets": "dist/bin/cli.js" } }, "sha512-/4GiXSoF/lilocpenawz8X+MuPi6+aEfjI68fTXAqmpuzI4S2StQj19A85bvrFSga1DPf0qVQUHI1kzBlnjhyA=="],
 

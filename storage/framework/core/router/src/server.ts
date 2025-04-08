@@ -8,10 +8,29 @@ import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
 import { route, staticRoute } from '.'
+import { RateLimiter, type RateLimitResult } from 'ts-rate-limiter'
 
 import { middlewares } from './middleware'
 
 import { request as RequestParam } from './request'
+
+const limiter = new RateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  maxRequests: 100,
+  algorithm: 'sliding-window',
+  handler: (req: Request, result: RateLimitResult) => {
+    return new Response(JSON.stringify({
+      error: 'Too many requests',
+      retryAfter: Math.ceil(result.remaining / 1000),
+    }), {
+      status: 429,
+      headers: {
+        'Content-Type': 'application/json',
+        'Retry-After': Math.ceil(result.remaining / 1000).toString(),
+      }
+    })
+  }
+})
 
 interface ServeOptions {
   host?: string
@@ -30,6 +49,7 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
   const staticFiles = await staticRoute.getStaticConfig()
 
+  
   if (options.timezone)
     process.env.TZ = options.timezone
 
@@ -51,13 +71,18 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   log.debug(`Incoming Request: ${req.method} ${req.url}`)
   log.debug(`Headers: ${JSON.stringify(req.headers)}`)
   log.debug(`Body: ${JSON.stringify(req.body)}`)
-  // log.debug(`Query: ${JSON.stringify(req.query)}`)
-  // log.debug(`Params: ${JSON.stringify(req.params)}`)
-  // log.debug(`Cookies: ${JSON.stringify(req.cookies)}`)
 
-  // Trim trailing slash from the URL if it's not the root '/'
-  // This automatically allows for route definitions, like
-  // '/about' and '/about/' to be treated as the same
+
+  const result = await limiter.check(req)
+
+  if (!result.allowed) {
+    log.info(`Rate limit exceeded: ${result.current}/${result.limit}`)
+    log.info(`Reset in ${Math.ceil(result.remaining / 1000)} seconds`)
+
+    // Handle rate limiting in your own way
+    return new Response('Too many requests', { status: 429 })
+  }
+
   const trimmedUrl = req.url.endsWith('/') && req.url.length > 1 ? req.url.slice(0, -1) : req.url
   const url: URL = new URL(trimmedUrl) as URL
   const routesList: Route[] = await route.getRoutes()
