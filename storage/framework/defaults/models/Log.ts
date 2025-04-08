@@ -23,12 +23,12 @@ export default {
       order: 1,
       fillable: true,
       validation: {
-        rule: schema.date(),
+        rule: schema.number(),
         message: {
           date: 'Timestamp must be a valid date',
         },
       },
-      factory: faker => faker.date.recent(),
+      factory: faker => faker.date.recent().getTime(),
     },
 
     type: {

@@ -7,7 +7,7 @@ import { BaseOrm } from '../utils/base'
 
 export interface LogsTable {
   id: Generated<number>
-  timestamp: Date | string
+  timestamp: number
   type: string | string[]
   source: string | string[]
   message: string
@@ -177,7 +177,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return this.attributes.id
   }
 
-  get timestamp(): Date | string {
+  get timestamp(): number {
     return this.attributes.timestamp
   }
 
@@ -213,7 +213,7 @@ export class LogModel extends BaseOrm<LogModel, LogsTable, LogJsonResponse> {
     return this.attributes.updated_at
   }
 
-  set timestamp(value: Date | string) {
+  set timestamp(value: number) {
     this.attributes.timestamp = value
   }
 
@@ -940,7 +940,7 @@ export async function remove(id: number): Promise<void> {
     .execute()
 }
 
-export async function whereTimestamp(value: Date | string): Promise<LogModel[]> {
+export async function whereTimestamp(value: number): Promise<LogModel[]> {
   const query = DB.instance.selectFrom('logs').where('timestamp', '=', value)
   const results: LogJsonResponse = await query.execute()
 

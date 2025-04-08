@@ -1270,7 +1270,7 @@ export interface JobRequestType extends Request {
 
 interface RequestDataLog {
   id: number
-  timestamp: date
+  timestamp: number
   type: string[] | string
   source: string[] | string
   message: string
@@ -1285,7 +1285,7 @@ export interface LogRequestType extends Request {
   get: <T = string>(key: string, defaultValue?: T) => T
   all: () => RequestDataLog
   id: number
-  timestamp: date
+  timestamp: number
   type: string[] | string
   source: string[] | string
   message: string

@@ -13,7 +13,7 @@ interface CustomAttributes {
 }
 interface RequestDataLog {
   id: number
-  timestamp: date
+  timestamp: number
   type: string[] | string
   source: string[] | string
   message: string
@@ -25,7 +25,7 @@ interface RequestDataLog {
 }
 export class LogRequest extends Request<RequestDataLog> implements LogRequestType {
   public id = 1
-  public timestamp = ''
+  public timestamp = 0
   public type = []
   public source = []
   public message = ''
