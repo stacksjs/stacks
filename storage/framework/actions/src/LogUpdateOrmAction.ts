@@ -11,8 +11,8 @@ export default new Action({
   async handle(request: LogRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await Log.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await Log.findOrFail(id)
 
     const result = model.update(request.all())
 

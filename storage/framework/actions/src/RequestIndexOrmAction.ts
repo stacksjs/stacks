@@ -6,7 +6,7 @@ export default new Action({
   description: 'Request Index ORM Action',
   method: 'GET',
   async handle() {
-    const results = Request.all()
+    const results = await Request.all()
 
     return response.json(results)
   },

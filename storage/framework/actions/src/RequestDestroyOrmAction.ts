@@ -1,17 +1,20 @@
 import type { RequestRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { Request } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+
 export default new Action({
   name: 'Request Destroy',
   description: 'Request Destroy ORM Action',
   method: 'DELETE',
   async handle(request: RequestRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Request.findOrFail(Number(id))
+    const model = await Request.findOrFail(id)
 
     model.delete()
 
-    return 'Model deleted!'
+    return response.json({ message: 'Model deleted!' })
   },
 })

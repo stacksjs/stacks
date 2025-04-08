@@ -1,6 +1,7 @@
 import type { RequestRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { Request } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({

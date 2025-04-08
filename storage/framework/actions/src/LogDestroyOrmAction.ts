@@ -9,9 +9,9 @@ export default new Action({
   description: 'Log Destroy ORM Action',
   method: 'DELETE',
   async handle(request: LogRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Log.findOrFail(Number(id))
+    const model = await Log.findOrFail(id)
 
     model.delete()
 

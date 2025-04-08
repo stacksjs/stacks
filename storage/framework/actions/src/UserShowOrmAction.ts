@@ -1,28 +1,18 @@
+import type { UserRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
+
+import { User } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'User Show',
   description: 'User Show ORM Action',
   method: 'GET',
-  async handle() {
-    // mail.send({
-    //   from: {
-    //     address: 'gtorregosa@gmail.com',
-    //     name: 'Glenn',
-    //   },
-    //   to: 'chrisbreuer93@gmail.com',
-    //   subject: 'Test Email',
-    //   template: 'WelcomeTest',
-    // })
+  async handle(request: UserRequestType) {
+    const id = request.getParam<number>('id')
 
-    // async handle(request: UserRequestType) {
-    // const id = request.getParam('id')
+    const model = await User.findOrFail(id)
 
-    // const user = await Error.whereColumn('id', '')
-
-    // user?.update({ job_title: 'Senior Software Engineer' })
-    // user?.delete()
-
-    // return response.json(user)
+    return response.json(model)
   },
 })

@@ -1,6 +1,7 @@
 import type { RequestRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { Request } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -10,8 +11,8 @@ export default new Action({
   async handle(request: RequestRequestType) {
     await request.validate()
 
-    const id = request.getParam('id')
-    const model = await Request.findOrFail(Number(id))
+    const id = request.getParam<number>('id')
+    const model = await Request.findOrFail(id)
 
     const result = model.update(request.all())
 

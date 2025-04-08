@@ -1,6 +1,7 @@
 import type { RequestRequestType } from '@stacksjs/orm'
 import { Action } from '@stacksjs/actions'
 
+import { Request } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -8,9 +9,9 @@ export default new Action({
   description: 'Request Show ORM Action',
   method: 'GET',
   async handle(request: RequestRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Request.findOrFail(Number(id))
+    const model = await Request.findOrFail(id)
 
     return response.json(model)
   },

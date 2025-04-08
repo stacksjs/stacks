@@ -9,9 +9,9 @@ export default new Action({
   description: 'Log Show ORM Action',
   method: 'GET',
   async handle(request: LogRequestType) {
-    const id = request.getParam('id')
+    const id = request.getParam<number>('id')
 
-    const model = await Log.findOrFail(Number(id))
+    const model = await Log.findOrFail(id)
 
     return response.json(model)
   },
