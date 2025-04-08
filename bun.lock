@@ -760,6 +760,11 @@
     "storage/framework/core/database": {
       "name": "@stacksjs/database",
       "version": "0.70.23",
+      "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.782.0",
+        "@aws-sdk/lib-dynamodb": "^3.782.0",
+        "dynamodb-toolbox": "^2.0.0",
+      },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1692,6 +1697,8 @@
 
     "@aws-sdk/endpoint-cache": ["@aws-sdk/endpoint-cache@3.723.0", "", { "dependencies": { "mnemonist": "0.38.3", "tslib": "^2.6.2" } }, "sha512-2+a4WXRc+07uiPR+zJiPGKSOWaNJQNqitkks+6Hhm/haTLJqNVTgY2OWDh2PXvwMNpKB+AlGdhE65Oy6NzUgXg=="],
 
+    "@aws-sdk/lib-dynamodb": ["@aws-sdk/lib-dynamodb@3.782.0", "", { "dependencies": { "@aws-sdk/core": "3.775.0", "@aws-sdk/util-dynamodb": "3.782.0", "@smithy/core": "^3.2.0", "@smithy/smithy-client": "^4.2.0", "@smithy/types": "^4.2.0", "tslib": "^2.6.2" }, "peerDependencies": { "@aws-sdk/client-dynamodb": "^3.782.0" } }, "sha512-nPVZfuiAy0HlwoN1gZ28wza8RoC+dtScPFGEwPtt/DoWPQ65GnSK6qebHOAdaef4DZL2b8an4xtlt4PZrgDEWg=="],
+
     "@aws-sdk/lib-storage": ["@aws-sdk/lib-storage@3.772.0", "", { "dependencies": { "@smithy/abort-controller": "^4.0.1", "@smithy/middleware-endpoint": "^4.0.6", "@smithy/smithy-client": "^4.1.6", "buffer": "5.6.0", "events": "3.3.0", "stream-browserify": "3.0.0", "tslib": "^2.6.2" }, "peerDependencies": { "@aws-sdk/client-s3": "^3.772.0" } }, "sha512-d59NJAHDa7mGf82ApOdIp1FsN1i7/VlNTk2t3NIepH/8FsMTzKPZQvbMzqE33ba4oik7y6QrDliYXoRXB/nZPg=="],
 
     "@aws-sdk/middleware-bucket-endpoint": ["@aws-sdk/middleware-bucket-endpoint@3.775.0", "", { "dependencies": { "@aws-sdk/types": "3.775.0", "@aws-sdk/util-arn-parser": "3.723.0", "@smithy/node-config-provider": "^4.0.2", "@smithy/protocol-http": "^5.1.0", "@smithy/types": "^4.2.0", "@smithy/util-config-provider": "^4.0.0", "tslib": "^2.6.2" } }, "sha512-qogMIpVChDYr4xiUNC19/RDSw/sKoHkAhouS6Skxiy6s27HBhow1L3Z1qVYXuBmOZGSWPU0xiyZCvOyWrv9s+Q=="],
@@ -1733,6 +1740,8 @@
     "@aws-sdk/types": ["@aws-sdk/types@3.775.0", "", { "dependencies": { "@smithy/types": "^4.2.0", "tslib": "^2.6.2" } }, "sha512-ZoGKwa4C9fC9Av6bdfqcW6Ix5ot05F/S4VxWR2nHuMv7hzfmAjTOcUiWT7UR4hM/U0whf84VhDtXN/DWAk52KA=="],
 
     "@aws-sdk/util-arn-parser": ["@aws-sdk/util-arn-parser@3.723.0", "", { "dependencies": { "tslib": "^2.6.2" } }, "sha512-ZhEfvUwNliOQROcAk34WJWVYTlTa4694kSVhDSjW6lE1bMataPnIN8A0ycukEzBXmd8ZSoBcQLn6lKGl7XIJ5w=="],
+
+    "@aws-sdk/util-dynamodb": ["@aws-sdk/util-dynamodb@3.782.0", "", { "dependencies": { "tslib": "^2.6.2" }, "peerDependencies": { "@aws-sdk/client-dynamodb": "^3.782.0" } }, "sha512-DsYJaP418Qmb1eGrTabtH5mjO4XHRyE9NzBdcKEWSFtDvLfUxUzzoCdNcW0GHy0Mqh5/tB52IDNjKQg5q3G1OA=="],
 
     "@aws-sdk/util-endpoints": ["@aws-sdk/util-endpoints@3.782.0", "", { "dependencies": { "@aws-sdk/types": "3.775.0", "@smithy/types": "^4.2.0", "@smithy/util-endpoints": "^3.0.2", "tslib": "^2.6.2" } }, "sha512-/RJOAO7o7HI6lEa4ASbFFLHGU9iPK876BhsVfnl54MvApPVYWQ9sHO0anOUim2S5lQTwd/6ghuH3rFYSq/+rdw=="],
 
@@ -3570,6 +3579,8 @@
 
     "duplexer": ["duplexer@0.1.2", "", {}, "sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg=="],
 
+    "dynamodb-toolbox": ["dynamodb-toolbox@2.0.0", "", { "dependencies": { "hotscript": "^1.0.13" }, "peerDependencies": { "@aws-sdk/client-dynamodb": "^3.0.0", "@aws-sdk/lib-dynamodb": "^3.0.0" } }, "sha512-hLUZHRQ7Y9zTQQafjkxUgtrLR+RSq5df6YiDIm1IUANVZA7lTcr5CBPQEQdgMxvdYjcrHYVgo4B0INqKD+a39A=="],
+
     "dynamodb-tooling": ["dynamodb-tooling@0.3.2", "", {}, "sha512-qjd0cOwoWJ2Ym+XrIOObHvADqxd72Og1HemfIs1Iw6dJ4rY7gcNpTfAOlRTlrUpYF52BB3mrIRAbl1VQrJPexw=="],
 
     "eastasianwidth": ["eastasianwidth@0.2.0", "", {}, "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA=="],
@@ -3871,6 +3882,8 @@
     "hookable": ["hookable@5.5.3", "", {}, "sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ=="],
 
     "hosted-git-info": ["hosted-git-info@7.0.2", "", { "dependencies": { "lru-cache": "^10.0.1" } }, "sha512-puUZAUKT5m8Zzvs72XWy3HtvVbTWljRE66cP60bxJzAqf2DgICo7lYTY2IHUmLnNpjYvw5bvmoHvPc0QO2a62w=="],
+
+    "hotscript": ["hotscript@1.0.13", "", {}, "sha512-C++tTF1GqkGYecL+2S1wJTfoH6APGAsbb7PAWQ3iVIwgG/EFseAfEVOKFgAFq4yK3+6j1EjUD4UQ9dRJHX/sSQ=="],
 
     "hpagent": ["hpagent@1.2.0", "", {}, "sha512-A91dYTeIB6NoXG+PxTQpCCDDnfHsW9kc06Lvpu1TEe9gnd6ZFeiBoRO9JvzEv6xK7EX97/dUE8g/vBMTqTS3CA=="],
 
