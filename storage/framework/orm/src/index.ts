@@ -24,6 +24,8 @@ export { default as Job, type JobJsonResponse, type JobUpdate, type NewJob } fro
 
 export { default as LicenseKey, type LicenseKeyJsonResponse, type LicenseKeyUpdate, type NewLicenseKey } from './models/LicenseKey'
 
+export { default as Log, type LogJsonResponse, type LogUpdate, type NewLog } from './models/Log'
+
 export { default as LoyaltyPoint, type LoyaltyPointJsonResponse, type LoyaltyPointUpdate, type NewLoyaltyPoint } from './models/LoyaltyPoint'
 
 export { default as LoyaltyReward, type LoyaltyRewardJsonResponse, type LoyaltyRewardUpdate, type NewLoyaltyReward } from './models/LoyaltyReward'

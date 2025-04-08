@@ -21,7 +21,6 @@ export interface Route {
   statusCode?: StatusCode
 }
 
-
 export interface ServeOptions {
   host?: string
   port?: number

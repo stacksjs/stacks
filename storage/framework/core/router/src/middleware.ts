@@ -1,6 +1,6 @@
 import type { MiddlewareOptions } from '@stacksjs/types'
-import { userMiddlewarePath } from '@stacksjs/path'
 import type { Request } from './request'
+import { userMiddlewarePath } from '@stacksjs/path'
 
 export class Middleware implements MiddlewareOptions {
   name: string

@@ -188,13 +188,16 @@ export interface Attributes {
   attempts: number
   available_at: number
   reserved_at: Date | string
+  message: string
+  project: string
+  stacktrace: string
+  file: string
   plan: string
   provider_status: string
   provider_type: string
   provider_price_id: string
   trial_ends_at: string
   ends_at: string
-  message: string
   stack: string
   additional_info: string
 }

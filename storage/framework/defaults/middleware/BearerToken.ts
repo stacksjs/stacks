@@ -1,6 +1,6 @@
+import type { Request } from '@stacksjs/router'
 import { Middleware } from '@stacksjs/router'
 import { HttpError } from 'error-handling'
-import type { Request } from '@stacksjs/router'
 
 export default new Middleware({
   name: 'Bearer Token Test',

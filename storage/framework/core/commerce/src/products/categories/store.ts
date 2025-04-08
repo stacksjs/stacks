@@ -1,4 +1,4 @@
-import type { CategoryRequestType, CategoryJsonResponse, NewCategory } from '@stacksjs/orm'
+import type { CategoryJsonResponse, CategoryRequestType, NewCategory } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 

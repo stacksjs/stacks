@@ -1,14 +1,15 @@
 import type { Model, Options, Route, RouteParam, ServeOptions } from '@stacksjs/types'
-import process from 'node:process'
+import type { RateLimitResult } from 'ts-rate-limiter'
 
+import process from 'node:process'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { getModelName } from '@stacksjs/orm'
 import { extname, path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { isNumber } from '@stacksjs/validation'
+import { RateLimiter } from 'ts-rate-limiter'
 import { route, staticRoute } from '.'
-import { RateLimiter, type RateLimitResult } from 'ts-rate-limiter'
 
 import { middlewares } from './middleware'
 
@@ -27,9 +28,9 @@ const limiter = new RateLimiter({
       headers: {
         'Content-Type': 'application/json',
         'Retry-After': Math.ceil(result.remaining / 1000).toString(),
-      }
+      },
     })
-  }
+  },
 })
 
 export async function serve(options: ServeOptions = {}): Promise<void> {
@@ -38,7 +39,6 @@ export async function serve(options: ServeOptions = {}): Promise<void> {
   const development = options.debug ? true : process.env.APP_ENV !== 'production' && process.env.APP_ENV !== 'prod'
   const staticFiles = await staticRoute.getStaticConfig()
 
-  
   if (options.timezone)
     process.env.TZ = options.timezone
 
@@ -60,7 +60,6 @@ export async function serverResponse(req: Request, body: string): Promise<Respon
   log.debug(`Incoming Request: ${req.method} ${req.url}`)
   log.debug(`Headers: ${JSON.stringify(req.headers)}`)
   log.debug(`Body: ${JSON.stringify(req.body)}`)
-
 
   const result = await limiter.check(req)
 
