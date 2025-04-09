@@ -404,7 +404,7 @@ export async function generateModelString(
           toSearchableObject(): Partial<${modelName}JsonResponse> {
               return {
                   ${searchAttrs
-                    .map(attr => `${attr}: this.${attr}`)
+                    .map(attr => `${attr}: this.${snakeCase(attr)}`)
                     .join(',\n')}
               }
           }

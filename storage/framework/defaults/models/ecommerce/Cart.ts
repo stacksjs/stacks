@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'customer_id', 'status', 'totalItems', 'subtotal', 'total', 'expiresAt'],
-      searchable: ['id', 'customer_id', 'status'],
-      sortable: ['created_at', 'updated_at', 'expiresAt', 'total'],
-      filterable: ['status', 'customer_id'],
+      displayable: ['id', 'customerId', 'status', 'totalItems', 'subtotal', 'total', 'expiresAt'],
+      searchable: ['id', 'customerId', 'status'],
+      sortable: ['createdAt', 'updatedAt', 'expiresAt', 'total'],
+      filterable: ['status', 'customerId'],
     },
 
     useSeeder: {
