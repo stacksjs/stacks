@@ -116,7 +116,6 @@ export interface SearchEngineDriver {
   getSettings: (index: string) => Promise<Settings>
   updateSettings: (index: string, settings: Settings) => Promise<EnqueuedTask>
   resetSettings: (index: string) => Promise<EnqueuedTask>
-  å
   getPagination: (index: string) => Promise<PaginationSettings>
   updatePagination: (index: string, pagination: PaginationSettings) => Promise<EnqueuedTask>
   resetPagination: (index: string) => Promise<EnqueuedTask>

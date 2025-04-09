@@ -6,6 +6,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
+import { snakeCase } from '@stacksjs/strings'
 
 export async function updateIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
   try {
@@ -19,9 +20,9 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
       const tableName = getTableName(modelInstance, model)
 
       if (searchable && typeof searchable === 'object') {
-        const filterableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.filterable) || []
-        const sortableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.sortable) || []
-        const searchableAttributes = (typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.searchable) || []
+        const filterableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.filterable) || []).map(attr => snakeCase(attr))
+        const sortableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.sortable) || []).map(attr => snakeCase(attr))
+        const searchableAttributes = ((typeof modelInstance.traits?.useSearch === 'object' && modelInstance.traits?.useSearch.searchable) || []).map(attr => snakeCase(attr))
 
         await updateSettings(tableName, { filterableAttributes, sortableAttributes, searchableAttributes })
       }

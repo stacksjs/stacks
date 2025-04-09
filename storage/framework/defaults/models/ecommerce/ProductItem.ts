@@ -11,10 +11,10 @@ export default {
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'productId', 'size', 'color', 'price', 'isAvailable', 'inventoryCount'],
-      searchable: ['name', 'size', 'color', 'productId'],
-      sortable: ['price', 'createdAt', 'updatedAt', 'inventoryCount'],
-      filterable: ['productId', 'isAvailable', 'size', 'color'],
+      displayable: ['id', 'name', 'product_id', 'size', 'color', 'price', 'is_available', 'inventory_count'],
+      searchable: ['name', 'size', 'color', 'product_id'],
+      sortable: ['price', 'created_at', 'updated_at', 'inventory_count'],
+      filterable: ['product_id', 'is_available', 'size', 'color'],
     },
 
     useSeeder: {
