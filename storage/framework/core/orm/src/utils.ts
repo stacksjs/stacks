@@ -712,7 +712,7 @@ export async function writeModelRequest(): Promise<void> {
       }
     }
 
-    fieldStringType += ` get<K extends string>(element: K, defaultValue?: K extends NumericField ? number : string): K extends NumericField ? number : string`
+    fieldStringType += ` get<K extends any>(element: string, defaultValue?: K extends NumericField ? number : K) => K extends NumericField ? number : K`
 
     const otherModelRelations = await fetchOtherModelRelations(modelName)
 

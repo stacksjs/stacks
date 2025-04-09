@@ -96,3 +96,30 @@ export interface RouterInterface {
   middleware: (middleware: Route['middleware']) => this
   getRoutes: () => Promise<Route[]>
 }
+
+export interface RequestInstance {
+  query: any
+  params: RouteParams
+  headers: any
+  addQuery: (url: URL) => void
+  addBodies: (params: any) => void
+  addParam: (param: RouteParam) => void
+  addHeaders: (headerParams: Headers) => void
+  get: <K extends string>(element: K, defaultValue?: K extends NumericField ? number : string) => K extends NumericField ? number : string
+  all: () => any
+  validate: (attributes?: CustomAttributes) => Promise<void>
+  has: (element: string) => boolean
+  isEmpty: () => boolean
+  extractParamsFromRoute: (routePattern: string, pathname: string) => void
+  header: (headerParam: string) => string | number | boolean | null
+  getHeaders: () => any
+  Header: (headerParam: string) => string | number | boolean | null
+  getParam: <T>(key: string) => T
+  route: (key: string) => number | string | null
+  bearerToken: () => string | null | AuthToken
+  getParams: () => RouteParams
+  getParamAsInt: (key: string) => number | null
+  browser: () => string | null
+  ip: () => string | null
+  ipForRateLimit: () => string | null
+}

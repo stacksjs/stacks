@@ -66,13 +66,15 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get<K extends string>(element: K, defaultValue?: K extends NumericField ? number : string): K extends NumericField ? number : string {
+  public get<K extends any>(element: string, defaultValue?: K extends NumericField ? number : K): K extends NumericField ? number : K {
     const value = this.query[element]
 
-    if (numericFields.has(element as NumericField))
-      return (value ? Number(value) : defaultValue) as K extends NumericField ? number : string
+    if (numericFields.has(element as NumericField)) {
+      const numValue = value ? Number(value) : defaultValue
+      return (numValue || defaultValue) as K extends NumericField ? number : K
+    }
 
-    return (value || defaultValue) as K extends NumericField ? number : string
+    return (value || defaultValue) as any
   }
 
   public all(): T {
