@@ -118,8 +118,6 @@ const SubscriberEmailEntity: Entity = new Entity({
 
 // Post Entity
 const postSchema = item({
-  id: string().required(),
-  user_id: string().required(),
   title: string().required(),
   body: string().required(),
   created_at: string(),
@@ -133,6 +131,8 @@ const PostEntity: Entity = new Entity({
   computeKey: (keyInput: any) => ({
     pk: `POST#${keyInput.id}`,
     sk: `POST#${keyInput.id}`,
+    gsi1pk: `POST#TITLE`,
+    gsi1sk: `POST#${keyInput.id}`,
   }),
 })
 
@@ -146,10 +146,10 @@ const generateKeys = {
     gsi2pk: `USER#NAME`,
     gsi2sk: `USER#${id}`,
   }),
-  post: (id: string, userId: string) => ({
+  post: (id: string) => ({
     pk: `POST#${id}`,
     sk: `POST#${id}`,
-    gsi1pk: `USER#${userId}`,
+    gsi1pk: `POST#TITLE`,
     gsi1sk: `POST#${id}`,
   }),
 }

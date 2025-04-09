@@ -60,8 +60,15 @@ export class Router implements RouterInterface {
     log.debug(`Normalized Path: ${this.path}`)
 
     const uri = this.prepareUri(this.path)
-
     log.debug(`Prepared URI: ${uri}`)
+
+    // If callback is a string and ends with .html, treat it as a view
+    if (typeof callback === 'string' && callback.endsWith('.html')) {
+      // Add to static manager
+      staticRoute.addHtmlFile(uri, callback)
+      // Register as a route for consistency
+      return this.addRoute('GET', uri, async () => callback, 200)
+    }
 
     return this.addRoute('GET', uri, callback, 200)
   }
