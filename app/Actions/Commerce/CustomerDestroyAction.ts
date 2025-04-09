@@ -8,7 +8,7 @@ export default new Action({
   description: 'Customer Destroy ORM Action',
   method: 'DELETE',
   async handle(request: CustomerRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await customers.destroy(id)
 

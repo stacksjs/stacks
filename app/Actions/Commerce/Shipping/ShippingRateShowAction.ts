@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingRate Show ORM Action',
   method: 'GET',
   async handle(request: ShippingRateRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.rates.fetchById(id)
 

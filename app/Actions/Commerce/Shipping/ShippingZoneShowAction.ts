@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingZone Show ORM Action',
   method: 'GET',
   async handle(request: ShippingZoneRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.zones.fetchById(id)
 

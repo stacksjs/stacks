@@ -10,7 +10,7 @@ export default new Action({
   description: 'PrintDevice Destroy ORM Action',
   method: 'DELETE',
   async handle(request: PrintDeviceRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await devices.destroy(id)
 

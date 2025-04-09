@@ -8,7 +8,7 @@ export default new Action({
   description: 'WaitlistProduct Destroy ORM Action',
   method: 'DELETE',
   async handle(request: WaitlistProductRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await waitlists.products.destroy(id)
 

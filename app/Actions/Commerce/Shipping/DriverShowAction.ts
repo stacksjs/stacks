@@ -10,7 +10,7 @@ export default new Action({
   description: 'Driver Show ORM Action',
   method: 'GET',
   async handle(request: DriverRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.drivers.fetchById(id)
 

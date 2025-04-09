@@ -9,7 +9,7 @@ export default new Action({
   description: 'ProductVariant Show ORM Action',
   method: 'GET',
   async handle(request: ProductVariantRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await products.variants.fetchById(id)
 

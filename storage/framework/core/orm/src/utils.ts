@@ -825,7 +825,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   if (apiRoute === 'show') {
     actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
-        const id = request.getParam<number>('id')
+        const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(id)
 
@@ -838,7 +838,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
   if (apiRoute === 'destroy') {
     actionString += `  import type { ${modelName}RequestType } from '@stacksjs/orm'\n import { ${modelName} } from '@stacksjs/orm'\n import { response } from '@stacksjs/router'\n\n`
     handleString += `async handle(request: ${modelName}RequestType) {
-        const id = request.getParam<number>('id')
+        const id = request.getParam('id')
 
         const model = await ${modelName}.findOrFail(id)
 
@@ -867,7 +867,7 @@ export async function writeOrmActions(apiRoute: string, modelName: string, actio
     handleString += `async handle(request: ${modelName}RequestType) {
         await request.validate()
 
-        const id = request.getParam<number>('id')
+        const id = request.getParam('id')
         const model = await ${modelName}.findOrFail(id)
 
         const result = model?.update(request.all())

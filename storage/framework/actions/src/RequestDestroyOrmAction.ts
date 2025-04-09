@@ -9,7 +9,7 @@ export default new Action({
   description: 'Request Destroy ORM Action',
   method: 'DELETE',
   async handle(request: RequestRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await Request.findOrFail(id)
 

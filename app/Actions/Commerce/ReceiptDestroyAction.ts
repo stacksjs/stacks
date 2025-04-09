@@ -10,7 +10,7 @@ export default new Action({
   description: 'Receipt Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ReceiptRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await receipts.destroy(id)
 

@@ -10,7 +10,7 @@ export default new Action({
   description: 'GiftCard Update ORM Action',
   method: 'PUT',
   async handle(request: GiftCardRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await giftCards.update(id, request)
 

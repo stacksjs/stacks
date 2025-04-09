@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingRate Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ShippingRateRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await shippings.rates.destroy(id)
 

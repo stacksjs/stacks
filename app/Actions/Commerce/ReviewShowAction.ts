@@ -8,7 +8,7 @@ export default new Action({
   description: 'Review Show ORM Action',
   method: 'GET',
   async handle(request: ReviewRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await products.reviews.fetchById(id)
 

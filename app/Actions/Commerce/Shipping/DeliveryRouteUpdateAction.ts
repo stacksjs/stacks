@@ -10,7 +10,7 @@ export default new Action({
   description: 'DeliveryRoute Update ORM Action',
   method: 'PUT',
   async handle(request: DeliveryRouteRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.routes.update(id, request)
 

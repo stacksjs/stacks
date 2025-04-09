@@ -10,7 +10,7 @@ export default new Action({
   description: 'LicenseKey Destroy ORM Action',
   method: 'DELETE',
   async handle(request: LicenseKeyRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await licenses.destroy(id)
 

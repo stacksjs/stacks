@@ -10,7 +10,7 @@ export default new Action({
   method: 'GET',
 
   async handle(request: ProductItemRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await products.items.fetchById(id)
 

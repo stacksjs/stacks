@@ -9,7 +9,7 @@ export default new Action({
   description: 'PrintDevice Update ORM Action',
   method: 'PATCH',
   async handle(request: PrintDeviceRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await devices.update(id, request)
 

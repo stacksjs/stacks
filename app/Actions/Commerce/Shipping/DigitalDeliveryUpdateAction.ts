@@ -10,7 +10,7 @@ export default new Action({
   description: 'DigitalDelivery Update ORM Action',
   method: 'PUT',
   async handle(request: DigitalDeliveryRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.digital.update(id, request)
 

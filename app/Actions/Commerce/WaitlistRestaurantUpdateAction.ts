@@ -8,7 +8,7 @@ export default new Action({
   description: 'WaitlistRestaurant Update ORM Action',
   method: 'PATCH',
   async handle(request: WaitlistRestaurantRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
     const model = await waitlists.restaurant.update(id, request)
 
     return response.json(model)

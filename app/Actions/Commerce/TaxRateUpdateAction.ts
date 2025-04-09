@@ -8,7 +8,7 @@ export default new Action({
   description: 'TaxRate Update ORM Action',
   method: 'PATCH',
   async handle(request: TaxRateRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
     const model = await tax.update(id, request)
 
     return response.json(model)

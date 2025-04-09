@@ -10,7 +10,7 @@ export default new Action({
   description: 'Coupon Update ORM Action',
   method: 'PUT',
   async handle(request: CouponRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await coupons.update(id, request)
 

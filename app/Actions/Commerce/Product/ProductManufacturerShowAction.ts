@@ -8,7 +8,7 @@ export default new Action({
   description: 'ProductManufacturer Show ORM Action',
   method: 'GET',
   async handle(request: ManufacturerRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await products.manufacturers.fetchById(id)
 

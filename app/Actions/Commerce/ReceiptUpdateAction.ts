@@ -9,7 +9,7 @@ export default new Action({
   description: 'Receipt Update ORM Action',
   method: 'PATCH',
   async handle(request: ReceiptRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const result = await receipts.update(id, request)
 

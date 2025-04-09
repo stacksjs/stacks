@@ -8,7 +8,7 @@ export default new Action({
   description: 'TaxRate Destroy ORM Action',
   method: 'DELETE',
   async handle(request: TaxRateRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await tax.destroy(id)
 

@@ -10,7 +10,7 @@ export default new Action({
   description: 'DigitalDelivery Destroy ORM Action',
   method: 'DELETE',
   async handle(request: DigitalDeliveryRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await shippings.digital.destroy(id)
 

@@ -10,7 +10,7 @@ export default new Action({
   description: 'Driver Destroy ORM Action',
   method: 'DELETE',
   async handle(request: DriverRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await shippings.drivers.destroy(id)
 

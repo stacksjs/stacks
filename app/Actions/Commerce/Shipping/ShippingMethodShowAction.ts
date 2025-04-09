@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingMethod Show ORM Action',
   method: 'GET',
   async handle(request: ShippingMethodRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.methods.fetchById(id)
 

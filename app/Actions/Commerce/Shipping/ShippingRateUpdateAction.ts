@@ -9,7 +9,7 @@ export default new Action({
   description: 'ShippingRate Update ORM Action',
   method: 'PATCH',
   async handle(request: ShippingRateRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await shippings.rates.update(id, request)
 

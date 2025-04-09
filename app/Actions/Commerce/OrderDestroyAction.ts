@@ -10,7 +10,7 @@ export default new Action({
   description: 'Order Destroy ORM Action',
   method: 'DELETE',
   async handle(request: OrderRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await orders.destroy(id)
 

@@ -10,7 +10,7 @@ export default new Action({
   description: 'Order Show ORM Action',
   method: 'GET',
   async handle(request: OrderRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await orders.fetchById(id)
 

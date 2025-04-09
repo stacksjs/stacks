@@ -8,7 +8,7 @@ export default new Action({
   description: 'ShippingZone Destroy ORM Action',
   method: 'DELETE',
   async handle(request: ShippingZoneRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     await shippings.zones.destroy(id)
 

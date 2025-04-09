@@ -111,15 +111,15 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     return this.headers.get(headerParam)
   }
 
-  public getParam<K = string>(key: string): K {
+  public getParam<K extends string>(key: K): K extends NumericField ? number : string {
     const value = this.params[key]
 
     if (numericFields.has(key as NumericField)) {
       const numValue = Number(value)
-      return (isNaN(numValue) ? null : numValue) as K
+      return (isNaN(numValue) ? 0 : numValue) as K extends NumericField ? number : string
     }
 
-    return value as K
+    return value as K extends NumericField ? number : string
   }
 
   public route(key: string): number | string | null {

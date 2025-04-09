@@ -8,7 +8,7 @@ export default new Action({
   description: 'WaitlistProduct Update ORM Action',
   method: 'PATCH',
   async handle(request: WaitlistProductRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
     const model = await waitlists.products.update(id, request)
 
     return response.json(model)

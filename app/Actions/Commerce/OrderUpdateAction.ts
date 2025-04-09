@@ -10,7 +10,7 @@ export default new Action({
   description: 'Order Update ORM Action',
   method: 'PUT',
   async handle(request: OrderRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await orders.update(id, request)
 

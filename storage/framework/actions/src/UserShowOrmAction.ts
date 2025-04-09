@@ -9,7 +9,7 @@ export default new Action({
   description: 'User Show ORM Action',
   method: 'GET',
   async handle(request: UserRequestType) {
-    const id = request.getParam<number>('id')
+    const id = request.getParam('id')
 
     const model = await User.findOrFail(id)
 
