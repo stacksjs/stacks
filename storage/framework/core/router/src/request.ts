@@ -1,23 +1,49 @@
-import type { RequestInstance, RouteParam, VineType } from '@stacksjs/types'
+import type { AuthToken, CustomAttributes, NumericField, RequestData, RequestInstance, RouteParam, RouteParams } from '@stacksjs/types'
 
 import { customValidate, validateField } from '@stacksjs/validation'
 
-interface RequestData {
-  [key: string]: any
-}
-
-interface ValidationField {
-  rule: VineType
-  message: Record<string, string>
-}
-
-type AuthToken = `${number}:${number}:${string}`
-
-interface CustomAttributes {
-  [key: string]: ValidationField
-}
-
-interface RouteParams { [key: string]: string | number }
+const numericFields = new Set<NumericField>([
+  'id',
+  'age',
+  'count',
+  'quantity',
+  'amount',
+  'price',
+  'total',
+  'score',
+  'rating',
+  'duration',
+  'size',
+  'weight',
+  'height',
+  'width',
+  'length',
+  'distance',
+  'speed',
+  'temperature',
+  'volume',
+  'capacity',
+  'density',
+  'pressure',
+  'force',
+  'energy',
+  'power',
+  'frequency',
+  'voltage',
+  'current',
+  'resistance',
+  'time',
+  'date',
+  'year',
+  'month',
+  'day',
+  'hour',
+  'minute',
+  'second',
+  'millisecond',
+  'microsecond',
+  'nanosecond',
+])
 
 export class Request<T extends RequestData = RequestData> implements RequestInstance {
   public query: T = {} as T
@@ -40,8 +66,13 @@ export class Request<T extends RequestData = RequestData> implements RequestInst
     this.headers = headerParams
   }
 
-  public get<T>(element: string, defaultValue?: T): T {
-    return this.query[typeof element] || defaultValue
+  public get<K extends string>(element: K, defaultValue?: K extends NumericField ? number : string): K extends NumericField ? number : string {
+    const value = this.query[element]
+
+    if (numericFields.has(element as NumericField))
+      return (value ? Number(value) : defaultValue) as K extends NumericField ? number : string
+
+    return (value || defaultValue) as K extends NumericField ? number : string
   }
 
   public all(): T {

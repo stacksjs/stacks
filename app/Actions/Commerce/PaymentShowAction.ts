@@ -9,7 +9,7 @@ export default new Action({
   method: 'GET',
 
   async handle(request: PaymentRequestType) {
-    const id = request.get<number>('id')
+    const id = request.get('id')
 
     const payment = await payments.fetchById(id)
 

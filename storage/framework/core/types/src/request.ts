@@ -16,6 +16,8 @@ interface CustomAttributes {
   [key: string]: ValidationField
 }
 
+type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
+
 export interface RequestInstance {
   addQuery: (url: URL) => void
 
@@ -23,7 +25,7 @@ export interface RequestInstance {
 
   addParam: (param: RouteParam) => void
 
-  get: <T>(element: string, defaultValue?: T) => T
+  get: <K extends string>(element: K, defaultValue?: K extends NumericField ? number : string) => K extends NumericField ? number : string
 
   header: (element: string) => string | number | boolean | null
 

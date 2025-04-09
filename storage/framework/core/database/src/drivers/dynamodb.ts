@@ -1,43 +1,43 @@
-import { Table } from 'dynamodb-toolbox/table'
 import { Entity } from 'dynamodb-toolbox/entity'
 import { item } from 'dynamodb-toolbox/schema/item'
 import { string } from 'dynamodb-toolbox/schema/string'
+import { Table } from 'dynamodb-toolbox/table'
 
 // Define the main table
 const AppTable: Table = new Table({
   name: 'app-table',
   partitionKey: {
     name: 'pk',
-    type: 'string'
+    type: 'string',
   },
   sortKey: {
     name: 'sk',
-    type: 'string'
+    type: 'string',
   },
   indexes: {
     GSI1: {
       type: 'global',
       partitionKey: {
         name: 'gsi1pk',
-        type: 'string'
+        type: 'string',
       },
       sortKey: {
         name: 'gsi1sk',
-        type: 'string'
-      }
+        type: 'string',
+      },
     },
     GSI2: {
       type: 'global',
       partitionKey: {
         name: 'gsi2pk',
-        type: 'string'
+        type: 'string',
       },
       sortKey: {
         name: 'gsi2sk',
-        type: 'string'
-      }
-    }
-  }
+        type: 'string',
+      },
+    },
+  },
 })
 
 // User Entity
@@ -51,7 +51,7 @@ const userSchema = item({
   stripe_id: string(),
   uuid: string(),
   created_at: string(),
-  updated_at: string()
+  updated_at: string(),
 })
 
 const UserEntity: Entity = new Entity({
@@ -64,8 +64,8 @@ const UserEntity: Entity = new Entity({
     gsi1pk: `USER#EMAIL`,
     gsi1sk: `USER#${keyInput.id}`,
     gsi2pk: `USER#NAME`,
-    gsi2sk: `USER#${keyInput.id}`
-  })
+    gsi2sk: `USER#${keyInput.id}`,
+  }),
 })
 
 // Team Entity
@@ -80,7 +80,7 @@ const teamSchema = item({
   path: string().required(),
   isPersonal: string().required(),
   created_at: string(),
-  updated_at: string()
+  updated_at: string(),
 })
 
 const TeamEntity: Entity = new Entity({
@@ -91,8 +91,8 @@ const TeamEntity: Entity = new Entity({
     pk: `TEAM#${keyInput.id}`,
     sk: `TEAM#${keyInput.id}`,
     gsi1pk: `TEAM#EMAIL`,
-    gsi1sk: `TEAM#${keyInput.id}`
-  })
+    gsi1sk: `TEAM#${keyInput.id}`,
+  }),
 })
 
 // SubscriberEmail Entity
@@ -101,7 +101,7 @@ const subscriberEmailSchema = item({
   email: string().required(),
   created_at: string(),
   updated_at: string(),
-  deleted_at: string()
+  deleted_at: string(),
 })
 
 const SubscriberEmailEntity: Entity = new Entity({
@@ -112,8 +112,8 @@ const SubscriberEmailEntity: Entity = new Entity({
     pk: `SUBSCRIBER#${keyInput.id}`,
     sk: `SUBSCRIBER#${keyInput.id}`,
     gsi1pk: `SUBSCRIBER#EMAIL`,
-    gsi1sk: `SUBSCRIBER#${keyInput.id}`
-  })
+    gsi1sk: `SUBSCRIBER#${keyInput.id}`,
+  }),
 })
 
 // Post Entity
@@ -123,7 +123,7 @@ const postSchema = item({
   title: string().required(),
   body: string().required(),
   created_at: string(),
-  updated_at: string()
+  updated_at: string(),
 })
 
 const PostEntity: Entity = new Entity({
@@ -132,8 +132,8 @@ const PostEntity: Entity = new Entity({
   schema: postSchema,
   computeKey: (keyInput: any) => ({
     pk: `POST#${keyInput.id}`,
-    sk: `POST#${keyInput.id}`
-  })
+    sk: `POST#${keyInput.id}`,
+  }),
 })
 
 // Helper functions for key generation
@@ -144,21 +144,21 @@ const generateKeys = {
     gsi1pk: `USER#EMAIL`,
     gsi1sk: `USER#${id}`,
     gsi2pk: `USER#NAME`,
-    gsi2sk: `USER#${id}`
+    gsi2sk: `USER#${id}`,
   }),
   post: (id: string, userId: string) => ({
     pk: `POST#${id}`,
     sk: `POST#${id}`,
     gsi1pk: `USER#${userId}`,
-    gsi1sk: `POST#${id}`
-  })
+    gsi1sk: `POST#${id}`,
+  }),
 }
 
 export {
   AppTable,
-  UserEntity,
-  TeamEntity,
-  SubscriberEmailEntity,
-  PostEntity,
   generateKeys,
+  PostEntity,
+  SubscriberEmailEntity,
+  TeamEntity,
+  UserEntity,
 }

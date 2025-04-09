@@ -1,11 +1,31 @@
 import type { Action } from '@stacksjs/actions'
 import type { Request } from '@stacksjs/router'
+import type { VineType } from '@stacksjs/types'
 
 type ActionPath = string
 // need to refactor before, after, view to be a part of some other type
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'before' | 'after' | 'view'
 
 export type RouteCallback = (params?: Record<string, any>) => any | string | object
+
+export interface RequestData {
+  [key: string]: any
+}
+
+export interface ValidationField {
+  rule: VineType
+  message: Record<string, string>
+}
+
+export type AuthToken = `${number}:${number}:${string}`
+
+export interface CustomAttributes {
+  [key: string]: ValidationField
+}
+
+export interface RouteParams { [key: string]: string | number }
+
+export type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
 
 export interface Route {
   name: string
