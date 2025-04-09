@@ -64,7 +64,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "aws-cdk": "^2.1007.0",
+    "aws-cdk": "^3.0.0",
     "aws-cdk-lib": "^2.188.0",
     "aws4fetch": "^1.0.20",
     "constructs": "^10.4.2"
